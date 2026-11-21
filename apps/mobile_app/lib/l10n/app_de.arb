@@ -4048,5 +4048,22 @@
   "marketplaceInfoPrivateOnly": "Wenn Sie gewerblich oder beruflich verkaufen, können Sie den Gebrauchtmarkt nicht nutzen: Quokka kann die Anzeigen entfernen und den Zugang sperren.",
   "billingAccountStatusNotice": "Der Dienst überprüft Ihren Kontostatus. Zahlungen in der App sind noch nicht verfügbar.",
   "billingOpenAccount": "Mein Konto öffnen",
-  "billingOpenAccountError": "Ihr Konto konnte nicht geöffnet werden."
+  "billingOpenAccountError": "Ihr Konto konnte nicht geöffnet werden.",
+  "storeBillingSubscribeMonthly": "Monatlich · {price}",
+  "storeBillingSubscribeYearly": "Jährlich · {price}",
+  "storeBillingRestore": "Käufe wiederherstellen",
+  "storeBillingManage": "Abo im Store verwalten",
+  "storeBillingPending": "Zahlung wartet auf Bestätigung durch den Store.",
+  "storeBillingVerifying": "Kauf wird überprüft…",
+  "storeBillingVerified": "Abo aktiv.",
+  "storeBillingFailed": "Der Kauf konnte nicht überprüft werden. Versuche es später erneut: Es wird nicht doppelt abgebucht.",
+  "storeBillingOwnedByOther": "Dieser Kauf ist mit einem anderen Quokka-Konto verknüpft.",
+  "storeBillingUnavailable": "Store-Käufe sind auf diesem Gerät nicht verfügbar.",
+  "storeBillingCanceledUntil": "Verlängerung aus: aktiv bis {date}",
+  "storeBillingExpired": "Abo abgelaufen",
+  "storeBillingRefunded": "Abo erstattet oder widerrufen",
+  "storeBillingPaymentIssue": "Zahlungsproblem: Aktualisiere die Zahlungsmethode im Store",
+  "storeBillingTrialDaysLeft": "Kostenlose Testphase: noch {days} Tage",
+  "storeBillingRestoreDone": "Wiederherstellung abgeschlossen.",
+  "storeBillingPricesFromStore": "Preise, Währung und Steuern sind die vom Store für dein Land angezeigten. Das Abo verlängert sich automatisch, bis du es im Store kündigst."
 }

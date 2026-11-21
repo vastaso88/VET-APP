@@ -6,7 +6,10 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "anthropic>=2.6.0",
+    # Store billing: ES256/RS256 signatures and certificate chains (App Store, Google Play).
+    "cryptography>=42.0",
     "fastapi>=0.116.0",
+    "httpx>=0.28.0",
     "pydantic>=2.11.0",
     "pydantic-settings>=2.10.0",
     # Required at runtime for FastAPI's File/UploadFile (voice dictation

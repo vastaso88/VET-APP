@@ -1,8 +1,9 @@
 import hashlib
 import hmac
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
 from functools import lru_cache
+from typing import TYPE_CHECKING
 
 from packages.core.application.ports.account_age_repository import AccountAgeRepository
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
@@ -160,7 +161,17 @@ from packages.core.application.services.update_pet_profile import UpdatePetProfi
 from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentService
 from packages.core.application.services.urgency_classifier import UrgencyClassifier
 from packages.core.application.services.vet_summary import VetSummaryService
-from packages.core.domain.subscription.limits import PlanLimits
+from packages.core.domain.common.entity import utc_now
+from packages.core.domain.subscription.limits import NO_ACCESS_LIMITS, PlanLimits
+from packages.core.domain.subscription.store import ProductCatalog, Store
+
+if TYPE_CHECKING:
+    from packages.infrastructure.billing.apple_app_store import AppleSignedDataDecoder
+from packages.core.application.ports.store_billing import (
+    StoreEntitlementRepository,
+    StoreVerifier,
+)
+from packages.core.application.services.store_billing import StoreBillingService
 from packages.core.domain.subscription.models import SubscriptionPlan
 from packages.infrastructure.auth.age_guarded_auth_provider import AgeGuardedAuthProvider
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
@@ -241,6 +252,9 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryUserDeviceRepository,
     InMemoryUserLocationRepository,
     InMemoryWeightMeasurementRepository,
+)
+from packages.infrastructure.persistence.in_memory_store_billing import (
+    InMemoryStoreEntitlementRepository,
 )
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
 from packages.infrastructure.privacy.rule_based_pii_anonymizer import RuleBasedPiiAnonymizer
@@ -338,6 +352,11 @@ class ApplicationContainer:
             settings.subscription_test_plan
         )
         self.plan_access_sync = self._build_plan_access_sync()
+        self.store_entitlement_repository = self._build_store_entitlement_repository()
+        self._store_billing: StoreBillingService | None = None
+        # Last verified access per owner, used only when a later check fails
+        # (bounded by BILLING_VERIFICATION_TOLERANCE_HOURS, never a new right).
+        self.last_verified_access: dict[str, tuple[datetime, bool, PlanLimits | None]] = {}
         self.user_location_repository = self._build_user_location_repository()
         self.dog_walk_repository = self._build_dog_walk_repository()
         self.weight_measurement_repository = self._build_weight_measurement_repository()
@@ -432,6 +451,75 @@ class ApplicationContainer:
             test_plan=self.subscription_test_plan,
             access_sync=self.plan_access_sync,
             trial_days=self.settings.billing_trial_days,
+            store_billing=self.store_billing_service() if self.settings.billing_enabled else None,
+        )
+
+    def _build_store_entitlement_repository(self) -> StoreEntitlementRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_store_billing import (
+                    SupabaseStoreEntitlementRepository,
+                )
+
+                return SupabaseStoreEntitlementRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment == "production":
+                    raise
+        return InMemoryStoreEntitlementRepository()
+
+    def store_billing_service(self) -> StoreBillingService | None:
+        """None until BILLING_ACCOUNT_TOKEN_SECRET is set: without it no
+        purchase can be bound to an account, so nothing is granted."""
+        if self._store_billing is not None:
+            return self._store_billing
+        settings = self.settings
+        if not settings.billing_account_token_secret:
+            return None
+        verifiers: dict[Store, StoreVerifier] = {}
+        decoder = self.apple_signed_data_decoder()
+        if decoder is not None and settings.apple_issuer_id and settings.apple_private_key:
+            from packages.infrastructure.billing.apple_app_store import AppleAppStoreVerifier
+
+            verifiers[Store.APPLE] = AppleAppStoreVerifier(
+                issuer_id=settings.apple_issuer_id,
+                key_id=settings.apple_key_id,
+                private_key_pem=settings.apple_private_key.replace("\\n", "\n"),
+                bundle_id=settings.apple_bundle_id,
+                decoder=decoder,
+                use_sandbox=settings.billing_store_environment == "sandbox",
+            )
+        if settings.google_play_package_name and settings.google_play_service_account_json:
+            from packages.infrastructure.billing.google_play import GooglePlayVerifier
+
+            verifiers[Store.GOOGLE] = GooglePlayVerifier(
+                package_name=settings.google_play_package_name,
+                service_account_json=settings.google_play_service_account_json,
+            )
+        self._store_billing = StoreBillingService(
+            entitlements=self.store_entitlement_repository,
+            subscriptions=self.subscription_repository,
+            verifiers=verifiers,
+            catalog=ProductCatalog.from_json(settings.billing_catalog_json),
+            account_token_secret=settings.billing_account_token_secret,
+            verification_tolerance=timedelta(hours=settings.billing_verification_tolerance_hours),
+            allowed_environments=frozenset({settings.billing_store_environment}),
+        )
+        return self._store_billing
+
+    def apple_signed_data_decoder(self) -> "AppleSignedDataDecoder | None":
+        if not (self.settings.apple_bundle_id and self.settings.apple_root_certificates):
+            return None
+        from packages.infrastructure.billing.apple_app_store import (
+            AppleSignedDataDecoder,
+            load_root_certificates,
+        )
+
+        return AppleSignedDataDecoder(
+            bundle_id=self.settings.apple_bundle_id,
+            roots=load_root_certificates(self.settings.apple_root_certificates),
         )
 
     def _build_plan_access_sync(self) -> PlanAccessSync | None:
@@ -474,21 +562,34 @@ class ApplicationContainer:
         return RegisterDeviceService(self.user_device_repository, self.owner_limits_lookup())
 
     def owner_limits_lookup(self) -> OwnerLimitsLookup:
-        """What the owner's plan allows (None = no limits). Fails open: a
-        subscription lookup outage must not lock owners out, same stance as
-        the usage ledger."""
+        """What the owner's plan allows (None = no limits). On a lookup
+        failure: with billing on, the last verified limits within the bounded
+        tolerance, else no access (never "no limits"); without billing the
+        legacy fail-open stays for development."""
         service = self.get_or_create_subscription_service()
 
         def lookup(owner_id: str, email: str | None) -> PlanLimits | None:
             try:
-                return service.execute(
+                result = service.execute(
                     GetOrCreateSubscriptionInput(owner_id=owner_id, email=email or "")
-                ).limits
-            except Exception:  # noqa: BLE001 - fail open
+                )
+                self.last_verified_access[owner_id] = (utc_now(), result.has_access, result.limits)
+                return result.limits
+            except Exception:  # noqa: BLE001 - bounded fallback below
                 logger.exception("could not read the owner's plan limits")
-                return None
+                if not self.settings.billing_enabled:
+                    return None
+                cached = self.cached_access(owner_id)
+                return cached[1] if cached is not None else NO_ACCESS_LIMITS
 
         return lookup
+
+    def cached_access(self, owner_id: str) -> tuple[bool, PlanLimits | None] | None:
+        entry = self.last_verified_access.get(owner_id)
+        tolerance = timedelta(hours=min(self.settings.billing_verification_tolerance_hours, 1))
+        if entry is None or utc_now() - entry[0] > tolerance:
+            return None
+        return entry[1], entry[2]
 
     def account_eraser(self) -> AccountEraser:
         return self._build_account_eraser()

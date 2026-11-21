@@ -7289,4 +7289,63 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get billingOpenAccountError => 'Impossibile aprire l’area personale.';
+
+  @override
+  String storeBillingSubscribeMonthly(String price) {
+    return 'Mensile · $price';
+  }
+
+  @override
+  String storeBillingSubscribeYearly(String price) {
+    return 'Annuale · $price';
+  }
+
+  @override
+  String get storeBillingRestore => 'Ripristina acquisti';
+
+  @override
+  String get storeBillingManage => 'Gestisci abbonamento nello store';
+
+  @override
+  String get storeBillingPending => 'Pagamento in attesa di conferma dallo store.';
+
+  @override
+  String get storeBillingVerifying => 'Verifica dell’acquisto in corso…';
+
+  @override
+  String get storeBillingVerified => 'Abbonamento attivo.';
+
+  @override
+  String get storeBillingFailed => 'Non è stato possibile verificare l’acquisto. Riprova più tardi: non ti verrà addebitato due volte.';
+
+  @override
+  String get storeBillingOwnedByOther => 'Questo acquisto è collegato a un altro account Quokka.';
+
+  @override
+  String get storeBillingUnavailable => 'Gli acquisti dallo store non sono disponibili su questo dispositivo.';
+
+  @override
+  String storeBillingCanceledUntil(String date) {
+    return 'Rinnovo disattivato: attivo fino al $date';
+  }
+
+  @override
+  String get storeBillingExpired => 'Abbonamento scaduto';
+
+  @override
+  String get storeBillingRefunded => 'Abbonamento rimborsato o revocato';
+
+  @override
+  String get storeBillingPaymentIssue => 'Problema di pagamento: aggiorna il metodo di pagamento nello store';
+
+  @override
+  String storeBillingTrialDaysLeft(String days) {
+    return 'Prova gratuita: $days giorni rimasti';
+  }
+
+  @override
+  String get storeBillingRestoreDone => 'Ripristino completato.';
+
+  @override
+  String get storeBillingPricesFromStore => 'Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L’abbonamento si rinnova automaticamente finché non lo disdici nello store.';
 }

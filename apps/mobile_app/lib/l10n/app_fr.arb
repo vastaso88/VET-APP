@@ -4048,5 +4048,22 @@
   "marketplaceInfoPrivateOnly": "Si vous vendez dans le cadre d'une activité commerciale ou professionnelle, vous ne pouvez pas utiliser le marché de l'occasion : Quokka peut retirer les annonces et suspendre l'accès.",
   "billingAccountStatusNotice": "Le service vérifie l’état de votre compte. Les paiements dans l’application ne sont pas encore disponibles.",
   "billingOpenAccount": "Ouvrir mon compte",
-  "billingOpenAccountError": "Impossible d’ouvrir votre compte."
+  "billingOpenAccountError": "Impossible d’ouvrir votre compte.",
+  "storeBillingSubscribeMonthly": "Mensuel · {price}",
+  "storeBillingSubscribeYearly": "Annuel · {price}",
+  "storeBillingRestore": "Restaurer les achats",
+  "storeBillingManage": "Gérer l’abonnement dans la boutique",
+  "storeBillingPending": "Paiement en attente de confirmation par la boutique.",
+  "storeBillingVerifying": "Vérification de l’achat…",
+  "storeBillingVerified": "Abonnement actif.",
+  "storeBillingFailed": "Impossible de vérifier l’achat. Réessaie plus tard : tu ne seras pas débité deux fois.",
+  "storeBillingOwnedByOther": "Cet achat est lié à un autre compte Quokka.",
+  "storeBillingUnavailable": "Les achats en boutique ne sont pas disponibles sur cet appareil.",
+  "storeBillingCanceledUntil": "Renouvellement désactivé : actif jusqu’au {date}",
+  "storeBillingExpired": "Abonnement expiré",
+  "storeBillingRefunded": "Abonnement remboursé ou révoqué",
+  "storeBillingPaymentIssue": "Problème de paiement : mets à jour le moyen de paiement dans la boutique",
+  "storeBillingTrialDaysLeft": "Essai gratuit : {days} jours restants",
+  "storeBillingRestoreDone": "Restauration terminée.",
+  "storeBillingPricesFromStore": "Les prix, la devise et les taxes sont ceux indiqués par la boutique pour ton pays. L’abonnement se renouvelle automatiquement jusqu’à ce que tu le résilies dans la boutique."
 }

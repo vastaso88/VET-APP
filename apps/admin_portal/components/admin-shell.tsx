@@ -8,6 +8,7 @@ const sections = [
   { href: "/", label: "Overview" },
   { href: "/moderation", label: "Moderation" },
   { href: "/age", label: "Closed by age" },
+  { href: "/billing", label: "Subscriptions" },
   { href: "/data/geographic", label: "Geographic data" },
   { href: "/data/scientific", label: "Scientific data" },
   { href: "/jobs", label: "Ingestion jobs" },

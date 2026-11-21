@@ -17,6 +17,7 @@ import '../../data/billing_demo_store.dart';
 import '../../data/subscription_remote_data_source.dart';
 import '../../domain/billing_models.dart';
 import '../widgets/plan_feature_list.dart';
+import '../widgets/store_subscription_section.dart';
 import '../../../../l10n/regional_defaults.dart';
 
 /// "Abbonamento e metodi di pagamento" — reached from Impostazioni.
@@ -107,6 +108,10 @@ class _BillingPageState extends State<BillingPage> {
         appBar: AppBar(title: Text(context.l10n.billingTitle)),
         body: ListView(children: [
           _CurrentPlanCard(store: _store),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
+            child: StoreSubscriptionSection(),
+          ),
           const BillingAccountPanel(),
         ]),
       );

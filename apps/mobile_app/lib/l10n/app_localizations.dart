@@ -12211,6 +12211,108 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Impossibile aprire l’area personale.'**
   String get billingOpenAccountError;
+
+  /// No description provided for @storeBillingSubscribeMonthly.
+  ///
+  /// In it, this message translates to:
+  /// **'Mensile · {price}'**
+  String storeBillingSubscribeMonthly(String price);
+
+  /// No description provided for @storeBillingSubscribeYearly.
+  ///
+  /// In it, this message translates to:
+  /// **'Annuale · {price}'**
+  String storeBillingSubscribeYearly(String price);
+
+  /// No description provided for @storeBillingRestore.
+  ///
+  /// In it, this message translates to:
+  /// **'Ripristina acquisti'**
+  String get storeBillingRestore;
+
+  /// No description provided for @storeBillingManage.
+  ///
+  /// In it, this message translates to:
+  /// **'Gestisci abbonamento nello store'**
+  String get storeBillingManage;
+
+  /// No description provided for @storeBillingPending.
+  ///
+  /// In it, this message translates to:
+  /// **'Pagamento in attesa di conferma dallo store.'**
+  String get storeBillingPending;
+
+  /// No description provided for @storeBillingVerifying.
+  ///
+  /// In it, this message translates to:
+  /// **'Verifica dell’acquisto in corso…'**
+  String get storeBillingVerifying;
+
+  /// No description provided for @storeBillingVerified.
+  ///
+  /// In it, this message translates to:
+  /// **'Abbonamento attivo.'**
+  String get storeBillingVerified;
+
+  /// No description provided for @storeBillingFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non è stato possibile verificare l’acquisto. Riprova più tardi: non ti verrà addebitato due volte.'**
+  String get storeBillingFailed;
+
+  /// No description provided for @storeBillingOwnedByOther.
+  ///
+  /// In it, this message translates to:
+  /// **'Questo acquisto è collegato a un altro account Quokka.'**
+  String get storeBillingOwnedByOther;
+
+  /// No description provided for @storeBillingUnavailable.
+  ///
+  /// In it, this message translates to:
+  /// **'Gli acquisti dallo store non sono disponibili su questo dispositivo.'**
+  String get storeBillingUnavailable;
+
+  /// No description provided for @storeBillingCanceledUntil.
+  ///
+  /// In it, this message translates to:
+  /// **'Rinnovo disattivato: attivo fino al {date}'**
+  String storeBillingCanceledUntil(String date);
+
+  /// No description provided for @storeBillingExpired.
+  ///
+  /// In it, this message translates to:
+  /// **'Abbonamento scaduto'**
+  String get storeBillingExpired;
+
+  /// No description provided for @storeBillingRefunded.
+  ///
+  /// In it, this message translates to:
+  /// **'Abbonamento rimborsato o revocato'**
+  String get storeBillingRefunded;
+
+  /// No description provided for @storeBillingPaymentIssue.
+  ///
+  /// In it, this message translates to:
+  /// **'Problema di pagamento: aggiorna il metodo di pagamento nello store'**
+  String get storeBillingPaymentIssue;
+
+  /// No description provided for @storeBillingTrialDaysLeft.
+  ///
+  /// In it, this message translates to:
+  /// **'Prova gratuita: {days} giorni rimasti'**
+  String storeBillingTrialDaysLeft(String days);
+
+  /// No description provided for @storeBillingRestoreDone.
+  ///
+  /// In it, this message translates to:
+  /// **'Ripristino completato.'**
+  String get storeBillingRestoreDone;
+
+  /// No description provided for @storeBillingPricesFromStore.
+  ///
+  /// In it, this message translates to:
+  /// **'Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L’abbonamento si rinnova automaticamente finché non lo disdici nello store.'**
+  String get storeBillingPricesFromStore;
 }
 
 class _AppLocalizationsDelegate

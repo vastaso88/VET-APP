@@ -1,11 +1,15 @@
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
 
 from apps.api.dependencies.container import get_container
 from apps.api.schemas.subscription import SelectPlanRequest
 from packages.core.application.services.get_or_create_subscription import (
     GetOrCreateSubscriptionInput,
 )
-from packages.core.application.services.select_plan import SelectPlanInput
+from packages.core.application.services.select_plan import (
+    PlanRequiresStorePurchaseError,
+    SelectPlanInput,
+)
 
 router = APIRouter(prefix="/subscription", tags=["subscription"])
 
@@ -20,23 +24,28 @@ def get_subscription_status() -> dict[str, object]:
     return result.model_dump()
 
 
-@router.post("/select-plan")
-def select_plan(request: SelectPlanRequest) -> dict[str, object]:
+@router.post("/select-plan", response_model=None)
+def select_plan(request: SelectPlanRequest) -> dict[str, object] | JSONResponse:
     container = get_container()
     user = container.auth_provider.get_current_user()
-    if container.subscription_test_plan is None and (
-        container.settings.environment == "production" or container.settings.billing_enabled
-    ):
-        from fastapi import HTTPException
-
-        raise HTTPException(409, "Plan changes require verified payment; use the billing area")
     if container.subscription_test_plan is None:
         # Paying needs a declared age; a declared minor also needs the
         # parent's-authorisation confirmation (403 age_required / guardian_required).
         container.age_gate_service().require_paid_plan(user.id)
-    result = container.select_plan_service().execute(
-        SelectPlanInput(owner_id=user.id, plan=request.plan)
-    )
+    try:
+        result = container.select_plan_service().execute(
+            SelectPlanInput(owner_id=user.id, plan=request.plan)
+        )
+    except PlanRequiresStorePurchaseError:
+        # Never a plan from a plain request: buy in the store, the backend
+        # grants it after verifying (/billing/purchases/verify).
+        return JSONResponse(
+            status_code=409,
+            content={
+                "detail": "Plan changes require a verified App Store or Google Play purchase",
+                "code": "plan_change_requires_store_purchase",
+            },
+        )
     body: dict[str, object] = result.model_dump()
     if result.test_period:
         body["code"] = "subscription_test_period"

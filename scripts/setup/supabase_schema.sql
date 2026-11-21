@@ -290,6 +290,48 @@ create table if not exists public.subscriptions (
 -- Written only by the backend; nothing is sent or erased from it yet.
 alter table public.subscriptions add column if not exists access_lost_at timestamptz;
 
+-- Store subscriptions (Apple/Google), their notifications and the pseudonymous
+-- purchase token: written only by the backend. Full script with RLS:
+-- supabase/migrations/20261121180000_store_billing.sql.
+create table if not exists public.store_subscriptions (
+    id uuid primary key default gen_random_uuid(),
+    owner_id text not null,
+    store text not null,
+    store_subscription_id text not null,
+    latest_transaction_id text,
+    product_id text not null,
+    plan text not null,
+    period text not null,
+    state text not null,
+    expires_at timestamptz,
+    auto_renew boolean not null default false,
+    grace_expires_at timestamptz,
+    revoked_at timestamptz,
+    environment text not null default 'production',
+    last_event_at timestamptz not null default now(),
+    last_verified_at timestamptz not null default now(),
+    verification_error_at timestamptz,
+    anomaly text,
+    created_at timestamptz not null default now(),
+    unique (store, store_subscription_id)
+);
+create table if not exists public.store_events (
+    store text not null,
+    event_id text not null,
+    notification_type text not null,
+    owner_id text,
+    store_subscription_id text,
+    signed_at timestamptz not null,
+    received_at timestamptz not null default now(),
+    outcome text not null,
+    primary key (store, event_id)
+);
+create table if not exists public.store_account_tokens (
+    owner_id text primary key,
+    account_token text not null unique,
+    created_at timestamptz not null default now()
+);
+
 -- Devices signed in to an account, to hold the plan's limit on simultaneous
 -- devices (docs/marketing/03_prezzi_per_paese.md, plan limits). `device_id` is
 -- a random id the app makes at sign-in; nothing else about the phone is
@@ -320,6 +362,9 @@ alter table public.reminders enable row level security;
 alter table public.account_consents enable row level security;
 alter table public.subscriptions enable row level security;
 alter table public.user_devices enable row level security;
+alter table public.store_subscriptions enable row level security;
+alter table public.store_events enable row level security;
+alter table public.store_account_tokens enable row level security;
 
 drop policy if exists pet_profiles_select_own on public.pet_profiles;
 create policy pet_profiles_select_own

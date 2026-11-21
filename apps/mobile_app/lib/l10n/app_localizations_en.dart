@@ -7245,4 +7245,63 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get billingOpenAccountError => 'Unable to open your account.';
+
+  @override
+  String storeBillingSubscribeMonthly(String price) {
+    return 'Monthly · $price';
+  }
+
+  @override
+  String storeBillingSubscribeYearly(String price) {
+    return 'Yearly · $price';
+  }
+
+  @override
+  String get storeBillingRestore => 'Restore purchases';
+
+  @override
+  String get storeBillingManage => 'Manage subscription in the store';
+
+  @override
+  String get storeBillingPending => 'Payment waiting for confirmation from the store.';
+
+  @override
+  String get storeBillingVerifying => 'Verifying your purchase…';
+
+  @override
+  String get storeBillingVerified => 'Subscription active.';
+
+  @override
+  String get storeBillingFailed => 'We couldn’t verify the purchase. Try again later: you won’t be charged twice.';
+
+  @override
+  String get storeBillingOwnedByOther => 'This purchase is linked to another Quokka account.';
+
+  @override
+  String get storeBillingUnavailable => 'Store purchases aren’t available on this device.';
+
+  @override
+  String storeBillingCanceledUntil(String date) {
+    return 'Renewal off: active until $date';
+  }
+
+  @override
+  String get storeBillingExpired => 'Subscription expired';
+
+  @override
+  String get storeBillingRefunded => 'Subscription refunded or revoked';
+
+  @override
+  String get storeBillingPaymentIssue => 'Payment problem: update your payment method in the store';
+
+  @override
+  String storeBillingTrialDaysLeft(String days) {
+    return 'Free trial: $days days left';
+  }
+
+  @override
+  String get storeBillingRestoreDone => 'Restore completed.';
+
+  @override
+  String get storeBillingPricesFromStore => 'Prices, currency and taxes are those shown by the store for your country. The subscription renews automatically until you cancel it in the store.';
 }

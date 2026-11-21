@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../domain/billing_models.dart';
+import '../domain/store_subscription.dart';
 import '../domain/subscription_status.dart';
 import 'subscription_remote_data_source.dart';
 
@@ -82,7 +83,24 @@ class BillingDemoStore extends ChangeNotifier {
 
   BillingCycle get billingCycle => _billingCycle;
 
-  DateTime? get renewalDate => _renewalDate;
+  /// The renewal date the backend verified with the store, else the demo one.
+  DateTime? get renewalDate {
+    final verified = _subscriptionStatus?.storeSubscription;
+    if (verified != null && verified.autoRenew && verified.grantsAccess) {
+      return verified.expiresAt;
+    }
+    return _renewalDate;
+  }
+
+  /// Verified store subscription (null on trial, demo or before the sync).
+  StoreSubscription? get storeSubscription => _subscriptionStatus?.storeSubscription;
+
+  /// Applies a status the backend returned after a purchase verification.
+  void applyStatus(SubscriptionStatus status) {
+    _subscriptionStatus = status;
+    _currentTier = status.plan;
+    notifyListeners();
+  }
 
   static SubscriptionPlan planFor(PlanTier tier) =>
       plans.firstWhere((plan) => plan.tier == tier);

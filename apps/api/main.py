@@ -14,6 +14,7 @@ from apps.api.routes.account_preferences import router as account_preferences_ro
 from apps.api.routes.admin import router as admin_router
 from apps.api.routes.admin_age import router as admin_age_router
 from apps.api.routes.auth import router as auth_router
+from apps.api.routes.billing import router as billing_router
 from apps.api.routes.chat import router as chat_router
 from apps.api.routes.chat_attachments import router as chat_attachments_router
 from apps.api.routes.chat_response_reports import router as chat_response_reports_router
@@ -261,6 +262,7 @@ app.include_router(chat_response_reports_router)
 app.include_router(speech_to_text_router)
 app.include_router(chat_attachments_router)
 app.include_router(subscription_router)
+app.include_router(billing_router)
 app.include_router(devices_router)
 app.include_router(local_services_router)
 app.include_router(news_router)

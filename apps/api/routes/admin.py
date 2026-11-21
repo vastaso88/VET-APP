@@ -1407,3 +1407,122 @@ def admin_scientific_ingest(
 ) -> dict[str, object]:
     admin = _require_admin()
     return _execute_scientific_ingestion(request, actor_id=admin.id)
+
+
+# --- Billing (App Store / Google Play) ---------------------------------------
+
+# Indicative Italian list prices (docs/marketing/03_prezzi_per_paese.md), used
+# only for an ESTIMATE: actual proceeds come from the store reports.
+_LIST_PRICE_EUR = {
+    ("plus", "monthly"): 4.59,
+    ("plus", "yearly"): 45.99,
+    ("pro", "monthly"): 8.59,
+    ("pro", "yearly"): 85.99,
+    ("ultra", "monthly"): 15.59,
+    ("ultra", "yearly"): 155.99,
+}
+
+
+@router.get("/billing/overview")
+def admin_billing_overview() -> dict[str, object]:
+    _require_admin()
+    container = get_container()
+    from packages.core.domain.common.entity import utc_now
+
+    now = utc_now()
+    tolerance = timedelta(hours=container.settings.billing_verification_tolerance_hours)
+    entitlements = container.store_entitlement_repository.list_all()
+    active = [e for e in entitlements if e.grants_access(now=now, tolerance=tolerance)]
+    by_plan: Counter[str] = Counter(e.plan for e in active)
+    by_store: Counter[str] = Counter(str(e.store) for e in active)
+    by_state: Counter[str] = Counter(str(e.state) for e in entitlements)
+    week = now + timedelta(days=7)
+    without_plan = container.subscription_repository.list_without_plan()
+    monthly_estimate = sum(
+        _LIST_PRICE_EUR.get((e.plan, str(e.period)), 0.0) / (12 if e.period == "yearly" else 1)
+        for e in active
+        if e.store != "admin_test"
+    )
+    return {
+        "active_subscriptions": len(active),
+        "active_by_plan": dict(by_plan),
+        "active_by_store": dict(by_store),
+        "states": dict(by_state),
+        "expiring_7d": sum(1 for e in active if e.expires_at and e.expires_at < week),
+        "not_renewing": sum(1 for e in active if not e.auto_renew),
+        "anomalies": sum(1 for e in entitlements if e.anomaly and e.store != "admin_test"),
+        "trials_active": sum(1 for s in without_plan if s.is_trial_active(now=now)),
+        "trials_ending_7d": sum(
+            1 for s in without_plan if s.is_trial_active(now=now) and s.trial_ends_at < week
+        ),
+        "trials_expired_without_plan": sum(
+            1 for s in without_plan if not s.is_trial_active(now=now)
+        ),
+        "revenue": {
+            "kind": "estimate_gross_list_price",
+            "monthly_recurring_eur_estimate": round(monthly_estimate, 2),
+            "note": (
+                "Stima lorda a prezzo di listino italiano, IVA e commissioni store incluse. "
+                "Non è un incasso: i ricavi effettivi si riconciliano con i report di "
+                "App Store Connect e Google Play Console."
+            ),
+            "reconciled_eur": None,
+        },
+    }
+
+
+@router.get("/billing/users/{owner_id}")
+def admin_billing_user(owner_id: str) -> dict[str, object]:
+    _require_admin()
+    if len(owner_id) > 100:
+        raise HTTPException(status_code=404, detail="Not found")
+    container = get_container()
+    subscription = container.subscription_repository.get(owner_id)
+    entitlements = container.store_entitlement_repository.list_for_owner(owner_id)
+    tolerance = timedelta(hours=container.settings.billing_verification_tolerance_hours)
+    return {
+        "owner_id": owner_id,
+        "plan": subscription.plan if subscription else None,
+        "trial_ends_at": subscription.trial_ends_at if subscription else None,
+        "subscriptions": [
+            {
+                "store": e.store,
+                "product_id": e.product_id,
+                "plan": e.plan,
+                "period": e.period,
+                "state": e.state,
+                "expires_at": e.expires_at,
+                "auto_renew": e.auto_renew,
+                "grace_expires_at": e.grace_expires_at,
+                "revoked_at": e.revoked_at,
+                "environment": e.environment,
+                "last_verified_at": e.last_verified_at,
+                "verification_error_at": e.verification_error_at,
+                "anomaly": e.anomaly,
+                "grants_access": e.grants_access(tolerance=tolerance),
+            }
+            for e in entitlements
+        ],
+    }
+
+
+class AdminTestGrantBody(BaseModel):
+    owner_id: str = Field(min_length=1, max_length=100)
+    plan: Literal["plus", "pro", "ultra"]
+    days: int = Field(default=7, ge=1, le=31)
+
+
+@router.post("/billing/test-grant")
+def admin_billing_test_grant(body: AdminTestGrantBody) -> dict[str, object]:
+    """Team-only test plan, separate from every public flow. Refused in
+    production and unless BILLING_ADMIN_TEST_GRANTS=true."""
+    _require_admin()
+    container = get_container()
+    settings = container.settings
+    if settings.environment == "production" or not settings.billing_admin_test_grants:
+        raise HTTPException(status_code=403, detail="Test grants are disabled")
+    service = container.store_billing_service()
+    if service is None:
+        raise HTTPException(status_code=503, detail="billing_not_configured")
+    entitlement = service.grant_admin_test(body.owner_id, body.plan, body.days)
+    return {"plan": entitlement.plan, "expires_at": entitlement.expires_at}

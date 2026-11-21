@@ -74,16 +74,16 @@ def test_without_the_switch_the_functions_answer_402_after_the_trial(normal: Tes
     assert response.json()["code"] == "subscription_required"
 
 
-def test_without_the_switch_choosing_a_plan_is_saved(normal: TestClient) -> None:
+def test_without_the_switch_choosing_a_plan_is_refused(normal: TestClient) -> None:
+    """A paid plan comes only from a verified store purchase (billing)."""
     _expire_the_trial()
 
-    body = normal.post("/subscription/select-plan", json={"plan": "plus"}).json()
+    response = normal.post("/subscription/select-plan", json={"plan": "plus"})
 
-    assert body["changed"] is True
-    assert body["test_period"] is False
-    assert "message" not in body
-    assert get_container().subscription_repository.get(OWNER).plan == "plus"  # type: ignore[union-attr]
-    assert normal.get("/subscription/status").json()["has_access"] is True
+    assert response.status_code == 409
+    assert response.json()["code"] == "plan_change_requires_store_purchase"
+    assert get_container().subscription_repository.get(OWNER).plan is None  # type: ignore[union-attr]
+    assert normal.get("/subscription/status").json()["has_access"] is False
 
 
 def test_an_unset_variable_is_the_normal_behaviour(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -207,7 +207,7 @@ def test_no_request_can_turn_the_switch_on(normal: TestClient) -> None:
     assert pets.status_code == 402
 
 
-def test_choosing_a_plan_with_extra_fields_saves_only_the_plan_asked_for(
+def test_choosing_a_plan_with_extra_fields_grants_nothing(
     normal: TestClient,
 ) -> None:
     _expire_the_trial()
@@ -219,6 +219,5 @@ def test_choosing_a_plan_with_extra_fields_saves_only_the_plan_asked_for(
         json={"plan": "plus", "test_plan": "pro", "test_period": True},
     ).json()
 
-    assert body["test_period"] is False
-    assert body["changed"] is True
-    assert get_container().subscription_repository.get(OWNER).plan == "plus"  # type: ignore[union-attr]
+    assert body["code"] == "plan_change_requires_store_purchase"
+    assert get_container().subscription_repository.get(OWNER).plan is None  # type: ignore[union-attr]

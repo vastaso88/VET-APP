@@ -3948,7 +3948,13 @@
   "settingsConsentDiagnostics": "Invia rapporti sugli errori",
   "marketplaceMessagesTitle": "Messaggi del Mercatino",
   "marketplaceMessagesOpen": "{count, plural, =0{Messaggi} =1{Messaggi: 1 da leggere} other{Messaggi: {count} da leggere}}",
-  "@marketplaceMessagesOpen": {"placeholders": {"count": {"type": "int"}}},
+  "@marketplaceMessagesOpen": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "marketplaceMessagesWriteToSeller": "Scrivi al venditore",
   "marketplaceMessagesEmpty": "Nessuna conversazione. Quando scrivi a un venditore, o qualcuno ti scrive per un tuo annuncio, la trovi qui.",
   "marketplaceMessagesLoadFailed": "Non riesco a caricare i messaggi. Riprova tra poco.",
@@ -3960,7 +3966,13 @@
   "marketplaceMessagesSend": "Invia",
   "marketplaceMessagesSendFailed": "Messaggio non inviato. Riprova.",
   "marketplaceMessagesDailyLimit": "Hai raggiunto il limite di {limit} nuove conversazioni al giorno. Riprova domani.",
-  "@marketplaceMessagesDailyLimit": {"placeholders": {"limit": {"type": "int"}}},
+  "@marketplaceMessagesDailyLimit": {
+    "placeholders": {
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
   "marketplaceMessagesClosed": "Questa conversazione è chiusa: puoi rileggerla, ma non si possono più inviare messaggi.",
   "marketplaceMessagesBlockedByMe": "Hai bloccato questa persona. Sbloccala per scrivere di nuovo.",
   "marketplaceMessagesUnavailable": "Per questo annuncio non è possibile scrivere.",
@@ -3978,7 +3990,16 @@
   "marketplaceMessagesReasonHarassment": "Molestie",
   "marketplaceMessagesActionFailed": "Operazione non riuscita. Riprova.",
   "marketplaceRestrictedNotice": "Il team di moderazione ha sospeso il tuo accesso al Mercatino dal {date}. Motivo: {reason}. Puoi consultare gli annunci e leggere i tuoi messaggi, ma non puoi pubblicare o modificare annunci né scrivere messaggi.",
-  "@marketplaceRestrictedNotice": {"placeholders": {"date": {"type": "String"}, "reason": {"type": "String"}}},
+  "@marketplaceRestrictedNotice": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "marketplaceRestrictedConversation": "Il team di moderazione ha sospeso il tuo accesso al Mercatino: puoi leggere questa conversazione, ma non scrivere.",
   "marketplaceRestrictionReasonSpam": "spam",
   "marketplaceRestrictionReasonScam": "tentata truffa",
@@ -3989,7 +4010,13 @@
   "localEventsExoticAllGroups": "Tutti i gruppi",
   "localEventsExoticDisclaimer": "Competenza dichiarata dalla struttura o dalla fonte indicata, non verificata da Quokka.",
   "localEventsExoticNone": "Nessuna struttura entro {radius} dichiara questa competenza. I dati sono ancora pochi: allarga il raggio o segnala una struttura dalla sua scheda.",
-  "@localEventsExoticNone": {"placeholders": {"radius": {"type": "String"}}},
+  "@localEventsExoticNone": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
   "exoticGroupReptileAmphibian": "Rettili e anfibi",
   "exoticGroupBird": "Uccelli",
   "exoticGroupSmallMammal": "Piccoli mammiferi",
@@ -3998,13 +4025,37 @@
   "exoticGroupGeneral": "animali esotici (gruppi non indicati)",
   "exoticGroupSmallMammalHint": "Coniglio, roditori, furetto",
   "placesCompetenceTreats": "Cura: {groups}",
-  "@placesCompetenceTreats": {"placeholders": {"groups": {"type": "String"}}},
+  "@placesCompetenceTreats": {
+    "placeholders": {
+      "groups": {
+        "type": "String"
+      }
+    }
+  },
   "placesCompetenceSourceOsm": "Dichiarato su OpenStreetMap, letto il {date}",
-  "@placesCompetenceSourceOsm": {"placeholders": {"date": {"type": "String"}}},
+  "@placesCompetenceSourceOsm": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "placesCompetenceSourceName": "Dichiarato nel nome della struttura, letto il {date}",
-  "@placesCompetenceSourceName": {"placeholders": {"date": {"type": "String"}}},
+  "@placesCompetenceSourceName": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "placesCompetenceSourceClaim": "Dichiarato sulla pagina della struttura, controllato il {date}",
-  "@placesCompetenceSourceClaim": {"placeholders": {"date": {"type": "String"}}},
+  "@placesCompetenceSourceClaim": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "placesCompetenceSourcePage": "Pagina della struttura",
   "placesCompetenceClaimAction": "Cura animali esotici? Segnalalo",
   "placesCompetenceClaimTitle": "Quali animali esotici cura?",
@@ -4032,7 +4083,13 @@
   "marketplaceInfoPrivacy": "Le conversazioni sono private. Il team di Quokka legge una conversazione solo se una delle due persone la segnala, per valutare la segnalazione.",
   "marketplaceInfoTerms": "Dettagli nei Termini di servizio, sezione Mercatino.",
   "marketplaceRestrictedAppeal": "Se pensi sia un errore, scrivici da {place}.",
-  "@marketplaceRestrictedAppeal": {"placeholders": {"place": {"type": "String"}}},
+  "@marketplaceRestrictedAppeal": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
   "ageStepTitle": "Data di nascita",
   "ageStepBody": "Ci serve per applicare le regole d'età. La data non viene mostrata a nessuno.",
   "ageStepCorrectionNote": "Una volta salvata non si modifica da qui: per correggerla scrivi da Impostazioni → Contattaci.",
@@ -4057,5 +4114,50 @@
   "marketplaceInfoPrivateOnly": "Se vendi come attività commerciale o professionale non puoi usare il Mercatino: Quokka può rimuovere gli annunci e sospendere l'accesso.",
   "billingAccountStatusNotice": "Lo stato del tuo account viene verificato dal servizio. I pagamenti nell’app non sono ancora disponibili.",
   "billingOpenAccount": "Apri area personale",
-  "billingOpenAccountError": "Impossibile aprire l’area personale."
+  "billingOpenAccountError": "Impossibile aprire l’area personale.",
+  "storeBillingSubscribeMonthly": "Mensile · {price}",
+  "@storeBillingSubscribeMonthly": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "storeBillingSubscribeYearly": "Annuale · {price}",
+  "@storeBillingSubscribeYearly": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "storeBillingRestore": "Ripristina acquisti",
+  "storeBillingManage": "Gestisci abbonamento nello store",
+  "storeBillingPending": "Pagamento in attesa di conferma dallo store.",
+  "storeBillingVerifying": "Verifica dell’acquisto in corso…",
+  "storeBillingVerified": "Abbonamento attivo.",
+  "storeBillingFailed": "Non è stato possibile verificare l’acquisto. Riprova più tardi: non ti verrà addebitato due volte.",
+  "storeBillingOwnedByOther": "Questo acquisto è collegato a un altro account Quokka.",
+  "storeBillingUnavailable": "Gli acquisti dallo store non sono disponibili su questo dispositivo.",
+  "storeBillingCanceledUntil": "Rinnovo disattivato: attivo fino al {date}",
+  "@storeBillingCanceledUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "storeBillingExpired": "Abbonamento scaduto",
+  "storeBillingRefunded": "Abbonamento rimborsato o revocato",
+  "storeBillingPaymentIssue": "Problema di pagamento: aggiorna il metodo di pagamento nello store",
+  "storeBillingTrialDaysLeft": "Prova gratuita: {days} giorni rimasti",
+  "@storeBillingTrialDaysLeft": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "storeBillingRestoreDone": "Ripristino completato.",
+  "storeBillingPricesFromStore": "Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L’abbonamento si rinnova automaticamente finché non lo disdici nello store."
 }

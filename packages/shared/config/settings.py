@@ -66,6 +66,33 @@ class Settings(BaseSettings):
     billing_trial_days: int = Field(default=14, ge=10, le=15, alias="BILLING_TRIAL_DAYS")
     billing_site_url: str = Field(default="https://quokkapp.net", alias="BILLING_SITE_URL")
     subscription_test_plan: str = Field(default="", alias="SUBSCRIPTION_TEST_PLAN")
+    # --- Store billing (docs/billing/02_configurazione_store.md). Secrets come
+    # only from the environment; empty = that store is not verified (no paid
+    # plan can be granted through it).
+    billing_account_token_secret: str = Field(default="", alias="BILLING_ACCOUNT_TOKEN_SECRET")
+    billing_catalog_json: str = Field(default="", alias="BILLING_CATALOG_JSON")
+    # "sandbox" accepts only sandbox/TestFlight/licence-tester purchases;
+    # "production" only real ones. Never both on the same deployment.
+    billing_store_environment: str = Field(
+        default="sandbox", pattern="^(sandbox|production)$", alias="BILLING_STORE_ENVIRONMENT"
+    )
+    # Bounded tolerance on a previously verified, renewing subscription when
+    # the store cannot be reached. Never creates a right.
+    billing_verification_tolerance_hours: int = Field(
+        default=24, ge=0, le=72, alias="BILLING_VERIFICATION_TOLERANCE_HOURS"
+    )
+    billing_admin_test_grants: bool = Field(default=False, alias="BILLING_ADMIN_TEST_GRANTS")
+    apple_bundle_id: str = Field(default="", alias="APPLE_BUNDLE_ID")
+    apple_issuer_id: str = Field(default="", alias="APPLE_ISSUER_ID")
+    apple_key_id: str = Field(default="", alias="APPLE_KEY_ID")
+    apple_private_key: str = Field(default="", alias="APPLE_PRIVATE_KEY")
+    apple_root_certificates: str = Field(default="", alias="APPLE_ROOT_CERTIFICATES")
+    google_play_package_name: str = Field(default="", alias="GOOGLE_PLAY_PACKAGE_NAME")
+    google_play_service_account_json: str = Field(
+        default="", alias="GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"
+    )
+    google_pubsub_audience: str = Field(default="", alias="GOOGLE_PUBSUB_AUDIENCE")
+    google_pubsub_service_account: str = Field(default="", alias="GOOGLE_PUBSUB_SERVICE_ACCOUNT")
     # Backoffice allowlist. When empty, admin endpoints fall back to
     # DEVELOPER_EMAILS so existing founder/developer accounts can be reused
     # without hardcoding personal addresses in source control.

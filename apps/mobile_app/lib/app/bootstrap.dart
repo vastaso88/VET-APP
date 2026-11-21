@@ -12,6 +12,7 @@ import 'router/app_router.dart';
 import '../features/account/data/profile_photo_repository.dart';
 import '../features/auth/data/remember_me_store.dart';
 import '../features/billing/data/billing_demo_store.dart';
+import '../features/billing/data/store_billing_controller.dart';
 import '../features/dog_walks/data/active_walk_recovery_store.dart';
 import '../features/dog_walks/data/walk_home_widget.dart';
 import '../features/location/data/location_preference_store.dart';
@@ -120,6 +121,7 @@ Future<void> bootstrap() async {
           MarketplaceUnreadStore.instance.reset();
           unawaited(AgeStore.instance.reset());
           BillingDemoStore.instance.reset();
+          StoreBillingController.instance.reset();
         }
         if (state.event == AuthChangeEvent.signedIn) {
           unawaited(LanguageStore.instance.syncAfterAuthentication());

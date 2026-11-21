@@ -4048,5 +4048,22 @@
   "marketplaceInfoPrivateOnly": "Si vendes como actividad comercial, empresarial o profesional, no puedes usar el mercadillo: Quokka puede retirar los anuncios y suspender el acceso.",
   "billingAccountStatusNotice": "El servicio verifica el estado de tu cuenta. Los pagos dentro de la app aún no están disponibles.",
   "billingOpenAccount": "Abrir mi cuenta",
-  "billingOpenAccountError": "No se pudo abrir tu cuenta."
+  "billingOpenAccountError": "No se pudo abrir tu cuenta.",
+  "storeBillingSubscribeMonthly": "Mensual · {price}",
+  "storeBillingSubscribeYearly": "Anual · {price}",
+  "storeBillingRestore": "Restaurar compras",
+  "storeBillingManage": "Gestionar la suscripción en la tienda",
+  "storeBillingPending": "Pago pendiente de confirmación de la tienda.",
+  "storeBillingVerifying": "Verificando la compra…",
+  "storeBillingVerified": "Suscripción activa.",
+  "storeBillingFailed": "No se pudo verificar la compra. Inténtalo más tarde: no se te cobrará dos veces.",
+  "storeBillingOwnedByOther": "Esta compra está vinculada a otra cuenta de Quokka.",
+  "storeBillingUnavailable": "Las compras en la tienda no están disponibles en este dispositivo.",
+  "storeBillingCanceledUntil": "Renovación desactivada: activa hasta el {date}",
+  "storeBillingExpired": "Suscripción caducada",
+  "storeBillingRefunded": "Suscripción reembolsada o revocada",
+  "storeBillingPaymentIssue": "Problema de pago: actualiza el método de pago en la tienda",
+  "storeBillingTrialDaysLeft": "Prueba gratuita: quedan {days} días",
+  "storeBillingRestoreDone": "Restauración completada.",
+  "storeBillingPricesFromStore": "Los precios, la moneda y los impuestos son los que indica la tienda para tu país. La suscripción se renueva automáticamente hasta que la canceles en la tienda."
 }

@@ -5,6 +5,11 @@ from packages.core.domain.subscription.models import Subscription, SubscriptionP
 from packages.shared.errors.base import ValidationError
 
 
+class PlanRequiresStorePurchaseError(Exception):
+    """A paid plan comes only from a verified App Store / Google Play
+    subscription (StoreBillingService), never from a plain request."""
+
+
 class SelectPlanInput(BaseModel):
     owner_id: str
     plan: str
@@ -18,9 +23,14 @@ class SelectPlanOutput(BaseModel):
 
 
 class SelectPlanService:
-    """Records the plan the owner picked. During the public test
-    ([test_plan] set) it changes nothing and says so: everyone is on the
-    test plan and nobody chooses or pays."""
+    """Public `/subscription/select-plan`. It never grants a plan:
+
+    - during the public test ([test_plan] set) it changes nothing and says so;
+    - otherwise it refuses: the owner buys through the store and the backend
+      grants the plan only after verifying the purchase.
+
+    Team test grants live in StoreBillingService.grant_admin_test behind the
+    admin route, completely separate from this flow."""
 
     def __init__(self, repository: SubscriptionRepository, test_plan: str | None = None) -> None:
         self._repository = repository
@@ -37,6 +47,4 @@ class SelectPlanService:
                 changed=False,
                 test_period=True,
             )
-
-        updated = subscription.model_copy(update={"plan": data.plan})
-        return SelectPlanOutput(subscription=self._repository.save(updated))
+        raise PlanRequiresStorePurchaseError(data.plan)

@@ -21,6 +21,7 @@ import '../../data/billing_demo_store.dart';
 import '../../data/subscription_remote_data_source.dart';
 import '../../domain/billing_models.dart';
 import '../widgets/plan_feature_list.dart';
+import '../widgets/store_subscription_section.dart';
 
 /// Blocking screen shown when the free trial has ended and no plan has
 /// been chosen (packages/core/domain/subscription/models.py:
@@ -110,6 +111,10 @@ class _PaywallPageState extends State<PaywallPage> {
                 const IncludedInAllPlansCard(),
                 const SizedBox(height: AppSpacing.xl),
                 const BillingAccountPanel(),
+                StoreSubscriptionSection(
+                  onAccessGranted: () => Navigator.of(context)
+                      .pushNamedAndRemoveUntil(AppRouter.homeShell, (route) => false),
+                ),
                 if (BillingAccountPanel.demoEnabled)
                   for (final plan in BillingDemoStore.plans) ...[
                   _PaywallPlanCard(
