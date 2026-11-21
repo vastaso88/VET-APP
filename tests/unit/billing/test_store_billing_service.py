@@ -508,13 +508,46 @@ def test_admin_test_grant_is_a_separate_marked_entitlement() -> None:
 # --- team / demo accounts ------------------------------------------------------
 
 
-def _status_as(world: World, owner: str, email: str, overrides: dict[str, str]) -> object:
+def _status_as(
+    world: World,
+    owner: str,
+    email: str,
+    overrides: dict[str, str],
+    verified: bool | None = True,
+) -> object:
     return GetOrCreateSubscriptionService(
         world.subscriptions,
         frozenset({"dev@example.com"}),
         store_billing=world.service,
         plan_overrides=overrides,
-    ).execute(GetOrCreateSubscriptionInput(owner_id=owner, email=email))
+    ).execute(GetOrCreateSubscriptionInput(owner_id=owner, email=email, email_verified=verified))
+
+
+def test_override_needs_a_confirmed_address() -> None:
+    """Signing up with a team address without confirming it earns nothing."""
+    world = World()
+    world.owner("intruder")
+    overrides = {"team@example.com": "ultra"}
+    for verified in (False, None):
+        status = _status_as(world, "intruder", "team@example.com", overrides, verified)
+        assert status.has_access is False  # type: ignore[attr-defined]
+        assert status.subscription.plan is None  # type: ignore[attr-defined]
+        assert status.plan_source != "override"  # type: ignore[attr-defined]
+
+
+def test_lookup_that_cannot_tell_keeps_a_confirmed_override() -> None:
+    """The plan-limits lookup (verification unknown) neither grants the
+    override nor takes away the one a confirmed request already saved."""
+    world = World()
+    world.owner("team")
+    overrides = {"team@example.com": "pro"}
+    assert _status_as(world, "team", "team@example.com", overrides).subscription.plan == "pro"  # type: ignore[attr-defined]
+    kept = _status_as(world, "team", "team@example.com", overrides, verified=None)
+    assert kept.subscription.plan == "pro"  # type: ignore[attr-defined]
+    assert kept.plan_source == "override"  # type: ignore[attr-defined]
+    # An explicit "not confirmed" (e.g. the address was changed) drops it.
+    dropped = _status_as(world, "team", "team@example.com", overrides, verified=False)
+    assert dropped.subscription.plan is None  # type: ignore[attr-defined]
 
 
 def test_override_keeps_a_demo_account_on_its_plan_without_the_store() -> None:

@@ -47,11 +47,17 @@ def _error(status: int, code: str) -> JSONResponse:
     return JSONResponse(status_code=status, content={"detail": code, "code": code})
 
 
-def _status_body(owner_id: str, email: str) -> dict[str, object]:
+def _status_body(user: Any) -> dict[str, object]:
     result = (
         get_container()
         .get_or_create_subscription_service()
-        .execute(GetOrCreateSubscriptionInput(owner_id=owner_id, email=email))
+        .execute(
+            GetOrCreateSubscriptionInput(
+                owner_id=user.id,
+                email=user.email,
+                email_verified=getattr(user, "email_verified", None),
+            )
+        )
     )
     return result.model_dump(mode="json")
 
@@ -103,7 +109,7 @@ def verify_purchase(
     body: dict[str, object] = {
         "complete_transaction": outcome.complete_transaction,
         "state": outcome.entitlement.state,
-        "status": _status_body(user.id, user.email),
+        "status": _status_body(user),
         "pets_over_limit": None,
     }
     # The new plan may have fewer places than the owner has pets: nothing is
@@ -136,7 +142,7 @@ def restore_purchases(request: RestorePurchasesRequest) -> dict[str, object] | J
         )
     except StoreTemporaryError:
         return _error(503, "store_unavailable")
-    return {"restored": len(restored), "status": _status_body(user.id, user.email)}
+    return {"restored": len(restored), "status": _status_body(user)}
 
 
 @router.post("/apple/notifications", response_model=None)
