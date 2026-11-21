@@ -1,4 +1,5 @@
 import 'billing_models.dart';
+import 'store_subscription.dart';
 
 /// Mirrors `GetOrCreateSubscriptionOutput`
 /// (packages/core/application/services/get_or_create_subscription.py).
@@ -13,6 +14,7 @@ class SubscriptionStatus {
     this.maxMemorialPets,
     this.testPeriod = false,
     this.dataKeptUntil,
+    this.storeSubscription,
   });
 
   factory SubscriptionStatus.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,9 @@ class SubscriptionStatus {
       // tryParse: a malformed date must never break the access gate.
       dataKeptUntil: DateTime.tryParse(json['data_kept_until'] as String? ?? ''),
       limits: rawLimits == null ? null : PlanLimits.fromJson(rawLimits),
+      storeSubscription: json['store_subscription'] is Map<String, dynamic>
+          ? StoreSubscription.fromJson(json['store_subscription'] as Map<String, dynamic>)
+          : null,
       planLimits: {
         for (final entry in rawCatalog.entries)
           if (planTierFromKey(entry.key) case final tier?)
@@ -67,6 +72,9 @@ class SubscriptionStatus {
   /// (four months after the access was lost); null while it has access.
   /// Parsed only: no screen shows it until the legal texts for it exist.
   final DateTime? dataKeptUntil;
+
+  /// The verified App Store / Google Play subscription, if any.
+  final StoreSubscription? storeSubscription;
 
   bool get isTrialActive => DateTime.now().isBefore(trialEndsAt);
 

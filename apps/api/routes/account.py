@@ -62,9 +62,7 @@ def delete_account(immediate: bool = Query(default=False)) -> dict[str, object]:
                 owner_id=user.id,
                 signed_in_at=signed_in_at,
                 reason=(
-                    DeletionReason.CLOSED_BY_AGE_USER
-                    if under_minimum
-                    else DeletionReason.USER_NOW
+                    DeletionReason.CLOSED_BY_AGE_USER if under_minimum else DeletionReason.USER_NOW
                 ),
             )
         )

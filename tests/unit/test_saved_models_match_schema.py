@@ -53,6 +53,7 @@ from packages.core.domain.radar_reports.models import (
     RadarUserReport,
 )
 from packages.core.domain.reminders.models import Reminder
+from packages.core.domain.subscription.store import StoreEntitlement
 
 ROOT = Path(__file__).resolve().parents[2]
 SETUP = ROOT / "scripts" / "setup"
@@ -100,6 +101,11 @@ SAVED_MODELS: dict[tuple[str, str], tuple[type[BaseModel], str, frozenset[str]]]
     ("supabase_repositories.py", "SupabaseAccountConsentsRepository.save"): (
         AccountConsents,
         "account_consents",
+        frozenset(),
+    ),
+    ("supabase_store_billing.py", "SupabaseStoreEntitlementRepository.save"): (
+        StoreEntitlement,
+        "store_subscriptions",
         frozenset(),
     ),
     ("supabase_repositories.py", "SupabaseUserDeviceRepository.save"): (

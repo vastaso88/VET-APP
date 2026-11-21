@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+import '../widgets/billing_account_panel.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
@@ -16,6 +18,7 @@ import '../../data/subscription_remote_data_source.dart';
 import '../../domain/billing_models.dart';
 import '../plan_over_pet_limit.dart';
 import '../widgets/plan_feature_list.dart';
+import '../widgets/store_subscription_section.dart';
 import '../../../../l10n/regional_defaults.dart';
 
 /// "Abbonamento e metodi di pagamento" — reached from Impostazioni.
@@ -104,6 +107,19 @@ class _BillingPageState extends State<BillingPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!BillingAccountPanel.demoEnabled && !_store.isTestPeriod) {
+      return Scaffold(
+        appBar: AppBar(title: Text(context.l10n.billingTitle)),
+        body: ListView(children: [
+          _CurrentPlanCard(store: _store),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
+            child: StoreSubscriptionSection(),
+          ),
+          const BillingAccountPanel(),
+        ]),
+      );
+    }
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(

@@ -36,7 +36,7 @@ def list_admin_pets(
             result = (
                 client.table("user_locations")
                 .select("owner_id,home_country_code,home_city")
-                .in_("owner_id", owner_ids[start:start + 100])
+                .in_("owner_id", owner_ids[start : start + 100])
                 .execute()
             )
             for location in getattr(result, "data", None) or []:
@@ -49,9 +49,12 @@ def list_admin_pets(
         needle = q.strip().casefold()
         if needle:
             rows = [
-                row for row in rows
-                if any(needle in str(row.get(field) or "").casefold()
-                       for field in ("name", "id", "owner_id", "breed"))
+                row
+                for row in rows
+                if any(
+                    needle in str(row.get(field) or "").casefold()
+                    for field in ("name", "id", "owner_id", "breed")
+                )
             ]
         if country:
             rows = [row for row in rows if (row.get("country") or "").upper() == country.upper()]
@@ -71,7 +74,7 @@ def list_admin_pets(
         rows.sort(key=lambda row: (str(row.get("name") or "").casefold(), str(row.get("id") or "")))
         total = len(rows)
         page = min(page, max(1, (total + page_size - 1) // page_size))
-        selected = rows[(page - 1) * page_size:page * page_size]
+        selected = rows[(page - 1) * page_size : page * page_size]
         return {"pets": selected, "total": total, "page": page, "page_size": page_size}
     except HTTPException:
         raise

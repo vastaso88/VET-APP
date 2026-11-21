@@ -193,6 +193,9 @@ class InMemoryAccountConsentsRepository(AccountConsentsRepository):
 
 
 class InMemorySubscriptionRepository(SubscriptionRepository):
+    def create_trial(self, subscription: Subscription) -> Subscription:
+        return self._items.setdefault(subscription.owner_id, subscription)
+
     def __init__(self) -> None:
         self._items: dict[str, Subscription] = {}
 

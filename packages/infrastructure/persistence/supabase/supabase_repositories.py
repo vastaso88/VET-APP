@@ -238,6 +238,18 @@ class SupabaseAccountConsentsRepository(AccountConsentsRepository):
 
 
 class SupabaseSubscriptionRepository(SubscriptionRepository):
+    def create_trial(self, subscription: Subscription) -> Subscription:
+        payload = _serialize_payload(
+            subscription.model_dump(mode="json", exclude={"access_lost_at"})
+        )
+        self._client.table(self._table).upsert(
+            payload, on_conflict="owner_id", ignore_duplicates=True
+        ).execute()
+        stored = self.get(subscription.owner_id)
+        if stored is None:
+            raise RuntimeError("Trial was not persisted")
+        return stored
+
     def __init__(self, client: Client) -> None:
         self._client = client
         self._table = "subscriptions"

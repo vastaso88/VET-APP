@@ -4532,5 +4532,50 @@
   "aroundWorldBlockReturn": "Rientro",
   "aroundWorldBlockSpreading": "Per non diffondere malattie",
   "aroundWorldBlockVet": "Dal veterinario",
-  "aroundWorldBlockLimits": "Cosa questa scheda non copre"
+  "aroundWorldBlockLimits": "Cosa questa scheda non copre",
+  "storeBillingSubscribeMonthly": "Mensile · {price}",
+  "@storeBillingSubscribeMonthly": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "storeBillingSubscribeYearly": "Annuale · {price}",
+  "@storeBillingSubscribeYearly": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "storeBillingRestore": "Ripristina acquisti",
+  "storeBillingManage": "Gestisci abbonamento nello store",
+  "storeBillingPending": "Pagamento in attesa di conferma dallo store.",
+  "storeBillingVerifying": "Verifica dell’acquisto in corso…",
+  "storeBillingVerified": "Abbonamento attivo.",
+  "storeBillingFailed": "Non è stato possibile verificare l’acquisto. Riprova più tardi: non ti verrà addebitato due volte.",
+  "storeBillingOwnedByOther": "Questo acquisto è collegato a un altro account Quokka.",
+  "storeBillingUnavailable": "Gli acquisti dallo store non sono disponibili su questo dispositivo.",
+  "storeBillingCanceledUntil": "Rinnovo disattivato: attivo fino al {date}",
+  "@storeBillingCanceledUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "storeBillingExpired": "Abbonamento scaduto",
+  "storeBillingRefunded": "Abbonamento rimborsato o revocato",
+  "storeBillingPaymentIssue": "Problema di pagamento: aggiorna il metodo di pagamento nello store",
+  "storeBillingTrialDaysLeft": "Prova gratuita: {days} giorni rimasti",
+  "@storeBillingTrialDaysLeft": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "storeBillingRestoreDone": "Ripristino completato.",
+  "storeBillingPricesFromStore": "Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L’abbonamento si rinnova automaticamente finché non lo disdici nello store."
 }
