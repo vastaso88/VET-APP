@@ -4546,9 +4546,6 @@
   "aroundWorldBlockSpreading": "Per non diffondere malattie",
   "aroundWorldBlockVet": "Dal veterinario",
   "aroundWorldBlockLimits": "Cosa questa scheda non copre",
-  "billingAccountStatusNotice": "Lo stato del tuo account viene verificato dal servizio. I pagamenti nell’app non sono ancora disponibili.",
-  "billingOpenAccount": "Apri area personale",
-  "billingOpenAccountError": "Impossibile aprire l’area personale.",
   "storeBillingSubscribeMonthly": "Mensile · {price}",
   "@storeBillingSubscribeMonthly": {
     "placeholders": {

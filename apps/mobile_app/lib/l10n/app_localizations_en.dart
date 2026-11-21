@@ -7921,16 +7921,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aroundWorldBlockLimits => 'What this card does not cover';
 
   @override
-  String get billingAccountStatusNotice =>
-      'Your account status is verified by the service. In-app payments are not available yet.';
-
-  @override
-  String get billingOpenAccount => 'Open your account';
-
-  @override
-  String get billingOpenAccountError => 'Unable to open your account.';
-
-  @override
   String storeBillingSubscribeMonthly(String price) {
     return 'Monthly · $price';
   }

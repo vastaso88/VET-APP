@@ -8005,16 +8005,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get aroundWorldBlockLimits => 'Ce que cette fiche ne couvre pas';
 
   @override
-  String get billingAccountStatusNotice =>
-      'Le service vérifie l’état de votre compte. Les paiements dans l’application ne sont pas encore disponibles.';
-
-  @override
-  String get billingOpenAccount => 'Ouvrir mon compte';
-
-  @override
-  String get billingOpenAccountError => 'Impossible d’ouvrir votre compte.';
-
-  @override
   String storeBillingSubscribeMonthly(String price) {
     return 'Mensuel · $price';
   }
