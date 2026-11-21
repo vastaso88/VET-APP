@@ -107,8 +107,8 @@ def test_the_rules_are_in_the_catalog_with_a_version_in_every_language() -> None
             assert "Mercatino" not in entry.text, language
 
     # No language, or one without a text, gets the English one (never the Italian).
-    for language in (None, "ja"):
-        assert build_consent_catalog(language)[KEY].version == "v1"
+    for fallback in (None, "ja"):
+        assert build_consent_catalog(fallback)[KEY].version == "v1"
     assert build_consent_catalog("ja")[KEY].text == build_consent_catalog("en")[KEY].text
 
 

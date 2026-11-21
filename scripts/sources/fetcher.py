@@ -171,14 +171,14 @@ def umbrella_of(host: str) -> str:
 
 def decode_body(body: bytes, ctype: str) -> str:
     """Decodifica con il charset dichiarato (intestazione o meta), altrimenti UTF-8."""
-    match = re.search(r"charset=([\w-]+)", ctype, re.I) or re.search(
-        rb"<meta[^>]+charset=[\"']?([\w-]+)", body[:4000], re.I
-    )
-    name = (
-        (match.group(1).decode() if isinstance(match.group(1), bytes) else match.group(1))
-        if match
-        else "utf-8"
-    )
+    header = re.search(r"charset=([\w-]+)", ctype, re.I)
+    meta = re.search(rb"<meta[^>]+charset=[\"']?([\w-]+)", body[:4000], re.I)
+    if header:
+        name = header.group(1)
+    elif meta:
+        name = meta.group(1).decode("ascii", "replace")
+    else:
+        name = "utf-8"
     try:
         return body.decode(name, "replace")
     except LookupError:
