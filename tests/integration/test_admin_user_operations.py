@@ -6,6 +6,7 @@ from typing import Any
 from unittest.mock import Mock
 
 import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from apps.api.main import app
@@ -352,54 +353,124 @@ def test_action_tokens_are_signed_with_the_secret_value_not_its_accessor() -> No
     assert _signature("payload") == expected
 
 
-# --- plan change by the team (PR #62) ------------------------------------------
+# --- plan changes require fresh Supabase TOTP proof, not merely an admin JWT ---
 
 
 @pytest.mark.parametrize(
     "caller",
     [
         AuthenticatedUser(id="b", email="b@example.com", email_verified=True),
-        # The admin address, not confirmed: someone who signed up with it.
         AuthenticatedUser(id="x", email="admin@example.com", email_verified=False),
     ],
 )
-def test_only_a_confirmed_admin_can_change_a_plan(
+def test_only_confirmed_admin_can_change_plan(
     portal: tuple[TestClient, Database],
     monkeypatch: pytest.MonkeyPatch,
     caller: AuthenticatedUser,
 ) -> None:
     monkeypatch.setattr(get_container().auth_provider, "get_current_user", lambda: caller)
     browser, database = portal
-    assert browser.post("/admin/users/a/plan", json={"plan": "ultra"}).status_code == 403
+    response = browser.post("/admin/users/a/plan", json={"plan": "ultra", "totp_code": "123456"})
+    assert response.status_code == 403
     database.rpc.assert_not_called()
 
 
-def test_a_team_account_plan_cannot_be_changed(portal: tuple[TestClient, Database]) -> None:
+def test_team_accounts_are_protected_even_with_valid_totp(
+    portal: tuple[TestClient, Database],
+) -> None:
     browser, database = portal
     database.users.append(account("admin"))
     database.users[-1].email = "admin@example.com"
-    assert browser.post("/admin/users/admin/plan", json={"plan": None}).status_code == 403
+    response = browser.post("/admin/users/admin/plan", json={"plan": None, "totp_code": "123456"})
+    assert response.status_code == 403
     database.rpc.assert_not_called()
 
 
-def test_admin_plan_change_goes_through_the_audited_function(
-    portal: tuple[TestClient, Database],
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"plan": "pro"},
+        {"plan": "gold", "totp_code": "123456"},
+        {"plan": "pro", "totp_code": "12"},
+        {"plan": "pro", "totp_code": "abcdef"},
+    ],
+)
+def test_plan_change_requires_six_digit_totp(
+    portal: tuple[TestClient, Database], payload: dict[str, Any]
 ) -> None:
     browser, database = portal
-    response = browser.post("/admin/users/a/plan", json={"plan": "pro"})
+    assert browser.post("/admin/users/a/plan", json=payload).status_code == 422
+    database.rpc.assert_not_called()
+
+
+def test_plan_change_calls_atomic_audited_rpc_only_after_totp(
+    portal: tuple[TestClient, Database],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    browser, database = portal
+    proof = "a" * 64
+    monkeypatch.setattr("apps.api.routes.admin_users._verify_plan_totp", lambda *_: proof)
+    database.rpc.side_effect = lambda method, _: SimpleNamespace(
+        execute=lambda: SimpleNamespace(
+            data=True if method == "admin_plan_totp_register_attempt" else None
+        )
+    )
+    response = browser.post("/admin/users/a/plan", json={"plan": "pro", "totp_code": "123456"})
     assert response.status_code == 200
     assert response.json() == {"owner_id": "a", "plan": "pro"}
-    database.rpc.assert_called_once_with(
-        "admin_change_user_plan", {"p_owner_id": "a", "p_admin_id": "admin", "p_plan": "pro"}
-    )
-    assert browser.post("/admin/users/a/plan", json={"plan": "gold"}).status_code == 422
+    assert [call.args[0] for call in database.rpc.call_args_list] == [
+        "admin_plan_totp_register_attempt", "admin_change_user_plan_totp"
+    ]
+    assert database.rpc.call_args.args[1] == {
+        "p_owner_id": "a", "p_admin_id": "admin", "p_plan": "pro", "p_code_digest": proof
+    }
 
 
-def test_admin_plan_change_failure_does_not_leak_details(
+def test_rate_limit_fails_closed_before_totp_verification(
     portal: tuple[TestClient, Database],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     browser, database = portal
-    database.rpc = Mock(side_effect=RuntimeError("operator does not exist: text = uuid"))
-    response = browser.post("/admin/users/a/plan", json={"plan": "plus"})
-    assert response.status_code == 503
-    assert "uuid" not in response.text
+    database.rpc.side_effect = lambda *_: SimpleNamespace(
+        execute=lambda: SimpleNamespace(data=False)
+    )
+    def must_not_run(*_: Any) -> str:
+        raise AssertionError("TOTP should not be checked after rate limit")
+    monkeypatch.setattr("apps.api.routes.admin_users._verify_plan_totp", must_not_run)
+    response = browser.post("/admin/users/a/plan", json={"plan": "plus", "totp_code": "123456"})
+    assert response.status_code == 429
+    assert database.rpc.call_count == 1
+
+
+def test_missing_or_invalid_totp_cannot_reach_plan_rpc(
+    portal: tuple[TestClient, Database],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    browser, database = portal
+    database.rpc.side_effect = lambda *_: SimpleNamespace(
+        execute=lambda: SimpleNamespace(data=True)
+    )
+    def invalid_factor(*_: Any) -> str:
+        raise HTTPException(status_code=428, detail="TOTP required")
+    monkeypatch.setattr("apps.api.routes.admin_users._verify_plan_totp", invalid_factor)
+    response = browser.post("/admin/users/a/plan", json={"plan": "plus", "totp_code": "123456"})
+    assert response.status_code == 428
+    assert [call.args[0] for call in database.rpc.call_args_list] == [
+        "admin_plan_totp_register_attempt"
+    ]
+
+
+def test_plan_rpc_failure_never_leaks_internal_error(
+    portal: tuple[TestClient, Database],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    browser, database = portal
+    monkeypatch.setattr("apps.api.routes.admin_users._verify_plan_totp", lambda *_: "b" * 64)
+    def execute_rpc(method: str, _: dict[str, Any]) -> Any:
+        if method == "admin_plan_totp_register_attempt":
+            return SimpleNamespace(execute=lambda: SimpleNamespace(data=True))
+        raise RuntimeError("internal secret from Postgres")
+    database.rpc.side_effect = execute_rpc
+    response = browser.post("/admin/users/a/plan", json={"plan": "plus", "totp_code": "123456"})
+    assert response.status_code == 409
+    assert "secret" not in response.text
