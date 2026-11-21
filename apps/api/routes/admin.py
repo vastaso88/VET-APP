@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import time
 from functools import lru_cache
+from concurrent.futures import ThreadPoolExecutor
 from collections import Counter
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
@@ -401,52 +402,54 @@ def _cached_admin_overview(_bucket: int) -> dict[str, object]:
 
     species_counts: Counter[str] = Counter(_species_bucket(row) for row in pet_rows)
 
-    conversations = _count_rows(client.table("conversations").select("id", count=CountMethod.exact))
-    radar_osm = _count_rows(client.table("radar_places_osm").select("id", count=CountMethod.exact))
-    radar_open = _count_rows(
-        client.table("radar_places_open").select("id", count=CountMethod.exact)
-    )
-    radar_reports = _count_rows(
-        client.table("radar_user_reports")
-        .select("id", count=CountMethod.exact)
-        .eq("status", "pending")
-    )
-    chat_reports = _count_rows(
-        client.table("chat_response_reports")
-        .select("id", count=CountMethod.exact)
-        .in_("status", ["reported", "under_review"])
-    )
-    marketplace_reports = _count_rows(
-        client.table("marketplace_listing_reports")
-        .select("id", count=CountMethod.exact)
-        .eq("status", "open")
-    )
-    try:
-        marketplace_message_reports = _count_rows(
-            client.table("marketplace_conversation_reports")
-            .select("id", count=CountMethod.exact)
-            .eq("status", "open")
-        )
-    except Exception:  # noqa: BLE001 - the table exists only after marketplace_messages.sql
-        marketplace_message_reports = 0
-    scrape_runs = _count_rows(client.table("scrape_runs").select("id", count=CountMethod.exact))
+    # Independent aggregate reads run concurrently instead of serial network round trips.
+    def count_table(table: str, *, field: str | None = None, values: list[str] | None = None) -> int:
+        query = _admin_client().table(table).select("id", count=CountMethod.exact)
+        if field and values:
+            query = query.eq(field, values[0]) if len(values) == 1 else query.in_(field, values)
+        return _count_rows(query)
 
-    sources_response = (
-        client.table("data_sources")
-        .select("source,release,place_count,imported_at")
-        .order("source")
-        .execute()
-    )
-    recent_runs_response = (
-        client.table("scrape_runs")
-        .select(
+    def optional_message_reports() -> int:
+        try:
+            return count_table("marketplace_conversation_reports", field="status", values=["open"])
+        except Exception:
+            return 0
+
+    def load_sources() -> Any:
+        return _admin_client().table("data_sources").select(
+            "source,release,place_count,imported_at"
+        ).order("source").execute()
+
+    def load_runs() -> Any:
+        return _admin_client().table("scrape_runs").select(
             "id,engine,status,coverage_key,source_names,place_count,error_message,"
             "requested_at,started_at,finished_at"
-        )
-        .order("created_at", desc=True)
-        .limit(5)
-        .execute()
-    )
+        ).order("created_at", desc=True).limit(5).execute()
+
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        tasks = {
+            "conversations": pool.submit(count_table, "conversations"),
+            "radar_osm": pool.submit(count_table, "radar_places_osm"),
+            "radar_open": pool.submit(count_table, "radar_places_open"),
+            "radar_reports": pool.submit(count_table, "radar_user_reports", field="status", values=["pending"]),
+            "chat_reports": pool.submit(count_table, "chat_response_reports", field="status", values=["reported", "under_review"]),
+            "marketplace_reports": pool.submit(count_table, "marketplace_listing_reports", field="status", values=["open"]),
+            "marketplace_message_reports": pool.submit(optional_message_reports),
+            "scrape_runs": pool.submit(count_table, "scrape_runs"),
+            "sources_response": pool.submit(load_sources),
+            "recent_runs_response": pool.submit(load_runs),
+        }
+        results = {name: future.result() for name, future in tasks.items()}
+    conversations = results["conversations"]
+    radar_osm = results["radar_osm"]
+    radar_open = results["radar_open"]
+    radar_reports = results["radar_reports"]
+    chat_reports = results["chat_reports"]
+    marketplace_reports = results["marketplace_reports"]
+    marketplace_message_reports = results["marketplace_message_reports"]
+    scrape_runs = results["scrape_runs"]
+    sources_response = results["sources_response"]
+    recent_runs_response = results["recent_runs_response"]
 
     return {
         "metrics": {
