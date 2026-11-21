@@ -9,6 +9,43 @@ export type AdminUser = {
   email: string;
 };
 
+export type UserAccount = {
+  id: string;
+  email: string | null;
+  created_at: string | null;
+  last_sign_in_at: string | null;
+  email_verified: boolean;
+  banned_until: string | null;
+  stored_plan: string | null;
+  effective_plan: string | null;
+  access: "developer" | "test" | "not_started" | "plan" | "trial" | "expired";
+  trial_ends_at: string | null;
+  subscription_created_at: string | null;
+  total_paid_minor: number | null;
+  currency: string | null;
+  last_payment_at: string | null;
+};
+
+export type AdminUsers = {
+  users: UserAccount[];
+  total: number;
+  page: number;
+  page_size: number;
+  test_plan: string | null;
+  payments_available: boolean;
+};
+
+export async function getAdminUsers(q: string, page: number): Promise<AdminUsers | null> {
+  await requireAdminSession();
+  const params = new URLSearchParams({ q, page: String(page) });
+  try {
+    return await authenticatedAdminRequest<AdminUsers>(`/admin/users?${params}`);
+  } catch (error) {
+    if (error instanceof AdminApiError || error instanceof TypeError) return null;
+    throw error;
+  }
+}
+
 export type DataSourceSummary = {
   source: string;
   release: string;

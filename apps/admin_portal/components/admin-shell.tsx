@@ -6,6 +6,7 @@ import { logout } from "../app/login/actions";
 
 const sections = [
   { href: "/", label: "Overview" },
+  { href: "/users", label: "Users" },
   { href: "/moderation", label: "Moderation" },
   { href: "/age", label: "Closed by age" },
   { href: "/ai-usage", label: "Consumi IA" },
@@ -18,15 +19,17 @@ export async function AdminShell({
   title,
   eyebrow,
   children,
+  className = "",
 }: {
   title: string;
   eyebrow: string;
   children: ReactNode;
+  className?: string;
 }) {
   const admin = await requireAdminSession();
 
   return (
-    <div className="admin-shell">
+    <div className={`admin-shell ${className}`}>
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark">V</div>
