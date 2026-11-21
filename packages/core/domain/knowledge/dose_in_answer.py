@@ -193,6 +193,35 @@ def _only_prevention_classes(sentence: str) -> bool:
     return bool(words) and all(PREVENTION_CLASSES.fullmatch(word) for word in words)
 
 
+# Round 4d (21/11/2026, product decision of the Orchestrator): a supplement with an amount
+# or a frequency is a dose ("un cucchiaino di polvere di calcio", "calcium at every meal").
+_SUPPLEMENT = re.compile(
+    r"\b(?:calcio|calcium|kalzium|calcico|integrator\w*|supplement\w*|suplemento\w*|"
+    r"erganzungs\w*|complement\w*|multivitamin\w*|vitamin\w*|vitamina\w*|vitamine\w*|"
+    r"minerali|minerals|minerales|mineralien|mineraux|d3)\b"
+)
+_SUPPLEMENT_AMOUNT = re.compile(
+    r"\b(?:cucchiain\w*|cucchiai\w*|pizzic\w*|misurin\w*|teaspoons?|tablespoons?|pinch\w*|"
+    r"scoops?|cucharadit\w*|pizcas?|teeloffel\w*|essloffel\w*|prisen?|cuilleres?|pincees?|"
+    r"dosette\w*)\b"
+    r"|\b\d+(?:[.,]\d+)?\s*(?:g|mg|ml|grammi|grams?|%)\b"
+    r"|\b(?:a|ad) ogni pasto\b|\bogni (?:giorno|settimana|\d+ giorni)\b|"
+    r"\b(?:una|due|tre) volt[ae] (?:al giorno|a settimana|alla settimana)\b|"
+    r"\bat every meal\b|\bevery (?:day|week|other day|\d+ days)\b|"
+    r"\b(?:once|twice) (?:a|per) (?:day|week)\b|"
+    r"\ben cada comida\b|\bcada (?:dia|semana)\b|\buna vez (?:al dia|a la semana)\b|"
+    r"\bbei jeder mahlzeit\b|\b(?:einmal|zweimal) (?:pro|in der|am) (?:tag|woche)\b|"
+    r"\ba chaque repas\b|\b(?:une|deux) fois par (?:jour|semaine)\b"
+)
+
+
+def _supplement_dose(sentence: str) -> str | None:
+    if not _SUPPLEMENT.search(sentence):
+        return None
+    amount = _SUPPLEMENT_AMOUNT.search(sentence)
+    return amount.group(0) if amount else None
+
+
 def find_dosage(answer: str, *, allowed_text: str = "") -> str | None:
     """The first dosage expression the model wrote on its own, or None.
     Comparisons run on normalised text (case, accents); an expression also
@@ -214,6 +243,9 @@ def find_dosage(answer: str, *, allowed_text: str = "") -> str | None:
             if is_models_own(match.group(0)) and not ration:
                 return match.group(0)
     for sentence in sentences:
+        supplement = _supplement_dose(sentence)
+        if supplement is not None and is_models_own(supplement):
+            return supplement
         if not _names_a_medicine(sentence) or _is_a_food_amount(sentence):
             continue
         amount = next(

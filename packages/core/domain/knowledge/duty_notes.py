@@ -98,7 +98,7 @@ DUTY_CATALOG: list[EvidenceSource] = [
             "A wild animal found (hedgehog, fledgling, fox cub, bat) is protected fauna "
             "(legge 157/1992) and is never kept as a pet. If injured or in danger: dark "
             "ventilated box, quiet, no food or milk, call the wildlife rescue centre (CRAS) "
-            "or the Carabinieri forestali (1515). If healthy, leave it where it is."
+            "or the Carabinieri forestali. If healthy, leave it where it is."
         ),
     ),
 ]

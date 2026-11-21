@@ -280,6 +280,15 @@ def _word_count(text: str) -> int:
 
 
 _JSON_OBJECT = re.compile(r"\{.*\}", re.S)
+# Round 4d: "today" as the time of the visit, and the words that say "now" (normalized text).
+_TODAY_AS_THE_TIME = re.compile(
+    r"\b(?:oggi stesso|in giornata|today|this afternoon|hoy mismo|hoy|esta tarde|"
+    r"heute noch|heute|aujourd'?hui meme|aujourd'?hui)\b"
+)
+_NOW_WORD = re.compile(
+    r"\b(?:adesso|subito|ora|now|right away|straight away|ahora|ya mismo|enseguida|jetzt|"
+    r"sofort|maintenant|tout de suite|immediatement)\b"
+)
 # Fixed guard replies a v2 answer continues with what to do now (round 4b, 21/11): a dose
 # change, a human medicine, euthanasia at home. Not self-harm, a hurt person, a child.
 _GUARDS_WITH_FOLLOW_UP = frozenset({"dosage-guard", "toxin-intent-guard", "harmful-request-guard"})
@@ -2022,7 +2031,7 @@ class ChatOrchestrator:
             response,
             history_block=history_block,
             owner_message=owner_message,
-            open_case_elsewhere=bool(data.recent_other_chats),
+            open_case_elsewhere=self._open_case(data),
         )
         follow_up = clean_answer_text(response.content).strip()
         if len(follow_up) < 40:
@@ -2045,14 +2054,74 @@ class ChatOrchestrator:
         case, with no delay word to catch). Whatever goes wrong keeps the reply."""
         if not (open_case_elsewhere or delays_or_reassures(response.content)):
             return response
+        user_prompt = (
+            f"{history_block}\nOwner's last message: {owner_message}"
+            f"\n\nREPLY TO CHECK:\n{response.content}"
+        )
+        verdict = self._severity_verdict(user_prompt)
+        if verdict is None:
+            return response
+        serious, delays, rewrite = verdict
+        if (
+            serious
+            and not (delays and rewrite)
+            and _TODAY_AS_THE_TIME.search(normalize_for_matching(response.content))
+            and not _NOW_WORD.search(normalize_for_matching(response.content))
+        ):
+            # Round 4d: "oggi stesso" / "aujourd'hui même" in a case the check itself called
+            # serious, and no "now" anywhere: asked once more, with the word named.
+            verdict = self._severity_verdict(
+                user_prompt
+                + "\n\nNOTE: the case is serious and the reply gives 'today' as the time of "
+                "the visit, with no 'now'. That is a delay: rewrite it."
+            )
+            if verdict is None:
+                return response
+            serious, delays, rewrite = verdict
+        if not (serious and delays and rewrite):
+            return response
+        limit = max(1.3 * _word_count(response.content) + 20, ANSWER_WORDS_LIMIT + 20)
+        if _word_count(rewrite) > limit:
+            return response
+        logger.info("severity check: a serious case put off or softened was rewritten")
+        return response.model_copy(update={"content": rewrite})
+
+    def _fixed_opening_words(
+        self, data: ChatOrchestratorInput, message: str, dose_part: bool
+    ) -> int:
+        """The words of the fixed sentences that will open this reply (the same conditions
+        as where they are added): the dose refusal, "call an adult", the child warning, the
+        opening on hopelessness."""
+        texts: list[str] = []
+        if dose_part:
+            texts.append(self._fixed_text(DOSE_PART_REFUSED, data))
+        if is_minor_writing(message):
+            texts.append(self._fixed_text(ADULT_FIRST, data))
+        elif mentions_child_handling(message, data.pet_name) and not self._already_said(
+            CHILD_NEVER_ALONE, data
+        ):
+            texts.append(self._fixed_text(CHILD_NEVER_ALONE, data))
+        if expresses_hopelessness(message):
+            texts.append(self._fixed_text(HOPELESSNESS_OPENING, data))
+        return sum(_word_count(text) for text in texts)
+
+    def _open_case(self, data: ChatOrchestratorInput) -> bool:
+        """The check runs on every reply when other recent chats about the animal travel
+        with the message (round 4c), or when an earlier reply of THIS chat already said to
+        go now (round 4d #3: after a change of topic the urgency vanished)."""
+        if data.recent_other_chats:
+            return True
+        return any(
+            m.role == "assistant" and _NOW_WORD.search(normalize_for_matching(m.content))
+            for m in data.conversation_history[-4:]
+        )
+
+    def _severity_verdict(self, user_prompt: str) -> tuple[bool, bool, str] | None:
         try:
             checked = self._llm_client.generate(
                 LLMGenerationRequest(
                     system_prompt=SEVERITY_CHECK_PROMPT,
-                    user_prompt=(
-                        f"{history_block}\nOwner's last message: {owner_message}"
-                        f"\n\nREPLY TO CHECK:\n{response.content}"
-                    ),
+                    user_prompt=user_prompt,
                     temperature=0.0,
                     max_tokens=self._answer_max_tokens + 200,
                     purpose="severity_check",
@@ -2062,26 +2131,19 @@ class ChatOrchestrator:
             )
         except Exception:  # noqa: BLE001 - the reply as written is still a reply
             logger.warning("severity check unavailable: the reply is kept")
-            return response
-        verdict = _parse_severity_check(checked.content)
-        if verdict is None or checked.finish_reason == "length":
-            return response
-        serious, delays, rewrite = verdict
-        if not (serious and delays and rewrite):
-            return response
-        if _word_count(rewrite) > 1.3 * _word_count(response.content) + 20:
-            return response
-        logger.info("severity check: a serious case put off or softened was rewritten")
-        return response.model_copy(update={"content": rewrite})
+            return None
+        if checked.finish_reason == "length":
+            return None
+        return _parse_severity_check(checked.content)
 
-    def _shortened(self, response: LLMResponse) -> LLMResponse:
+    def _shortened(self, response: LLMResponse, words: int = 150) -> LLMResponse:
         """The same answer in fewer words (SHORTEN_PROMPT), by the light
         model: about 0.0002 EUR, only when an answer runs long. Whatever
         goes wrong, or a result that is not shorter, keeps the original."""
         try:
             short = self._llm_client.generate(
                 LLMGenerationRequest(
-                    system_prompt=SHORTEN_PROMPT,
+                    system_prompt=SHORTEN_PROMPT.format(words=words),
                     user_prompt=response.content,
                     max_tokens=SHORTEN_MAX_TOKENS,
                     purpose="shorten",
@@ -4037,20 +4099,31 @@ class ChatOrchestrator:
         # The prompt asks for about 180 words and the model does not always
         # listen (owner's test 2026-11-16: 330 and 300). Past the tolerance a
         # second, light pass shortens it, before every check below runs on it.
-        if (
-            kind is not RequestKind.REPORT
-            and not is_long_message(message)
-            and _word_count(response.content) > ANSWER_WORDS_LIMIT
-        ):
-            response = self._shortened(response)
+        # v2 (round 4c/4d): the fixed sentences that will open the reply count too, so
+        # the model's part gets what is left of the limit.
+        budget = ANSWER_WORDS_LIMIT - (
+            self._fixed_opening_words(data, message, dose_part) if self._answer_v2 else 0
+        )
+        may_shorten = kind is not RequestKind.REPORT and not is_long_message(message)
+        if may_shorten and _word_count(response.content) > budget:
+            response = self._shortened(response, words=max(90, min(150, budget - 30)))
         if self._answer_v2:
             # synthetic users round 4: "oggi stesso" in a serious case, read again
-            response = self._severity_checked(
+            checked = self._severity_checked(
                 response,
                 history_block=history_block,
                 owner_message=anonymized_message,
-                open_case_elsewhere=bool(data.recent_other_chats),
+                open_case_elsewhere=self._open_case(data),
             )
+            if (
+                checked.content != response.content
+                and may_shorten
+                and _word_count(checked.content) > budget
+            ):
+                # the rewrite adds the "now" sentence: shortened again, which keeps every
+                # mention of the vet with its reason (SHORTEN_PROMPT)
+                checked = self._shortened(checked, words=max(90, min(150, budget - 30)))
+            response = checked
 
         validation = validate_answer(response.content, sources_count=len(sources))
         if (

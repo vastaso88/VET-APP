@@ -245,10 +245,11 @@ HARMFUL_NOTES: dict[str, str] = {
         "protected and must not be kept as a pet (in Italy legge 157/1992): no diet or housing "
         "advice, no 'how to keep it'. Tell the owner what to do now: if the animal is injured, "
         "very young or in danger, put it in a dark ventilated box in a quiet place, no food or "
-        "milk, and call the nearest wildlife rescue centre (CRAS), the polizia provinciale or "
-        "the Carabinieri forestali (1515) or the municipality; if it is healthy and not in "
-        "danger, leave it where it is. Explain the why: a wild animal suffers in captivity and "
-        "needs expert care."
+        "milk, and call: in Italy the wildlife rescue centre (CRAS), the polizia provinciale "
+        "or the Carabinieri forestali; in other countries the wildlife rescue centre or the "
+        "local authority; never with a phone number. If it "
+        "is healthy and not in danger, leave it where it is. Explain the why: a wild animal "
+        "suffers in captivity and needs expert care."
     ),
     "underage_sale": (
         "THIS REQUEST: selling or giving away puppies or kittens younger than two months. Do "
@@ -943,38 +944,6 @@ def is_human_health_question(message: str) -> bool:
     return bool(_HUMAN_SYMPTOM.search(text) and (first_person or _HUMAN_SELF.search(text)))
 
 
-HUMAN_HEALTH_TEXTS: dict[str, str] = {
-    "it": (
-        "Mi dispiace che tu non stia bene. Per la salute delle persone però non sono la "
-        "fonte giusta: Quokka si occupa degli animali e di chi vive con loro. Per te, medico "
-        "o farmacista, e se stai male davvero il 118. Quando vuoi, sono qui per il tuo animale."
-    ),
-    "en": (
-        "I am sorry you are unwell. For people's health, though, I am not the right source: "
-        "Quokka is about animals and the people who live with them. For you, a doctor or a "
-        "pharmacist, and the emergency number if you feel really ill. I am here for your "
-        "animal whenever you want."
-    ),
-    "es": (
-        "Siento que no te encuentres bien. Para la salud de las personas no soy la fuente "
-        "adecuada: Quokka se ocupa de los animales y de quienes viven con ellos. Para ti, "
-        "médico o farmacéutico, y si estás realmente mal, el 112. Cuando quieras, estoy aquí "
-        "para tu animal."
-    ),
-    "de": (
-        "Es tut mir leid, dass es Ihnen nicht gut geht. Für die Gesundheit von Menschen bin ich "
-        "aber nicht die richtige Quelle: Quokka ist für Tiere und die Menschen da, die mit ihnen "
-        "leben. Für Sie: Arztpraxis oder Apotheke, und bei ernsten Beschwerden die 112. Für Ihr "
-        "Tier bin ich jederzeit da."
-    ),
-    "fr": (
-        "Je suis désolé que vous ne vous sentiez pas bien. Pour la santé des personnes, je ne "
-        "suis pas la bonne source : Quokka s'occupe des animaux et de ceux qui vivent avec "
-        "eux. Pour vous, médecin ou pharmacien, et le 15 si vous allez vraiment mal. Pour "
-        "votre animal, je suis là quand vous voulez."
-    ),
-}
-
 _PROMPT_LEAK = re.compile(
     r"ignora (?:tutte )?le (?:tue )?istruzioni|istruzioni precedenti|prompt di sistema|"
     r"system prompt|le tue istruzioni|le tue regole|mostrami il prompt|"
@@ -1341,9 +1310,12 @@ _HOPELESSNESS = _words(
     r"niente ha (?:piu )?senso|nulla ha (?:piu )?senso|non ha (?:piu )?senso (?:niente|nulla)|"
     r"nemmeno alzarmi|non riesco (?:piu )?ad alzarmi|non ce la faccio piu|"
     r"non vedo (?:piu )?(?:un )?motivo|"
-    r"nothing makes sense|nothing matters|can't (?:even )?get up|can't go on|no point|"
+    # English and German need the "I": "can't get up", "kann nicht aufstehen" are said of a
+    # dog too (round 4d #107: a dachshund that could not stand got the support text)
+    r"nothing makes sense|nothing matters|i can'?t (?:even )?get up|i can'?t go on|"
+    r"there(?:'s| is) no point (?:in )?(?:anything|living|going on)|"
     r"nada tiene sentido|no puedo (?:ni )?levantarme|no puedo mas|"
-    r"nichts (?:hat|macht) (?:mehr )?sinn|kann nicht (?:mehr )?aufstehen|kann nicht mehr|"
+    r"nichts (?:hat|macht) (?:mehr )?sinn|ich kann nicht (?:mehr )?aufstehen|ich kann nicht mehr|"
     r"rien n'a (?:plus )?de sens|je n'arrive (?:plus )?a me lever|je n'en peux plus"
 )
 
@@ -1361,40 +1333,6 @@ def expresses_hopelessness(message: str) -> bool:
     return bool(_HOPELESSNESS.search(normalize_for_matching(message)))
 
 
-HOPELESSNESS_OPENING: dict[str, str] = {
-    "it": (
-        "Quello che scrivi lo prendo sul serio. Un dolore così forte che non fa alzare dal "
-        "letto merita di essere detto a qualcuno che può starti accanto: parlane presto con "
-        "il tuo medico o con un servizio di ascolto, come Telefono Amico Italia (02 2327 2327, "
-        "gratis, 24 ore su 24), e non tenere questo peso per te. "
-    ),
-    "en": (
-        "I take what you write seriously. A pain so heavy that it keeps you from getting up "
-        "deserves to be told to someone who can stand by you: talk soon to your doctor or to "
-        "a listening service (in Italy, Telefono Amico Italia: 02 2327 2327, free, 24 hours a "
-        "day), and do not stay alone with this weight. "
-    ),
-    "es": (
-        "Me tomo en serio lo que escribes. Un dolor tan fuerte que no te deja levantarte "
-        "merece contarse a alguien que pueda acompañarte: habla pronto con tu médico o con "
-        "un servicio de escucha (en Italia, Telefono Amico Italia: 02 2327 2327, gratis, 24 "
-        "horas al día), y no cargues con este peso sin apoyo. "
-    ),
-    "de": (
-        "Was Sie schreiben, nehme ich ernst. Ein Schmerz, der so schwer ist, dass er Sie nicht "
-        "aufstehen lässt, gehört zu jemandem, der Ihnen beistehen kann: Sprechen Sie bald mit "
-        "Ihrer Ärztin oder Ihrem Arzt oder mit einer Beratungsstelle (in Italien Telefono Amico "
-        "Italia: 02 2327 2327, "
-        "kostenlos, rund um die Uhr), und bleiben Sie mit dieser Last nicht allein. "
-    ),
-    "fr": (
-        "Je prends ce que vous écrivez au sérieux. Une douleur si lourde qu'elle empêche de se "
-        "lever mérite d'être dite à quelqu'un qui peut vous accompagner : parlez-en vite à "
-        "votre médecin ou à un service d'écoute (en Italie, Telefono Amico Italia : "
-        "02 2327 2327, gratuit, 24 heures sur 24), et ne gardez pas ce poids pour vous. "
-    ),
-}
-
 # --- self-harm and suicidal thoughts of the person (2026-11-16) --------------
 #
 # Anthropic's rules for products that minors may use (docs/compliance/14 §1,
@@ -1402,10 +1340,8 @@ HOPELESSNESS_OPENING: dict[str, str] = {
 # life or hurting themselves gets a short, warm, FIXED reply with official
 # helplines, before any other check and without any model, so those words
 # never leave for a provider and no clinical advice about the person can be
-# written. Numbers checked on the services' own sites on 2026-11-16:
-# Telefono Amico Italia 02 2327 2327 (free, 24 hours a day, anyone in
-# emotional crisis), Telefono Azzurro 19696 (free, 24/7, children and
-# teenagers up to 18), 112 for immediate danger. Only phrases of intent:
+# written. No phone number (owner's decision, 21/11/2026: the app does not
+# handle urgencies): a generic sentence only. Only phrases of intent:
 # "il cane potrebbe farmi del male" or "mi sono fatto male in passeggiata"
 # are not self-harm.
 
@@ -1434,75 +1370,8 @@ def expresses_self_harm(message: str) -> bool:
     return bool(_SELF_HARM.search(normalize_for_matching(message)))
 
 
-SELF_HARM_TEXTS: dict[str, str] = {
-    "it": (
-        "Mi dispiace davvero che tu stia così male, e hai fatto bene a scriverlo. Questi "
-        "pensieri non vanno tenuti dentro: parlane adesso con una persona. Telefono Amico "
-        "Italia ascolta gratis, 24 ore su 24, allo 02 2327 2327. Se senti di essere in "
-        "pericolo adesso, chiama subito il 112. Io posso parlarti del tuo animale, ma quello "
-        "che senti merita persone vere, pronte ad ascoltarti. Quando vuoi, io resto qui."
-    ),
-    "en": (
-        "I am truly sorry you feel this bad, and you did the right thing writing it. Thoughts "
-        "like these should not be kept inside: talk to someone now. In Italy, Telefono Amico "
-        "Italia listens for free, 24 hours a day, on 02 2327 2327. If you feel in danger right "
-        "now, call 112 at once (the emergency number across the EU); elsewhere, your local "
-        "emergency number or helpline. I can talk with you about your animal, but what you "
-        "feel deserves real people, ready to listen. I am here whenever you want."
-    ),
-    "es": (
-        "Siento de verdad que te encuentres tan mal, e hiciste bien en escribirlo. Estos "
-        "pensamientos no hay que guardárselos: habla ahora con alguien. En Italia, Telefono "
-        "Amico Italia escucha gratis, 24 horas al día, en el 02 2327 2327. Si sientes que "
-        "estás en peligro ahora mismo, llama enseguida al 112 (el número de emergencias en "
-        "toda la UE); en otros países, el número de emergencias o la línea de ayuda local. "
-        "Puedo hablar contigo de tu animal, pero lo que sientes merece personas reales, "
-        "dispuestas a escucharte. Aquí sigo cuando quieras."
-    ),
-    "de": (
-        "Es tut mir wirklich leid, dass es Ihnen so schlecht geht, und es war richtig, das zu "
-        "schreiben. Solche Gedanken sollte man nicht für sich behalten: Sprechen Sie jetzt mit "
-        "jemandem. In Italien hört Telefono Amico Italia kostenlos und rund um die Uhr zu, "
-        "unter 02 2327 2327. Wenn Sie sich gerade in Gefahr fühlen, rufen Sie sofort die 112 "
-        "an (der Notruf in der ganzen EU); anderswo den örtlichen Notruf oder eine "
-        "Telefonseelsorge. Ich kann mit Ihnen über Ihr Tier sprechen, aber was Sie fühlen, "
-        "verdient echte Menschen, die zuhören. Ich bin da, wann immer Sie möchten."
-    ),
-    "fr": (
-        "Je suis vraiment désolé que vous alliez si mal, et vous avez bien fait de l'écrire. "
-        "Ces pensées ne doivent pas rester enfermées : parlez-en maintenant à quelqu'un. En "
-        "Italie, Telefono Amico Italia écoute gratuitement, 24 heures sur 24, au "
-        "02 2327 2327. Si vous vous sentez en danger maintenant, appelez tout de suite le 112 "
-        "(le numéro d'urgence dans toute l'UE) ; ailleurs, le numéro d'urgence ou la ligne "
-        "d'écoute locale. Je peux vous parler de votre animal, mais ce que vous ressentez "
-        "mérite de vraies personnes, prêtes à écouter. Je reste là quand vous voulez."
-    ),
-}
-
 # Added for a declared 14-17 account or a message that says the writer is a
 # child: the line for under-18s and a trusted adult.
-UNDER_18_HELP_LINE: dict[str, str] = {
-    "it": (
-        "Puoi chiamare anche Telefono Azzurro al 19696, gratis e a ogni ora (è per chi ha meno "
-        "di 18 anni), e parlarne con un adulto di cui ti fidi."
-    ),
-    "en": (
-        "You can also call Telefono Azzurro on 19696, free at any hour (it is for under-18s), "
-        "and talk to an adult you trust."
-    ),
-    "es": (
-        "También puedes llamar a Telefono Azzurro al 19696, gratis a cualquier hora (es para "
-        "menores de 18 años), y hablarlo con un adulto de confianza."
-    ),
-    "de": (
-        "Sie können auch Telefono Azzurro unter 19696 anrufen, kostenlos und zu jeder Stunde "
-        "(für Menschen unter 18), und mit einem Erwachsenen sprechen, dem Sie vertrauen."
-    ),
-    "fr": (
-        "Vous pouvez aussi appeler Telefono Azzurro au 19696, gratuitement à toute heure (pour "
-        "les moins de 18 ans), et en parler à un adulte de confiance."
-    ),
-}
 
 _PROCEED_ANYWAY = re.compile(
     r"[^.!?\n]*\b(?:se (?:poi |comunque )?decid\w* (?:comunque |lo stesso )?di (?:procedere|"
@@ -1714,5 +1583,112 @@ QUOTA_TEXTS: dict[str, str] = {
         "Si {name} va mal en ce moment, n'attendez pas : un cas grave n'attend pas, appelez "
         "tout de suite votre vétérinaire ou un service d'urgences. L'assistant est très "
         "sollicité et a épuisé les réponses du jour : réessayez dans {wait}."
+    ),
+}
+
+
+# --- support texts: generic, never a phone number (owner's decision, 21/11/2026) -----------
+# «L'app non gestisce urgenze»: no number in any fixed text, in any language, for any country
+# (no listening line, no emergency number, no "checked on" line), only a generic sentence. The
+# texts stay fixed and without a model: the words do not leave for a provider.
+# tests/unit/test_no_phone_numbers_in_fixed_texts.py checks every fixed text.
+
+SELF_HARM_TEXTS: dict[str, str] = {
+    "it": (
+        "Mi dispiace davvero che tu stia così male, e hai fatto bene a scriverlo. Rivolgiti "
+        "subito ai servizi di emergenza o a un servizio di ascolto del tuo Paese: quello che "
+        "senti merita persone vere, pronte ad ascoltarti. Io posso parlarti del tuo animale; "
+        "quando vuoi, io resto qui."
+    ),
+    "en": (
+        "I am truly sorry you feel this bad, and you did the right thing writing it. Please "
+        "turn right away to the emergency services or a listening service in your country: "
+        "what you feel deserves real people, ready to listen. I can talk with you about your "
+        "animal; I am here whenever you want."
+    ),
+    "es": (
+        "Siento de verdad que te encuentres tan mal, e hiciste bien en escribirlo. Acude "
+        "enseguida a los servicios de emergencia o a un servicio de escucha de tu país: lo que "
+        "sientes merece personas reales, dispuestas a escucharte. Puedo hablar contigo de tu "
+        "animal; aquí sigo cuando quieras."
+    ),
+    "de": (
+        "Es tut mir wirklich leid, dass es Ihnen so schlecht geht, und es war richtig, das zu "
+        "schreiben. Wenden Sie sich bitte sofort an den Notruf oder an eine Beratungsstelle in "
+        "Ihrem Land: Was Sie fühlen, verdient echte Menschen, die zuhören. Ich kann mit Ihnen "
+        "über Ihr Tier sprechen; ich bin da, wann immer Sie möchten."
+    ),
+    "fr": (
+        "Je suis vraiment désolé que vous alliez si mal, et vous avez bien fait de l'écrire. "
+        "Adressez-vous tout de suite aux services d'urgence ou à un service d'écoute de votre "
+        "pays : ce que vous ressentez mérite de vraies personnes, prêtes à écouter. Je peux "
+        "vous parler de votre animal ; je reste là quand vous voulez."
+    ),
+}
+
+HOPELESSNESS_OPENING: dict[str, str] = {
+    "it": (
+        "Quello che scrivi lo prendo sul serio: rivolgiti subito ai servizi di emergenza o a un "
+        "servizio di ascolto del tuo Paese, e non tenere questo peso per te. "
+    ),
+    "en": (
+        "I take what you write seriously: please turn right away to the emergency services or "
+        "a listening service in your country, and do not carry this weight on your own. "
+    ),
+    "es": (
+        "Me tomo en serio lo que escribes: acude enseguida a los servicios de emergencia o a un "
+        "servicio de escucha de tu país, y no cargues con este peso sin apoyo. "
+    ),
+    "de": (
+        "Was Sie schreiben, nehme ich ernst: Wenden Sie sich bitte sofort an den Notruf oder an "
+        "eine Beratungsstelle in Ihrem Land, und bleiben Sie mit dieser Last nicht allein. "
+    ),
+    "fr": (
+        "Je prends ce que vous écrivez au sérieux : adressez-vous tout de suite aux services "
+        "d'urgence ou à un service d'écoute de votre pays, et ne gardez pas ce poids pour "
+        "vous. "
+    ),
+}
+
+# Added for a minor (declared, or writing as a child).
+UNDER_18_HELP_LINE: dict[str, str] = {
+    "it": "Parlane subito anche con un adulto di cui ti fidi.",
+    "en": "Talk about it right away with an adult you trust, too.",
+    "es": "Háblalo enseguida también con un adulto de confianza.",
+    "de": "Sprechen Sie bitte sofort auch mit einem Erwachsenen, dem Sie vertrauen.",
+    "fr": "Parlez-en tout de suite aussi à un adulte de confiance.",
+}
+
+HUMAN_HEALTH_TEXTS: dict[str, str] = {
+    "it": (
+        "Mi dispiace che tu non stia bene. Per la salute delle persone però non sono la "
+        "fonte giusta: Quokka si occupa degli animali e di chi vive con loro. Per te, medico "
+        "o farmacista; se stai male davvero, rivolgiti subito ai servizi di emergenza del tuo "
+        "Paese. Quando vuoi, sono qui per il tuo animale."
+    ),
+    "en": (
+        "I am sorry you are unwell. For people's health, though, I am not the right source: "
+        "Quokka is about animals and the people who live with them. For you, a doctor or a "
+        "pharmacist; if you feel really ill, turn right away to the emergency services of "
+        "your country. I am here for your animal whenever you want."
+    ),
+    "es": (
+        "Siento que no te encuentres bien. Para la salud de las personas no soy la fuente "
+        "adecuada: Quokka se ocupa de los animales y de quienes viven con ellos. Para ti, "
+        "médico o farmacéutico; si estás realmente mal, acude enseguida a los servicios de "
+        "emergencia de tu país. Cuando quieras, estoy aquí para tu animal."
+    ),
+    "de": (
+        "Es tut mir leid, dass es Ihnen nicht gut geht. Für die Gesundheit von Menschen bin ich "
+        "aber nicht die richtige Quelle: Quokka ist für Tiere und die Menschen da, die mit ihnen "
+        "leben. Für Sie: Arztpraxis oder Apotheke; bei ernsten Beschwerden wenden Sie sich "
+        "sofort an den Notruf Ihres Landes. Für Ihr Tier bin ich jederzeit da."
+    ),
+    "fr": (
+        "Je suis désolé que vous ne vous sentiez pas bien. Pour la santé des personnes, je ne "
+        "suis pas la bonne source : Quokka s'occupe des animaux et de ceux qui vivent avec "
+        "eux. Pour vous, médecin ou pharmacien ; si vous allez vraiment mal, adressez-vous tout "
+        "de suite aux services d'urgence de votre pays. Pour votre animal, je suis là quand "
+        "vous voulez."
     ),
 }

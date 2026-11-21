@@ -45,7 +45,10 @@ def _ask(
     llm = client or RecordingLLMClient()
     result = ChatOrchestrator(llm, InMemoryEvidenceRetriever(), NoopPiiAnonymizer()).answer(
         ChatOrchestratorInput(
-            user_message=message, species=species, pet_name=name, language=language
+            user_message=message,
+            species=species,
+            pet_name=name,
+            language=language,
         )
     )
     return result, llm
@@ -205,13 +208,11 @@ def test_a_plant_diet_for_a_cat_and_a_grief_message_get_their_notes() -> None:
     result, client = _ask(grief, client=ScriptedContentLLMClient("Mi dispiace tanto per Argo."))
     prompt = client.requests[-1].system_prompt
     assert "THE ANIMAL HAS DIED" in prompt and "NOTHING MAKES SENSE" in prompt
-    assert result.answer.startswith("Quello che scrivi lo prendo sul serio.")
-    assert "medico" in result.answer and "servizio di ascolto" in result.answer
-    # 2026-11-16 (docs/compliance/08 point 57): the opening carries the helpline checked on
-    # its own site, and only that number.
+    assert result.answer.startswith("Quello che scrivi lo prendo sul serio")
+    assert "servizi di emergenza" in result.answer and "servizio di ascolto" in result.answer
+    # owner's decision (21/11/2026): the app does not handle urgencies, no phone number
     opening = result.answer.split("Mi dispiace")[0]
-    assert "02 2327 2327" in opening
-    assert "".join(c for c in opening if c.isdigit()) == "0223272327" + "2424"  # "24 ore su 24"
+    assert not any(c.isdigit() for c in opening)
 
 
 # --- 8. the online purchase: no "if you decide to proceed" ----------------------------------------

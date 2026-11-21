@@ -145,6 +145,7 @@ def test_production_keeps_the_fixed_human_health_reply() -> None:
     llm = RecordingLLMClient()
     result = _ask("ho 38.5 di febbre io, cosa prendo?", llm=llm, v2=False)
 
+    # country unknown (round 4d): the same fixed reply, with no number
     assert result.answer == HUMAN_HEALTH_TEXTS["it"]
 
 
@@ -276,13 +277,18 @@ def test_an_amount_without_the_medicine_named_counts_after_one_in_the_conversati
 def test_the_fixed_texts_for_a_hard_moment_have_no_gender_for_the_owner() -> None:
     import re
 
-    from packages.core.domain.safety.harmful_requests import HOPELESSNESS_OPENING
+    from packages.core.domain.safety.harmful_requests import (
+        HOPELESSNESS_OPENING,
+        SELF_HARM_TEXTS,
+    )
 
     gendered = re.compile(
         r"\b(?:sei sol[oa]|restare sol[oa]|da sol[oa]|estás sol[oa]|quedes sol[oa]|"
         r"êtes pas seule?|restez pas seule?|correctement seule?)\b",
         re.IGNORECASE,
     )
-    for texts in (EUTHANASIA_REFUSAL, HOPELESSNESS_OPENING):
+    for language, text in EUTHANASIA_REFUSAL.items():
+        assert not gendered.search(text), (language, text)
+    for texts in (HOPELESSNESS_OPENING, SELF_HARM_TEXTS):
         for language, text in texts.items():
             assert not gendered.search(text), (language, text)

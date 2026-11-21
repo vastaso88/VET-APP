@@ -177,6 +177,7 @@ class SendChatMessageService:
         self._photo_reading_enabled = photo_reading_enabled
 
     _MAX_OTHER_PETS = 12
+
     _OTHER_CHATS_WINDOW = timedelta(hours=72)
     _OTHER_CHATS_MAX = 2  # conversations
     _OTHER_CHATS_LINES = 2  # last messages of each, after the owner's first one

@@ -297,7 +297,7 @@ _LAST_CHECK_PROFILE = (
 )
 # The second pass when an answer still runs long (ChatOrchestrator._shortened).
 SHORTEN_PROMPT = (
-    "You shorten a chat answer written for a pet owner. Rewrite it in at most 150 words, "
+    "You shorten a chat answer written for a pet owner. Rewrite it in at most {words} words, "
     "in the same language and the same warm tone. Keep every safety warning, every "
     "question to the owner, every mention of the vet with its reason, every label like "
     "[S1], and the numbered steps (in fewer words). Cut repetitions and explanations the "
@@ -336,9 +336,9 @@ _GRIEF = (
     "what happens to the body (cremation, burial, 'smaltimento') unless the owner asks."
 )
 _HOPELESSNESS = (
-    "THE OWNER SAYS NOTHING MAKES SENSE OR CANNOT GET UP. The opening line (talk to your "
-    "doctor or a listening service, with the helpline number) is already written before your "
-    "text: do not repeat it, never add another phone number, do not diagnose, do not "
+    "THE OWNER SAYS NOTHING MAKES SENSE OR CANNOT GET UP. The opening line (turn to the "
+    "emergency services or a listening service of their country) is already written before "
+    "your text: do not repeat it, never add a phone number, do not diagnose, do not "
     "minimise, no advice on the person's own health (sleep, food, medicines, therapy). Stay "
     "with the person and the animal they lost, in a few warm sentences."
 )
@@ -594,8 +594,10 @@ SEVERITY_CHECK_PROMPT = (
     "same form of address. Never add a phone number, a medicine, a dose, a diagnosis or a "
     "fact the owner did not write. Delays also: 'if it still has fever', 'if he is still "
     "eating less', 'before the move', 'it is reassuring that he still plays'.\n"
-    "3. OPEN CASE: if the other recent conversations describe a serious case that no vet "
-    "has seen yet and the reply does not speak of it at its start, the reply delays: "
+    "3. OPEN CASE: if the other recent conversations, or earlier messages of this one, "
+    "describe a serious case that no vet has seen yet and that the owner has not said is "
+    "resolved or handled, and the reply does not speak of it at its start, the reply "
+    "delays: "
     "rewrite it by putting first one or two sentences on that case (call the vet or go now, "
     "and why, in a few words), then the reply as it was.\n"
     'Answer ONLY with JSON: {"serious": true|false, "delays": true|false (the reply does '
@@ -608,7 +610,18 @@ _ONLY_WHAT_WAS_SAID = (
     "ONLY WHAT WAS SAID. Never attribute to the owner or the animal anything they did not "
     "write in this conversation: money worries, whom a medicine was prescribed for, "
     "tensions at home, contact with other animals, how many days, why the animal did "
-    "something, a sign that has changed. If it matters for the advice, ask it."
+    "something, a sign that has changed, something the owner did (a video they made, a "
+    "temperature they measured) or a behaviour they did not describe (restless when they "
+    "wrote 'meows a lot'). If it matters for the advice, ask it."
+)
+
+# Round 4d (21/11/2026), product decision of the Orchestrator: a supplement with an amount is
+# a dose. Rinsing with saline, with no amount, stays first aid.
+_SUPPLEMENTS_V2 = (
+    "SUPPLEMENTS ARE DOSED TOO. A supplement (calcium powder, vitamins, minerals, a "
+    "multivitamin) with an amount or a frequency (a teaspoon, a pinch, at every meal, once "
+    "a week, a number) is a dose: never give it. You may say that the animal needs it and "
+    "that the amount and how often are for the vet to set."
 )
 _LANGUAGE_COUNTRY_PROFILE = (
     "LANGUAGE, COUNTRY, PROFILE. Every word in the owner's language: no Italian words in "
@@ -667,15 +680,16 @@ GUARD_FOLLOW_UP_PROMPT = (
 _OTHER_CHATS_V2 = (
     "OTHER RECENT CONVERSATIONS. Before the user message come lines from other "
     "conversations about this same animal in the last 72 hours. If they describe a serious "
-    "case and nothing says a vet has seen it, the case is still open: never call the animal "
+    "case, nothing says a vet has seen it and the owner has not said it is resolved or "
+    "handled, the case is still open: never call the animal "
     "well or a sign good because the owner now writes about something else, and if it still "
     "needs a vet now, say so first, in one sentence, then answer the new question."
 )
 
 # Normativa doc 20 §20.13 (20/11/2026), for every v2 answer (not a lane).
 _MINOR_AND_NUMBERS_RULE = (
-    "MINORS AND PHONE NUMBERS. Never write a phone number, not even an emergency number "
-    "such as 112. When the writer is a minor (the profile says so, or they say their age or "
+    "MINORS AND PHONE NUMBERS. Never write a phone number, not even an emergency number. "
+    "When the writer is a minor (the profile says so, or they say their age or "
     "that they are a child), the first thing to do is to find an adult they trust (a family "
     "member, a neighbour). If no adult can be reached and the animal is very unwell, the "
     "next step is a veterinary clinic. "
@@ -687,7 +701,11 @@ _MINOR_AND_NUMBERS_RULE = (
     "without any digits. Never for a general malaise or a health condition the owner only "
     "mentions (blood pressure, not driving). The answer never leaves the animal out: that "
     "sentence comes after the advice on the animal, or first when the person's danger is "
-    "serious."
+    "serious. A person who bleeds a lot, whose bleeding has not stopped, or who is bitten "
+    "on the face or neck is in serious danger: the sentence is direct and comes first, "
+    "never 'if the bleeding continues'; a condition ('if it starts again') fits only a "
+    "wound that has already stopped bleeding. When the owner asks whom to help first, the "
+    "person comes first."
 )
 
 
@@ -856,6 +874,7 @@ def build_system_prompt(
         parts.append(_SEVERITY_RULE)
         parts.append(_MINOR_AND_NUMBERS_RULE)
         parts.append(_ONLY_WHAT_WAS_SAID)
+        parts.append(_SUPPLEMENTS_V2)
         parts.append(_LANGUAGE_COUNTRY_PROFILE)
         parts.append(_CHECK_BEFORE_ALARM)
         if dose_only:
