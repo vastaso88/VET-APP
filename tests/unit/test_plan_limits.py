@@ -380,6 +380,7 @@ def test_the_gate_fails_open_when_the_subscription_cannot_be_read(
     container = SimpleNamespace(
         auth_provider=SimpleNamespace(get_current_user=lambda: user),
         get_or_create_subscription_service=broken,
+        settings=SimpleNamespace(billing_enabled=False),
     )
     monkeypatch.setattr(gate, "get_container", lambda: container)
 

@@ -7279,4 +7279,14 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get marketplaceInfoPrivateOnly =>
       'Se vendi come attività commerciale o professionale non puoi usare il Mercatino: Quokka può rimuovere gli annunci e sospendere l\'accesso.';
+
+  @override
+  String get billingAccountStatusNotice =>
+      'Lo stato del tuo account viene verificato dal servizio. I pagamenti nell’app non sono ancora disponibili.';
+
+  @override
+  String get billingOpenAccount => 'Apri area personale';
+
+  @override
+  String get billingOpenAccountError => 'Impossibile aprire l’area personale.';
 }

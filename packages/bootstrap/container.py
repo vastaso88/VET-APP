@@ -431,6 +431,7 @@ class ApplicationContainer:
             self.developer_emails,
             test_plan=self.subscription_test_plan,
             access_sync=self.plan_access_sync,
+            trial_days=self.settings.billing_trial_days,
         )
 
     def _build_plan_access_sync(self) -> PlanAccessSync | None:

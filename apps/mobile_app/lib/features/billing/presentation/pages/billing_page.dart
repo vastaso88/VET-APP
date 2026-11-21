@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+import '../widgets/billing_account_panel.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
@@ -100,6 +102,15 @@ class _BillingPageState extends State<BillingPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!BillingAccountPanel.demoEnabled && !_store.isTestPeriod) {
+      return Scaffold(
+        appBar: AppBar(title: Text(context.l10n.billingTitle)),
+        body: ListView(children: [
+          _CurrentPlanCard(store: _store),
+          const BillingAccountPanel(),
+        ]),
+      );
+    }
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(

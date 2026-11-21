@@ -62,6 +62,9 @@ class Settings(BaseSettings):
     # trial never ends. Empty (the default) is the normal behaviour: trial,
     # then a plan. Only the environment can set it, never a request. See
     # packages/core/application/services/get_or_create_subscription.py.
+    billing_enabled: bool = Field(default=False, alias="BILLING_ENABLED")
+    billing_trial_days: int = Field(default=14, ge=10, le=15, alias="BILLING_TRIAL_DAYS")
+    billing_site_url: str = Field(default="https://quokkapp.net", alias="BILLING_SITE_URL")
     subscription_test_plan: str = Field(default="", alias="SUBSCRIPTION_TEST_PLAN")
     # Backoffice allowlist. When empty, admin endpoints fall back to
     # DEVELOPER_EMAILS so existing founder/developer accounts can be reused

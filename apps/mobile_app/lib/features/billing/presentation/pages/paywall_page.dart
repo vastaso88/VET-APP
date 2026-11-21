@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../widgets/billing_account_panel.dart';
+
 import '../../../../shared/widgets/pet_loader.dart';
 
 import '../../../../app/router/app_router.dart';
@@ -107,7 +109,9 @@ class _PaywallPageState extends State<PaywallPage> {
                 const SizedBox(height: AppSpacing.lg),
                 const IncludedInAllPlansCard(),
                 const SizedBox(height: AppSpacing.xl),
-                for (final plan in BillingDemoStore.plans) ...[
+                const BillingAccountPanel(),
+                if (BillingAccountPanel.demoEnabled)
+                  for (final plan in BillingDemoStore.plans) ...[
                   _PaywallPlanCard(
                     plan: plan,
                     features: _store.limitFeaturesFor(plan.tier),

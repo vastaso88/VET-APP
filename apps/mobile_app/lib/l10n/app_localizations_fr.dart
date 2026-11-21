@@ -7317,4 +7317,14 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get marketplaceInfoPrivateOnly =>
       'Si vous vendez dans le cadre d\'une activité commerciale ou professionnelle, vous ne pouvez pas utiliser le marché de l\'occasion : Quokka peut retirer les annonces et suspendre l\'accès.';
+
+  @override
+  String get billingAccountStatusNotice =>
+      'Le service vérifie l’état de votre compte. Les paiements dans l’application ne sont pas encore disponibles.';
+
+  @override
+  String get billingOpenAccount => 'Ouvrir mon compte';
+
+  @override
+  String get billingOpenAccountError => 'Impossible d’ouvrir votre compte.';
 }

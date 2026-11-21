@@ -7235,4 +7235,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get marketplaceInfoPrivateOnly =>
       'If you sell as a commercial or professional activity, you cannot use the marketplace: Quokka may remove your listings and suspend your access.';
+
+  @override
+  String get billingAccountStatusNotice =>
+      'Your account status is verified by the service. In-app payments are not available yet.';
+
+  @override
+  String get billingOpenAccount => 'Open your account';
+
+  @override
+  String get billingOpenAccountError => 'Unable to open your account.';
 }

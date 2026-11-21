@@ -4045,5 +4045,8 @@
   "marketplaceListingGone": "This listing is no longer available.",
   "marketplacePrivateSellerDeclaration": "I declare that I am selling as a private individual, not as part of a commercial or professional activity.",
   "marketplacePrivateSellerRequired": "To publish, you must confirm that you are selling as a private individual: the marketplace is not for commercial or professional activities.",
-  "marketplaceInfoPrivateOnly": "If you sell as a commercial or professional activity, you cannot use the marketplace: Quokka may remove your listings and suspend your access."
+  "marketplaceInfoPrivateOnly": "If you sell as a commercial or professional activity, you cannot use the marketplace: Quokka may remove your listings and suspend your access.",
+  "billingAccountStatusNotice": "Your account status is verified by the service. In-app payments are not available yet.",
+  "billingOpenAccount": "Open your account",
+  "billingOpenAccountError": "Unable to open your account."
 }

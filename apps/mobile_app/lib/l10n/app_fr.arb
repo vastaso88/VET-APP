@@ -4045,5 +4045,8 @@
   "marketplaceListingGone": "Cette annonce n'est plus disponible.",
   "marketplacePrivateSellerDeclaration": "Je déclare vendre en tant que particulier, et non dans le cadre d'une activité commerciale ou professionnelle.",
   "marketplacePrivateSellerRequired": "Pour publier, vous devez confirmer que vous vendez en tant que particulier : le marché de l'occasion n'est pas destiné aux activités commerciales ou professionnelles.",
-  "marketplaceInfoPrivateOnly": "Si vous vendez dans le cadre d'une activité commerciale ou professionnelle, vous ne pouvez pas utiliser le marché de l'occasion : Quokka peut retirer les annonces et suspendre l'accès."
+  "marketplaceInfoPrivateOnly": "Si vous vendez dans le cadre d'une activité commerciale ou professionnelle, vous ne pouvez pas utiliser le marché de l'occasion : Quokka peut retirer les annonces et suspendre l'accès.",
+  "billingAccountStatusNotice": "Le service vérifie l’état de votre compte. Les paiements dans l’application ne sont pas encore disponibles.",
+  "billingOpenAccount": "Ouvrir mon compte",
+  "billingOpenAccountError": "Impossible d’ouvrir votre compte."
 }

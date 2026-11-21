@@ -24,6 +24,12 @@ def get_subscription_status() -> dict[str, object]:
 def select_plan(request: SelectPlanRequest) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
+    if container.subscription_test_plan is None and (
+        container.settings.environment == "production" or container.settings.billing_enabled
+    ):
+        from fastapi import HTTPException
+
+        raise HTTPException(409, "Plan changes require verified payment; use the billing area")
     if container.subscription_test_plan is None:
         # Paying needs a declared age; a declared minor also needs the
         # parent's-authorisation confirmation (403 age_required / guardian_required).

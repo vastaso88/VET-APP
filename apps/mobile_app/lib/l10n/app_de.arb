@@ -4045,5 +4045,8 @@
   "marketplaceListingGone": "Diese Anzeige ist nicht mehr verfügbar.",
   "marketplacePrivateSellerDeclaration": "Ich erkläre, dass ich als Privatperson verkaufe, nicht im Rahmen einer gewerblichen oder beruflichen Tätigkeit.",
   "marketplacePrivateSellerRequired": "Um zu veröffentlichen, müssen Sie bestätigen, dass Sie als Privatperson verkaufen: Der Gebrauchtmarkt ist nicht für gewerbliche oder berufliche Tätigkeiten.",
-  "marketplaceInfoPrivateOnly": "Wenn Sie gewerblich oder beruflich verkaufen, können Sie den Gebrauchtmarkt nicht nutzen: Quokka kann die Anzeigen entfernen und den Zugang sperren."
+  "marketplaceInfoPrivateOnly": "Wenn Sie gewerblich oder beruflich verkaufen, können Sie den Gebrauchtmarkt nicht nutzen: Quokka kann die Anzeigen entfernen und den Zugang sperren.",
+  "billingAccountStatusNotice": "Der Dienst überprüft Ihren Kontostatus. Zahlungen in der App sind noch nicht verfügbar.",
+  "billingOpenAccount": "Mein Konto öffnen",
+  "billingOpenAccountError": "Ihr Konto konnte nicht geöffnet werden."
 }

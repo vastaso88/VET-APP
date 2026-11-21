@@ -4045,5 +4045,8 @@
   "marketplaceListingGone": "Este anuncio ya no está disponible.",
   "marketplacePrivateSellerDeclaration": "Declaro que vendo como particular, no en el ámbito de una actividad comercial, empresarial o profesional.",
   "marketplacePrivateSellerRequired": "Para publicar debes confirmar que vendes como particular: el mercadillo no es para actividades comerciales, empresariales o profesionales.",
-  "marketplaceInfoPrivateOnly": "Si vendes como actividad comercial, empresarial o profesional, no puedes usar el mercadillo: Quokka puede retirar los anuncios y suspender el acceso."
+  "marketplaceInfoPrivateOnly": "Si vendes como actividad comercial, empresarial o profesional, no puedes usar el mercadillo: Quokka puede retirar los anuncios y suspender el acceso.",
+  "billingAccountStatusNotice": "El servicio verifica el estado de tu cuenta. Los pagos dentro de la app aún no están disponibles.",
+  "billingOpenAccount": "Abrir mi cuenta",
+  "billingOpenAccountError": "No se pudo abrir tu cuenta."
 }

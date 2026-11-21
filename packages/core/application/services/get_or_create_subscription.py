@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from pydantic import BaseModel
 
@@ -61,7 +61,9 @@ class GetOrCreateSubscriptionService:
         developer_emails: frozenset[str],
         test_plan: str | None = None,
         access_sync: PlanAccessSync | None = None,
+        trial_days: int = 14,
     ) -> None:
+        self._trial_days = trial_days
         self._repository = repository
         self._developer_emails = developer_emails
         self._test_plan = test_plan
@@ -72,7 +74,12 @@ class GetOrCreateSubscriptionService:
     def execute(self, data: GetOrCreateSubscriptionInput) -> GetOrCreateSubscriptionOutput:
         subscription = self._repository.get(data.owner_id)
         if subscription is None:
-            subscription = self._repository.save(Subscription(owner_id=data.owner_id))
+            subscription = self._repository.create_trial(
+                Subscription(
+                    owner_id=data.owner_id,
+                    trial_ends_at=utc_now() + timedelta(days=self._trial_days),
+                )
+            )
 
         is_developer = data.email.strip().lower() in self._developer_emails
         if self._access_sync is not None:

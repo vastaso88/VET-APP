@@ -7307,4 +7307,15 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get marketplaceInfoPrivateOnly =>
       'Wenn Sie gewerblich oder beruflich verkaufen, können Sie den Gebrauchtmarkt nicht nutzen: Quokka kann die Anzeigen entfernen und den Zugang sperren.';
+
+  @override
+  String get billingAccountStatusNotice =>
+      'Der Dienst überprüft Ihren Kontostatus. Zahlungen in der App sind noch nicht verfügbar.';
+
+  @override
+  String get billingOpenAccount => 'Mein Konto öffnen';
+
+  @override
+  String get billingOpenAccountError =>
+      'Ihr Konto konnte nicht geöffnet werden.';
 }
