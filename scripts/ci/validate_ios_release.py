@@ -27,10 +27,10 @@ def validate(path: Path, build_number: str, team_id: str) -> None:
         if not isinstance(value, str) or any(c in value for c in "<>{}"):
             raise ValueError(f"{key} is missing or still contains a placeholder.")
         validate_url(value, key)
-    key = data.get("SUPABASE_ANON_KEY")
-    if not isinstance(key, str):
+    public_key = data.get("SUPABASE_ANON_KEY")
+    if not isinstance(public_key, str):
         raise ValueError("SUPABASE_ANON_KEY is missing.")
-    validate_public_key(key)
+    validate_public_key(public_key)
 
 
 def main() -> None:

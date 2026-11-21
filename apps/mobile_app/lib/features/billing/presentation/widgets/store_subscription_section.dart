@@ -9,7 +9,9 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/date_formats.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../l10n/regional_defaults.dart';
+import '../../../account_consents/domain/account_consent_models.dart';
 import '../../../age/presentation/age_flow.dart';
+import '../../../auth/presentation/pages/legal_text_page.dart';
 import '../../data/billing_demo_store.dart';
 import '../../data/store_billing_controller.dart';
 import '../../domain/billing_models.dart';
@@ -75,6 +77,12 @@ class _StoreSubscriptionSectionState extends State<StoreSubscriptionSection> {
 
   String _date(BuildContext context, DateTime date) =>
       formatAppDate(date.toLocal(), appNumericDatePattern(context.l10n.settingsNumericDatePattern));
+
+  void _openLegal(String consentKey, String title) {
+    Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => LegalTextPage(consentKey: consentKey, title: title, shareable: true),
+    ));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -151,6 +159,23 @@ class _StoreSubscriptionSectionState extends State<StoreSubscriptionSection> {
               onPressed: () => unawaited(_billing.openManagement(verified)),
               icon: const Icon(Icons.open_in_new),
               label: Text(l10n.storeBillingManage),
+            ),
+            Wrap(
+              alignment: WrapAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () => _openLegal(
+                    AccountConsentKeys.termsOfService, l10n.authTermsOfServiceLabel,
+                  ),
+                  child: Text(l10n.authTermsOfServiceLabel),
+                ),
+                TextButton(
+                  onPressed: () => _openLegal(
+                    AccountConsentKeys.privacyPolicy, l10n.authPrivacyPolicyLabel,
+                  ),
+                  child: Text(l10n.authPrivacyPolicyLabel),
+                ),
+              ],
             ),
           ],
         );

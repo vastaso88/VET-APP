@@ -34,9 +34,19 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - run: flutter gen-l10n
       - run: flutter analyze
-      - run: flutter test
+      # The existing Linux CI runs the full suite; exercise store UI on macOS too.
+      - name: Test store billing on macOS
+        run: flutter test test/billing
       - name: Compile native iOS release without Apple credentials
         run: flutter build ios --release --no-codesign
+      - name: Preserve resolved native dependency versions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quokka-ios-pod-lock-${{ github.sha }}
+          path: apps/mobile_app/ios/Podfile.lock
+          if-no-files-found: ignore
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
           name: quokka-ios-unsigned-${{ github.sha }}
