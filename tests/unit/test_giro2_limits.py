@@ -43,7 +43,8 @@ from packages.core.domain.subscription.limits import (
     LIMITS_BY_PLAN,
     PlanLimits,
 )
-from packages.core.domain.subscription.models import Subscription
+from packages.core.domain.subscription.store import Store, StoreState, VerifiedStorePurchase
+from packages.infrastructure.billing.fake_store import FakeStore
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
 )
@@ -323,13 +324,12 @@ def test_choosing_plus_with_more_pets_than_it_allows_says_so_and_still_goes_thro
     pets = InMemoryPetProfileRepository()
     _owner_with(pets, "owner-a", PLUS.max_pets + 3)
 
-    result = _plans(pets).execute(SelectPlanInput(owner_id="owner-a", plan="plus"))
+    over = _plans(pets).pets_over_limit("owner-a", "plus")
 
-    assert result.changed is True and result.subscription.plan == "plus"
-    assert result.pets_over_limit is not None
-    assert result.pets_over_limit.count == PLUS.max_pets + 3
-    assert result.pets_over_limit.limit == PLUS.max_pets
-    assert result.pets_over_limit.plan == "plus"
+    assert over is not None
+    assert over.count == PLUS.max_pets + 3
+    assert over.limit == PLUS.max_pets
+    assert over.plan == "plus"
     # Nothing is deleted or moved (Terms it/03 section 4).
     assert len(pets.list_by_owner("owner-a")) == PLUS.max_pets + 3
 
@@ -338,19 +338,14 @@ def test_exactly_as_many_pets_as_the_plan_allows_is_not_over_the_limit() -> None
     pets = InMemoryPetProfileRepository()
     _owner_with(pets, "owner-a", PLUS.max_pets)
 
-    assert (
-        _plans(pets).execute(SelectPlanInput(owner_id="owner-a", plan="plus")).pets_over_limit
-        is None
-    )
+    assert _plans(pets).pets_over_limit("owner-a", "plus") is None
 
 
 def test_a_plan_with_room_says_nothing() -> None:
     pets = InMemoryPetProfileRepository()
     _owner_with(pets, "owner-a", PLUS.max_pets + 3)
 
-    result = _plans(pets).execute(SelectPlanInput(owner_id="owner-a", plan="ultra"))
-
-    assert result.pets_over_limit is None
+    assert _plans(pets).pets_over_limit("owner-a", "ultra") is None
 
 
 def test_user_b_pets_never_count_for_user_a() -> None:
@@ -358,9 +353,7 @@ def test_user_b_pets_never_count_for_user_a() -> None:
     _owner_with(pets, "owner-b", PLUS.max_pets + 5)
     _owner_with(pets, "owner-a", 1)
 
-    result = _plans(pets).execute(SelectPlanInput(owner_id="owner-a", plan="plus"))
-
-    assert result.pets_over_limit is None
+    assert _plans(pets).pets_over_limit("owner-a", "plus") is None
 
 
 def test_pets_in_ricordi_take_no_place_once_the_profile_carries_the_flag() -> None:
@@ -373,27 +366,22 @@ def test_pets_in_ricordi_take_no_place_once_the_profile_carries_the_flag() -> No
             plain = [SimpleNamespace()]  # an older profile without the flag: counts
             return [*active, *kept, *plain]
 
-    result = SelectPlanService(InMemorySubscriptionRepository(), pets=_Repo()).execute(
-        SelectPlanInput(owner_id="owner-a", plan="plus")
+    over = SelectPlanService(InMemorySubscriptionRepository(), pets=_Repo()).pets_over_limit(
+        "owner-a", "plus"
     )
 
-    assert result.pets_over_limit is not None
-    assert result.pets_over_limit.count == PLUS.max_pets + 1  # the five in Ricordi are out
+    assert over is not None
+    assert over.count == PLUS.max_pets + 1  # the five in Ricordi are out
 
 
-def test_a_failed_count_never_undoes_the_plan_change() -> None:
+def test_a_failed_count_says_nothing_and_never_fails() -> None:
     class _Broken(InMemoryPetProfileRepository):
         def list_by_owner(self, owner_id: str):  # type: ignore[no-untyped-def]
             raise RuntimeError("database down")
 
-    subscriptions = InMemorySubscriptionRepository()
-    service = SelectPlanService(subscriptions, pets=_Broken())
+    service = SelectPlanService(InMemorySubscriptionRepository(), pets=_Broken())
 
-    result = service.execute(SelectPlanInput(owner_id="owner-a", plan="plus"))
-
-    assert result.subscription.plan == "plus" and result.pets_over_limit is None
-    stored = subscriptions.get("owner-a")
-    assert isinstance(stored, Subscription) and stored.plan == "plus"
+    assert service.pets_over_limit("owner-a", "plus") is None
 
 
 def test_nothing_is_said_during_the_public_test_when_nothing_changes() -> None:
@@ -426,35 +414,64 @@ def test_the_warning_text_exists_in_every_language_with_its_numbers(
     assert "{" not in text
 
 
-def test_over_the_api_the_plan_change_carries_the_warning_in_the_owners_language(
-    client: TestClient,
+@pytest.fixture
+def store_client(monkeypatch: pytest.MonkeyPatch, request: pytest.FixtureRequest) -> TestClient:
+    """Billing on, with a store double: a plan comes from a verified purchase."""
+    monkeypatch.setenv("SUBSCRIPTION_TEST_PLAN", "")
+    monkeypatch.setenv("BILLING_ENABLED", "true")
+    monkeypatch.setenv("BILLING_ACCOUNT_TOKEN_SECRET", "test-secret-not-real")
+    monkeypatch.setenv("BILLING_STORE_ENVIRONMENT", "sandbox")
+    request.getfixturevalue("adult_everyone")
+    service = get_container().store_billing_service()
+    assert service is not None
+    apple = FakeStore()
+    apple.answers["1000"] = VerifiedStorePurchase(
+        store=Store.APPLE,
+        store_subscription_id="1000",
+        product_id="net.quokkapp.plus.monthly",
+        state=StoreState.ACTIVE,
+        expires_at=utc_now() + timedelta(days=30),
+        auto_renew=True,
+        environment="sandbox",
+        account_token=service.account_token("demo-user"),
+    )
+    service._verifiers = {Store.APPLE: apple}  # type: ignore[assignment]
+    return TestClient(app)
+
+
+def _buy_plus(client: TestClient, language: str = "it") -> dict[str, object]:
+    response = client.post(
+        "/billing/purchases/verify",
+        json={"store": "apple", "store_subscription_id": "1000"},
+        headers={"Accept-Language": language},
+    )
+    assert response.status_code == 200, response.text
+    body: dict[str, object] = response.json()
+    return body
+
+
+def test_over_the_api_a_purchase_of_a_smaller_plan_carries_the_warning_in_the_owners_language(
+    store_client: TestClient,
 ) -> None:
     for index in range(PLUS.max_pets + 2):
-        created = client.post("/pets", json={"name": f"Tier{index}", "species": "Cane"})
+        created = store_client.post("/pets", json={"name": f"Tier{index}", "species": "Cane"})
         assert created.status_code == 200, created.text
 
-    changed = client.post(
-        "/subscription/select-plan",
-        json={"plan": "plus"},
-        headers={"Accept-Language": "en"},
-    )
+    body = _buy_plus(store_client, "en")
 
-    assert changed.status_code == 200, changed.text
-    body = changed.json()
-    assert body["changed"] is True
     assert body["pets_over_limit"] == {
         "count": PLUS.max_pets + 2,
         "limit": PLUS.max_pets,
         "plan": "plus",
     }
     assert body["code"] == "pets_over_plan_limit"
-    assert "We won't delete or move anything" in body["message"]
+    assert "We won't delete or move anything" in str(body["message"])
 
 
-def test_over_the_api_a_plan_with_room_carries_no_warning(client: TestClient) -> None:
-    client.post("/pets", json={"name": "Solo", "species": "Cane"})
+def test_over_the_api_a_purchase_with_room_carries_no_warning(store_client: TestClient) -> None:
+    store_client.post("/pets", json={"name": "Solo", "species": "Cane"})
 
-    body = client.post("/subscription/select-plan", json={"plan": "plus"}).json()
+    body = _buy_plus(store_client)
 
     assert body["pets_over_limit"] is None
     assert "code" not in body and "message" not in body

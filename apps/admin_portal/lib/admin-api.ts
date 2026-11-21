@@ -49,6 +49,9 @@ export async function getAdminUsers(q: string, page: number, country = ""): Prom
 }
 
 export type AdminPet = {
+  country: string | null;
+  region: string | null;
+  city: string | null;
   id: string;
   owner_id: string;
   name: string;
@@ -72,9 +75,11 @@ export async function getAdminPets(
   page: number,
   species = "",
   status = "",
+  country = "",
+  region = "",
 ): Promise<AdminPets | null> {
   await requireAdminSession();
-  const params = new URLSearchParams({ q, page: String(page), species, status });
+  const params = new URLSearchParams({ q, page: String(page), species, status, country, region });
   try {
     return await authenticatedAdminRequest<AdminPets>(`/admin/pets?${params}`);
   } catch (error) {
@@ -1092,4 +1097,68 @@ export async function updateAdminSchedule(
       body: JSON.stringify({ action }),
     },
   );
+}
+
+// --- Billing (App Store / Google Play) -------------------------------------
+
+export type BillingOverview = {
+  active_subscriptions: number;
+  active_by_plan: Record<string, number>;
+  active_by_store: Record<string, number>;
+  states: Record<string, number>;
+  expiring_7d: number;
+  not_renewing: number;
+  anomalies: number;
+  trials_active: number;
+  trials_ending_7d: number;
+  trials_expired_without_plan: number;
+  revenue: {
+    kind: "estimate_gross_list_price";
+    monthly_recurring_eur_estimate: number;
+    note: string;
+    reconciled_eur: number | null;
+  };
+};
+
+export type BillingUserSubscription = {
+  store: string;
+  product_id: string;
+  plan: string;
+  period: string;
+  state: string;
+  expires_at: string | null;
+  auto_renew: boolean;
+  grace_expires_at: string | null;
+  revoked_at: string | null;
+  environment: string;
+  last_verified_at: string;
+  verification_error_at: string | null;
+  anomaly: string | null;
+  grants_access: boolean;
+};
+
+export type BillingUser = {
+  owner_id: string;
+  plan: string | null;
+  trial_ends_at: string | null;
+  subscriptions: BillingUserSubscription[];
+};
+
+export async function getBillingOverview(): Promise<BillingOverview> {
+  await requireAdminSession();
+  return authenticatedAdminRequest<BillingOverview>("/admin/billing/overview");
+}
+
+export async function getBillingUser(ownerId: string): Promise<BillingUser> {
+  await requireAdminSession();
+  return authenticatedAdminRequest<BillingUser>(
+    `/admin/billing/users/${encodeURIComponent(ownerId)}`,
+  );
+}
+export async function changeAdminUserPlan(ownerId: string, plan: "plus" | "pro" | "ultra" | null): Promise<void> {
+  await requireAdminSession();
+  await authenticatedAdminRequest(`/admin/users/${encodeURIComponent(ownerId)}/plan`, {
+    method: "POST",
+    body: JSON.stringify({ plan }),
+  });
 }

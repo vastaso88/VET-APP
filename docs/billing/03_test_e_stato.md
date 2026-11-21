@@ -1,0 +1,21 @@
+# Abbonamenti — test e stato (2026-11-21)
+
+## Test automatici (backend, `uv run pytest`)
+- `tests/unit/billing/test_store_billing_service.py`: trial valido/scaduto, piano salvato senza acquisto ignorato, primo acquisto Apple/Google, acknowledge Google, acquisto pendente, prodotto sconosciuto, transazione falsificata, acquisto di un altro account, sottoscrizione già legata, token mancante, ambiente sbagliato, rinnovo, cancellazione fino a scadenza, scadenza per tempo, rimborso, revoca, periodo di tolleranza vs billing retry, upgrade Google, downgrade Apple, notifiche duplicate e fuori ordine, rilettura Google, notifica per account sconosciuto, notifica prima della verifica del client, ripristino, errore temporaneo in acquisto e in riconciliazione con tolleranza limitata, test grant admin.
+- `tests/unit/billing/test_store_signatures.py`: JWS Apple autentico, radice non fidata, payload alterato, `alg: none`, decodifica transazione/rinnovo/notifica V2, bundle sbagliato, parsing `subscriptionsv2` e RTDN, token OIDC Pub/Sub (audience, mittente, scadenza, assenza).
+- `tests/integration/test_billing_routes.py`: rotte end-to-end con utente B, select-plan che non concede nulla, 503 su store giù, ripristino, notifiche non firmate rifiutate, riconciliazione e test grant protetti.
+- Flutter: `apps/mobile_app/test/billing/store_subscription_status_test.dart` (parsing; non eseguito in questa sessione: Flutter non installato nel container).
+
+## Test sandbox predisposti (manuali)
+Vedi `02_configurazione_store.md` §6. Nessun acquisto reale.
+
+## Stato
+| Parte | Stato |
+| --- | --- |
+| Logica diritti, idempotenza, ordine, proprietà, tolleranza | funzionante, testata con doppi degli store |
+| Verifica firme Apple (x5c/ES256), OIDC Pub/Sub | testata con certificati/chiavi generati nei test |
+| Chiamate reali App Store Server API / Play Developer API | implementate, **mai eseguite**: servono credenziali e sandbox |
+| Migrazione Supabase | scritta, **non applicata** |
+| Flutter `in_app_purchase` | scritto, **non compilato né analizzato** qui (manca Flutter); da `flutter pub get`, `flutter analyze`, prova su dispositivo |
+| Admin portal | pagina scritta, **non compilata** qui (mancano i node_modules) |
+| Produzione | **non pronta**: mancano configurazione store e collaudo sandbox end-to-end |

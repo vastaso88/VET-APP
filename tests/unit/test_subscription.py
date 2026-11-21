@@ -6,7 +6,11 @@ from packages.core.application.services.get_or_create_subscription import (
     GetOrCreateSubscriptionInput,
     GetOrCreateSubscriptionService,
 )
-from packages.core.application.services.select_plan import SelectPlanInput, SelectPlanService
+from packages.core.application.services.select_plan import (
+    PlanRequiresStorePurchaseError,
+    SelectPlanInput,
+    SelectPlanService,
+)
 from packages.core.domain.common.entity import utc_now
 from packages.core.domain.subscription.models import Subscription, SubscriptionPlan
 from packages.infrastructure.persistence.in_memory_repositories import (
@@ -70,19 +74,20 @@ def test_developer_allowlist_always_has_access_even_after_trial_expiry() -> None
     assert result.has_access is True
 
 
-def test_select_plan_grants_access_even_after_trial_expiry() -> None:
+def test_select_plan_never_grants_a_paid_plan() -> None:
     repository = InMemorySubscriptionRepository()
     repository.save(Subscription(owner_id="user-1", trial_ends_at=utc_now() - timedelta(days=1)))
     select_plan = SelectPlanService(repository)
     get_status = GetOrCreateSubscriptionService(repository, _DEVELOPER_EMAILS)
 
-    select_plan.execute(SelectPlanInput(owner_id="user-1", plan=SubscriptionPlan.PLUS))
+    with pytest.raises(PlanRequiresStorePurchaseError):
+        select_plan.execute(SelectPlanInput(owner_id="user-1", plan=SubscriptionPlan.PLUS))
     result = get_status.execute(
         GetOrCreateSubscriptionInput(owner_id="user-1", email="owner@example.com")
     )
 
-    assert result.subscription.plan == SubscriptionPlan.PLUS
-    assert result.has_access is True
+    assert result.subscription.plan is None
+    assert result.has_access is False
 
 
 def test_select_plan_rejects_unknown_plan() -> None:

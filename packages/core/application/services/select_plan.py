@@ -11,6 +11,11 @@ from packages.shared.errors.base import ValidationError
 logger = logging.getLogger(__name__)
 
 
+class PlanRequiresStorePurchaseError(Exception):
+    """A paid plan comes only from a verified App Store / Google Play
+    subscription (StoreBillingService), never from a plain request."""
+
+
 class SelectPlanInput(BaseModel):
     owner_id: str
     plan: str
@@ -37,9 +42,14 @@ class SelectPlanOutput(BaseModel):
 
 
 class SelectPlanService:
-    """Records the plan the owner picked. During the public test
-    ([test_plan] set) it changes nothing and says so: everyone is on the
-    test plan and nobody chooses or pays."""
+    """Public `/subscription/select-plan`. It never grants a plan:
+
+    - during the public test ([test_plan] set) it changes nothing and says so;
+    - otherwise it refuses: the owner buys through the store and the backend
+      grants the plan only after verifying the purchase.
+
+    Team test grants live in StoreBillingService.grant_admin_test behind the
+    admin route, completely separate from this flow."""
 
     def __init__(
         self,
@@ -62,15 +72,12 @@ class SelectPlanService:
                 changed=False,
                 test_period=True,
             )
+        raise PlanRequiresStorePurchaseError(data.plan)
 
-        updated = subscription.model_copy(update={"plan": data.plan})
-        saved = self._repository.save(updated)
-        return SelectPlanOutput(
-            subscription=saved, pets_over_limit=self._pets_over_limit(data.owner_id, data.plan)
-        )
-
-    def _pets_over_limit(self, owner_id: str, plan: str) -> PetsOverLimit | None:
-        """Best effort: the plan is already saved, a failed count must not undo it."""
+    def pets_over_limit(self, owner_id: str, plan: str) -> PetsOverLimit | None:
+        """Whether [plan] has fewer places than the owner has pets. Asked after a
+        verified store purchase (/billing/purchases/verify). Best effort: the plan
+        is already granted, a failed count must not undo it."""
         if self._pets is None:
             return None
         try:

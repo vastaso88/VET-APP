@@ -221,10 +221,7 @@ def get_listing(listing_id: str) -> dict[str, object]:
     listing = container.marketplace_listing_repository.get(listing_id)
     if listing is None or (listing.status != "active" and listing.owner_id != user.id):
         raise HTTPException(status_code=404, detail="Annuncio non trovato.")
-    if (
-        listing.owner_id != user.id
-        and listing.owner_id in container.hidden_owner_ids()
-    ):
+    if listing.owner_id != user.id and listing.owner_id in container.hidden_owner_ids():
         # The seller is deleting or has paused their account: the ad is hidden like
         # a missing one.
         raise HTTPException(status_code=404, detail="Annuncio non trovato.")

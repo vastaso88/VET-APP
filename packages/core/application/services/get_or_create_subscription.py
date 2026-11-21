@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
@@ -12,8 +15,14 @@ from packages.core.domain.subscription.limits import (
     PlanLimits,
     effective_limits,
 )
-from packages.core.domain.subscription.models import Subscription
+from packages.core.domain.subscription.models import Subscription, SubscriptionPlan
 from packages.core.domain.subscription.retention import data_kept_until
+from packages.core.domain.subscription.store import best_plan
+
+PLAN_KEYS = SubscriptionPlan.ALL
+
+if TYPE_CHECKING:
+    from packages.core.application.services.store_billing import StoreBillingService
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +30,19 @@ logger = logging.getLogger(__name__)
 class GetOrCreateSubscriptionInput(BaseModel):
     owner_id: str
     email: str
+
+
+class StoreSubscriptionView(BaseModel):
+    store: str
+    product_id: str
+    plan: str
+    period: str
+    state: str
+    expires_at: datetime | None
+    auto_renew: bool
+    grace_expires_at: datetime | None = None
+    last_verified_at: datetime
+    grants_access: bool
 
 
 class GetOrCreateSubscriptionOutput(BaseModel):
@@ -42,6 +64,12 @@ class GetOrCreateSubscriptionOutput(BaseModel):
     # Only for an owner whose access is over: when their data is erased if
     # nothing changes (four months after the access was lost). None otherwise.
     data_kept_until: datetime | None = None
+    # The verified store subscription behind the plan (Apple/Google), or the
+    # most recent one when none grants access (to show "expired"/"refunded").
+    store_subscription: StoreSubscriptionView | None = None
+    # Where the access comes from: store | override (team/demo account, no
+    # store) | developer | test_period | trial | legacy (billing off) | None.
+    plan_source: str | None = None
 
 
 class GetOrCreateSubscriptionService:
@@ -67,7 +95,17 @@ class GetOrCreateSubscriptionService:
         test_plan: str | None = None,
         access_sync: PlanAccessSync | None = None,
         max_memorial_pets: int = DEFAULT_MAX_MEMORIAL_PETS,
+        trial_days: int = 14,
+        store_billing: StoreBillingService | None = None,
+        plan_overrides: dict[str, str] | None = None,
     ) -> None:
+        self._plan_overrides = {
+            k.strip().lower(): v for k, v in (plan_overrides or {}).items() if v in PLAN_KEYS
+        }
+        # With store billing on, the plan is only what a verified store
+        # subscription says (StoreBillingService.sync_plan).
+        self._store_billing = store_billing
+        self._trial_days = trial_days
         self._repository = repository
         self._developer_emails = developer_emails
         self._test_plan = test_plan
@@ -79,9 +117,41 @@ class GetOrCreateSubscriptionService:
     def execute(self, data: GetOrCreateSubscriptionInput) -> GetOrCreateSubscriptionOutput:
         subscription = self._repository.get(data.owner_id)
         if subscription is None:
-            subscription = self._repository.save(Subscription(owner_id=data.owner_id))
+            subscription = self._repository.create_trial(
+                Subscription(
+                    owner_id=data.owner_id,
+                    trial_ends_at=utc_now() + timedelta(days=self._trial_days),
+                )
+            )
 
-        is_developer = data.email.strip().lower() in self._developer_emails
+        email = data.email.strip().lower()
+        override = self._plan_overrides.get(email) if self._test_plan is None else None
+        store_view: StoreSubscriptionView | None = None
+        if override is not None:
+            # Team/demo account (BILLING_PLAN_OVERRIDES, environment only): a
+            # fixed plan without the store. Saved so the database rules on the
+            # app's direct writes see it too; removing the override hands the
+            # account back to the store on the next check.
+            if subscription.plan != override:
+                subscription = self._repository.save(
+                    subscription.model_copy(update={"plan": override})
+                )
+            plan_source: str | None = "override"
+        elif self._store_billing is not None and self._test_plan is None:
+            plan = self._store_billing.sync_plan(data.owner_id)
+            subscription = subscription.model_copy(update={"plan": plan})
+            store_view = self._store_view(data.owner_id)
+            plan_source = "store" if subscription.plan is not None else None
+        else:
+            plan_source = "legacy" if subscription.plan is not None else None
+
+        is_developer = email in self._developer_emails
+        if is_developer:
+            plan_source = "developer"
+        elif self._test_plan is not None:
+            plan_source = "test_period"
+        elif plan_source is None and subscription.is_trial_active():
+            plan_source = "trial"
         if self._access_sync is not None:
             self._access_sync.sync(
                 owner_id=data.owner_id,
@@ -103,6 +173,7 @@ class GetOrCreateSubscriptionService:
                 limits=effective_limits(reported, is_developer=is_developer),
                 max_memorial_pets=self._max_memorial_pets,
                 test_period=True,
+                plan_source=plan_source,
             )
 
         return GetOrCreateSubscriptionOutput(
@@ -116,6 +187,28 @@ class GetOrCreateSubscriptionService:
                 if not has_access and subscription.access_lost_at is not None
                 else None
             ),
+            store_subscription=store_view,
+            plan_source=plan_source,
+        )
+
+    def _store_view(self, owner_id: str) -> StoreSubscriptionView | None:
+        assert self._store_billing is not None
+        items = self._store_billing.entitlements_for(owner_id)
+        if not items:
+            return None
+        tolerance = self._store_billing.tolerance
+        chosen = best_plan(items, tolerance=tolerance) or max(items, key=lambda e: e.last_event_at)
+        return StoreSubscriptionView(
+            store=chosen.store,
+            product_id=chosen.product_id,
+            plan=chosen.plan,
+            period=chosen.period,
+            state=chosen.state,
+            expires_at=chosen.expires_at,
+            auto_renew=chosen.auto_renew,
+            grace_expires_at=chosen.grace_expires_at,
+            last_verified_at=chosen.last_verified_at,
+            grants_access=chosen.grants_access(tolerance=tolerance),
         )
 
     def _keep_retention_clock(

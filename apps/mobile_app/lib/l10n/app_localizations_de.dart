@@ -7973,4 +7973,63 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get aroundWorldBlockLimits => 'Was dieses Merkblatt nicht abdeckt';
+
+  @override
+  String storeBillingSubscribeMonthly(String price) {
+    return 'Monatlich · $price';
+  }
+
+  @override
+  String storeBillingSubscribeYearly(String price) {
+    return 'Jährlich · $price';
+  }
+
+  @override
+  String get storeBillingRestore => 'Käufe wiederherstellen';
+
+  @override
+  String get storeBillingManage => 'Abo im Store verwalten';
+
+  @override
+  String get storeBillingPending => 'Zahlung wartet auf Bestätigung durch den Store.';
+
+  @override
+  String get storeBillingVerifying => 'Kauf wird überprüft…';
+
+  @override
+  String get storeBillingVerified => 'Abo aktiv.';
+
+  @override
+  String get storeBillingFailed => 'Der Kauf konnte nicht überprüft werden. Versuche es später erneut: Es wird nicht doppelt abgebucht.';
+
+  @override
+  String get storeBillingOwnedByOther => 'Dieser Kauf ist mit einem anderen Quokka-Konto verknüpft.';
+
+  @override
+  String get storeBillingUnavailable => 'Store-Käufe sind auf diesem Gerät nicht verfügbar.';
+
+  @override
+  String storeBillingCanceledUntil(String date) {
+    return 'Verlängerung aus: aktiv bis $date';
+  }
+
+  @override
+  String get storeBillingExpired => 'Abo abgelaufen';
+
+  @override
+  String get storeBillingRefunded => 'Abo erstattet oder widerrufen';
+
+  @override
+  String get storeBillingPaymentIssue => 'Zahlungsproblem: Aktualisiere die Zahlungsmethode im Store';
+
+  @override
+  String storeBillingTrialDaysLeft(String days) {
+    return 'Kostenlose Testphase: noch $days Tage';
+  }
+
+  @override
+  String get storeBillingRestoreDone => 'Wiederherstellung abgeschlossen.';
+
+  @override
+  String get storeBillingPricesFromStore => 'Preise, Währung und Steuern sind die vom Store für dein Land angezeigten. Das Abo verlängert sich automatisch, bis du es im Store kündigst.';
 }

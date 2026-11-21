@@ -16,6 +16,11 @@ dependencies:
   supabase_flutter: ^2.10.3
   google_fonts: ^6.2.1
   http: ^1.2.0
+  # Google Play Billing (Android) and StoreKit 2 (iOS) for subscriptions;
+  # the backend verifies every purchase (docs/billing/01_architettura_abbonamenti.md).
+  in_app_purchase: ^3.2.3
+  # Resolved by in_app_purchase; imported for the Android plan-change param.
+  in_app_purchase_android: any
   url_launcher: ^6.3.3
   intl: ^0.20.2
   flutter_localizations:

@@ -12,6 +12,7 @@ from __future__ import annotations
 import logging
 import re
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -44,7 +45,7 @@ def _status(
     store: InMemoryPlanAccessStore | None = None,
     test_plan: str | None = None,
 ) -> GetOrCreateSubscriptionOutput:
-    extra = {} if cap is None else {"max_memorial_pets": cap}
+    extra: dict[str, Any] = {} if cap is None else {"max_memorial_pets": cap}
     service = GetOrCreateSubscriptionService(
         InMemorySubscriptionRepository(),
         frozenset(),

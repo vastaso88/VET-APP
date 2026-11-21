@@ -9,6 +9,8 @@ class SubscriptionRepository(Protocol):
 
     def save(self, subscription: Subscription) -> Subscription: ...
 
+    def create_trial(self, subscription: Subscription) -> Subscription: ...
+
     def set_access_lost_at(self, owner_id: str, value: datetime | None) -> None:
         """Starts (or, with None, stops) the retention clock of one account.
         A column of its own, so `save` never touches it and a database that

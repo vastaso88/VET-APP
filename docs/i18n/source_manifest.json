@@ -20725,5 +20725,158 @@
       "de": "92b512999b2b3b5ff23160c0df94dca25e1da3b3ac85279a621e8cded6d29852",
       "fr": "96641de587bdbb85c2108ef7f947d29cbe67b18ff52ef8ee3b591cd0466b80c1"
     }
+  },
+  "ui:storeBillingSubscribeMonthly": {
+    "source": "94b00e7e358efca8c30fbf44f97327f5ddc78eae0801d0d74726d4a031f82d2e",
+    "targets": {
+      "en": "a7c6930464be09211a5db78be74b904ffa2fdc864a6c7dc947aa8d4833919863",
+      "es": "674a5fa502bced2203fb87ae1da639fff2b6106e4d147a2379f3a50a5cd99446",
+      "de": "9d0b0404b0341bcf8c3d3e7104649c17cd64ef9e1f474bdb4e96f2674b2c2c21",
+      "fr": "ae8164527567088e7888c3f987b71123e4a3d5592924f8d049cc87ce2c32c196"
+    }
+  },
+  "ui:storeBillingSubscribeYearly": {
+    "source": "d6effb506202368ef0207c383848b2fcdf2f01c2d8cc1968d231ff551d5a548b",
+    "targets": {
+      "en": "b31151f814f4e6b754b0366221de34063885d517049e3c87d7ad4d3578c88991",
+      "es": "006708638b0c916538fccadd4508b8f3465e22ce0f03e2d88e71ab8787ee0238",
+      "de": "335644b8760e30f58e626c36dc663e190aa2ee85fb66d39d4a255337b00d2ab2",
+      "fr": "c5e9c0bd58581a3e0d520e529306d93615c88ea115533043c9395b69840d046e"
+    }
+  },
+  "ui:storeBillingRestore": {
+    "source": "d4f315c7e5641624243c96f40d824897bf269ed1bf641dbe28227bc2a311fc3d",
+    "targets": {
+      "en": "542896d5857e7ea1bcedf64fd643780f25c722aa9e6ee0f21dd3db6069c7e1c3",
+      "es": "2746cbfac3c967c8bec991f38d6b6bab5599a6eeeda52d43a2ec02c94ef50150",
+      "de": "ee1560dba205e3f1f45a4bff862e3a2edc56ff5b66421173cce29461a788ff07",
+      "fr": "303811cdde46dcd78dfecc00f6510528a3bd7c92ea31ac70faedc3eeaf5eb514"
+    }
+  },
+  "ui:storeBillingManage": {
+    "source": "1fb1a14c4c24ee646aea9550af4fe44aa170b689b724c99712b012e7f192693a",
+    "targets": {
+      "en": "970f18989b3f8fc5a52f6fb7be5ec99908309b9c3379ff268f83b3d5428e0a12",
+      "es": "d1dbafbc3cd1a5b749e40a6dcf0b23c73d5e545fd039196c1818a264ae6f3dba",
+      "de": "dddca5a35fcda50732599e1b4be8a985da8769e350f57056f6fe2742b7b09f3b",
+      "fr": "528473a3d1a016e81291304a993df83f340e0b316907f0557be7f2f8d774e65a"
+    }
+  },
+  "ui:storeBillingPending": {
+    "source": "3adfdfcbbcabe2ad953e7a1f04b2f05fced7e6afb8655cbc4c6dd2c0339303e1",
+    "targets": {
+      "en": "cc8371d214c228b1efede22f9a7ceea594ee6369472250b7a767923a21a11731",
+      "es": "668a92081df71b307b495dcdfa7e4460db910f2f743bcaf066afed6bd48b34de",
+      "de": "c7f1a7469483b4a7282bc3c1c73b1ac7c468c5b972ccfd9aa2b8ead74bd325cf",
+      "fr": "21c97a78b8719f92aa68379000fc77bbb5e2ab78e809169171fdb481d0ff1886"
+    }
+  },
+  "ui:storeBillingVerifying": {
+    "source": "77629ed2f8e4df1de1fcf490ad7cf45c3f3b2c698479d47c1865e8c7d7731bd0",
+    "targets": {
+      "en": "0926638a91daeef31a6fb1fc156e4c66713a7c522e319ee4015e3132676b60b3",
+      "es": "cebdcc2e011e8453190dedbcef651c533b22170c59d51740ac2e2c3d7a2bf34d",
+      "de": "51943dd4fdffcc80a8657e1d0548bf0b141e96afe1c717f6f529108118ab2a9e",
+      "fr": "cb9be0afe2cac1213873b02954a20c0ea1f7fa1e5947975f603f6c4afa6a3af8"
+    }
+  },
+  "ui:storeBillingVerified": {
+    "source": "0cde963ebce1b7bf6cabf22b75f1891b33ebbb70213b754df726290e794d1a29",
+    "targets": {
+      "en": "4fa3768ef00bcf20b6d65aec31b3a9b378229b5139debc80903bd1cc56b578a1",
+      "es": "1393b2adc512b5d97b51cf354ec65d8032b60eeecc84ac4860101089e6976ddc",
+      "de": "dc4656cd375e1a0a412dc7184c5ad930ebc12f0b6d271154844bfcb047811962",
+      "fr": "e0c95bd3c03c99c84a295edb4bc166f62ed4cfd757e68d167cd1c4c0688e3f2e"
+    }
+  },
+  "ui:storeBillingFailed": {
+    "source": "8c546c9ff0da8f2bd460d0cfcac3b3b2d6b7939a2901d7dc77f3d293337e25a2",
+    "targets": {
+      "en": "6ab452a966c9b25ef441c96a9353f54c57d6e3bd08df890de57b87c77049ce36",
+      "es": "afc77274bb06f71173d90b4c13fa01a81d8944697a5114fe59f489e84b1aac79",
+      "de": "052e71537881bea9e7d089f73267b938298eba93a5854411a82b47820c8436dc",
+      "fr": "b21c45e0ba44e9b63ecf14bc402fc9854f639f07a1b0c62197ba7625b1ec098b"
+    }
+  },
+  "ui:storeBillingOwnedByOther": {
+    "source": "ef612f868ba342abf32a20b893ca224f22593a9672ee1cfbc1d2807b84851ae6",
+    "targets": {
+      "en": "b45680be7ec7393d0ae5ee319387b7586049e60acc6d9d2698233243bf333bb1",
+      "es": "d44344898e7ed2460d0a89228537969fbe15fedd92fe5501a3a85dc91528e009",
+      "de": "effd6708f0438289967c9c0103236d56698930f1308fc9ee2f6546cc904723fc",
+      "fr": "ba445edf7cff3c925263583d472c923661d696d9a6e469a7588ebf1fc1b2db67"
+    }
+  },
+  "ui:storeBillingUnavailable": {
+    "source": "e800dda39317c3248ebe314b0440290e7893a8ada58d421424c9c3c1d8005968",
+    "targets": {
+      "en": "541c70850acf3874bd5cf3e713ec8592bb87464905cd5f5b6491ad1450e5ead4",
+      "es": "6012f41ac62a68fe310387f2b62f257ad560e432b9b2a483372e8b5bde83636a",
+      "de": "30b72c1521923305232116d3fc389ae52e9fb501a901f85a7253104e0b777cc8",
+      "fr": "54595974d9abe83600d00e2362cdd1dde255d448dee3cc0c3e32b8da7a5df85f"
+    }
+  },
+  "ui:storeBillingCanceledUntil": {
+    "source": "5ceceef5c233fa9ba768791e8b655009e28dfc262899431dd7c99f802ea845c1",
+    "targets": {
+      "en": "b0cd3f5d0037eb171d5fd7f964f80c23c8c3b04f7455d0e14f742a92b2eccfee",
+      "es": "5bbd38837877ea398194eb3ae4fb694a9a4a7bf3b885f5fd3b25cd26277d2109",
+      "de": "262425ebfca7c95d14727bab2372c94d5445081a55632c03c05b984498b88be7",
+      "fr": "94ff6df49b52fcb62da613f64e176f6631b449763c7decc07d9520dc72075d04"
+    }
+  },
+  "ui:storeBillingExpired": {
+    "source": "5119e7f05f21e1dfe556b8f73045b5a5a3e0b3bf564c943cd5fd7f77821b9f40",
+    "targets": {
+      "en": "8234db2d677891b62efab9827ba0d79a1881a03d54619b93c1755569559a6c3b",
+      "es": "3a28f54529c0c24c90d34016a3e4e16afa8570badac657927640ff2244445511",
+      "de": "c6db5218a6b0205beabe3fad996f397ab8f8a6c669f6f5d396f045d582b6db4f",
+      "fr": "3f15b3275312f2011cca35139135a951ac64794030b5274c2255d5e30d6e5ca9"
+    }
+  },
+  "ui:storeBillingRefunded": {
+    "source": "f1f4aeb21bd583570ca75efac6a159ab075ed9a9de6790584c08741791f2ef13",
+    "targets": {
+      "en": "740e3569d832cb9e3882d3fa83055dfc243ab2ce4491e818c7175ed125e8333d",
+      "es": "182ccaf2bc601d201f4e1dd53aa40b6f5d20662b074fc5f52c08394a190f85b5",
+      "de": "f06c4f1480cc913d52240ad937b03a3f0da179740617449b09619b021e83ff31",
+      "fr": "caf87b7a9ad76f3569d8553915ad8c82f49eaf487044b152bcaba624a5dbc1ce"
+    }
+  },
+  "ui:storeBillingPaymentIssue": {
+    "source": "c7c95b1888b579487924fbb98ab741466e75da381faa63d6573fe2ad57f94d46",
+    "targets": {
+      "en": "30fbc3e83b96709c5dfefb7cba18c8946555076835308e0c88c2348d7c19a01f",
+      "es": "12f78eb1e3bc7fd088641285c154a2d5ae326ba52e64ca7ee9011ccee1df8971",
+      "de": "705e530ceb2773f7620fd7c4286620efa0da3c32a884ed2e0e50eccd1f4423b7",
+      "fr": "978c61c2a77bc96debbc262358b5057fb05267135e54116027cbc81d62599b49"
+    }
+  },
+  "ui:storeBillingTrialDaysLeft": {
+    "source": "1b0592413d38b896669c8bca89a02483ab893dede5bd8d75f6ff8fb308caf14b",
+    "targets": {
+      "en": "8fa972adbc2b59f79d5b3e83d4b649fbf0cf4d49d89c176aa8feb776dc6cfd3d",
+      "es": "c4569b8e36718b893280e4e6f6b0ad46fee108e1e044f1f9be2b721d78140791",
+      "de": "0e3a2b84ecc099edf340535fbc2b0583a97588f957e7688c223ae3b05a913777",
+      "fr": "899d506d0bf0eb3cdb75bf1069795b603424b12e869bded116e976d1db6aa5bc"
+    }
+  },
+  "ui:storeBillingRestoreDone": {
+    "source": "4547b67ba8c7270cd00b4f2fc4666ea17b57e5d26e383db479c1254a63261866",
+    "targets": {
+      "en": "5dd9e4f138e023f1c28a3904e54371b5e099866881838bb84b32e2d74d1119bb",
+      "es": "d4bfdc7ec9ddd980b054f5b4098bf6819e299ff63978585e422acd023b600879",
+      "de": "a44ef1c33001c6ea0835b0442a03163644e06237e143632b725e71e9e2b79035",
+      "fr": "5a91fb91ffadad3ebf2c3fe477c3dfcc3b79d162d5fd260d39cb61f32f3d1f45"
+    }
+  },
+  "ui:storeBillingPricesFromStore": {
+    "source": "09e51e809dc0e78dd6a614daecaeb3354e845f7f934a7edf5672d4b8299a51d1",
+    "targets": {
+      "en": "48c3b94d0444c3d54cc714ce20ee7b90cd60a21886ddd4230e0f73c5bd2a2296",
+      "es": "b5998609333166aaf2f319616259f38037f5bc277df74e0714a075589e499ae1",
+      "de": "4261e6019e9df48e0cbfc5564fdcdaa0f2895856ecfacda145914add7480596f",
+      "fr": "5bdc8bc65d954e875b64ec86fb386a464e2e30e37736b3a55e30d74504774e1c"
+    }
   }
 }

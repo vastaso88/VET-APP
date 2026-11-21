@@ -31,9 +31,7 @@ def purge_expired_pauses(
     counts. Counts only; scheduler token, no user session."""
     _require_scheduler_token(x_vetapp_scheduler)
     container = get_container()
-    report = container.account_pause_service().purge_expired(
-        container.settings.pause_purge_enabled
-    )
+    report = container.account_pause_service().purge_expired(container.settings.pause_purge_enabled)
     return report.model_dump()
 
 

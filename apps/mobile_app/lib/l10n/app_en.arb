@@ -4466,5 +4466,22 @@
   "aroundWorldBlockReturn": "Coming back",
   "aroundWorldBlockSpreading": "Not spreading diseases",
   "aroundWorldBlockVet": "At the vet",
-  "aroundWorldBlockLimits": "What this card does not cover"
+  "aroundWorldBlockLimits": "What this card does not cover",
+  "storeBillingSubscribeMonthly": "Monthly · {price}",
+  "storeBillingSubscribeYearly": "Yearly · {price}",
+  "storeBillingRestore": "Restore purchases",
+  "storeBillingManage": "Manage subscription in the store",
+  "storeBillingPending": "Payment waiting for confirmation from the store.",
+  "storeBillingVerifying": "Verifying your purchase…",
+  "storeBillingVerified": "Subscription active.",
+  "storeBillingFailed": "We couldn’t verify the purchase. Try again later: you won’t be charged twice.",
+  "storeBillingOwnedByOther": "This purchase is linked to another Quokka account.",
+  "storeBillingUnavailable": "Store purchases aren’t available on this device.",
+  "storeBillingCanceledUntil": "Renewal off: active until {date}",
+  "storeBillingExpired": "Subscription expired",
+  "storeBillingRefunded": "Subscription refunded or revoked",
+  "storeBillingPaymentIssue": "Payment problem: update your payment method in the store",
+  "storeBillingTrialDaysLeft": "Free trial: {days} days left",
+  "storeBillingRestoreDone": "Restore completed.",
+  "storeBillingPricesFromStore": "Prices, currency and taxes are those shown by the store for your country. The subscription renews automatically until you cancel it in the store."
 }
