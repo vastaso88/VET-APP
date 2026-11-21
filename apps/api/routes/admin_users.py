@@ -5,6 +5,8 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Path, Query
+from pydantic import BaseModel
+from typing import Literal
 
 from apps.api.dependencies.container import get_container
 from apps.api.routes.admin import _admin_client, _list_auth_users, _parse_datetime, _require_admin
@@ -231,3 +233,28 @@ def user_detail(
         raise
     except Exception:
         raise HTTPException(status_code=503, detail="User data is not available") from None
+
+class PlanChangeRequest(BaseModel):
+    plan: Literal["plus", "pro", "ultra"] | None
+
+
+@router.post("/{owner_id}/plan")
+def change_user_plan(
+    request: PlanChangeRequest,
+    owner_id: str = Path(min_length=1, max_length=100, pattern=r"^[A-Za-z0-9_-]+$"),
+) -> dict[str, Any]:
+    admin = _require_admin()
+    client = _admin_client()
+    user = auth_user(client, owner_id)
+    from apps.api.routes.admin_user_actions import _protected
+    if _protected(user, admin.id):
+        raise HTTPException(status_code=403, detail="Protected team account")
+    try:
+        client.rpc("admin_change_user_plan", {
+            "p_owner_id": owner_id,
+            "p_admin_id": admin.id,
+            "p_plan": request.plan,
+        }).execute()
+    except Exception:
+        raise HTTPException(status_code=503, detail="Plan update unavailable; check database migration") from None
+    return {"owner_id": owner_id, "plan": request.plan}
