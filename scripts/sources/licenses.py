@@ -79,29 +79,33 @@ def evidence(text: str, pattern: re.Pattern[str], words: int = 25) -> str:
     return " ".join((before + match.group(0).split() + after)[:words])
 
 
-def classify_text(text: str, *, host: str = "", official_act: bool = False) -> Verdict:
+def classify_text(
+    text: str, *, host: str = "", official_act: bool = False, italian_pa: bool = False
+) -> Verdict:
     """Classifica da un testo di licenza o di note legali (tabelle A e C del §23).
 
     `official_act`: vero solo per leggi e atti ufficiali di un Paese della tabella B (§23.3).
+    `italian_pa`: l'ente è una pubblica amministrazione italiana (IPA) e `text` sono le sue note
+    legali: senza licenza né riserva il documento dell'ente è VR (art. 52 c. 2 CAD, §23.11).
     """
     if official_act:
-        return Verdict(V, "atto ufficiale", "tabella B: atto ufficiale")
+        return Verdict(V, "atto ufficiale", "Tabella B: atto ufficiale")
     sample = text[:300_000]
     for pattern in (_NC, _ND, _SA):
         if pattern.search(sample):
             return Verdict(
-                R, "NC/ND/SA", "riga 1032: CC con NC, ND o SA", evidence(sample, pattern)
+                R, "NC/ND/SA", "Tabella A: qualunque CC con NC, ND o SA", evidence(sample, pattern)
             )
     if _TDM.search(sample):
-        return Verdict(G, "riserva TDM", "riga 1031: licenza e tdm-reservation in conflitto")
+        return Verdict(G, "riserva TDM", "Tabella A: licenza aperta con tdm-reservation")
     if _IGO.search(sample) and _CCBY.search(sample):
-        return Verdict(G, "CC BY IGO", "riga 1028: IGO, clausole speciali", evidence(sample, _IGO))
+        return Verdict(G, "CC BY IGO", "Tabella A: CC BY 3.0/4.0 IGO", evidence(sample, _IGO))
     for pattern, name, why in (
-        (_OGL, "OGL v3.0", "riga 1021: OGL"),
-        (_CC0, "CC0", "riga 1019: CC0"),
-        (_CCBY, "CC BY", "riga 1020: CC BY"),
-        (_IODL, "IODL 2.0", "riga 1025: IODL 2.0"),
-        (_LO, "Licence Ouverte 2.0", "riga 1023: Licence Ouverte"),
+        (_OGL, "OGL v3.0", "Tabella A: OGL v3.0 (Regno Unito)"),
+        (_CC0, "CC0", "Tabella A: CC0 1.0, Public Domain Mark, PDDL"),
+        (_CCBY, "CC BY", "Tabella A: CC BY 2.0-4.0 senza altri elementi"),
+        (_IODL, "IODL 2.0", "Tabella A: IODL 2.0 (Italia)"),
+        (_LO, "Licence Ouverte 2.0", "Tabella A: Licence Ouverte 2.0 (Francia)"),
     ):
         if pattern.search(sample):
             return Verdict(V, name, why, evidence(sample, pattern))
@@ -111,9 +115,31 @@ def classify_text(text: str, *, host: str = "", official_act: bool = False) -> V
         return Verdict(
             VR,
             "opera del governo federale USA (17 U.S.C. §105)",
-            "riga 1027: dominio di un'agenzia federale, solo testo",
+            "Tabella A: opere del governo federale USA (VR)",
             "17 U.S.C. §105: nessun diritto d'autore sulle opere del governo federale USA",
         )
     if _RESERVED.search(sample):
-        return Verdict(R, "diritti riservati", "riga 1035", evidence(sample, _RESERVED))
+        reserve = evidence(sample, _RESERVED)
+        if italian_pa:  # riserva esplicita di una PA italiana: caso per la Normativa (§23.11)
+            return Verdict(
+                G, "PA italiana con riserva", "§23.11: PA con riserva esplicita", reserve
+            )
+        return Verdict(R, "diritti riservati", "Tabella A: «tutti i diritti riservati»", reserve)
+    if italian_pa:
+        return Verdict(
+            VR,
+            "documento di PA italiana senza licenza espressa (art. 52 c. 2 CAD)",
+            "Tabella A: pubblica amministrazione italiana senza licenza né riserva",
+        )
     return Verdict(R, "nessuna licenza dichiarata", "§23.5: pagina senza licenza")
+
+
+def normalize(text: str) -> str:
+    """Spazi, apostrofi e maiuscole non contano nel confronto di una frase di prova."""
+    text = text.replace("’", "'").replace("“", '"').replace("”", '"')
+    return re.sub(r"\s+", " ", text).strip().lower()
+
+
+def proof_in_page(frase: str, page_text: str) -> bool:
+    """La frase di prova deve comparire nel testo della pagina scaricata (§23.11)."""
+    return bool(frase) and normalize(frase) in normalize(page_text)

@@ -289,6 +289,7 @@ PROOF = {
     "regola": "riga 1021: OGL",
     "robots": "ok",
     "terzi": "no",
+    "controllata_nella_pagina": True,
 }
 
 
@@ -398,3 +399,25 @@ def test_law_portal_fingerprint_ignores_the_validity_date() -> None:
     b = F.main_text("www.normattiva.it", page("22/11/2026"))
     assert a == b and a is not None and a.startswith("Art. 1")
     assert F.main_text("www.gov.uk", page("x")) is None
+
+
+def test_proof_phrase_must_appear_in_the_downloaded_page() -> None:
+    page = "Footer  All content is available under the Open Government Licence v3.0, except"
+    assert L.proof_in_page("all content is available under the open government licence v3.0", page)
+    assert not L.proof_in_page("Creative Commons Attribution", page)
+    assert not L.proof_in_page("", page)
+
+
+def test_unverified_proof_is_not_green(tmp_path: Path) -> None:
+    proof = {k: v for k, v in PROOF.items() if k != "controllata_nella_pagina"}
+    with pytest.raises(S.SourceError, match="verificata"):
+        S.Store(tmp_path / "f.json").add(good(prova=proof))
+
+
+def test_italian_public_administration_rule() -> None:
+    notes = "Note legali. Informazioni sul sito e sulla privacy."
+    assert L.classify_text(notes, italian_pa=True).classe == L.VR
+    assert L.classify_text(notes).classe == L.R
+    reserved = "Tutti i diritti riservati. Uso consentito solo con consenso scritto."
+    assert L.classify_text(reserved, italian_pa=True).classe == L.G
+    assert L.classify_text("Licence CC BY 4.0", italian_pa=True).classe == L.V

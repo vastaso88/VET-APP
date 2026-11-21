@@ -25,7 +25,7 @@ LEVELS = {
 # sparita), in_attesa_normativa (G), non_usabile (R)
 STATES = ("in_uso", "non_approvata", "in_sospeso", "in_attesa_normativa", "non_usabile")
 VALID_CLASSES = ("V", "VR", "G", "R", "N")
-PROOF_FIELDS = ("frase", "url", "data", "regola", "robots", "terzi")
+PROOF_FIELDS = ("frase", "url", "data", "regola", "robots", "terzi")  # frasi extra: "frasi_extra"
 REQUIRED = (
     "id",
     "titolo",
@@ -81,8 +81,11 @@ def validate(src: dict[str, Any]) -> None:
         absent = [k for k in PROOF_FIELDS if not proof.get(k)]
         if absent:
             raise SourceError(f"prova della licenza incompleta: {', '.join(absent)}")
-        if len(str(proof["frase"]).split()) > 25:
+        phrases = [proof["frase"], *proof.get("frasi_extra", [])]
+        if any(len(str(p).split()) > 25 for p in phrases):
             raise SourceError("frase della prova oltre 25 parole")
+        if "controllata_nella_pagina" not in proof:
+            raise SourceError("prova non verificata: la frase va cercata nella pagina scaricata")
     if src["stato"] not in STATES:
         raise SourceError(f"stato sconosciuto: {src['stato']}")
     if not set(src["specie"]) <= set(SPECIES) or not set(src["temi"]) <= set(THEMES):
