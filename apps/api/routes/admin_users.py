@@ -268,14 +268,24 @@ def _verify_plan_totp(admin_id: str, code: str) -> str:
     }
     try:
         with httpx.Client(timeout=8.0) as session:
-            factors_response = session.get(base + "/factors", headers=headers)
-            if factors_response.status_code != 200:
+            # MFA listFactors() uses GET /user, which includes enrolled factors.
+            # /factors only supports enrollment (POST), not listing via GET.
+            user_response = session.get(base + "/user", headers=headers)
+            if user_response.status_code in (401, 403):
+                raise HTTPException(status_code=401, detail="Admin session expired")
+            if user_response.status_code != 200:
                 raise HTTPException(status_code=503, detail="MFA provider unavailable")
-            factors = factors_response.json().get("factors", [])
+            user_data = user_response.json()
+            if user_data.get("id") != admin_id:
+                raise HTTPException(status_code=403, detail="MFA identity mismatch")
+            factors = user_data.get("factors") or []
+            if not isinstance(factors, list):
+                raise HTTPException(status_code=503, detail="Invalid MFA provider response")
             verified = next(
                 (
                     item for item in factors
-                    if (item.get("factor_type") or item.get("type")) == "totp"
+                    if isinstance(item, dict)
+                    and (item.get("factor_type") or item.get("type")) == "totp"
                     and item.get("status") == "verified"
                 ),
                 None,

@@ -1085,3 +1085,25 @@ button, input, select { font: inherit; }
 .pricing-filter label { max-width:180px; }
 .pricing-enrollment { display:grid; gap:12px; justify-items:start; }
 .pricing-message { font-weight:650; }
+
+
+/* A plan's MFA setup is a dedicated vertical form, not the 4-column user filters. */
+.plan-totp-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  max-width: 740px;
+  margin: 24px 0;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #f8fafb;
+}
+.plan-totp-control h3 { margin: 0; font-size: 16px; color: var(--text); }
+.plan-totp-control p { margin: 0; overflow-wrap: anywhere; }
+.plan-totp-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; justify-items: start; min-width: 0; }
+.plan-totp-fields label { display: grid; gap: 6px; width: 100%; max-width: 360px; color: var(--muted); font-size: 13px; font-weight: 600; }
+.plan-totp-fields input, .plan-totp-fields select { width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: white; color: var(--text); }
+.plan-totp-fields button { max-width: 100%; white-space: normal; }
+.plan-totp-fields code { overflow-wrap: anywhere; }
+.plan-totp-feedback { font-weight: 600; }
