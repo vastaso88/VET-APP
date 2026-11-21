@@ -19,8 +19,8 @@ export async function middleware(request: NextRequest) {
   const refresh = request.cookies.get(REFRESH_COOKIE)?.value;
   if (!refresh || !expiresSoon(access)) return NextResponse.next();
 
-  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = process.env.ADMIN_SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://ywbuzgwbkrmkukkpysbz.supabase.co";
+  const key = process.env.ADMIN_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "sb_publishable_t5vFAehg91FYPh_rFLOiUQ_Wv9tFh5m";
   if (!url || !key) return NextResponse.next();
 
   try {
