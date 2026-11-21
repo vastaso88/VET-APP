@@ -466,7 +466,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get billingOpenAccountError =>
-      'No he podido abrir la página. Inténtalo más tarde.';
+      'No pude abrir la página. Inténtalo más tarde.';
 
   @override
   String get billingTitle => 'Suscripción y pagos';
@@ -4957,7 +4957,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsConsentPrivacy => 'Política de privacidad';
 
   @override
-  String get settingsConsentMarketingEmail => 'Correos de marketing';
+  String get settingsConsentMarketingEmail =>
+      'Correos de marketing: novedades y consejos de Quokka';
 
   @override
   String get settingsConsentAnalytics => 'Análisis de uso';
@@ -6766,7 +6767,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String petsConsentShort(String name) {
-    return 'Con «Activar» el asistente podrá leer la historia clínica de $name: entradas con título, fecha, descripción y texto de los documentos, enfermedades en curso, notas y recordatorios (terapias incluidas). Lo que lee va a nuestros proveedores de inteligencia artificial, empresas estadounidenses que tratan los datos en Estados Unidos, fuera de la Unión Europea, después de quitar los datos personales que reconocemos (no todos). Lo usamos solo para responderte y para el resumen para el veterinario. Puedes desactivarlo cuando quieras con un toque, aquí o en Ajustes: vale para las solicitudes siguientes.';
+    return 'Con «Activar» el asistente podrá leer el historial clínico de $name: entradas con título, fecha, descripción y texto de los documentos, enfermedades en curso, notas y recordatorios (terapias incluidas). Lo que lee va a nuestros proveedores de inteligencia artificial, empresas estadounidenses que tratan los datos en Estados Unidos, fuera de la Unión Europea, después de que hayamos quitado los datos personales que reconocemos (no todos). Lo usamos solo para responderte y para el resumen destinado al veterinario. Puedes desactivarlo cuando quieras con un toque, aquí o en Ajustes: se aplica a las solicitudes posteriores.';
   }
 
   @override
@@ -6776,11 +6777,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get petsConsentProposalLater => 'Más tarde';
 
   @override
-  String get marketplaceRulesTitle => 'Reglas del Mercatino';
+  String get marketplaceRulesTitle => 'Reglas del mercadillo';
 
   @override
   String get marketplaceRulesAccept =>
-      'He leído y acepto las reglas del Mercatino';
+      'He leído y acepto las reglas del mercadillo';
 
   @override
   String get noticeMarketplace =>

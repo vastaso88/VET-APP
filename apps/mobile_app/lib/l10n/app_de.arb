@@ -177,7 +177,7 @@
       }
     }
   },
-  "billingAccountStatusNotice": "Ihr Abonnement verwalten Sie in Ihrem Quokka-Konto auf der Website.",
+  "billingAccountStatusNotice": "Ihr Abo verwalten Sie in Ihrem Quokka-Konto auf der Website.",
   "billingOpenAccount": "Konto öffnen",
   "billingOpenAccountError": "Die Seite konnte nicht geöffnet werden. Versuchen Sie es später erneut.",
   "billingTitle": "Abo und Zahlungen",
@@ -2876,7 +2876,7 @@
   "settingsConsentsTapToRetry": "Zum Wiederholen tippen",
   "settingsConsentTerms": "Nutzungsbedingungen",
   "settingsConsentPrivacy": "Datenschutzerklärung",
-  "settingsConsentMarketingEmail": "Marketing-E-Mails",
+  "settingsConsentMarketingEmail": "Marketing-E-Mails: Neuigkeiten und Tipps von Quokka",
   "settingsConsentAnalytics": "Nutzungsanalyse",
   "settingsConsentAccepted": "Akzeptiert v{version} am {date}",
   "@settingsConsentAccepted": {
@@ -3913,7 +3913,7 @@
   "medHistorySend": "Verlauf senden",
   "medHistorySendAll": "Gesamter Verlauf (PDF)",
   "medHistorySendAllSubtitle": "Ein PDF mit allen Ereignissen in zeitlicher Reihenfolge",
-  "petsConsentShort": "Mit „Aktivieren“ kann der Assistent die Krankenakte von {name} lesen: Einträge mit Titel, Datum, Beschreibung und Text der Dokumente, laufende Erkrankungen, Notizen und Erinnerungen (einschließlich Therapien). Was er liest, geht an unsere KI-Anbieter, US-amerikanische Unternehmen, die die Daten in den USA außerhalb der Europäischen Union verarbeiten, nachdem wir die personenbezogenen Daten entfernt haben, die wir erkennen (nicht alle). Wir verwenden es nur, um Ihnen zu antworten und für die Zusammenfassung für den Tierarzt. Sie können es jederzeit mit einem Fingertipp ausschalten, hier oder in den Einstellungen: Es gilt für spätere Anfragen.",
+  "petsConsentShort": "Mit „Aktivieren“ kann der Assistent die Krankenakte von {name} lesen: Einträge mit Titel, Datum, Beschreibung und Text der Dokumente, laufende Erkrankungen, Notizen und Erinnerungen (einschließlich Therapien). Was er liest, geht an unsere KI-Anbieter, US-amerikanische Unternehmen, die die Daten in den USA, außerhalb der Europäischen Union, verarbeiten. Das geschieht, nachdem wir die personenbezogenen Daten entfernt haben, die wir erkennen (nicht alle). Wir verwenden diese Daten nur, um Ihnen zu antworten und für die Zusammenfassung für den Tierarzt. Sie können es jederzeit mit einem Fingertipp ausschalten, hier oder in den Einstellungen: Es gilt für spätere Anfragen.",
   "@petsConsentShort": {
     "placeholders": {
       "name": {
@@ -3923,8 +3923,8 @@
   },
   "petsConsentProposalActivate": "Aktivieren",
   "petsConsentProposalLater": "Später",
-  "marketplaceRulesTitle": "Regeln des Mercatino",
-  "marketplaceRulesAccept": "Ich habe die Regeln des Mercatino gelesen und akzeptiere sie",
+  "marketplaceRulesTitle": "Regeln des Gebrauchtmarkts",
+  "marketplaceRulesAccept": "Ich habe die Regeln des Gebrauchtmarkts gelesen und akzeptiere sie",
   "noticeMarketplace": "Der Gebrauchtmarkt ist nur für Volljährige und bringt zwei Privatpersonen in Kontakt: Quokka ist nicht Partei des Kaufs, prüft weder Anzeigen noch Personen und haftet nicht dafür. Gespräche sind privat: Unser Team liest sie nur, wenn eine der beiden Personen sie meldet.",
   "noticeRules": "Regeln",
   "noticeUnderstood": "Verstanden",

@@ -462,7 +462,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get billingAccountStatusNotice =>
-      'Ihr Abonnement verwalten Sie in Ihrem Quokka-Konto auf der Website.';
+      'Ihr Abo verwalten Sie in Ihrem Quokka-Konto auf der Website.';
 
   @override
   String get billingOpenAccount => 'Konto öffnen';
@@ -4977,7 +4977,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsConsentPrivacy => 'Datenschutzerklärung';
 
   @override
-  String get settingsConsentMarketingEmail => 'Marketing-E-Mails';
+  String get settingsConsentMarketingEmail =>
+      'Marketing-E-Mails: Neuigkeiten und Tipps von Quokka';
 
   @override
   String get settingsConsentAnalytics => 'Nutzungsanalyse';
@@ -6790,7 +6791,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String petsConsentShort(String name) {
-    return 'Mit „Aktivieren“ kann der Assistent die Krankenakte von $name lesen: Einträge mit Titel, Datum, Beschreibung und Text der Dokumente, laufende Erkrankungen, Notizen und Erinnerungen (einschließlich Therapien). Was er liest, geht an unsere KI-Anbieter, US-amerikanische Unternehmen, die die Daten in den USA außerhalb der Europäischen Union verarbeiten, nachdem wir die personenbezogenen Daten entfernt haben, die wir erkennen (nicht alle). Wir verwenden es nur, um Ihnen zu antworten und für die Zusammenfassung für den Tierarzt. Sie können es jederzeit mit einem Fingertipp ausschalten, hier oder in den Einstellungen: Es gilt für spätere Anfragen.';
+    return 'Mit „Aktivieren“ kann der Assistent die Krankenakte von $name lesen: Einträge mit Titel, Datum, Beschreibung und Text der Dokumente, laufende Erkrankungen, Notizen und Erinnerungen (einschließlich Therapien). Was er liest, geht an unsere KI-Anbieter, US-amerikanische Unternehmen, die die Daten in den USA, außerhalb der Europäischen Union, verarbeiten. Das geschieht, nachdem wir die personenbezogenen Daten entfernt haben, die wir erkennen (nicht alle). Wir verwenden diese Daten nur, um Ihnen zu antworten und für die Zusammenfassung für den Tierarzt. Sie können es jederzeit mit einem Fingertipp ausschalten, hier oder in den Einstellungen: Es gilt für spätere Anfragen.';
   }
 
   @override
@@ -6800,11 +6801,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get petsConsentProposalLater => 'Später';
 
   @override
-  String get marketplaceRulesTitle => 'Regeln des Mercatino';
+  String get marketplaceRulesTitle => 'Regeln des Gebrauchtmarkts';
 
   @override
   String get marketplaceRulesAccept =>
-      'Ich habe die Regeln des Mercatino gelesen und akzeptiere sie';
+      'Ich habe die Regeln des Gebrauchtmarkts gelesen und akzeptiere sie';
 
   @override
   String get noticeMarketplace =>

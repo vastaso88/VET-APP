@@ -4922,7 +4922,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsConsentPrivacy => 'Privacy policy';
 
   @override
-  String get settingsConsentMarketingEmail => 'Marketing emails';
+  String get settingsConsentMarketingEmail =>
+      'Marketing emails: news and tips from Quokka';
 
   @override
   String get settingsConsentAnalytics => 'Usage analytics';
@@ -6719,7 +6720,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String petsConsentShort(String name) {
-    return 'With “Turn on” the assistant will be able to read $name\'s medical record: entries with title, date, description and the text of documents, ongoing illnesses, notes and reminders (therapies included). What it reads goes to our AI providers, US companies that process data in the United States, outside the European Union, after we remove the personal data we recognise (not all of it). We use it only to answer you and for the vet summary. You can turn it off any time with one tap, here or in Settings: it applies to later requests.';
+    return 'With “Turn on” the assistant will be able to read $name\'s medical record: entries with title, date, description and the text of documents, ongoing illnesses, notes and reminders (therapies included). What it reads goes to our AI providers, US companies that process data in the United States, outside the European Union, after we remove the personal data we recognize (not all of it). We use it only to answer you and for the vet summary. You can turn it off at any time with one tap, here or in Settings: it applies to later requests.';
   }
 
   @override
@@ -6729,11 +6730,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get petsConsentProposalLater => 'Later';
 
   @override
-  String get marketplaceRulesTitle => 'Mercatino rules';
+  String get marketplaceRulesTitle => 'Marketplace rules';
 
   @override
   String get marketplaceRulesAccept =>
-      'I have read and accept the Mercatino rules';
+      'I have read and accept the marketplace rules';
 
   @override
   String get noticeMarketplace =>

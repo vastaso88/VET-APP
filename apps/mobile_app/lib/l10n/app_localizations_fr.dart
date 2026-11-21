@@ -468,7 +468,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get billingOpenAccountError =>
-      'Impossible d\'ouvrir la page. Réessayez plus tard.';
+      'Je n\'ai pas pu ouvrir la page. Réessayez plus tard.';
 
   @override
   String get billingTitle => 'Abonnement et paiements';
@@ -4986,7 +4986,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsConsentPrivacy => 'Politique de confidentialité';
 
   @override
-  String get settingsConsentMarketingEmail => 'E-mails marketing';
+  String get settingsConsentMarketingEmail =>
+      'E-mails marketing : nouveautés et conseils de Quokka';
 
   @override
   String get settingsConsentAnalytics => 'Analyse d\'utilisation';
@@ -6802,7 +6803,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String petsConsentShort(String name) {
-    return 'Avec « Activer », l\'assistant pourra lire le dossier médical de $name : entrées avec titre, date, description et texte des documents, maladies en cours, notes et rappels (traitements compris). Ce qu\'il lit est envoyé à nos fournisseurs d\'intelligence artificielle, sociétés américaines qui traitent les données aux États-Unis, hors de l\'Union européenne, après que nous avons retiré les données personnelles que nous reconnaissons (pas toutes). Nous l\'utilisons uniquement pour vous répondre et pour le résumé destiné au vétérinaire. Vous pouvez le désactiver à tout moment d\'un geste, ici ou dans les Réglages : cela vaut pour les demandes suivantes.';
+    return 'Avec « Activer », l\'assistant pourra lire le dossier médical de $name : entrées avec titre, date, description et texte des documents, maladies en cours, notes et rappels (traitements compris). Ce qu\'il lit est envoyé à nos fournisseurs d\'intelligence artificielle, sociétés américaines qui traitent les données aux États-Unis, hors de l\'Union européenne, après que nous avons retiré les données personnelles que nous reconnaissons (pas toutes). Nous utilisons ces données uniquement pour vous répondre et pour le résumé destiné au vétérinaire. Vous pouvez le désactiver à tout moment d\'un geste, ici ou dans les Paramètres : cela s\'applique aux demandes suivantes.';
   }
 
   @override
@@ -6812,11 +6813,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get petsConsentProposalLater => 'Plus tard';
 
   @override
-  String get marketplaceRulesTitle => 'Règles du Mercatino';
+  String get marketplaceRulesTitle => 'Règles du marché de l\'occasion';
 
   @override
   String get marketplaceRulesAccept =>
-      'J\'ai lu et j\'accepte les règles du Mercatino';
+      'J\'ai lu et j\'accepte les règles du marché de l\'occasion';
 
   @override
   String get noticeMarketplace =>

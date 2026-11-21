@@ -179,7 +179,7 @@
   },
   "billingAccountStatusNotice": "Votre abonnement se gère depuis votre compte Quokka sur le site.",
   "billingOpenAccount": "Ouvrir votre compte",
-  "billingOpenAccountError": "Impossible d'ouvrir la page. Réessayez plus tard.",
+  "billingOpenAccountError": "Je n'ai pas pu ouvrir la page. Réessayez plus tard.",
   "billingTitle": "Abonnement et paiements",
   "billingPlanSwitched": "Vous êtes maintenant sur l'offre {plan}.",
   "@billingPlanSwitched": {
@@ -2876,7 +2876,7 @@
   "settingsConsentsTapToRetry": "Touchez pour réessayer",
   "settingsConsentTerms": "Conditions d'utilisation",
   "settingsConsentPrivacy": "Politique de confidentialité",
-  "settingsConsentMarketingEmail": "E-mails marketing",
+  "settingsConsentMarketingEmail": "E-mails marketing : nouveautés et conseils de Quokka",
   "settingsConsentAnalytics": "Analyse d'utilisation",
   "settingsConsentAccepted": "Accepté v{version} le {date}",
   "@settingsConsentAccepted": {
@@ -3913,7 +3913,7 @@
   "medHistorySend": "Envoyer l'historique",
   "medHistorySendAll": "Tout l'historique (PDF)",
   "medHistorySendAllSubtitle": "Un PDF avec tous les événements par ordre chronologique",
-  "petsConsentShort": "Avec « Activer », l'assistant pourra lire le dossier médical de {name} : entrées avec titre, date, description et texte des documents, maladies en cours, notes et rappels (traitements compris). Ce qu'il lit est envoyé à nos fournisseurs d'intelligence artificielle, sociétés américaines qui traitent les données aux États-Unis, hors de l'Union européenne, après que nous avons retiré les données personnelles que nous reconnaissons (pas toutes). Nous l'utilisons uniquement pour vous répondre et pour le résumé destiné au vétérinaire. Vous pouvez le désactiver à tout moment d'un geste, ici ou dans les Réglages : cela vaut pour les demandes suivantes.",
+  "petsConsentShort": "Avec « Activer », l'assistant pourra lire le dossier médical de {name} : entrées avec titre, date, description et texte des documents, maladies en cours, notes et rappels (traitements compris). Ce qu'il lit est envoyé à nos fournisseurs d'intelligence artificielle, sociétés américaines qui traitent les données aux États-Unis, hors de l'Union européenne, après que nous avons retiré les données personnelles que nous reconnaissons (pas toutes). Nous utilisons ces données uniquement pour vous répondre et pour le résumé destiné au vétérinaire. Vous pouvez le désactiver à tout moment d'un geste, ici ou dans les Paramètres : cela s'applique aux demandes suivantes.",
   "@petsConsentShort": {
     "placeholders": {
       "name": {
@@ -3923,8 +3923,8 @@
   },
   "petsConsentProposalActivate": "Activer",
   "petsConsentProposalLater": "Plus tard",
-  "marketplaceRulesTitle": "Règles du Mercatino",
-  "marketplaceRulesAccept": "J'ai lu et j'accepte les règles du Mercatino",
+  "marketplaceRulesTitle": "Règles du marché de l'occasion",
+  "marketplaceRulesAccept": "J'ai lu et j'accepte les règles du marché de l'occasion",
   "noticeMarketplace": "Le marché de l'occasion est réservé aux personnes majeures et met en relation deux particuliers : Quokka n'est pas partie à la vente, ne vérifie ni les annonces ni les personnes et n'en répond pas. Les conversations sont privées : notre équipe ne les lit que si l'une des deux personnes les signale.",
   "noticeRules": "Règles",
   "noticeUnderstood": "Compris",
