@@ -12,6 +12,7 @@ import {
 
 type SupabaseLoginPayload = {
   access_token?: string;
+  refresh_token?: string;
   error?: string;
   error_description?: string;
   msg?: string;
@@ -54,7 +55,7 @@ export async function login(formData: FormData): Promise<void> {
   }
 
   const payload = (await authResponse.json()) as SupabaseLoginPayload;
-  if (!payload.access_token) loginError("auth-service");
+  if (!payload.access_token || !payload.refresh_token) loginError("auth-service");
 
   let adminCheck: Response;
   try {
@@ -80,14 +81,22 @@ export async function login(formData: FormData): Promise<void> {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60,
+    maxAge: 60 * 60 * 24 * 30,
   });
 
+  cookieStore.set("vet_admin_refresh_token", payload.refresh_token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+  });
   redirect("/");
 }
 
 export async function logout(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete(ADMIN_COOKIE);
+  cookieStore.delete("vet_admin_refresh_token");
   redirect("/login");
 }
