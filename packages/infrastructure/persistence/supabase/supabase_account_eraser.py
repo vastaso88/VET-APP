@@ -33,6 +33,8 @@ MARKETPLACE_PHOTOS_BUCKET = "marketplace-photos"
 # owner's chats, listing reports) are removed explicitly as well, because the
 # live database was set up by hand and cascades cannot be taken for granted.
 OWNER_TABLES: tuple[tuple[str, str], ...] = (
+    ("user_login_events", "owner_id"),
+    ("admin_user_actions", "owner_id"),
     ("marketplace_listing_reports", "reporter_owner_id"),
     ("marketplace_user_restrictions", "owner_id"),
     ("marketplace_listings", "owner_id"),

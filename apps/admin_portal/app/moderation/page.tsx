@@ -2,8 +2,8 @@ import Link from "next/link";
 
 import { AdminShell } from "../../components/admin-shell";
 import { MarketplaceRestrictForm } from "../../components/marketplace-restrict-form";
+import { ModerationCaseActions } from "../../components/moderation-case-actions";
 import { getAdminModeration, getMarketplaceRestrictions } from "../../lib/admin-api";
-import { liftMarketplaceRestriction } from "./actions";
 
 function date(value: string | null): string {
   if (!value) return "—";
@@ -18,7 +18,7 @@ export default async function ModerationPage() {
     getAdminModeration(),
     getMarketplaceRestrictions(),
   ]);
-  const activeRestrictions = restrictions.filter((item) => !item.lifted_at);
+  const activeRestrictions = restrictions.filter((item) => !item.lifted_at && (!item.expires_at || new Date(item.expires_at).getTime() > Date.now()));
   const openRadar = moderation.radar.filter((item) => item.status === "pending");
   const openChat = moderation.chat.filter(
     (item) => item.status === "reported" || item.status === "under_review",
@@ -28,6 +28,10 @@ export default async function ModerationPage() {
 
   return (
     <AdminShell title="Moderation" eyebrow="Trust & safety">
+      <ModerationCaseActions cases={[
+        ...moderation.marketplace.filter(item => item.listing?.owner_id && !item.listing.owner_id.startsWith("deleted-")).map(item => ({ owner_id: item.listing!.owner_id, queue: "marketplace" as const, id: item.id })),
+        ...moderation.marketplace_messages.filter(item => item.subject_owner_id && !item.subject_owner_id.startsWith("deleted-")).map(item => ({ owner_id: item.subject_owner_id!, queue: "marketplace_messages" as const, id: item.id })),
+      ]} />
       <div className="metric-grid">
         <article className="metric-card">
           <span>Radar reports</span>
@@ -125,17 +129,12 @@ export default async function ModerationPage() {
           {restrictions.length ? restrictions.map((item) => (
             <div className="table-row" key={`${item.owner_id}-${item.created_at}`}>
               <span>{date(item.created_at)}</span>
-              <span>{item.owner_id}</span>
+              <span><Link className="table-action-link" href={`/users/${encodeURIComponent(item.owner_id)}`}>{item.owner_id}</Link></span>
               <span>{item.reason}</span>
               <span>{item.note ?? "—"}</span>
               <span>{date(item.lifted_at)}</span>
               <span>
-                {item.lifted_at ? "—" : (
-                  <form action={liftMarketplaceRestriction}>
-                    <input type="hidden" name="owner_id" value={item.owner_id} />
-                    <button className="ghost-button" type="submit">Let back in</button>
-                  </form>
-                )}
+                <Link className="table-action-link" href={`/users/${encodeURIComponent(item.owner_id)}#actions`}>Apri azioni →</Link>
               </span>
             </div>
           )) : <div className="table-empty">Nobody is kept out of the Mercatino.</div>}

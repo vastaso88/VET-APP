@@ -6,10 +6,11 @@ import {
   correctClosedByAgeDateRequest,
   eraseClosedByAgeAccountRequest,
   setClosedByAgeCorrectionRequestedRequest,
-} from "../../lib/admin-api";
+} from "../../../lib/admin-api";
 
 function refresh(): void {
-  revalidatePath("/age");
+  revalidatePath("/users/closed-by-age");
+  revalidatePath("/users");
 }
 
 function refOf(formData: FormData): string {

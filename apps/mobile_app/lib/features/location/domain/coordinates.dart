@@ -25,6 +25,9 @@ class UserLocationPreference {
     this.mode = LocationMode.currentPosition,
     this.home,
     this.homeLabel,
+    this.homeCountryCode,
+    this.homeCity,
+    this.homeSavedAt,
     this.current,
     this.currentLabel,
     this.currentSource,
@@ -34,6 +37,9 @@ class UserLocationPreference {
   final LocationMode mode;
   final Coordinates? home;
   final String? homeLabel;
+  final String? homeCountryCode;
+  final String? homeCity;
+  final DateTime? homeSavedAt;
   final Coordinates? current;
   final String? currentLabel;
   final LocationSource? currentSource;
@@ -43,6 +49,9 @@ class UserLocationPreference {
     LocationMode? mode,
     Coordinates? home,
     String? homeLabel,
+    String? homeCountryCode,
+    String? homeCity,
+    DateTime? homeSavedAt,
     Coordinates? current,
     String? currentLabel,
     LocationSource? currentSource,
@@ -52,6 +61,10 @@ class UserLocationPreference {
       mode: mode ?? this.mode,
       home: home ?? this.home,
       homeLabel: homeLabel ?? this.homeLabel,
+      // A changed residence must not inherit the previous country's metadata.
+      homeCountryCode: home != null ? homeCountryCode : homeCountryCode ?? this.homeCountryCode,
+      homeCity: home != null ? homeCity : homeCity ?? this.homeCity,
+      homeSavedAt: home != null ? homeSavedAt : homeSavedAt ?? this.homeSavedAt,
       current: current ?? this.current,
       currentLabel: currentLabel ?? this.currentLabel,
       currentSource: currentSource ?? this.currentSource,

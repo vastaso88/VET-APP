@@ -175,6 +175,26 @@ def test_export_returns_only_the_owners_rows_and_signed_links() -> None:
     assert export.account["email"] == "a@example.com"
 
 
+def test_support_logs_are_exported_without_team_notes_and_keep_other_notes() -> None:
+    client = _SigningFake()
+    _seed(client, OWNER_A, tag="a")
+    client.db["admin_user_actions"][0].update(
+        {
+            "admin_id": "team",
+            "note": "internal note",
+            "case_id": "internal case",
+            "action": "revoke_devices",
+        }
+    )
+    client.db["clinical_events"][0]["note"] = "owner clinical note"
+    export = _exporter(client).export_data(OWNER_A)
+    receipt = export.data["admin_user_actions"][0]
+    assert receipt["action"] == "revoke_devices"
+    assert not {"admin_id", "note", "case_id"} & receipt.keys()
+    assert export.data["user_login_events"]
+    assert export.data["clinical_events"][0]["note"] == "owner clinical note"
+
+
 def test_export_refuses_a_non_uuid_owner() -> None:
     with pytest.raises(ValueError):
         _exporter(_SigningFake()).export_data("")

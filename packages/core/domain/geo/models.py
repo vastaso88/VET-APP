@@ -117,6 +117,9 @@ class UserLocation(BaseModel):
     mode: LocationMode = "current_position"
     home: Coordinates | None = None
     home_label: str | None = None
+    home_country_code: str | None = Field(default=None, pattern=r"^[A-Z]{2}$")
+    home_city: str | None = Field(default=None, max_length=200)
+    home_saved_at: datetime | None = None
     current: Coordinates | None = None
     current_label: str | None = None
     current_source: LocationSource | None = None

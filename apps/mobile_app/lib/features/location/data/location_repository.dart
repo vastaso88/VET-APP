@@ -50,6 +50,10 @@ class LocationRepository {
         'home_latitude': preference.home?.latitude,
         'home_longitude': preference.home?.longitude,
         'home_label': preference.homeLabel,
+        'home_country_code': preference.homeCountryCode,
+        'home_city': preference.homeCity,
+        'home_saved_at': preference.homeSavedAt?.toIso8601String(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
         'current_latitude': preference.current?.latitude,
         'current_longitude': preference.current?.longitude,
         'current_label': preference.currentLabel,
@@ -77,6 +81,9 @@ class LocationRepository {
           ? Coordinates(latitude: homeLatitude, longitude: homeLongitude)
           : null,
       homeLabel: row['home_label'] as String?,
+      homeCountryCode: row['home_country_code'] as String?,
+      homeCity: row['home_city'] as String?,
+      homeSavedAt: DateTime.tryParse((row['home_saved_at'] ?? '').toString()),
       current: currentLatitude != null && currentLongitude != null
           ? Coordinates(latitude: currentLatitude, longitude: currentLongitude)
           : null,

@@ -19,6 +19,9 @@ void main() {
         'mode': 'home_residence',
         'home': {'latitude': 45.4642, 'longitude': 9.1900},
         'home_label': 'Milano',
+        'home_country_code': 'IT',
+        'home_city': 'Milano',
+        'home_saved_at': '2026-11-21T10:00:00Z',
       }),
     });
 
@@ -28,6 +31,15 @@ void main() {
     expect(preference.mode, LocationMode.homeResidence);
     expect(preference.home, const Coordinates(latitude: 45.4642, longitude: 9.1900));
     expect(preference.homeLabel, 'Milano');
+    expect(preference.homeCountryCode, 'IT');
+    expect(preference.homeCity, 'Milano');
+    expect(preference.homeSavedAt, DateTime.utc(2026, 11, 21, 10));
+  });
+
+  test('changing residence clears stale country, GPS updates keep residence', () {
+    const before = UserLocationPreference(home: Coordinates(latitude: 45, longitude: 9), homeCountryCode: 'IT', homeCity: 'Example city');
+    expect(before.copyWith(home: const Coordinates(latitude: 48, longitude: 2)).homeCountryCode, isNull);
+    expect(before.copyWith(current: const Coordinates(latitude: 48, longitude: 2)).homeCountryCode, 'IT');
   });
 
   test('update persists the new preference to shared_preferences', () async {

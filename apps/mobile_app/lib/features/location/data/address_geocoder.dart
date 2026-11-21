@@ -9,10 +9,13 @@ import '../domain/coordinates.dart';
 import '../domain/supported_countries.dart';
 
 class GeocodedAddress {
-  const GeocodedAddress({required this.coordinates, required this.displayLabel});
+  const GeocodedAddress(
+      {required this.coordinates, required this.displayLabel, this.countryCode, this.city});
 
   final Coordinates coordinates;
   final String displayLabel;
+  final String? countryCode;
+  final String? city;
 }
 
 /// Injectable boundary around a geocoding provider, same pattern as
@@ -91,8 +94,11 @@ class NominatimAddressGeocoder implements AddressGeocoder {
       return null;
     }
     final displayName = match['display_name'] as String?;
+    final address = match['address'] as Map<String, dynamic>?;
     return GeocodedAddress(
       coordinates: Coordinates(latitude: latitude, longitude: longitude),
+      countryCode: (address?['country_code'] as String?)?.toUpperCase(),
+      city: (address?['city'] ?? address?['town'] ?? address?['village']) as String?,
       displayLabel: compactAddressLabel(
         match['address'] as Map<String, dynamic>?,
         displayName == null || displayName.isEmpty ? query : displayName,
