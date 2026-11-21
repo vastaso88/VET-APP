@@ -209,3 +209,62 @@ def test_every_v2_prompt_has_the_round4_rules() -> None:
 )
 def test_the_round4_vague_phrasings_ask_first(message: str) -> None:
     assert describes_a_vague_picture(message)
+
+
+# --- dose requests recognised in five languages (production too, Orchestrator 21/11) ----
+
+from packages.core.domain.safety.dosage_request import (  # noqa: E402
+    asks_an_amount,
+    is_dosage_request,
+)
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "quanto finadyne le do?",
+        "le do un po' di finadyne che ho per furia, quanto ne metto?",
+        "quanto ne metto di metacam?",
+        "how much metacam should I give him?",
+        "how many drops of meloxicam do I give?",
+        "how much of the painkiller can I give my dog?",
+        "how much bute should I give her?",
+        "¿cuánto metacam le doy?",
+        "¿cuántas gotas le pongo del antibiótico?",
+        "wie viel Metacam soll ich geben?",
+        "combien de gouttes de metacam je lui donne ?",
+    ],
+)
+def test_the_round4_dose_requests_are_recognised(message: str) -> None:
+    assert is_dosage_request(message)
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "quanto pesa un canarino?",
+        "quanti grammi di crocchette gli do?",
+        "quanto fieno ne metto nella gabbia?",
+        "quanta acqua ne metto nella vasca?",
+        "how much food should I give my rabbit?",
+        "how many drops of water on the leaves?",
+        "how many pills of fish food?",
+        "quante gocce di sangue ha perso?",
+        "¿cuánta comida le doy?",
+        "¿cuántas gotas de agua le pongo a las hojas?",
+        "wie viel Futter gebe ich?",
+        "combien de croquettes je lui donne ?",
+        "quanto costa il metacam?",
+        "quanto dura l'antibiotico?",
+        "how much does the vet visit cost?",
+    ],
+)
+def test_weights_water_drops_and_food_portions_are_not_dose_requests(message: str) -> None:
+    assert not is_dosage_request(message)
+
+
+def test_an_amount_without_the_medicine_named_counts_after_one_in_the_conversation() -> None:
+    assert asks_an_amount("combien je lui en mets ?")
+    assert asks_an_amount("quanto ne metto?")
+    assert asks_an_amount("¿cuánto le pongo?")
+    assert not asks_an_amount("how many drops of water on the leaves?")

@@ -69,15 +69,43 @@ _MEDICINE_WORDS_FR = (
     r"cortancyl|gabapentine|amoxicilline|clamoxyl|augmentin|enrofloxacine|"
     r"metronidazole|flagyl"
 )
-_MEDICINE_WORDS = f"{_MEDICINE_WORDS_IT}|{_MEDICINE_WORDS_DE}|{_MEDICINE_WORDS_FR}"
+# English and Spanish (synthetic users round 4, 21/11/2026: "how much metacam should I
+# give?", "cuántas gotas le pongo?" were not recognised), and the medicines of horses and
+# of the family cabinet the lists missed ("quanto Finadyne le do?", #325).
+_MEDICINE_WORDS_EN_ES = (
+    r"tablets?|pills?|capsules?|drops|syrup|ointment|medication|medicine|medicines|"
+    r"antibiotics?|painkillers?|pain killers?|pain relief|anti-inflammator\w*|"
+    r"antiinflammator\w*|steroids?|dewormer|wormer|antihistamine\w*|sedatives?|"
+    r"ibuprofen|acetaminophen|tylenol|advil|"
+    r"pastillas?|comprimidos?|capsulas?|gotas|jarabe|pomada|medicamentos?|medicinas?|"
+    r"antibioticos?|analgesicos?|antiinflamatorios?|corticoides?|antiparasitarios?|"
+    r"ibuprofeno|paracetamol|carprofeno|prednisona|gabapentina|amoxicilina|metronidazol|"
+    r"omeprazol"
+)
+_MEDICINE_WORDS_HORSE_AND_MORE = (
+    r"finadyne|flunixin\w*|banamine|bute|fenilbutazone|phenylbutazone|equipalazone|"
+    r"dexametasone|dexamethasone|desametasone|sedivet|domosedan|detomidin\w*|"
+    r"loxicom|inflacam|rheumocam|cimalgex|galliprant|vetmedin|fortekor|benazepril|"
+    r"prednicortone|vetoryl"
+)
+_MEDICINE_WORDS = (
+    f"{_MEDICINE_WORDS_IT}|{_MEDICINE_WORDS_DE}|{_MEDICINE_WORDS_FR}|"
+    f"{_MEDICINE_WORDS_EN_ES}|{_MEDICINE_WORDS_HORSE_AND_MORE}"
+)
 # Shared with dose_in_answer.py (the net on the model's replies).
 MEDICINE_WORDS = _MEDICINE_WORDS
 _MEDICINE = _words(_MEDICINE_WORDS)
 
-_GIVE_IT = r"dare|dargli|darle|darne|do|dovrei dare|somministr\w*"
+_GIVE_IT = (
+    r"dare|dargli|darle|darne|do|dovrei dare|somministr\w*|"
+    # "quanto ne metto?" (round 4, #325)
+    r"metto|metterne|mettergliene|mettere|mettergli|metterle"
+)
 _GIVE_DE = r"geben|gebe|verabreichen|verabreiche|eingeben|reingeben"
-_GIVE_FR = r"donner|donne|donnerais|administrer|administre|lui en donner|mettre"
-_GIVE = f"(?:{_GIVE_IT}|{_GIVE_DE}|{_GIVE_FR})"
+_GIVE_FR = r"donner|donne|donnerais|administrer|administre|lui en donner|mettre|mets|met"
+_GIVE_EN = r"give|giving|administer|put"
+_GIVE_ES = r"doy|dar|darle|dale|pongo|poner|ponerle|administro|administrar"
+_GIVE = f"(?:{_GIVE_IT}|{_GIVE_DE}|{_GIVE_FR}|{_GIVE_EN}|{_GIVE_ES})"
 
 # How much: "quanti mg", "quanta tachipirina", "quante gocce di…" (the
 # medicine right after the question word), or "quanto/ogni quanto … dare".
@@ -86,7 +114,8 @@ _GIVE = f"(?:{_GIVE_IT}|{_GIVE_DE}|{_GIVE_FR})"
 _HOW_MUCH_WORDS = (
     r"quant[oaie]|wie ?viel|wieviel|wie viele|welche menge|welche dosis|combien de|combien d'|"
     r"combien|quelle quantite de|quelle quantite d'|quelle quantite|quelle dose de|"
-    r"quelle dose d'|quelle dose"
+    r"quelle dose d'|quelle dose|"
+    r"how much|how many|what amount|cuant[oa]s?|que cantidad"
 )
 _HOW_OFTEN_WORDS = r"ogni quanto|wie oft|a quelle frequence|tous les combien|combien de fois"
 _DOSE_WORDS = r"dos[ei]|dosaggi\w*|posologi\w*|dosis|dosierung\w*|dosieren|dosage\w*|posologie\w*"
@@ -102,7 +131,16 @@ _SOLID_FORMS = (
     r"compress\w*|pastigli\w*|pillol\w*|capsul\w*|fial\w*|bustin\w*|tablette\w*|kapsel\w*|"
     r"comprime\w*|cachet\w*|gelule\w*"
 )
-_ARTICLES = r"di |del |della |dello |dei |delle |degli |von |vom |des |der |de |d'|du |de la |de l'"
+_ARTICLES = (
+    r"di |del |della |dello |dei |delle |degli |von |vom |des |der |de |d'|du |de la |de l'|"
+    r"of the |of |the |de los |de las "
+)
+# Drops of water or of blood are not a medicine (round 4: "how many drops of water on the
+# leaves?"); taken out before the amount is looked for.
+_NOT_MEDICINE_DROPS = re.compile(
+    r"\b(?:gocc\w*|drops?|gotas?|tropfen|gouttes?)\s+(?:di |d'|of |de |von |du |de la )?"
+    r"(?:acqua|water|agua|wasser|eau|sangue|blood|sangre|blut|sang)\b"
+)
 
 _ASKS_AN_AMOUNT = re.compile(
     rf"\b(?:{_HOW_MUCH_WORDS}) (?:{_ARTICLES})?(?:{_MEDICINE_WORDS})\b"
@@ -151,6 +189,7 @@ def asks_an_amount(message: str) -> bool:
     # A pharmaceutical form alone ("the antibiotic drops for the water") is
     # not a question about an amount (synthetic users 2026-11-07, P6).
     text = _NOT_ASKING_A_DOSE.sub(" ", normalize_for_matching(message))
+    text = _NOT_MEDICINE_DROPS.sub(" ", text)
     return bool(_ASKS_AN_AMOUNT.search(text))
 
 
@@ -202,8 +241,29 @@ _NOT_ASKING_A_DOSE = re.compile(
 )
 
 
+_FOOD = _words(
+    r"cibo|mangime|crocchett\w*|fieno|pappa|umido|food|kibble|pellets?|hay|treats?|comida|"
+    r"pienso|heno|futter|trockenfutter|heu|nourriture|croquettes?|foin|granules?"
+)
+# A pharmaceutical form a food portion shares ("how many pills of fish food?").
+_FORM_ONLY = _words(
+    r"gocce|goccia|bustin\w*|pillol\w*|compress\w*|tablets?|pills?|drops|capsules?|gotas|"
+    r"pastillas?|tropfen|tablette\w*|gouttes?|comprime\w*|sachet\w*"
+)
+
+
+def _a_food_portion(text: str) -> bool:
+    """Food words, and every medicine word of the message is only a form."""
+    if not _FOOD.search(text):
+        return False
+    return all(_FORM_ONLY.fullmatch(m.group(0)) for m in _MEDICINE.finditer(text))
+
+
 def is_dosage_request(message: str) -> bool:
     text = _NOT_ASKING_A_DOSE.sub(" ", normalize_for_matching(message))
+    text = _NOT_MEDICINE_DROPS.sub(" ", text)
+    if _a_food_portion(text):
+        return False
     if _VACCINE.search(text) and not _VACCINE_EXCEPTION.search(text):
         # "quante dosi di vaccino deve fare?" is a schedule question.
         return False

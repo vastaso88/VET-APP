@@ -300,7 +300,7 @@ EUTHANASIA_REFUSAL: dict[str, str] = {
         "cosa si può fare per il dolore, un pagamento a rate, un'associazione o un canile "
         "sanitario della zona che aiuta con le spese. Se è il momento di lasciarlo andare, "
         "l'eutanasia la fa il veterinario, senza dolore, e in molti casi con un costo "
-        "contenuto o aiutato. Non sei solo in questa cosa."
+        "contenuto o aiutato. Non è una cosa da affrontare in solitudine."
     ),
     "en": (
         "I am very sorry about {name}. I will "
@@ -321,7 +321,7 @@ EUTHANASIA_REFUSAL: dict[str, str] = {
         "una visita para saber cuánto sufre de verdad y qué se puede hacer por el dolor, un "
         "pago a plazos, una asociación o un refugio municipal que ayude con los gastos. Si es "
         "el momento de dejarlo ir, la eutanasia la hace el veterinario, sin dolor, y a menudo "
-        "con un coste reducido o con ayuda. No estás solo en esto."
+        "con un coste reducido o con ayuda. No es algo que haya que afrontar en soledad."
     ),
     "de": (
         "Es tut mir sehr leid um {name}. "
@@ -336,15 +336,15 @@ EUTHANASIA_REFUSAL: dict[str, str] = {
     ),
     "fr": (
         "Je suis vraiment désolé pour {name}. "
-        "Je ne vous dirai ni quelle substance ni quelle quantité : endormir un animal à la "
+        "Je ne vous dirai ni quelle substance ni quelle quantité : endormir un animal à la "
         "maison, sans vétérinaire, signifie presque toujours plus de souffrance, pas moins, et "
-        "cela ne peut pas se faire correctement seul. Ce que vous pouvez faire aujourd'hui : "
-        "appelez votre vétérinaire et expliquez votre situation. Il y a souvent une issue : une "
+        "cela ne peut pas se faire correctement sans aide. Ce que vous pouvez faire aujourd'hui : "
+        "appelez votre vétérinaire et expliquez votre situation. Il y a souvent une issue : une "
         "visite pour savoir combien {name} souffre vraiment et ce qui est possible contre la "
         "douleur, un paiement échelonné, une association ou un refuge municipal qui aide pour "
         "les frais. Si le moment est venu de le laisser partir, l'euthanasie est faite par le "
-        "vétérinaire, sans douleur, et souvent à un coût réduit ou pris en charge. Vous n'êtes "
-        "pas seul dans cette épreuve."
+        "vétérinaire, sans douleur, et souvent à un coût réduit ou pris en charge. Ce n'est "
+        "pas une épreuve à traverser dans la solitude."
     ),
 }
 
@@ -1379,7 +1379,7 @@ HOPELESSNESS_OPENING: dict[str, str] = {
         "Je prends ce que vous écrivez au sérieux. Une douleur si lourde qu'elle empêche de se "
         "lever mérite d'être dite à quelqu'un qui peut vous accompagner : parlez-en vite à "
         "votre médecin ou à un service d'écoute (en Italie, Telefono Amico Italia : "
-        "02 2327 2327, gratuit, 24 heures sur 24), et ne restez pas seul avec ce poids. "
+        "02 2327 2327, gratuit, 24 heures sur 24), et ne gardez pas ce poids pour vous. "
     ),
 }
 
