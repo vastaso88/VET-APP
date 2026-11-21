@@ -43,3 +43,10 @@ apps/mobile_app/dart-defines.json
 **/google-services.json
 **/serviceAccount*.json
 **/firebase-service-account*.json
+
+# Apple signing material stays with the developer, outside source control.
+*.p12
+*.p8
+*.mobileprovision
+*.provisionprofile
+apps/mobile_app/ios/Flutter/Signing.xcconfig

@@ -73,3 +73,11 @@ See the current implementation/state here:
 ## Android
 
 Le build Android usano i flavor `prod`, `francesco` e `roberto` e richiedono `--flavor`. Vedi `docs/runbooks/android_flavors.md`.
+
+## iOS / App Store
+
+Il progetto iOS usa Flutter 3.47.6, CocoaPods e il Bundle ID proposto
+`net.quokkapet.quokka` (da confermare sul team Apple). Firma, TestFlight,
+billing StoreKit, privacy e blocchi del porting sono descritti nel
+[runbook iOS](../../docs/runbooks/ios_app_store.md).
+La CI iOS compila senza firma e non pubblica l'app.

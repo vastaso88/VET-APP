@@ -57,6 +57,9 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
 flutter:
+  # Legacy native plugins still require CocoaPods and its permission macros.
+  config:
+    enable-swift-package-manager: false
   generate: true
   uses-material-design: true
   assets:

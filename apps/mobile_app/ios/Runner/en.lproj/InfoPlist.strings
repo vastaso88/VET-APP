@@ -1,0 +1,5 @@
+"NSCameraUsageDescription" = "Take photos or videos of your pets and attach them to their records, chats or listings.";
+"NSMicrophoneUsageDescription" = "Record voice messages for transcription in chat or sound for pet videos you choose to record.";
+"NSPhotoLibraryUsageDescription" = "Choose photos and videos for your pets, records, chats and listings.";
+"NSPhotoLibraryAddUsageDescription" = "Save pet photos and videos to your photo library when you choose to download them.";
+"NSLocationWhenInUseUsageDescription" = "Show nearby pet services and record your walk route while QUOKKA is in use.";
