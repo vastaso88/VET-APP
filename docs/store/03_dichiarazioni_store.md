@@ -1,5 +1,11 @@
 # Dichiarazioni per gli store: età, privacy, IA
 
+Aggiornamento Android 2026-11-21: vedere il [runbook verificato per il test Play](../runbooks/android_play_test_release.md).
+La tabella storica sotto precede l’integrazione del billing nativo: gli acquisti sono ora presenti nel codice,
+ma configurazione console e prove Play non sono verificate. La pagina web `/delete-account` è predisposta,
+non ancora distribuita. La scelta “18+” sotto è incoerente con i flussi attuali 14–17 e va risolta prima di
+compilare il pubblico di destinazione; non copiarla come decisione confermata.
+
 Bozza di lavoro per compilare i moduli di Google Play e App Store. **Non è consulenza legale**: parte dalle bozze in `docs/compliance/`
 (e, per paese, dai documenti sui rami `ml/revisione-e-legale-en`, `ml/legale-de`, `ml/legale-fr`, `ml/legale-es`, che compaiono in
 `docs/compliance/<paese>/` quando le PR sono unite). Le regole degli store cambiano spesso: le citazioni sotto vanno riconfermate
