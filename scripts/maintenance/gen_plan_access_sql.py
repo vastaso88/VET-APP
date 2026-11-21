@@ -487,7 +487,9 @@ commit;
     return content + PRICING_SQL_OVERLAY
 
 
-PRICING_SQL_OVERLAY = (ROOT / "scripts/setup/plan_access_pricing_overlay.sql").read_text(encoding="utf-8")
+PRICING_SQL_OVERLAY = (
+    ROOT / "scripts/setup/plan_access_pricing_overlay.sql"
+).read_text(encoding="utf-8")
 
 def main() -> int:
     check = "--check" in sys.argv[1:]
