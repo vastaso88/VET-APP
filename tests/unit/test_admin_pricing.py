@@ -59,6 +59,7 @@ def test_plan_specific_trial_limits_use_configured_pro_values() -> None:
 
 def test_feature_update_requires_six_digit_totp() -> None:
     from pydantic import ValidationError
+
     from apps.api.routes.admin_pricing import FeatureUpdate
 
     with pytest.raises(ValidationError):
@@ -69,6 +70,7 @@ def test_feature_update_requires_six_digit_totp() -> None:
 
 def test_price_update_rejects_negative_or_unbounded_amount() -> None:
     from pydantic import ValidationError
+
     from apps.api.routes.admin_pricing import PriceUpdate
 
     for value in (-1, 100_000_001):
@@ -90,7 +92,7 @@ def test_pricing_feature_save_sends_digest_not_totp_to_database(
     calls: list[tuple[str, dict[str, object]]] = []
 
     class Client:
-        def rpc(self, name: str, data: dict[str, object]) -> "Client":
+        def rpc(self, name: str, data: dict[str, object]) -> Client:
             calls.append((name, data))
             return self
 
@@ -119,12 +121,13 @@ def test_pricing_save_stops_after_invalid_totp(monkeypatch: pytest.MonkeyPatch) 
     from types import SimpleNamespace
 
     from fastapi import HTTPException
+
     from apps.api.routes import admin_pricing
 
     calls: list[str] = []
 
     class Client:
-        def rpc(self, name: str, data: dict[str, object]) -> "Client":
+        def rpc(self, name: str, data: dict[str, object]) -> Client:
             calls.append(name)
             return self
 
