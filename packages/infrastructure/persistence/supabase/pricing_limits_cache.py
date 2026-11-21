@@ -44,7 +44,9 @@ class PricingLimitsCache:
 
             self._next_fetch = now + 15
             try:
-                from packages.infrastructure.persistence.supabase.client import build_supabase_client
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
 
                 response = (
                     build_supabase_client(self._settings)

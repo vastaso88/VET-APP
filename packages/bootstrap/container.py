@@ -128,7 +128,6 @@ from packages.core.application.services.medical_record_context_retriever import 
     MedicalRecordContextRetriever,
 )
 from packages.core.application.services.plan_access_sync import PlanAccessSync
-from packages.infrastructure.persistence.supabase.pricing_limits_cache import PricingLimitsCache
 from packages.core.application.services.radar_reports import (
     RadarCommunityView,
     RadarReportSettings,
@@ -182,6 +181,7 @@ from packages.core.domain.subscription.limits import (
     PlanLimits,
 )
 from packages.core.domain.subscription.store import ProductCatalog, Store
+from packages.infrastructure.persistence.supabase.pricing_limits_cache import PricingLimitsCache
 
 if TYPE_CHECKING:
     from packages.infrastructure.billing.apple_app_store import AppleSignedDataDecoder

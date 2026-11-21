@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta
 from collections.abc import Callable
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
@@ -186,7 +186,9 @@ class GetOrCreateSubscriptionService:
                 subscription=reported,
                 is_developer=is_developer,
                 has_access=True,
-                limits=effective_limits(reported, is_developer=is_developer, plan_limits=plan_limits),
+                limits=effective_limits(
+                    reported, is_developer=is_developer, plan_limits=plan_limits
+                ),
                 plan_limits=plan_limits,
                 max_memorial_pets=self._max_memorial_pets,
                 test_period=True,
@@ -197,7 +199,9 @@ class GetOrCreateSubscriptionService:
             subscription=subscription,
             is_developer=is_developer,
             has_access=has_access,
-            limits=effective_limits(subscription, is_developer=is_developer, plan_limits=plan_limits),
+            limits=effective_limits(
+                subscription, is_developer=is_developer, plan_limits=plan_limits
+            ),
             plan_limits=plan_limits,
             max_memorial_pets=self._max_memorial_pets,
             data_kept_until=(
