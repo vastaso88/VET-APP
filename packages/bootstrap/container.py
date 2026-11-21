@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
+from packages.bootstrap.pricing_limits_cache import PricingLimitsCache
 from packages.core.application.ports.account_age_repository import AccountAgeRepository
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
 from packages.core.application.ports.account_deletion_repository import (
@@ -181,7 +182,7 @@ from packages.core.domain.subscription.limits import (
     PlanLimits,
 )
 from packages.core.domain.subscription.store import ProductCatalog, Store
-from packages.infrastructure.persistence.supabase.pricing_limits_cache import PricingLimitsCache
+
 
 if TYPE_CHECKING:
     from packages.infrastructure.billing.apple_app_store import AppleSignedDataDecoder
