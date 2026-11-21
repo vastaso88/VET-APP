@@ -5,7 +5,7 @@ Data: 2026-11-21. Richiesta dell'Orchestratore dopo il giro 4d (caso #107: il te
 ## 1. In breve
 
 1. **Tredici Paesi, un numero principale ciascuno** (Belgio: due, uno per lingua). Tabella e blocco dati nella sezione 2.
-2. **Il Paese è quello del profilo dell'utente, non la lingua.** Paese ignoto, o numero non verificato o verificato da più di 6 mesi: **nessun numero**, solo «un servizio di ascolto o i soccorsi del tuo Paese».
+2. **Il Paese è quello del profilo dell'utente, non la lingua.** Paese ignoto, o numero non verificato o verificato da più di 6 mesi: **nessun numero**, solo «un servizio di ascolto o i soccorsi del tuo Paese»; **unica eccezione**, il ripiego temporaneo per la chat in italiano (sezione 7).
 3. **Nei testi fissi niente promesse su orari, costi o esiti** («gratis», «24 ore su 24», «ti aiuteranno»): le fonti discordano o cambiano. Italia: il sito dice «24 ore su 24» ma comunicati del 2024 e 2025 parlano di 9–24, e lo 02 2327 2327 è un numero di rete fissa, a costo secondo il piano di chi chiama. Svizzera: 143.ch scrive che la chiamata è gratuita salvo le tariffe dell'operatore, e ch.ch indica 20–70 centesimi. **I testi di oggi dicono «gratis, 24 ore su 24» per l'Italia: vanno tolti** (sezione 6).
 4. **Sì, c'è una responsabilità** da gestire, ma un disclaimer non basta: contano i controlli (sezione 4).
 5. **Controllo ogni 3 mesi**, con data e fonte nel codice (sezione 5).
@@ -59,6 +59,11 @@ emergency:  # verificati oggi solo BE, ES, GB, IE, CA, AU, NZ
   AU: "000"
   NZ: "111"
   US: "911"
+fallback_unknown_country:   # solo chat in italiano e Paese ignoto; scade il 2027-02-28 (sezione 7)
+  language: it
+  label: "Se sei in Italia:"
+  numbers: {listening: "02 2327 2327 (Telefono Amico Italia)", minors: "19696 (Telefono Azzurro)", rescue: "112"}
+  note: "Servizio indipendente da Quokka, numero controllato a novembre 2026."
 ```
 
 ### Frasi lette sulle pagine (al massimo 25 parole)
@@ -79,7 +84,7 @@ emergency:  # verificati oggi solo BE, ES, GB, IE, CA, AU, NZ
 
 ## 3. Perché il numero dipende dal Paese e non dalla lingua
 
-Lo stesso testo italiano serve un utente italiano, uno svizzero e un austriaco di lingua italiana; lo stesso testo inglese serve il Regno Unito, l'Irlanda, gli USA, il Canada, l'Australia e la Nuova Zelanda, con sette numeri diversi. Il Paese si prende dal **profilo** (non dalla lingua dell'app, non dal fuso orario, non dalla posizione GPS). Nel Belgio, e solo lì, la lingua sceglie tra i due numeri, ma **si mostrano entrambi**. Se il Paese non c'è o non è in tabella: nessun numero.
+Lo stesso testo italiano serve un utente italiano, uno svizzero e un austriaco di lingua italiana; lo stesso testo inglese serve il Regno Unito, l'Irlanda, gli USA, il Canada, l'Australia e la Nuova Zelanda, con sette numeri diversi. Il Paese si prende dal **profilo** (non dalla lingua dell'app, non dal fuso orario, non dalla posizione GPS). Nel Belgio, e solo lì, la lingua sceglie tra i due numeri, ma **si mostrano entrambi**. Se il Paese non c'è o non è in tabella: nessun numero (salvo il ripiego temporaneo della sezione 7).
 
 ## 4. Responsabilità e disclaimer
 
@@ -95,7 +100,7 @@ Lo stesso testo italiano serve un utente italiano, uno svizzero e un austriaco d
    - **Non scrivere** orari, costi o esiti («gratis», «24 ore su 24», «risponde sempre», «ti aiuteranno») salvo che la fonte lo dica e lo si ricontrolli: per l'Italia e la Svizzera, **mai «gratis»**.
    - **Niente loghi** né parole che facciano pensare a un'alleanza («partner», «consigliato da»): solo il nome del servizio e il numero.
 4. **Dati.** Il numero è un testo, non un dato personale. **Non si registra chi lo riceve**: l'evento rivela una condizione di salute della persona (art. 9 GDPR); log senza identificativo utente e senza testo dei messaggi; eventuali contatori solo aggregati e anonimi.
-5. **Minori (14–17 anni).** Gli stessi numeri valgono per tutte le età. I servizi per i ragazzi sono nel codice per l'Italia (Telefono Azzurro 19696, verificato dalla Chat il 16 novembre, **non da me**); letti oggi: Childline nel Regno Unito (0800 1111, pagina NHS) e in Irlanda (1800 66 66 66, pagina HSE). Gli altri Paesi: con la procedura della sezione 5, se la Chat conosce la fascia d'età.
+5. **Minori (14–17 anni).** Gli stessi numeri valgono per tutte le età. Per l'Italia: **Telefono Azzurro 19696** (Fondazione S.O.S Il Telefono Azzurro ETS), **letto oggi** su [azzurro.it](https://azzurro.it/): «servizio gratuito» che accoglie le richieste «dal territorio nazionale» per bambini e adolescenti fino a 18 anni (frase letta: «è un servizio gratuito e accoglie le richieste di aiuto provenienti dal territorio nazionale h24, 7 giorni su 7»; vale la regola «niente costi né orari» nei testi fissi). Letti oggi anche Childline nel Regno Unito (0800 1111, pagina NHS) e in Irlanda (1800 66 66 66, pagina HSE). Gli altri Paesi: con la procedura della sezione 5, se la Chat conosce la fascia d'età.
 
 ## 5. Paesi che mancano, controlli e chi li fa
 
@@ -120,3 +125,18 @@ Lo stesso testo italiano serve un utente italiano, uno svizzero e un austriaco d
 2. **«in Italia, Telefono Amico Italia …»** nei testi inglese, spagnolo, tedesco e francese: è il numero dipendente dalla lingua. Sostituire con la tabella per Paese.
 3. **«chiama subito il 112»**: il numero dei soccorsi va per Paese (sezione 2), non fisso.
 4. Mantenere i testi fissi **senza modello** come sono (le parole non partono verso un fornitore).
+
+## 7. Paese ignoto: ripiego temporaneo per la chat in italiano (decisione del 21 novembre)
+
+**Problema** (Orchestratore): oggi quasi nessun utente ha il Paese nel profilo (`home_country_code` arriva solo con le posizioni di residenza salvate con l'app nuova). Con la regola stretta anche gli utenti italiani in produzione perderebbero Telefono Amico, Telefono Azzurro e 112 nei testi di sconforto, autolesionismo e minori.
+
+**Decisione della Normativa: B, ripiego temporaneo** (proposta dell'Orchestratore, in attesa del suo sì), con queste condizioni:
+
+1. **Solo se** il Paese è ignoto **e** la chat è in italiano. Nelle altre lingue senza Paese: nessun numero.
+2. I numeri italiani escono **con l'etichetta condizionale «Se sei in Italia:»** davanti a ciascuno (Telefono Amico; Telefono Azzurro per i minori; 112) e con la riga «Servizio indipendente da Quokka, numero controllato a [mese anno].»: la frase non afferma dove si trova la persona, quindi è vera per chiunque la legga.
+3. **Con il Paese noto vale la tabella per Paese** della sezione 2, anche per chi scrive in italiano e vive altrove.
+4. **Scadenza: 28 febbraio 2027**, o prima se il Paese è noto per la maggior parte degli utenti attivi (lo misura l'Orchestratore con un contatore anonimo di quante volte scatta il ripiego). Intanto conviene che il prodotto **chieda il Paese** alla registrazione o al primo uso (una scelta in un elenco): chiude il problema.
+5. Restano le altre regole: niente orari, costi o esiti nei testi fissi; nessuna registrazione di chi riceve il numero.
+6. Facoltativo: se l'app invia già la regione della lingua del dispositivo (it_IT, de_AT, it_CH), usarla come indizio al posto della sola lingua, sempre con l'etichetta.
+
+**Perché B, in due righe.** Togliere ogni numero a chi scrive in crisi dall'Italia (la grande maggioranza degli utenti al lancio) per evitare un errore che l'etichetta condizionale già neutralizza è il rischio maggiore. Il caso #107 era un numero italiano dato a un austriaco **senza condizione**, in un testo tedesco: con B in tedesco non esce nulla, e l'italofono all'estero vede un numero etichettato che sa di non poter usare (un costo piccolo e visibile).
