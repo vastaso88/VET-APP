@@ -102,3 +102,23 @@ umani: dichiarare come "Altro" se richiesto). Finalità: funzionalità dell'app,
 sicurezza/prevenzione abusi; nessuna pubblicità; condivisione con terze parti:
 Groq (elaborazione IA), Supabase/Vercel (hosting). Da rivedere con l'audit
 dell'app (`02_audit.md`, sezione app) prima di compilare il modulo.
+
+## 5. Strumenti interni (nessun dato degli utenti dell'app)
+
+Strumenti usati dal team per cercare e scegliere le fonti pubbliche della chat
+(`docs/compliance/20`, §23.11). Non ricevono dati degli utenti dell'app: per
+questo non sono sub-responsabili del trattamento dei loro dati e non vanno
+nell'informativa per gli utenti. Elenco aggiornato al 2026-11-21.
+
+| Strumento | Fornitore, paese, account | Cosa contiene o riceve | Dove sta, come si cancella |
+| --- | --- | --- | --- |
+| claude.ai, Artifact privato con database | Anthropic (USA), account del proprietario | elenco di fonti pubbliche e scelte OK/No del proprietario | nell'Artifact; si cancella cancellando l'Artifact |
+| WebSearch di Claude Code | Anthropic (USA) | solo la specie e il tema della ricerca; **mai** la posizione o altri dati di un utente | nessun archivio nostro oltre al registro delle richieste (solo metadati) |
+| Google Fogli/Drive, foglio «Quokka – fonti da chiedere» (**non ancora creato**) | Google (USA), account del proprietario | titolari dei diritti, siti, motivi della richiesta, frase di prova di massimo 25 parole copiata dalla pagina; nessun dato personale | nel Drive del proprietario; si cancella dal Drive, cestino compreso |
+| App desktop di Claude con attività programmata, nome dichiarato nelle richieste `QuokkaCercafonti/0.1` (`scripts/sources/fetcher.py`) | sul computer del proprietario | legge pagine pubbliche, una richiesta alla volta, rispettando `robots.txt`; verificato il 2026-11-21: non usa il database dell'app né i fornitori di IA | elenco delle fonti in `.local/cercafonti/`, fuori dal repository |
+
+**Regola.** Se uno di questi strumenti ricevesse dati degli utenti dell'app, anche
+per una prova o un'indagine (un messaggio di chat, una posizione, un'e-mail),
+serve una riga vera nella §2 con base del trasferimento e contratto, e un
+controllo dell'informativa con la Normativa, **prima** di farlo.
+
