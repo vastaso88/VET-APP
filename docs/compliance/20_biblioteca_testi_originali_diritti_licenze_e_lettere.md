@@ -25,6 +25,7 @@ Data: 2026-11-17. Risposta all'Orchestratore sul piano approvato dal proprietari
 | 15 | Urgenze senza percorso dedicato (20/11 notte): obbligo o cautela, avvisi, persona ferita, negozio e sito | **Cautela, non obbligo** (correggo «obbligatoria» di §13 e §16.1). Senza percorso: avvisi **uguali per tutti** più visibili, regola «mai giudicare la gravità del caso», cancello «urgenze non sotto oggi» come condizione di rilascio; frase del 112 **statica e per Paese**; frase per negozio e sito. Rischi senza attenuarli: rassicurazione sbagliata, prova nel repository pubblico, limiti degli avvisi, direttiva 2024/2853 dal 9/12/2026 ⚖️ | §20 |
 | 16 | Elenco bianco: EUR-Lex tramite l'Ufficio delle pubblicazioni; traduzione inglese non ufficiale dell'OPAn svizzera (20/11 notte) | **EUR-Lex:** l'interfaccia Cellar (`publications.europa.eu/resource/celex`) è il canale macchina documentato dall'Ufficio stesso, non un aggiramento, a sei condizioni (nessuna barriera aggirata, pausa di 10 s, versione consolidata, registro, riga fonte «copia non ufficiale»). **OPAn:** la traduzione dell'USAV non è fonte citabile (nessun valore legale, diritti non chiari); il testo ufficiale italiano lo scarica a mano il proprietario da Fedlex (`/filestore/` vietato ai programmi) | §21 |
 | 17 | Accesso alle fonti: nome con cui ci si presenta, sfide anti-robot, lettura dei termini (secondo incidente, 20/11 notte) | Circa 95 comandi su circa 50 siti con nome di browser (8–10/11): **prassi, non scivolone**; toccano 3 schede su 11, il catalogo e la **cronologia pubblica** (bozze del 10/11). Il proprietario ha chiuso il progetto delle schede (cancellate il 20/11); cronologia non riscritta, rischio residuo registrato; la lettura dei termini è il controllo dovuto, a condizioni; otto regole di accesso (nome proprio con test positivo, robots → termini → lettura, stop a sfide, registro per richiesta, niente cancellazione dei risultati); dettagli solo nei registri interni | §22 |
+| 18 | Griglia delle licenze per il «Cercafonti» (ricerca notturna in tutto il mondo) e regola per le leggi straniere (21/11) | Classi **V** (verde), **VR** (con riserva), **G** (giallo, alla Normativa), **R** (rosso, mai usato), **N** (non raggiungibile); tabelle per licenza, per Paese (atti ufficiali, elenco chiuso) e per tipo di titolare; pagine senza licenza = R; leggi straniere solo testi ufficiali, per chi vive in quel Paese, con vigenza e «non ufficiale»; casi gialli a gruppi; Paesi e fornitori nuovi; il silenzio del proprietario vale solo per V e VR; «No» ≠ «ritirata per diritti»; campione di controllo | §23 |
 
 ## 2. Categorie ammesse (punto 1)
 
@@ -289,6 +290,7 @@ Elenco ordinato e vie di contatto in [20a](20a_lettere_permesso_ai_titolari.md) 
 19. Se la traduzione non ufficiale di un atto straniero, fatta dall'amministrazione che lo ha emanato (come l'inglese dell'USAV per l'ordinanza svizzera sugli animali), è protetta in Italia: l'art. 5 L. 633/1941 non la nomina, la Convenzione di Berna (art. 2, c. 4) rinvia alle leggi nazionali e l'art. 5, c. 2, URG protegge in Svizzera solo le traduzioni ufficiali (§21.2).
 20. Se una traduzione vicina di un testo protetto, pubblicata nella cronologia di un repository pubblico, è una riproduzione o un'elaborazione illecita (artt. 16 e 18 L. 633/1941) anche se poi sostituita da una versione in parole proprie, e se serve riscrivere la cronologia (§22.3, n. 4).
 21. Se leggere pagine pubbliche con un nome di browser contro i termini d'uso o contro un `robots.txt` scritto per nome è una violazione contrattuale azionabile nell'Unione europea, un'elusione di misure tecnologiche (art. 102-quater L. 633/1941) o un accesso abusivo (art. 615-ter c.p.), e se il passaggio al browser dopo una sfida anti-robot cambia la valutazione (§22.3, n. 1–3).
+22. Se un filtro automatico che applica la tabella di §23 (licenza dichiarata, elenco chiuso di portali per gli atti ufficiali, controlli di accesso) basta come controllo per documento per le licenze aperte e per l'attribuzione CC BY, senza lettura umana e con il silenzio del proprietario come assenso di prodotto; e se l'elenco di §23.3 (Spagna art. 13 LPI, Paesi Bassi art. 11 Auteurswet, Australia, Nuova Zelanda s. 27, Canada, USA §105 fuori dagli USA) regge per l'uso in tutti i Paesi in cui l'app è offerta.
 
 ## 12. Abstract e metadati (aggiunta del 17 novembre sera)
 
@@ -985,6 +987,132 @@ Decisioni del proprietario riferite dall'Orchestratore: schede cancellate (§22.
 4. Se la richiesta riguarda la cronologia: il proprietario decide la riscrittura per i soli file interessati, da fare con il gestore git in un momento concordato con tutte le sessioni (copie di lavoro, rami, pubblicazione).
 5. Registro interno: data, titolare, che cosa è stato tolto, risposta.
 6. Se è il gestore del repository ad avvisare per primo: stessa procedura, con precedenza assoluta (un repository disattivato ferma anche la pubblicazione).
+
+## 23. Griglia delle licenze per il «Cercafonti» e regola per le leggi straniere (21 novembre)
+
+**Richiesta dell'Orchestratore progetto** per la nuova sessione «Cercafonti» (piano approvato dal proprietario il 21 novembre, §2 e §4: ricerca notturna in tutto il mondo; il filtro automatico applica questa griglia; alla Normativa arrivano solo i casi gialli o dubbi, a gruppi). Con tutto il mondo il parere sito per sito (§19) non regge: qui c'è la regola. **Il diritto è una parte del filtro**; le altre (chi l'ha scritta, livello, data, due fonti d'accordo) restano al piano. Valgono le regole di accesso del §22.6 e di `CLAUDE.md`. Non è consulenza legale: le norme straniere sono citate dal testo noto e **non sono state rilette alla fonte oggi**; il punto ⚖️ 22 (§11) va a un legale.
+
+### 23.1 Classi, effetti e ordine dei controlli
+
+| Classe | Significa | Che cosa si può fare |
+|---|---|---|
+| **V verde** | licenza o norma che consente copia, adattamento e uso commerciale, al più con attribuzione | conservare il testo; note in parole nostre; citazioni brevi con la riga fonte; riassunto e traduzione («modificato»); inviare i pezzi ai fornitori dichiarati |
+| **VR verde con riserva** ⚖️ | come V, ma la base lascia un residuo di diritto (oggi: opere del governo federale USA fuori dagli USA) | come V, segnato «con riserva» nel registro; nessun nome o logo dell'ente come se approvasse |
+| **G giallo** | caso non coperto dalla tabella o prova incerta | **non si usa**; si manda alla Normativa (23.7); il silenzio del proprietario **non** lo rende verde |
+| **R rosso** | nessun diritto di uso, o uso vietato | **mai usato**, nemmeno con il sì del proprietario; si conservano solo i dati bibliografici (titolo, ente, anno, indirizzo) e, se utile, una riga nel foglio «fonti da chiedere» (23.9); l'unica uscita è un permesso scritto del titolare, archiviato e valido per ciò che dice |
+| **N non raggiungibile** | diritti verdi ma accesso bloccato o vietato ai programmi | non si usa; resta in sospeso; nessuna riprova (§22.6) |
+
+«Verde solo link e note» (V-L) esiste solo se lo decido io per un gruppo di gialli: il Cercafonti non lo assegna da solo.
+
+**Ordine dei controlli** (si ferma al primo che respinge):
+
+1. **Accesso.** `robots.txt` con il nostro nome e per `*`; `Content-Signal: ai-input=no` ferma; `ai-train=no` da solo non ferma (non addestriamo modelli) ma si registra ⚖️ (§11, n. 1); `robots.txt` assente (404) = nessuna restrizione; errore 5xx o file illeggibile = stop; regole per nome verso altri robot di IA: si registrano. Sfida, CAPTCHA, 403, 429 o blocco = **N**, senza riprova. Poi i termini: il divieto di accesso automatico, di uso per IA o di uso commerciale = **R**.
+2. **Prova della licenza**, in quest'ordine: dato leggibile da macchina (identificatore SPDX, `rel="license"`, campo licenza di Crossref, Europe PMC o OpenAlex); riga «©» del documento; pagina delle note legali del sito. Si conserva la frase esatta (al massimo 25 parole), l'indirizzo e la data. Prove che si contraddicono = **G**.
+3. **Ambito.** Una licenza **di sito** vale per il documento se copre quel tipo di contenuto («tutto il contenuto», «le pubblicazioni»), è sullo stesso dominio e il documento non porta altro «©» né altra licenza. C'è materiale di terzi (figure, tabelle, foto, loghi con «©» altrui)? Se non si può separare = **G**. Il testo conservato non include mai immagini.
+4. **Classe** dalle tabelle 23.2–23.4.
+5. **Registro della prova** (23.10): senza prova conservata la fonte non è verde.
+
+### 23.2 Tabella A: licenza dichiarata → classe
+
+| Licenza o dichiarazione trovata | Classe | Condizioni | Riga fonte |
+|---|---|---|---|
+| CC0 1.0; Public Domain Mark; PDDL | **V** | — | fonte e titolo (non obbligatorie, ma si scrivono) |
+| CC BY 2.0, 2.5, 3.0, 4.0, anche i testi nazionali, **senza** altri elementi | **V** | solo «Attribution»; per le versioni IGO vedi sotto | autore o ente, titolo, indirizzo, «CC BY [versione]» con il collegamento, «modificato» se riassunto o tradotto; nessun segno di approvazione |
+| OGL v3.0 (anche v2 e v1) del Regno Unito | **V** | esclusi materiale di terzi, dati personali, stemmi e loghi | «Contains public sector information licensed under the Open Government Licence v3.0» |
+| Open Government Licence – Canada 2.0 | **V** | esclusi i materiali indicati nella licenza | «Contains information licensed under the Open Government Licence – Canada» |
+| Licence Ouverte / Open Licence 2.0 (Francia) | **V** | indicare fonte e data di aggiornamento | «Source : [produttore], Licence Ouverte 2.0» |
+| Datenlizenz Deutschland – Namensnennung 2.0 (dl-de/by-2-0) e Zero 2.0 (dl-de/zero-2-0) | **V** | solo queste versioni | «© [ente], dl-de/by-2-0, [collegamento]»; modifiche indicate |
+| IODL 2.0 (Italia) | **V** | solo la v2.0 (la 1.0 prevedeva la condivisione allo stesso modo) ⚖️ | fonte come in §4.2 |
+| Istituzioni e agenzie dell'UE: CC BY 4.0, o «riproduzione autorizzata con citazione della fonte» (decisione 2011/833/UE per la Commissione, avvisi analoghi per le altre) | **V** | la dichiarazione va trovata; dominio `*.europa.eu`; «salvo diversa indicazione»; esclusi i pareri dell'EFSA Journal (CC BY-ND) e il materiale di terzi | come §21.1 |
+| Opere del governo federale USA (17 U.S.C. §105) | **VR** ⚖️ | dominio di un'agenzia **federale** (non Stati, città, università, anche se `.gov` o `.edu`); nessun «©» di terzi; nessuna immagine, stemma o logo | «Fonte: [agenzia], opera del governo federale USA (dominio pubblico negli USA); nessuna approvazione dell'agenzia» |
+| CC BY 3.0 IGO e 4.0 IGO (organizzazioni intergovernative) | **G** | clausole speciali | — |
+| Licenza aperta nazionale non in tabella, della famiglia compatibile con CC BY (per esempio NLOD 2.0 della Norvegia, le condizioni standard del governo giapponese v2, KOGL tipo 1 della Corea, OGDL di Taiwan, GODL-India, Singapore Open Data Licence) | **G** al primo caso | la confermo e la aggiungo qui come V | — |
+| Licenza sul sito ma non sul documento; documento con «©» diverso o con licenza diversa | **G** | — | — |
+| Licenza aperta ma con `tdm-reservation: 1` (riserva leggibile da macchina) | **G** | conflitto tra licenza e riserva | — |
+| Qualunque CC con **NC**, **ND** o **SA** (BY-NC, BY-ND, BY-NC-ND, BY-NC-SA, BY-SA, tutte le versioni); GFDL | **R** | NC: siamo commerciali; ND: riassunto e traduzione sono opere derivate; SA: l'obbligo si estenderebbe alle nostre note | — |
+| Licenza «non commerciale» di governo (UK Non-Commercial Government Licence, KOGL tipo 2–4, dl-de/by-nc) | **R** | — | — |
+| CC BY-NC-SA 3.0 IGO (di norma OMS, FAO e altre organizzazioni intergovernative) | **R** | — | — |
+| «Tutti i diritti riservati»; «© [anno] [ente]» senza licenza; «per uso personale», «uso educativo», «per informazione», «riproduzione vietata», «chiedere il permesso» | **R** | — | — |
+| «Gratuito», «ad accesso libero», «open access» **senza** licenza (Bronze OA); copie di autori o di archivi senza licenza | **R** | gratis non è licenza (§2.1) | — |
+
+### 23.3 Tabella B: leggi e atti ufficiali per Paese
+
+La base è la norma nazionale che esclude gli atti ufficiali dal diritto d'autore, o la licenza del portale. L'elenco è **chiuso**: un Paese si aggiunge solo con la procedura di 23.8. L'uso è per i Paesi in cui l'app è offerta; dove l'opera è libera in un Paese e protetta in un altro vale il caso più restrittivo.
+
+| Paese o ente | Base | Portali ufficiali | Classe | Note |
+|---|---|---|---|---|
+| Italia | art. 5 L. 633/1941 | Normattiva, Gazzetta Ufficiale, gazzette delle Regioni | **V** | riga fonte di §15.5; vigenza di §15 |
+| Unione europea | decisione 2011/833/UE; consolidati CC BY 4.0 | EUR-Lex, tramite l'Ufficio delle pubblicazioni | **V** | §21.1: consolidato con data, «copia non ufficiale» |
+| Germania | §5 UrhG | gesetze-im-internet.de, Bundesgesetzblatt, portali dei Länder | **V** | fa fede la pubblicazione ufficiale |
+| Austria | §7 UrhG | RIS | **V** | idem |
+| Francia | Licence Ouverte 2.0 | Légifrance | **V** | — |
+| Svizzera | art. 5, c. 1, lett. a, URG | Fedlex e raccolte cantonali | **N** | i file di Fedlex sono vietati ai programmi (§21.2) |
+| Regno Unito | OGL v3.0 | legislation.gov.uk (anche Scozia, Galles, Irlanda del Nord) | **V** | i testi «revised» non sono ufficiali: dirlo |
+| USA, federale | 17 U.S.C. §105 | uscode.house.gov, ecfr.gov, federalregister.gov, govinfo.gov, congress.gov | **VR** ⚖️ | solo il testo di legge, non le annotazioni degli editori; leggi degli **Stati**: **G** |
+| Spagna | art. 13 LPI | BOE | **V** se si conserva la pagina dell'avviso legale; altrimenti **G** | ⚖️ |
+| Paesi Bassi | art. 11 Auteurswet | wetten.overheid.nl | **V** se si conserva la pagina sul riuso; altrimenti **G** | ⚖️ |
+| Australia, Commonwealth | CC BY 4.0 del Federal Register of Legislation | legislation.gov.au | **V** se si conserva la dichiarazione; Stati e territori: **G** | ⚖️ |
+| Nuova Zelanda | s. 27 Copyright Act 1994 | legislation.govt.nz | **V** se si conserva la pagina; altrimenti **G** | ⚖️ |
+| Canada, federale | Reproduction of Federal Law Order (SI/97-5) | laws-lois.justice.gc.ca | **G** al primo caso | condizioni dell'ordine: accuratezza, nessuna approvazione, non presentare come versione ufficiale; province: **G**; le **pagine** di canada.ca sono di norma «non commerciali»: **R** salvo OGL-Canada |
+| Belgio, Irlanda e tutti gli altri Paesi | — | — | **G** per Paese al primo caso (23.8) | poi li aggiungo qui |
+
+### 23.4 Tabella C: per tipo di titolare, quando manca la licenza dichiarata
+
+| Titolare | Che cosa aspettarsi | Senza licenza dichiarata |
+|---|---|---|
+| Parlamento, governo, gazzetta ufficiale (leggi e regolamenti) | tabella B | **G** se il Paese non è in tabella B |
+| Ministeri, agenzie veterinarie e sanitarie pubbliche, enti pubblici di ricerca | spesso licenza aperta (Regno Unito, Australia, Nuova Zelanda, Francia, UE, Italia per il Ministero della Salute); altrove «tutti i diritti riservati» o «riproduzione non commerciale» | **R**: il pubblico non è libero per presunzione |
+| Università pubbliche, servizi di divulgazione, facoltà di veterinaria | di norma «©» dell'ateneo; a volte CC BY-NC-ND | **R** |
+| Organizzazioni intergovernative (OMS, FAO, WOAH e simili) | di norma NC-SA o «chiedere il permesso» | **R**; foglio «fonti da chiedere» se utili |
+| Società scientifiche, editori, associazioni professionali, enti di beneficenza, aziende | «tutti i diritti riservati»; articoli ad accesso aperto con CC BY solo se dichiarato sul singolo articolo | **R** |
+| Articoli scientifici | licenza **del singolo articolo** (Crossref; Europe PMC con filtro cc by e cc0; il sottoinsieme «uso commerciale» di PMC comprende anche licenze SA e ND: per noi no); **mai** abstract di articoli non aperti (§12) | **R**, con soli metadati |
+| Siti non ufficiali: blog, forum, social, negozi, allevatori, Wikipedia, testi fatti con l'IA | — | **R** (fuori dal piano) |
+
+### 23.5 Pagine senza licenza
+
+- Una pagina o un documento senza licenza e senza norma sugli atti ufficiali è **R**: i diritti sono riservati per legge. «Si può scaricare», «open access» e «gratuito» non sono licenze.
+- **Unica eccezione** (§17): un documento che è opera dell'ente stesso, senza «©» di terzi, su un sito che dichiara una licenza generale per tutto il contenuto (per esempio l'OGL su gov.uk): **V**, registrando la pagina del sito e la data.
+- Di una fonte **R** si conservano solo i dati bibliografici; non si legge il testo oltre ciò che serve a classificarla (pagina dei termini e `robots.txt`). Se è utile e non esiste un'alternativa aperta: una riga nel foglio «fonti da chiedere» (23.9). I fatti **non** si ricopiano «in parole nostre» da una fonte R: il metodo del [13](13_parere_fonti_scientifiche_e_diritto_d_autore.md) non vale per il Cercafonti.
+
+### 23.6 Leggi straniere: come citarle e usarle
+
+1. **Solo testi ufficiali**, nella lingua originale, dal portale di 23.3. Niente commenti, annotazioni o sommari di editori; niente traduzioni di terzi (§21.2).
+2. **Versione e vigenza.** Si registra «consolidata al [data]» o «testo originale» e la catena delle modifiche; si controlla che l'atto non sia abrogato (§15.2: un riferimento citato da altri può essere morto); gli atti con scadenza (come le ordinanze annuali) si controllano alla scadenza. Ricontrollo ogni 3 mesi (piano).
+3. **Una legge si usa per chi vive in quel Paese**, o per chi chiede di viaggiare, importare o trasferirsi lì. Mai la legge di un Paese applicata a un utente di un altro; se il Paese dell'utente è sconosciuto, si chiede oppure si risponde in generale.
+4. **Livello.** Nazionale, regionale, comunale: si registra il livello; una regola locale non diventa nazionale.
+5. **Citazione nella risposta.** Paese, atto (tipo, numero, data), articolo, indirizzo ufficiale, «testo consolidato non ufficiale, controllato il [data]»; con la riga «Non è consulenza legale: per il tuo caso chiedi all'autorità competente».
+6. **Traduzione.** Si può (gli atti ufficiali sono liberi), ma si scrive «traduzione nostra, non ufficiale»; dove esiste una versione ufficiale nella lingua dell'utente si usa quella (UE, Svizzera).
+7. **Sanzioni e importi** solo dal testo, mai arrotondati o aggiornati a memoria; se la norma rinvia a un allegato o a un decreto, si cita anche quello.
+8. **Sentenze e decisioni di autorità**: **G** (dati personali, regole diverse per Paese).
+9. Una legge di un Paese **non** in tabella B è **G**: non si cita.
+
+### 23.7 Casi gialli: che cosa mandarmi, a gruppi
+
+Un messaggio (o un file in `.local/cercafonti/gialli/` con il percorso nel messaggio) **per gruppo**, cioè per **stesso motivo** (per esempio «licenza aperta nazionale non in tabella: [Paese]»), al massimo uno al giorno. Contenuto:
+
+1. **Motivo** (riga della tabella che l'ha reso giallo) e **domanda** in una frase («la licenza X copre i testi del sito Y?»).
+2. **Per ogni fonte** (al massimo 10 per gruppo; se sono di più, 10 a campione e il numero totale): indirizzo del documento; indirizzo della pagina con la licenza o il «©» e la **frase esatta** (al massimo 25 parole); titolare e Paese; tipo (legge, guida per proprietari, guida per professionisti, linea guida, revisione); data di lettura; esito di `robots.txt` (nostro nome e `*`) e segnali (`Content-Signal`, `tdm-reservation`); pagina dei termini e frase rilevante (al massimo 25 parole); materiale di terzi (sì, no, non so); uso previsto (testo conservato, note, citazioni), specie e tema; esiste un'alternativa aperta (sì o no).
+3. **Proposta** del Cercafonti (V, VR, R o V-L) e perché.
+4. **Mai il testo della fonte**, oltre alle frasi di licenza e di termini.
+
+Io rispondo con la decisione per il gruppo, la riga da aggiungere alle tabelle e le condizioni. Il Cercafonti applica la stessa regola ai casi simili senza chiedere di nuovo. **Fino alla risposta la fonte non si usa.** L'attesa non blocca le altre fonti.
+
+### 23.8 Paesi e fornitori nuovi: che cosa segnalare
+
+- **Paese nuovo** (come fonte): Paese; lingue ufficiali; portale ufficiale delle leggi e dei ministeri (indirizzo); norma nazionale sul diritto d'autore per gli atti ufficiali (articolo e indirizzo del testo ufficiale); licenza o termini di riuso del portale (indirizzo e frase, al massimo 25 parole); esito di `robots.txt`; traduzioni ufficiali; se l'app è o sarà offerta lì (lo decide l'Orchestratore). Lo aggiungo alla tabella B; se l'app è offerta nel Paese preparo anche i documenti del Paese (numeri utili, termini, informativa).
+- **Fornitore nuovo** (strumenti del Cercafonti, anche per ricerca, lettura, hosting, foglio Google, pagina di controllo): nome; Paese del fornitore e dei server; servizio; **che cosa riceve** (solo specie e tema? indirizzo IP del computer? mai dati personali né testi di utenti); conservazione e uso per l'addestramento (indirizzo dei termini o del DPA); account usato (di chi); costo. Lo segnalo alla Sicurezza per `docs/security/06` **prima dell'uso** (§18.7: ricerca solo con specie e tema, mai `user_location`).
+
+### 23.9 Foglio «Quokka – fonti da chiedere»: che cosa scrivere
+
+Una riga per fonte rossa utile: titolare; sito; che cosa copre; caselle; perché è utile; esiste un'alternativa aperta (sì o no, quale); priorità; **la prova**: indirizzo della pagina e frase (al massimo 25 parole) che mostra il «tutti i diritti riservati» o il divieto. Niente testo della fonte, niente dati personali, niente indirizzi di persone: solo l'indirizzo generale di contatto pubblicato dal titolare. Nessuna e-mail parte da noi: decide il proprietario, con il kit di lettere ([20a](20a_lettere_permesso_ai_titolari.md)).
+
+### 23.10 Silenzio e «No» del proprietario, registro della prova, ricontrollo, campione
+
+- **Il silenzio vale sì solo per V e VR**: è una scelta di prodotto, non una verifica di diritto. I G e gli R non compaiono con i pulsanti OK e No: i G vengono a me, gli R vanno al foglio. Un «OK» del proprietario su un giallo o un rosso non vale.
+- **«No»** = lista «non approvata»: scelta di qualità, nessun effetto di diritto; testo e note escono dall'uso. Diversa è **«ritirata per diritti»** (licenza cambiata o ritirata, richiesta del titolare, errore del filtro): testo, note e citazioni escono **entro 3 giorni** (§7, §22.9) e la fonte diventa R.
+- **Registro della prova**, per ogni fonte: indirizzo del documento e della prova; frase della prova (al massimo 25 parole); data; titolare; Paese; licenza (identificatore); regola applicata (riga della tabella); classe; esito di `robots.txt` e segnali; materiale di terzi; riga fonte; data del prossimo controllo (leggi 3 mesi, guide 6). **Senza prova conservata la fonte non è verde.**
+- **Ricontrollo** (piano §5): a ogni giro si rileggono anche licenza, `robots.txt` e termini; se sono diventati restrittivi o la prova non c'è più: **ritirata per diritti**.
+- **Campione di controllo.** Nelle prime due settimane il Cercafonti mi manda 10 fonti **verdi** a caso a notte (prova e classe), poi 5 a settimana. Se trovo un errore: si ferma la regola interessata, le fonti che l'hanno usata si ritirano entro 3 giorni e correggo la tabella.
 
 ## Fonti consultate il 17 novembre 2026
 
