@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../l10n/l10n.dart';
+import 'medical_record_consent_card.dart';
 import '../../data/medical_record_consent_remote_data_source.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/pet_models.dart';
@@ -17,27 +17,8 @@ Future<void> proposeMedicalRecordConsent(
   MedicalRecordConsentRemoteDataSource? remote,
 }) async {
   if (pet.medicalRecordConsentGranted != null) return;
-  final activate = await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(dialogContext.l10n.petsConsentCardTitle(pet.name)),
-      content: SingleChildScrollView(child: Text(dialogContext.l10n.petsConsentFullText)),
-      actions: [
-        TextButton(
-          key: const ValueKey('consent-proposal-later'),
-          onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: Text(dialogContext.l10n.petsConsentProposalLater),
-        ),
-        TextButton(
-          key: const ValueKey('consent-proposal-activate'),
-          onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: Text(dialogContext.l10n.petsConsentProposalActivate),
-        ),
-      ],
-    ),
-  );
-  if (activate != true) return;
+  final activate = await askToActivateClinicalConsent(context, pet.name);
+  if (!activate) return;
   final result =
       await (remote ?? MedicalRecordConsentRemoteDataSource()).setGranted(petId: pet.id, granted: true);
   result.fold(

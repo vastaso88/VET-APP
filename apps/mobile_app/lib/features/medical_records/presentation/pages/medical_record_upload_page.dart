@@ -1,3 +1,4 @@
+import '../../../pets/presentation/widgets/medical_record_consent_card.dart';
 import 'dart:async';
 import '../../../../shared/widgets/short_notice.dart';
 import 'package:file_picker/file_picker.dart';
@@ -415,6 +416,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final picked = _picked;
+    final consentPet = _editing ? null : PetDemoStore.instance.byName(widget.petName);
     final suggestion =
         _category == RecordCategory.document && !_suggestionDismissed
         ? suggestCategoryFromTitle(_titleController.text)
@@ -450,7 +452,15 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                         l10n.medicalUploadForPet(widget.petName),
                         style: AppTextStyles.bodySmall,
                       ),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.md),
+                      // Whether the assistant may read this animal's records: the same
+                      // switch and decision as on its page and in Settings, right where
+                      // a new document is added.
+                      if (consentPet != null) ...[
+                        MedicalRecordConsentCard(pet: consentPet),
+                        const SizedBox(height: AppSpacing.md),
+                      ],
+                      const SizedBox(height: AppSpacing.xs),
                       _FieldLabel(l10n.medFieldCategory),
                       Wrap(
                         spacing: AppSpacing.sm,

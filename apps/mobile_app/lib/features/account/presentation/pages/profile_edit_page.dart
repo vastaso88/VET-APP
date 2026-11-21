@@ -1,3 +1,4 @@
+import '../../../account_consents/presentation/widgets/account_consents_group.dart';
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -240,6 +241,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               onPressed: _saving ? null : () => unawaited(_save()),
               child: _saving ? const PetLoader.small() : Text(l10n.commonSave),
             ),
+            const SizedBox(height: AppSpacing.xxl),
+            // The optional consents, here too: same words, same decision as in Settings.
+            const AccountConsentsGroup(),
           ],
         ),
       ),

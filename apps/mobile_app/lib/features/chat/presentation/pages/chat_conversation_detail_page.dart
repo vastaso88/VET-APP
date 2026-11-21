@@ -1,3 +1,4 @@
+import '../../../pets/presentation/widgets/medical_record_consent_card.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../../../shared/widgets/short_notice.dart';
 import 'dart:async';
@@ -145,14 +146,28 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
                           title: context.l10n.chatLoadingTitle,
                           subtitle: context.l10n.chatLoadingSubtitle,
                         ),
-                      ChatScreenState.empty => ChatEmptyState(
+                      ChatScreenState.empty => Column(
                           key: const ValueKey('empty'),
-                          title: context.l10n.chatEmptyTitle,
-                          subtitle: context.l10n.chatEmptySubtitle,
-                          actionLabel: context.l10n.chatEmptyAction,
-                          onAction: () => _sendMessage(
-                            context.l10n.chatEmptyGreeting(conversation.petName),
-                          ),
+                          children: [
+                            Expanded(
+                              child: ChatEmptyState(
+                                title: context.l10n.chatEmptyTitle,
+                                subtitle: context.l10n.chatEmptySubtitle,
+                                actionLabel: context.l10n.chatEmptyAction,
+                                onAction: () => _sendMessage(
+                                  context.l10n.chatEmptyGreeting(conversation.petName),
+                                ),
+                              ),
+                            ),
+                            // The clinical-record switch of this pet, where the owner is
+                            // about to ask: same decision as on the pet's page.
+                            if (PetDemoStore.instance.byName(conversation.petName) case final pet?)
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                    AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.md),
+                                child: MedicalRecordConsentCard(pet: pet),
+                              ),
+                          ],
                         ),
                       ChatScreenState.error => ChatErrorState(
                           key: const ValueKey('error'),

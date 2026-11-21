@@ -177,6 +177,9 @@
       }
     }
   },
+  "billingAccountStatusNotice": "Il tuo abbonamento si gestisce dal tuo account Quokka sul sito.",
+  "billingOpenAccount": "Apri il tuo account",
+  "billingOpenAccountError": "Non sono riuscito ad aprire la pagina. Riprova più tardi.",
   "billingTitle": "Abbonamento e pagamenti",
   "billingPlanSwitched": "Ora sei sul piano {plan}.",
   "@billingPlanSwitched": {
@@ -2873,7 +2876,7 @@
   "settingsConsentsTapToRetry": "Tocca per riprovare",
   "settingsConsentTerms": "Termini di servizio",
   "settingsConsentPrivacy": "Informativa privacy",
-  "settingsConsentMarketingEmail": "Email di marketing",
+  "settingsConsentMarketingEmail": "Email di marketing: novità e consigli di Quokka",
   "settingsConsentAnalytics": "Analisi d'uso",
   "settingsConsentAccepted": "Accettati v{version} il {date}",
   "@settingsConsentAccepted": {
@@ -3910,8 +3913,18 @@
   "medHistorySend": "Invia storico",
   "medHistorySendAll": "Tutto lo storico (PDF)",
   "medHistorySendAllSubtitle": "Un PDF con tutti gli eventi in ordine di data",
+  "petsConsentShort": "Con «Attiva» l'assistente potrà leggere la cartella clinica di {name}: voci con titolo, data, descrizione e testo dei documenti, malattie in corso, note e promemoria (terapie comprese). Quello che legge va ai nostri fornitori di intelligenza artificiale, società statunitensi che trattano i dati negli Stati Uniti, fuori dall'Unione europea, dopo che abbiamo tolto i dati personali che riconosciamo (non tutti). Lo usiamo solo per risponderti e per il riepilogo per il veterinario. Puoi spegnerlo quando vuoi con un tocco, qui o in Impostazioni: vale per le richieste successive.",
+  "@petsConsentShort": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "petsConsentProposalActivate": "Attiva",
   "petsConsentProposalLater": "Più tardi",
+  "marketplaceRulesTitle": "Regole del Mercatino",
+  "marketplaceRulesAccept": "Ho letto e accetto le regole del Mercatino",
   "noticeMarketplace": "Il Mercatino è solo per maggiorenni e mette in contatto due privati: Quokka non è parte della compravendita, non verifica annunci né persone e non ne risponde. Le conversazioni sono private: il nostro team le legge solo se una delle due persone le segnala.",
   "noticeRules": "Regole",
   "noticeUnderstood": "Ho capito",

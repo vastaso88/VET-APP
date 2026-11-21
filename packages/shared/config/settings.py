@@ -326,6 +326,9 @@ class Settings(BaseSettings):
     # snapshot for this long. A comma-separated list of feed keys switches
     # single feeds off without a deploy (a publisher asking us to stop).
     news_cache_ttl_minutes: int = Field(default=120, ge=10, le=720, alias="NEWS_CACHE_TTL_MINUTES")
+    # Publishing and writing in the Mercatino need the accepted rules (docs/compliance/24).
+    # Off until the owner approves the text and the app with the checkbox is out.
+    marketplace_rules_required: bool = Field(default=False, alias="MARKETPLACE_RULES_REQUIRED")
     news_disabled_feeds: str = Field(default="", alias="NEWS_DISABLED_FEEDS")
     # Voice dictation (speech-to-text): reuses LLM_API_KEY/LLM_BASE_URL
     # rather than a separate key — Groq's Whisper transcription endpoint

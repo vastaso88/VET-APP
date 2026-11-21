@@ -460,6 +460,17 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get billingAccountStatusNotice =>
+      'Votre abonnement se gère depuis votre compte Quokka sur le site.';
+
+  @override
+  String get billingOpenAccount => 'Ouvrir votre compte';
+
+  @override
+  String get billingOpenAccountError =>
+      'Impossible d\'ouvrir la page. Réessayez plus tard.';
+
+  @override
   String get billingTitle => 'Abonnement et paiements';
 
   @override
@@ -6790,10 +6801,22 @@ class AppLocalizationsFr extends AppLocalizations {
       'Un PDF avec tous les événements par ordre chronologique';
 
   @override
+  String petsConsentShort(String name) {
+    return 'Avec « Activer », l\'assistant pourra lire le dossier médical de $name : entrées avec titre, date, description et texte des documents, maladies en cours, notes et rappels (traitements compris). Ce qu\'il lit est envoyé à nos fournisseurs d\'intelligence artificielle, sociétés américaines qui traitent les données aux États-Unis, hors de l\'Union européenne, après que nous avons retiré les données personnelles que nous reconnaissons (pas toutes). Nous l\'utilisons uniquement pour vous répondre et pour le résumé destiné au vétérinaire. Vous pouvez le désactiver à tout moment d\'un geste, ici ou dans les Réglages : cela vaut pour les demandes suivantes.';
+  }
+
+  @override
   String get petsConsentProposalActivate => 'Activer';
 
   @override
   String get petsConsentProposalLater => 'Plus tard';
+
+  @override
+  String get marketplaceRulesTitle => 'Règles du Mercatino';
+
+  @override
+  String get marketplaceRulesAccept =>
+      'J\'ai lu et j\'accepte les règles du Mercatino';
 
   @override
   String get noticeMarketplace =>
@@ -7997,7 +8020,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get storeBillingManage => 'Gérer l’abonnement dans la boutique';
 
   @override
-  String get storeBillingPending => 'Paiement en attente de confirmation par la boutique.';
+  String get storeBillingPending =>
+      'Paiement en attente de confirmation par la boutique.';
 
   @override
   String get storeBillingVerifying => 'Vérification de l’achat…';
@@ -8006,13 +8030,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get storeBillingVerified => 'Abonnement actif.';
 
   @override
-  String get storeBillingFailed => 'Impossible de vérifier l’achat. Réessaie plus tard : tu ne seras pas débité deux fois.';
+  String get storeBillingFailed =>
+      'Impossible de vérifier l’achat. Réessaie plus tard : tu ne seras pas débité deux fois.';
 
   @override
-  String get storeBillingOwnedByOther => 'Cet achat est lié à un autre compte Quokka.';
+  String get storeBillingOwnedByOther =>
+      'Cet achat est lié à un autre compte Quokka.';
 
   @override
-  String get storeBillingUnavailable => 'Les achats en boutique ne sont pas disponibles sur cet appareil.';
+  String get storeBillingUnavailable =>
+      'Les achats en boutique ne sont pas disponibles sur cet appareil.';
 
   @override
   String storeBillingCanceledUntil(String date) {
@@ -8026,7 +8053,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get storeBillingRefunded => 'Abonnement remboursé ou révoqué';
 
   @override
-  String get storeBillingPaymentIssue => 'Problème de paiement : mets à jour le moyen de paiement dans la boutique';
+  String get storeBillingPaymentIssue =>
+      'Problème de paiement : mets à jour le moyen de paiement dans la boutique';
 
   @override
   String storeBillingTrialDaysLeft(String days) {
@@ -8037,5 +8065,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get storeBillingRestoreDone => 'Restauration terminée.';
 
   @override
-  String get storeBillingPricesFromStore => 'Les prix, la devise et les taxes sont ceux indiqués par la boutique pour ton pays. L’abonnement se renouvelle automatiquement jusqu’à ce que tu le résilies dans la boutique.';
+  String get storeBillingPricesFromStore =>
+      'Les prix, la devise et les taxes sont ceux indiqués par la boutique pour ton pays. L’abonnement se renouvelle automatiquement jusqu’à ce que tu le résilies dans la boutique.';
 }

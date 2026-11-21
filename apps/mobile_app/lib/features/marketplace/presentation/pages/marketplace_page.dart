@@ -1,3 +1,4 @@
+import '../marketplace_rules_acceptance.dart';
 import '../../../../shared/widgets/short_notice.dart';
 import 'dart:async';
 
@@ -150,6 +151,8 @@ class _MarketplacePageState extends State<MarketplacePage> {
   }
 
   Future<void> _openCreateListing() async {
+    // Publishing needs the accepted rules (browsing does not).
+    if (!await ensureMarketplaceRulesAccepted(context) || !mounted) return;
     final created = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(builder: (_) => CreateListingPage(repository: _repository)),
     );

@@ -177,6 +177,9 @@
       }
     }
   },
+  "billingAccountStatusNotice": "Tu suscripción se gestiona desde tu cuenta de Quokka en el sitio web.",
+  "billingOpenAccount": "Abrir tu cuenta",
+  "billingOpenAccountError": "No he podido abrir la página. Inténtalo más tarde.",
   "billingTitle": "Suscripción y pagos",
   "billingPlanSwitched": "Ahora tienes el plan {plan}.",
   "@billingPlanSwitched": {
@@ -3910,8 +3913,18 @@
   "medHistorySend": "Enviar historial",
   "medHistorySendAll": "Todo el historial (PDF)",
   "medHistorySendAllSubtitle": "Un PDF con todos los eventos por orden de fecha",
+  "petsConsentShort": "Con «Activar» el asistente podrá leer la historia clínica de {name}: entradas con título, fecha, descripción y texto de los documentos, enfermedades en curso, notas y recordatorios (terapias incluidas). Lo que lee va a nuestros proveedores de inteligencia artificial, empresas estadounidenses que tratan los datos en Estados Unidos, fuera de la Unión Europea, después de quitar los datos personales que reconocemos (no todos). Lo usamos solo para responderte y para el resumen para el veterinario. Puedes desactivarlo cuando quieras con un toque, aquí o en Ajustes: vale para las solicitudes siguientes.",
+  "@petsConsentShort": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "petsConsentProposalActivate": "Activar",
   "petsConsentProposalLater": "Más tarde",
+  "marketplaceRulesTitle": "Reglas del Mercatino",
+  "marketplaceRulesAccept": "He leído y acepto las reglas del Mercatino",
   "noticeMarketplace": "El mercadillo de segunda mano es solo para mayores de edad y pone en contacto a dos particulares: Quokka no es parte de la compraventa, no verifica anuncios ni personas y no responde de ellos. Las conversaciones son privadas: nuestro equipo solo las lee si una de las dos personas las denuncia.",
   "noticeRules": "Reglas",
   "noticeUnderstood": "Entendido",

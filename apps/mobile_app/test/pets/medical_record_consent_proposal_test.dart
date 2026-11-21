@@ -60,7 +60,7 @@ void main() {
     await _open(tester, _pet(), remote);
 
     expect(find.text('Cartella clinica di Thor'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('consent-proposal-later')));
+    await tester.tap(find.byKey(const ValueKey('consent-activate-not-now')));
     await tester.pumpAndSettle();
 
     expect(remote.calls, isEmpty);
@@ -70,7 +70,7 @@ void main() {
     final remote = _FakeRemote();
     await _open(tester, _pet(), remote);
 
-    await tester.tap(find.byKey(const ValueKey('consent-proposal-activate')));
+    await tester.tap(find.byKey(const ValueKey('consent-activate-yes')));
     await tester.pumpAndSettle();
 
     expect(remote.calls, [true]);

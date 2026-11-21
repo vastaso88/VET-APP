@@ -454,6 +454,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get billingAccountStatusNotice =>
+      'Your subscription is managed from your Quokka account on the website.';
+
+  @override
+  String get billingOpenAccount => 'Open your account';
+
+  @override
+  String get billingOpenAccountError =>
+      'I couldn\'t open the page. Try again later.';
+
+  @override
   String get billingTitle => 'Subscription and payments';
 
   @override
@@ -6707,10 +6718,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get medHistorySendAllSubtitle => 'A PDF with all events in date order';
 
   @override
+  String petsConsentShort(String name) {
+    return 'With “Turn on” the assistant will be able to read $name\'s medical record: entries with title, date, description and the text of documents, ongoing illnesses, notes and reminders (therapies included). What it reads goes to our AI providers, US companies that process data in the United States, outside the European Union, after we remove the personal data we recognise (not all of it). We use it only to answer you and for the vet summary. You can turn it off any time with one tap, here or in Settings: it applies to later requests.';
+  }
+
+  @override
   String get petsConsentProposalActivate => 'Turn on';
 
   @override
   String get petsConsentProposalLater => 'Later';
+
+  @override
+  String get marketplaceRulesTitle => 'Mercatino rules';
+
+  @override
+  String get marketplaceRulesAccept =>
+      'I have read and accept the Mercatino rules';
 
   @override
   String get noticeMarketplace =>
@@ -7913,7 +7936,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storeBillingManage => 'Manage subscription in the store';
 
   @override
-  String get storeBillingPending => 'Payment waiting for confirmation from the store.';
+  String get storeBillingPending =>
+      'Payment waiting for confirmation from the store.';
 
   @override
   String get storeBillingVerifying => 'Verifying your purchase…';
@@ -7922,13 +7946,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storeBillingVerified => 'Subscription active.';
 
   @override
-  String get storeBillingFailed => 'We couldn’t verify the purchase. Try again later: you won’t be charged twice.';
+  String get storeBillingFailed =>
+      'We couldn’t verify the purchase. Try again later: you won’t be charged twice.';
 
   @override
-  String get storeBillingOwnedByOther => 'This purchase is linked to another Quokka account.';
+  String get storeBillingOwnedByOther =>
+      'This purchase is linked to another Quokka account.';
 
   @override
-  String get storeBillingUnavailable => 'Store purchases aren’t available on this device.';
+  String get storeBillingUnavailable =>
+      'Store purchases aren’t available on this device.';
 
   @override
   String storeBillingCanceledUntil(String date) {
@@ -7942,7 +7969,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storeBillingRefunded => 'Subscription refunded or revoked';
 
   @override
-  String get storeBillingPaymentIssue => 'Payment problem: update your payment method in the store';
+  String get storeBillingPaymentIssue =>
+      'Payment problem: update your payment method in the store';
 
   @override
   String storeBillingTrialDaysLeft(String days) {
@@ -7953,5 +7981,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storeBillingRestoreDone => 'Restore completed.';
 
   @override
-  String get storeBillingPricesFromStore => 'Prices, currency and taxes are those shown by the store for your country. The subscription renews automatically until you cancel it in the store.';
+  String get storeBillingPricesFromStore =>
+      'Prices, currency and taxes are those shown by the store for your country. The subscription renews automatically until you cancel it in the store.';
 }

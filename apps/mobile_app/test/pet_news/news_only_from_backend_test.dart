@@ -32,6 +32,11 @@ void main() {
       'opendata.comune.bologna.it',
       'dati.comune.milano.it',
       'aperto.comune.torino.it',
+      // Subscription management: links handed to the system (App Store, Google Play
+      // and the Quokka account page), nothing is sent to them by the app.
+      'apps.apple.com',
+      'play.google.com',
+      'quokkapet.net',
     };
     final hosts = <String>{};
     for (final file in sources) {

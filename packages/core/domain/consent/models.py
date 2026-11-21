@@ -33,9 +33,14 @@ class AccountConsentType:
     # first contribution, never a gate on the app itself (see
     # docs/compliance/07_contributi_utenti.md).
     CONTRIBUTION_RULES = "contribution_rules"
+    # Acceptance of the Mercatino rules (docs/compliance/24): a condition of using
+    # the Mercatino, not a GDPR consent; never a gate on the app itself.
+    MARKETPLACE_RULES = "marketplace_rules"
 
     MANDATORY = frozenset({TERMS_OF_SERVICE, PRIVACY_POLICY})
-    OPTIONAL = frozenset({MARKETING_EMAIL, ANALYTICS, DIAGNOSTICS, CONTRIBUTION_RULES})
+    OPTIONAL = frozenset(
+        {MARKETING_EMAIL, ANALYTICS, DIAGNOSTICS, CONTRIBUTION_RULES, MARKETPLACE_RULES}
+    )
     ALL = MANDATORY | OPTIONAL
 
 

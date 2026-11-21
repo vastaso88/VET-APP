@@ -854,6 +854,24 @@ abstract class AppLocalizations {
   /// **'{amount}/anno'**
   String billingPricePerYear(String amount);
 
+  /// No description provided for @billingAccountStatusNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'Il tuo abbonamento si gestisce dal tuo account Quokka sul sito.'**
+  String get billingAccountStatusNotice;
+
+  /// No description provided for @billingOpenAccount.
+  ///
+  /// In it, this message translates to:
+  /// **'Apri il tuo account'**
+  String get billingOpenAccount;
+
+  /// No description provided for @billingOpenAccountError.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito ad aprire la pagina. Riprova più tardi.'**
+  String get billingOpenAccountError;
+
   /// No description provided for @billingTitle.
   ///
   /// In it, this message translates to:
@@ -8225,7 +8243,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsConsentMarketingEmail.
   ///
   /// In it, this message translates to:
-  /// **'Email di marketing'**
+  /// **'Email di marketing: novità e consigli di Quokka'**
   String get settingsConsentMarketingEmail;
 
   /// No description provided for @settingsConsentAnalytics.
@@ -11210,6 +11228,12 @@ abstract class AppLocalizations {
   /// **'Un PDF con tutti gli eventi in ordine di data'**
   String get medHistorySendAllSubtitle;
 
+  /// No description provided for @petsConsentShort.
+  ///
+  /// In it, this message translates to:
+  /// **'Con «Attiva» l\'assistente potrà leggere la cartella clinica di {name}: voci con titolo, data, descrizione e testo dei documenti, malattie in corso, note e promemoria (terapie comprese). Quello che legge va ai nostri fornitori di intelligenza artificiale, società statunitensi che trattano i dati negli Stati Uniti, fuori dall\'Unione europea, dopo che abbiamo tolto i dati personali che riconosciamo (non tutti). Lo usiamo solo per risponderti e per il riepilogo per il veterinario. Puoi spegnerlo quando vuoi con un tocco, qui o in Impostazioni: vale per le richieste successive.'**
+  String petsConsentShort(String name);
+
   /// No description provided for @petsConsentProposalActivate.
   ///
   /// In it, this message translates to:
@@ -11221,6 +11245,18 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Più tardi'**
   String get petsConsentProposalLater;
+
+  /// No description provided for @marketplaceRulesTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Regole del Mercatino'**
+  String get marketplaceRulesTitle;
+
+  /// No description provided for @marketplaceRulesAccept.
+  ///
+  /// In it, this message translates to:
+  /// **'Ho letto e accetto le regole del Mercatino'**
+  String get marketplaceRulesAccept;
 
   /// No description provided for @noticeMarketplace.
   ///
@@ -13183,6 +13219,7 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Cosa questa scheda non copre'**
   String get aroundWorldBlockLimits;
+
   /// No description provided for @storeBillingSubscribeMonthly.
   ///
   /// In it, this message translates to:
