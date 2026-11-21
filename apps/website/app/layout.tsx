@@ -34,6 +34,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </Link>
           <p>Un posto per prenderti cura di chi ti sta vicino.</p>
           <Link href="/legal">Privacy e condizioni</Link>
+          <Link href="/delete-account">Elimina account</Link>
         </footer>
       </body>
     </html>

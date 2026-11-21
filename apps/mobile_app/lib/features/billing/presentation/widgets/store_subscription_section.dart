@@ -10,6 +10,7 @@ import '../../../../l10n/date_formats.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../l10n/regional_defaults.dart';
 import '../../../age/presentation/age_flow.dart';
+import '../../../auth/presentation/pages/legal_text_page.dart';
 import '../../data/billing_demo_store.dart';
 import '../../data/store_billing_controller.dart';
 import '../../domain/billing_models.dart';
@@ -151,6 +152,30 @@ class _StoreSubscriptionSectionState extends State<StoreSubscriptionSection> {
               onPressed: () => unawaited(_billing.openManagement(verified)),
               icon: const Icon(Icons.open_in_new),
               label: Text(l10n.storeBillingManage),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => LegalTextPage(
+                    consentKey: 'terms_of_service',
+                    title: l10n.settingsConsentTerms,
+                    shareable: true,
+                  ),
+                ),
+              ),
+              child: Text(l10n.settingsConsentTerms),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => LegalTextPage(
+                    consentKey: 'privacy_policy',
+                    title: l10n.settingsConsentPrivacy,
+                    shareable: true,
+                  ),
+                ),
+              ),
+              child: Text(l10n.settingsConsentPrivacy),
             ),
           ],
         );

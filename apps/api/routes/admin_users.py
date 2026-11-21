@@ -15,8 +15,8 @@ from pydantic import BaseModel, Field
 from apps.api.dependencies.container import get_container
 from apps.api.routes.admin import _admin_client, _list_auth_users, _parse_datetime, _require_admin
 from packages.core.domain.subscription.models import Subscription
-from packages.shared.auth_context import get_access_token
 from packages.infrastructure.admin.user_reports import countries, moderation
+from packages.shared.auth_context import get_access_token
 
 router = APIRouter(prefix="/admin/users", tags=["admin"])
 

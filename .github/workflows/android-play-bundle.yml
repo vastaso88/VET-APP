@@ -1,0 +1,93 @@
+name: Android Play test bundle (no upload)
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: 'Version code higher than every code already uploaded to Play'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-play-bundle
+  cancel-in-progress: false
+
+jobs:
+  bundle:
+    # Secret-bearing builds use reviewed main only, never an arbitrary PR ref.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: play-testing
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.12'
+      - name: Validate inputs and prepare private build files
+        env:
+          API_BASE_URL: ${{ vars.PLAY_TEST_API_BASE_URL }}
+          SUPABASE_URL: ${{ vars.PLAY_TEST_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.PLAY_TEST_SUPABASE_PUBLISHABLE_KEY }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+          ANDROID_BUILD_NUMBER: ${{ inputs.build_number }}
+        run: python -m scripts.ci.prepare_play_build
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: '3.47.6'
+          channel: stable
+          cache: true
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Analyze, test and build signed prod bundle
+        working-directory: apps/mobile_app
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/quokka-play/signing.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+          ANDROID_BUILD_NUMBER: ${{ inputs.build_number }}
+        run: |
+          flutter pub get --enforce-lockfile
+          flutter gen-l10n
+          flutter analyze
+          flutter test
+          flutter build appbundle --release --flavor prod --build-number="$ANDROID_BUILD_NUMBER" \
+            --dart-define-from-file="$RUNNER_TEMP/quokka-play/dart-defines.json"
+      - name: Verify bundle signature and record artifact identity
+        env:
+          ANDROID_BUILD_NUMBER: ${{ inputs.build_number }}
+        run: |
+          set -euo pipefail
+          bundle=apps/mobile_app/build/app/outputs/bundle/prodRelease/app-prod-release.aab
+          jarsigner -verify "$bundle" > "$RUNNER_TEMP/play-signature.txt"
+          grep -q 'jar verified' "$RUNNER_TEMP/play-signature.txt"
+          keytool -printcert -jarfile "$bundle" > "$RUNNER_TEMP/play-certificate.txt"
+          if grep -qi 'CN=Android Debug' "$RUNNER_TEMP/play-certificate.txt"; then
+            echo 'Refusing a debug-signed bundle'; exit 1
+          fi
+          mkdir -p play-artifact
+          cp "$bundle" play-artifact/
+          sha256sum "$bundle" > play-artifact/SHA256SUMS.txt
+          printf 'Commit: %s\nVersion code: %s\nPackage: com.vetapp.vetapp\nFlavor: prod\nNo Play upload performed.\n' \
+            "$GITHUB_SHA" "$ANDROID_BUILD_NUMBER" > play-artifact/build-info.txt
+          cp "$RUNNER_TEMP/play-certificate.txt" play-artifact/upload-certificate.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: quokka-play-test-${{ inputs.build_number }}
+          path: play-artifact/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Remove private build files
+        if: always()
+        run: python -m scripts.ci.prepare_play_build --cleanup
