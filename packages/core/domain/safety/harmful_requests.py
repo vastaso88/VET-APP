@@ -292,7 +292,7 @@ HARMFUL_NOTES: dict[str, str] = {
 # Fixed refusal for home euthanasia (never a model), with {name}.
 EUTHANASIA_REFUSAL: dict[str, str] = {
     "it": (
-        "Mi dispiace molto per {name}, e capisco che i soldi pesino proprio adesso. Non ti "
+        "Mi dispiace molto per {name}. Non ti "
         "dico quale sostanza né quanta: addormentare un animale a casa, senza un veterinario, "
         "quasi sempre lo fa soffrire di più, non di meno, e non è una cosa che si possa fare "
         "bene da soli. Quello che puoi fare oggi: chiama il tuo veterinario e digli come stai "
@@ -303,7 +303,7 @@ EUTHANASIA_REFUSAL: dict[str, str] = {
         "contenuto o aiutato. Non sei solo in questa cosa."
     ),
     "en": (
-        "I am very sorry about {name}, and I understand money weighs on you right now. I will "
+        "I am very sorry about {name}. I will "
         "not tell you which substance or how much: putting an animal to sleep at home, "
         "without a vet, almost always means more suffering, not less, and it is not something "
         "that can be done well alone. What you can do today: call your vet and tell them your "
@@ -314,7 +314,7 @@ EUTHANASIA_REFUSAL: dict[str, str] = {
         "cost. You are not alone in this."
     ),
     "es": (
-        "Siento mucho lo de {name}, y entiendo que el dinero pese justo ahora. No te diré qué "
+        "Siento mucho lo de {name}. No te diré qué "
         "sustancia ni cuánta: dormir a un animal en casa, sin veterinario, casi siempre lo "
         "hace sufrir más, no menos, y no es algo que se pueda hacer bien a solas. Lo que puedes "
         "hacer hoy: llama a tu veterinario y cuéntale tu situación. Muchas veces hay salida: "
@@ -324,7 +324,7 @@ EUTHANASIA_REFUSAL: dict[str, str] = {
         "con un coste reducido o con ayuda. No estás solo en esto."
     ),
     "de": (
-        "Es tut mir sehr leid um {name}, und ich verstehe, dass das Geld gerade schwer wiegt. "
+        "Es tut mir sehr leid um {name}. "
         "Welches Mittel und wie viel sage ich Ihnen nicht: ein Tier zu Hause ohne Tierärztin oder "
         "Tierarzt einzuschläfern bedeutet fast immer mehr Leid, nicht weniger, und das lässt sich "
         "allein nicht gut machen. Was Sie heute tun können: Rufen Sie Ihre Tierarztpraxis an und "
@@ -335,7 +335,7 @@ EUTHANASIA_REFUSAL: dict[str, str] = {
         "oder unterstützten Kosten. Sie sind damit nicht allein."
     ),
     "fr": (
-        "Je suis vraiment désolé pour {name}, et je comprends que l'argent pèse en ce moment. "
+        "Je suis vraiment désolé pour {name}. "
         "Je ne vous dirai ni quelle substance ni quelle quantité : endormir un animal à la "
         "maison, sans vétérinaire, signifie presque toujours plus de souffrance, pas moins, et "
         "cela ne peut pas se faire correctement seul. Ce que vous pouvez faire aujourd'hui : "
@@ -745,6 +745,11 @@ _VAGUE_PICTURE = _words(
     r"da qualche giorno|da un po')|non (?:so|saprei) (?:spiegar\w*|dire bene|bene cosa)|"
     r"non e (?:piu )?(?:lui|lei|il solito|la solita|lo stesso|la stessa)|diverso dal solito|"
     r"diversa dal solito|"
+    # synthetic users round 4 (21/11): "fa i dispetti", "nicht mehr er selbst"
+    r"fa (?:i |dei )?dispett\w*|dispettos[oa]|"
+    r"(?:no longer|not) (?:quite )?(?:himself|herself|itself) (?:anymore|lately)|"
+    r"ya no es (?:el|la) mism[oa]|no es (?:el|la) de siempre|"
+    r"nicht mehr (?:er|sie) selbst|n'est plus (?:lui|elle)-meme|"
     r"(?:not|isn't|isnt) (?:really )?(?:himself|herself|itself|right)|acting (?:kinda |a bit |"
     r"really )?(?:weird|strange|odd|off)|(?:seems|is) (?:kinda |a bit )?(?:weird|strange|odd|"
     r"off|different)|(?:can't|cannot|can not) explain|not sure how to explain|"

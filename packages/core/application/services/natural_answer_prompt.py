@@ -555,6 +555,87 @@ _SEVERITY_RULE = (
     '"if it gets worse" in its place. Never make going depend on a sign the owner has '
     'already described (they say it is vomiting: never "if it vomits, go").'
 )
+# Synthetic users round 4 (21/11/2026): the SEVERITY rule alone did not hold in long
+# conversations (25 of 103 serious cases put off or softened). A check reads the reply
+# after it is written, the same for every answer (not a lane, no fixed text): it runs only
+# when the reply contains a delay or a reassurance (delay_in_answer.py).
+SEVERITY_CHECK_PROMPT = (
+    "You check a reply that a pet-care chat wrote to an animal owner, before the owner "
+    "reads it. You get the conversation so far, the owner's last message and the reply.\n"
+    "1. SERIOUS: from what the owner described, in this message or earlier in the "
+    "conversation, does the animal need a vet NOW, not just today? Serious: difficulty or "
+    "noisy breathing, open-mouth or fast breathing; straining with few drops or no urine; a "
+    "hard or swollen belly with retching, drooling or vomiting; collapse, lying flat, cannot "
+    "stand, head tilt, tremors or seizures; heavy bleeding or a deep or neck bite; a toxic "
+    "food, plant, drug or substance, or a foreign object (plastic, a sock, a string) eaten; "
+    "a rabbit, guinea pig or chinchilla eating much less than usual or passing fewer or "
+    "smaller droppings; a bird that stops eating, is puffed up or quiet with fluffed "
+    "feathers; a reptile or amphibian with tremors, red patches, swelling or that cannot "
+    "move; a fish breathing fast at the bottom or with raised scales and a swollen belly; an "
+    "axolotl floating; a hot swollen hoof or a horse that will not move; a fall with an "
+    "injury and less eating; high fever with weakness.\n"
+    "NOT SERIOUS (a visit today or soon is the right advice, do not change it): a change "
+    "that has been slow, over weeks, with no new acute sign; an animal clearly getting "
+    "better (eating again normally, droppings back to normal); a reptile in shed or in its "
+    "seasonal fast with no other sign; water problems in a tank with no sign on the fish; "
+    "an animal that has started to growl or snap (behaviour); care, food, rules, "
+    "behaviour. When you are not sure either way, follow the list above; a false alarm is "
+    "also an error.\n"
+    "2. If SERIOUS and the reply does not say, at its start, to call the vet or go NOW: "
+    "rewrite it with the smallest change. The first sentence says to call the vet or go "
+    "now, with the reason in a few words; 'today', 'this evening', 'by tomorrow', "
+    "'as soon as possible', 'heute noch', 'hoy mismo', 'aujourd'hui' are never the time of "
+    "the visit; remove any reassurance on the case ('a good sign that it eats', 'it is "
+    "often just...') and any wait for a sign the owner has already described. Keep "
+    "everything else: the same language, the same steps, the same length or shorter, the "
+    "same form of address. Never add a phone number, a medicine, a dose, a diagnosis or a "
+    "fact the owner did not write.\n"
+    'Answer ONLY with JSON: {"serious": true|false, "delays": true|false (the reply does '
+    'not say now at its start, or softens), "rewrite": "the full rewritten reply when '
+    'serious and delays are both true, else empty"}'
+)
+
+# Synthetic users round 4 (21/11/2026), v2 rules for every answer.
+_ONLY_WHAT_WAS_SAID = (
+    "ONLY WHAT WAS SAID. Never attribute to the owner or the animal anything they did not "
+    "write in this conversation: money worries, whom a medicine was prescribed for, "
+    "tensions at home, contact with other animals, how many days, why the animal did "
+    "something, a sign that has changed. If it matters for the advice, ask it."
+)
+_LANGUAGE_COUNTRY_PROFILE = (
+    "LANGUAGE, COUNTRY, PROFILE. Every word in the owner's language: no Italian words in "
+    "another language (not 'ASL', 'comune', 'condominio': say 'the local veterinary "
+    "authority', 'the town council', 'the building rules' in that language). Rules and "
+    "public bodies of the country the owner lives in or names, never another country's: "
+    "Austria, Switzerland and Germany are different countries; when the country is not "
+    "known, name no public body. Use the animal's sex as written in its profile for every "
+    "word that agrees with it. When the owner says they are elderly, plain everyday words "
+    "and no technical terms."
+)
+_CHECK_BEFORE_ALARM = (
+    "NO FALSE ALARM. An animal the owner describes as well, eating and active, or getting "
+    "better, with a mild sign, is not sent to the vet now: say what to watch and when it "
+    "would need a vet. A vague picture: first one or two questions, then at most two short "
+    "pieces of advice."
+)
+_DOSE_ONLY_V2 = (
+    "THE OWNER ASKS HOW MUCH OF A MEDICINE. A fixed sentence before your text already "
+    "refuses the amount: never give one (no drops, no dose, no 'usually', no range). Then "
+    "say what to do now: call the vet who knows the animal or the clinic, and what to tell "
+    "them (the animal's weight, the medicine's name, when it was given last). If this "
+    "conversation describes a serious case, say again to go to the vet now. If the "
+    "medicine is for people or for another animal, say not to give it. Three to five "
+    "short sentences, warm and plain."
+)
+_OWNER_HEALTH_V2 = (
+    "THE OWNER MENTIONS THEIR OWN HEALTH. The message is still about the animal: answer "
+    "about the animal first. Only if the owner says they are hurt or unwell now, add one "
+    "short kind sentence: for them, a doctor, a pharmacist or the emergency services, "
+    "with no number and nothing on their treatment. A health detail that only explains "
+    "a limit (they cannot drive, they have blood pressure) is not a question: take it "
+    "into account in the advice (a taxi, a neighbour, a home visit), nothing more."
+)
+
 # Normativa doc 20 §20.13 (20/11/2026), for every v2 answer (not a lane).
 _MINOR_AND_NUMBERS_RULE = (
     "MINORS AND PHONE NUMBERS. Never write a phone number, not even an emergency number "
@@ -664,6 +745,8 @@ def build_system_prompt(
     urgency_doubt: str | None = None,
     dangerous_behaviour: bool = False,
     official_sources: bool = False,
+    dose_only: bool = False,
+    owner_health: bool = False,
 ) -> str:
     """The system prompt for one reply. Stable parts first (the prefix the
     provider can cache), then the parts that depend on the request: the
@@ -710,7 +793,7 @@ def build_system_prompt(
         parts.append(_GRIEF)
     if hopelessness:
         parts.append(_HOPELESSNESS)
-    if dose_part:
+    if dose_part and not (v2 and dose_only):
         parts.append(_DOSE_PART)
     if foreign_country:
         parts.append(_FOREIGN_COUNTRY)
@@ -726,6 +809,13 @@ def build_system_prompt(
         # Plan docs/llm/08, work A: the fixed texts as rules.
         parts.append(_SEVERITY_RULE)
         parts.append(_MINOR_AND_NUMBERS_RULE)
+        parts.append(_ONLY_WHAT_WAS_SAID)
+        parts.append(_LANGUAGE_COUNTRY_PROFILE)
+        parts.append(_CHECK_BEFORE_ALARM)
+        if dose_only:
+            parts.append(_DOSE_ONLY_V2)
+        if owner_health:
+            parts.append(_OWNER_HEALTH_V2)
         parts.append(_OFF_TOPIC_RULE)
         if urgency_doubt:
             parts.append(_URGENCY_DOUBT.replace("{category}", urgency_doubt))

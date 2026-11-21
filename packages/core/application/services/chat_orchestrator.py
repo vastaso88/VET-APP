@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 import zlib
@@ -44,6 +45,7 @@ from packages.core.application.services.medical_record_context_retriever import 
 from packages.core.application.services.natural_answer_prompt import (
     ANSWER_NOW_REMINDER,
     PROMPT_VERSION,
+    SEVERITY_CHECK_PROMPT,
     SHORTEN_PROMPT,
     build_emergency_prompt,
     build_system_prompt,
@@ -114,6 +116,7 @@ from packages.core.domain.safety.clarification_fit import (
     injury_is_on_a_person,
     is_a_past_event,
 )
+from packages.core.domain.safety.delay_in_answer import delays_or_reassures
 from packages.core.domain.safety.dosage_request import (
     asks_an_amount,
     is_dosage_request,
@@ -273,6 +276,27 @@ SHORTEN_MAX_TOKENS = 400
 
 def _word_count(text: str) -> int:
     return len(text.split())
+
+
+_JSON_OBJECT = re.compile(r"\{.*\}", re.S)
+
+
+def _parse_severity_check(content: str) -> tuple[bool, bool, str] | None:
+    """(serious, delays, rewrite) from the severity check's JSON; None if unreadable."""
+    match = _JSON_OBJECT.search(content or "")
+    if match is None:
+        return None
+    try:
+        payload = json.loads(match.group(0))
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    return (
+        payload.get("serious") is True,
+        payload.get("delays") is True,
+        str(payload.get("rewrite") or "").strip(),
+    )
 
 
 def _only_questions(text: str) -> bool:
@@ -1510,9 +1534,16 @@ class ChatOrchestrator:
                 }
             )
         if (
-            self._is_dosage_request(lowered)
-            or self._asks_an_amount_of_a_recent_medicine(lowered, user_history)
-        ) and not has_a_question_besides_the_dose(data.user_message):
+            (
+                self._is_dosage_request(lowered)
+                or self._asks_an_amount_of_a_recent_medicine(lowered, user_history)
+            )
+            and not has_a_question_besides_the_dose(data.user_message)
+            # Plan 08, v2 (synthetic users round 4): the same refusal word for word in 18
+            # replies, with nothing on what to do now. In v2 the fixed refusal sentence
+            # opens an answer that says what to do and keeps the urgency already said.
+            and not self._answer_v2
+        ):
             # Real-world finding: asked for an exact drug dose, the general
             # LLM path confidently computed and handed over a specific mg
             # figure (with a disclaimer only at the end, which owners tend
@@ -1547,7 +1578,10 @@ class ChatOrchestrator:
         owner_words = data.user_message.strip().lower()
         if is_identity_question(owner_words):
             return self._fixed_reply(IDENTITY_TEXTS, data, model="identity")
-        if is_human_health_question(owner_words):
+        if is_human_health_question(owner_words) and not self._answer_v2:
+            # v2 (synthetic users round 4, #82 "io ho la pressione e non guido", #325): a
+            # mention of the owner's health is a rule of the answer, never a reply on the
+            # person alone with an emergency number.
             return self._fixed_reply(HUMAN_HEALTH_TEXTS, data, model="off-topic-human-health")
         if is_prompt_leak_request(owner_words):
             return self._fixed_reply(PROMPT_LEAK_TEXTS, data, model="prompt-leak-guard")
@@ -1935,6 +1969,44 @@ class ChatOrchestrator:
     def _fixed_text(texts: dict[str, str], data: ChatOrchestratorInput) -> str:
         language = normalize_language(data.language)
         return texts.get(language, texts["it"]).format(name=data.pet_name)
+
+    def _severity_checked(
+        self, response: LLMResponse, *, history_block: str, owner_message: str
+    ) -> LLMResponse:
+        """Plan 08, v2 (synthetic users round 4): a reply that puts off the visit or softens
+        the case is read again; when the case is serious it is rewritten to "now". Not a
+        lane and not a fixed text: the same check for every answer, called only when the
+        reply contains a delay or a reassurance. Whatever goes wrong keeps the reply."""
+        if not delays_or_reassures(response.content):
+            return response
+        try:
+            checked = self._llm_client.generate(
+                LLMGenerationRequest(
+                    system_prompt=SEVERITY_CHECK_PROMPT,
+                    user_prompt=(
+                        f"{history_block}\nOwner's last message: {owner_message}"
+                        f"\n\nREPLY TO CHECK:\n{response.content}"
+                    ),
+                    temperature=0.0,
+                    max_tokens=self._answer_max_tokens + 200,
+                    purpose="severity_check",
+                    model_class="main",
+                    json_mode=True,
+                )
+            )
+        except Exception:  # noqa: BLE001 - the reply as written is still a reply
+            logger.warning("severity check unavailable: the reply is kept")
+            return response
+        verdict = _parse_severity_check(checked.content)
+        if verdict is None or checked.finish_reason == "length":
+            return response
+        serious, delays, rewrite = verdict
+        if not (serious and delays and rewrite):
+            return response
+        if _word_count(rewrite) > 1.3 * _word_count(response.content) + 20:
+            return response
+        logger.info("severity check: a serious case put off or softened was rewritten")
+        return response.model_copy(update={"content": rewrite})
 
     def _shortened(self, response: LLMResponse) -> LLMResponse:
         """The same answer in fewer words (SHORTEN_PROMPT), by the light
@@ -3763,6 +3835,19 @@ class ChatOrchestrator:
         dose_part = self._is_dosage_request(message.lower()) and has_a_question_besides_the_dose(
             data.user_message
         )
+        user_history = [m.content for m in data.conversation_history if m.role == "user"]
+        dose_only = (
+            self._answer_v2
+            and not dose_part
+            and (
+                self._is_dosage_request(message.lower())
+                or self._asks_an_amount_of_a_recent_medicine(message.lower(), user_history)
+            )
+        )
+        dose_part = dose_part or dose_only
+        owner_health = self._answer_v2 and is_human_health_question(
+            data.user_message.strip().lower()
+        )
         system_prompt = build_system_prompt(
             kind,
             may_ask=may_ask,
@@ -3794,6 +3879,8 @@ class ChatOrchestrator:
             grief=mentions_a_death(message),
             hopelessness=expresses_hopelessness(message),
             dose_part=dose_part,
+            dose_only=dose_only,
+            owner_health=owner_health,
             foreign_country=foreign,
             medical_first=medical_cause_first(message, data.age_years),
             travel_south=travel_to_sand_fly_area(message, normalize_species(effective_species)),
@@ -3889,6 +3976,11 @@ class ChatOrchestrator:
             and _word_count(response.content) > ANSWER_WORDS_LIMIT
         ):
             response = self._shortened(response)
+        if self._answer_v2:
+            # synthetic users round 4: "oggi stesso" in a serious case, read again
+            response = self._severity_checked(
+                response, history_block=history_block, owner_message=anonymized_message
+            )
 
         validation = validate_answer(response.content, sources_count=len(sources))
         if (
@@ -3935,7 +4027,11 @@ class ChatOrchestrator:
             # asked no amount, only the sentences with the dose go; the refusal
             # stays for a real request, or when nothing useful would remain.
             trimmed = without_dose_sentences(response.content, allowed_text=medical_context)
-            if self._owner_asked_an_amount(data, message) or len(trimmed) < 120:
+            refuse = self._owner_asked_an_amount(data, message) and not (
+                # v2: the refusal sentence opens the answer (dose_part), the rest stays
+                self._answer_v2 and dose_part
+            )
+            if refuse or len(trimmed) < 120:
                 return self._dosage_rewritten_result(data.language, dosage)
             logger.warning("answer validator: a dose (%s) was cut from the reply", dosage)
             response = response.model_copy(update={"content": trimmed})
@@ -3986,7 +4082,21 @@ class ChatOrchestrator:
             answer_text = self._fixed_text(CHILD_NEVER_ALONE, data) + answer_text
             cache_id = None
         if dose_part:
-            answer_text = self._fixed_text(DOSE_PART_REFUSED, data) + answer_text
+            toxicity = (
+                self._toxicity_note_for(
+                    message,
+                    [m.content for m in data.conversation_history if m.role == "user"],
+                    normalize_species(effective_species),
+                    data.language,
+                )
+                if self._answer_v2
+                else ""
+            )
+            answer_text = (
+                self._fixed_text(DOSE_PART_REFUSED, data)
+                + (toxicity.strip() + " " if toxicity else "")
+                + answer_text
+            )
             cache_id = None
         if is_minor_writing(message):
             answer_text = self._fixed_text(ADULT_FIRST, data) + answer_text

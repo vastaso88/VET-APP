@@ -87,9 +87,7 @@ class Settings(BaseSettings):
     # current version: while they are not, the protected routes answer 403
     # `consent_required`. OFF until the app that shows the acceptance screen is
     # distributed (the Orchestrator turns it on).
-    consent_enforcement_enabled: bool = Field(
-        default=False, alias="CONSENT_ENFORCEMENT_ENABLED"
-    )
+    consent_enforcement_enabled: bool = Field(default=False, alias="CONSENT_ENFORCEMENT_ENABLED")
     # Pause (docs/compliance/18 §2): the most months an account may stay paused
     # without a sign-in; then it is erased, after the warnings. NEVER empty: a
     # missing limit is what art. 5(1)(e) GDPR forbids, so the range is enforced at
