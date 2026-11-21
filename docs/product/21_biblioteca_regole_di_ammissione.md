@@ -157,34 +157,6 @@ Le fonti che la chat può **leggere al momento** (senza conservare il testo) o d
 
 **Siti che bloccano i programmi: fuori per ora.** Dove il sito blocca i programmi (barriere anti-bot, `robots.txt` che vieta, risposte 403/404) il sito è «non raggiungibile: fuori per ora»; nessun blocco si aggira e nessuno fuori per ora è previsto (decisione del proprietario, 20/11/2026). Dei siti riservati (gruppo c) si leggono solo i termini d'uso, e solo se il loro `robots.txt` consente la lettura ai programmi.
 
-**Scadenza.** Le **note** della biblioteca scadono dopo **6 mesi** (decisione del proprietario, 20/11/2026) e vanno rilette alla fonte; il **controllo dei siti** (licenza, `robots.txt`, termini) si rilegge ogni **12 mesi**, salvo diversa indicazione della Normativa.
-
-**Siti che bloccano i programmi: fuori per ora.** Dove il sito blocca i programmi (barriere anti-bot, `robots.txt` che vieta, risposte 403/404) il sito è «non raggiungibile: fuori per ora»; nessun blocco si aggira e nessuno fuori per ora è previsto (decisione del proprietario, 20/11/2026). Dei siti riservati (gruppo c) si leggono solo i termini d'uso, e solo se il loro `robots.txt` consente la lettura ai programmi.
-
-**Scadenza.** Le **note** della biblioteca scadono dopo **6 mesi** (decisione del proprietario, 20/11/2026) e vanno rilette alla fonte; il **controllo dei siti** (licenza, `robots.txt`, termini) si rilegge ogni **12 mesi**, salvo diversa indicazione della Normativa.
-
-**Siti che bloccano i programmi: fuori per ora.** Dove il sito blocca i programmi (barriere anti-bot, `robots.txt` che vieta, risposte 403/404) il sito è «non raggiungibile: fuori per ora»; nessun blocco si aggira e nessuno fuori per ora è previsto (decisione del proprietario, 20/11/2026). Dei siti riservati (gruppo c) si leggono solo i termini d'uso, e solo se il loro `robots.txt` consente la lettura ai programmi.
-
-**Scadenza.** Le **note** della biblioteca scadono dopo **6 mesi** (decisione del proprietario, 20/11/2026) e vanno rilette alla fonte; il **controllo dei siti** (licenza, `robots.txt`, termini) si rilegge ogni **12 mesi**, salvo diversa indicazione della Normativa.
-
-**Siti che bloccano i programmi: fuori per ora.** Dove il sito blocca i programmi (barriere anti-bot, `robots.txt` che vieta, risposte 403/404) il sito è «non raggiungibile: fuori per ora»; nessun blocco si aggira e nessuno fuori per ora è previsto (decisione del proprietario, 20/11/2026). Dei siti riservati (gruppo c) si leggono solo i termini d'uso, e solo se il loro `robots.txt` consente la lettura ai programmi.
-
-**Scadenza.** Le **note** della biblioteca scadono dopo **6 mesi** (decisione del proprietario, 20/11/2026) e vanno rilette alla fonte; il **controllo dei siti** (licenza, `robots.txt`, termini) si rilegge ogni **12 mesi**, salvo diversa indicazione della Normativa.
-
-**Siti che bloccano i programmi: fuori per ora.** Dove il sito blocca i programmi (barriere anti-bot, `robots.txt` che vieta, risposte 403/404) il sito è «non raggiungibile: fuori per ora»; nessun blocco si aggira e nessuno fuori per ora è previsto (decisione del proprietario, 20/11/2026). Dei siti riservati (gruppo c) si leggono solo i termini d'uso, e solo se il loro `robots.txt` consente la lettura ai programmi.
-
-**Scadenza.** Le **note** della biblioteca scadono dopo **6 mesi** (decisione del proprietario, 20/11/2026) e vanno rilette alla fonte; il **controllo dei siti** (licenza, `robots.txt`, termini) si rilegge ogni **12 mesi**, salvo diversa indicazione della Normativa.
-
-**Siti che bloccano i programmi: fuori per ora.** Dove il sito blocca i programmi (barriere anti-bot, `robots.txt` che vieta, risposte 403/404) il sito è «non raggiungibile: fuori per ora»; nessun blocco si aggira e nessuno fuori per ora è previsto (decisione del proprietario, 20/11/2026). Dei siti riservati (gruppo c) si leggono solo i termini d'uso, e solo se il loro `robots.txt` consente la lettura ai programmi.
-
-**Scadenza.** Le **note** della biblioteca scadono dopo **6 mesi** (decisione del proprietario, 20/11/2026) e vanno rilette alla fonte; il **controllo dei siti** (licenza, `robots.txt`, termini) si rilegge ogni **12 mesi**, salvo diversa indicazione della Normativa.
-
-**Siti che bloccano i programmi: fuori per ora.** Dove il sito blocca i programmi (barriere anti-bot, `robots.txt` che vieta, risposte 403/404) il sito è «non raggiungibile: fuori per ora»; nessun blocco si aggira e nessuno fuori per ora è previsto (decisione del proprietario, 20/11/2026). Dei siti riservati (gruppo c) si leggono solo i termini d'uso, e solo se il loro `robots.txt` consente la lettura ai programmi.
-
-**Scadenza.** Le **note** della biblioteca scadono dopo **6 mesi** (decisione del proprietario, 20/11/2026) e vanno rilette alla fonte; il **controllo dei siti** (licenza, `robots.txt`, termini) si rilegge ogni **12 mesi**, salvo diversa indicazione della Normativa.
-
-**Siti che bloccano i programmi: fuori per ora.** Dove il sito blocca i programmi (barriere anti-bot, `robots.txt` che vieta, risposte 403/404) il sito è «non raggiungibile: fuori per ora»; nessun blocco si aggira e nessuno fuori per ora è previsto (decisione del proprietario, 20/11/2026). Dei siti riservati (gruppo c) si leggono solo i termini d'uso, e solo se il loro `robots.txt` consente la lettura ai programmi.
-
 Campi per ogni sito: nome, dominio, pagina di esempio, **gruppo**, livello, scritto per chi, specie e temi, **licenza o condizioni lette** (con la pagina), `robots.txt` (blocca le IA?), raggiungibile dal programma, conservare il testo, **permesso**, **tetto di note** e **contatore** (note create per quel sito), **pagine stimate**, **data del controllo** (valido 12 mesi). Un sito entra solo con il parere della Normativa e il controllo in 4 punti; prima di leggere un host nuovo si controlla il suo `robots.txt`.
 
 ## 8. L'elenco bianco: parere sito per sito (controlli del 20/11/2026)
