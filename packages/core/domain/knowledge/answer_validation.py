@@ -1,4 +1,5 @@
 import re
+from collections.abc import Callable
 
 from pydantic import BaseModel, Field
 
@@ -34,6 +35,71 @@ ABSOLUTE_CLAIM_MARKERS: tuple[str, ...] = (
 )
 
 
+# "Definitivamente no le des cebolla", "sicuramente non va dato", "definitely not":
+# an adverb that reinforces a warning is not an overclaim (test 2, 20/11: a Spanish
+# answer on leftovers was blocked whole). Only the adverbs, never "nessun rischio".
+_ADVERB_MARKERS = ("sicuramente", "definitely", "definitivamente", "senza alcun dubbio")
+_WARNING_AFTER = re.compile(
+    r"\s*[,:]?\s*(?:\w+\s+){0,2}?(?:non|no|not|never|mai|nunca|nicht|nie|jamais|pas|avoid|evita\w*)\b"
+)
+
+
+def absolute_claims(text: str) -> list[str]:
+    """The overclaiming markers in [text], whole words only; an adverb followed by a
+    negation or "avoid" reinforces a warning and does not count."""
+    lowered = text.lower()
+    found = []
+    for marker in ABSOLUTE_CLAIM_MARKERS:
+        for match in re.finditer(rf"(?<!\w){re.escape(marker)}(?!\w)", lowered):
+            after = lowered[match.end() : match.end() + 40]
+            if marker in _ADVERB_MARKERS and _WARNING_AFTER.match(after):
+                continue
+            found.append(marker)
+            break
+    return found
+
+
+_SENTENCES = re.compile(r"(?<=[.!?;])\s+")
+
+
+def without_absolute_claims(answer: str) -> str:
+    """The answer without the sentences that overclaim, layout kept (plan 08, v2: one
+    word must not leave the owner with no answer at all)."""
+    return _without_sentences(answer, lambda s: bool(absolute_claims(s)))
+
+
+# Normativa doc 20 §20.13 (20/11): the model never writes a phone number, not even an
+# emergency one; any number the app gives is a fixed text of the code, never the model's.
+_PHONE_NUMBER = re.compile(
+    r"(?<![\d/-])(?<!\d[.,])(?:112|113|115|118|911|999|116\s?117|1500)(?!\d|[.,/-]\d)"
+    r"(?!\s*(?:%|°|min\w*|or[ae]\b|hours?|giorn\w*|days?|kg|g\b|grammi|grams?|ml|anni|years?|"
+    r"euro|€|\$|km|m\b|cm|mg|settiman\w*|weeks?|mesi|months?))"
+    r"|\+\d{2,3}[\s.-]?\d[\d\s.-]{6,}\d"
+    r"|(?<!\d)0\d{1,4}[\s.-]?\d{5,8}(?!\d)"
+)
+
+
+def has_phone_number(text: str) -> bool:
+    return bool(_PHONE_NUMBER.search(text))
+
+
+def without_phone_numbers(answer: str) -> str:
+    """The model's answer without the sentences that carry a phone number."""
+    return _without_sentences(answer, has_phone_number)
+
+
+def _without_sentences(answer: str, drop: Callable[[str], bool]) -> str:
+    kept_lines: list[str] = []
+    for line in answer.split("\n"):
+        sentences = _SENTENCES.split(line)
+        kept = [s for s in sentences if not drop(s)]
+        if len(kept) == len(sentences):
+            kept_lines.append(line)
+        elif kept:
+            kept_lines.append(" ".join(kept))
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(kept_lines)).strip()
+
+
 class AnswerValidationResult(BaseModel):
     """Spec v3 §28-29: citations must be verifiable against what was
     actually retrieved, and overclaiming must never reach the owner —
@@ -55,8 +121,7 @@ def validate_answer(answer: str, *, sources_count: int) -> AnswerValidationResul
             "citation_out_of_range: cites " + ", ".join(f"[{i}]" for i in invalid_citations)
         )
 
-    lowered = answer.lower()
-    matched_markers = [marker for marker in ABSOLUTE_CLAIM_MARKERS if marker in lowered]
+    matched_markers = absolute_claims(answer)
     if matched_markers:
         violations.append("unsupported_absolute_claim: " + ", ".join(matched_markers))
 

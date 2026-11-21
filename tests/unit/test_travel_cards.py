@@ -126,12 +126,6 @@ def test_the_repository_cards_pass_the_check_and_the_export_is_up_to_date() -> N
     assert json.loads(TRAVEL_CARDS_FILE.read_text("utf-8")) == checker.export_cards()
 
 
-def test_no_travel_card_reaches_the_chat_archive() -> None:
-    archive = json.loads((ROOT / "data/manuale/health_cards.json").read_text("utf-8"))
-
-    assert not [row for row in archive if str(row["id"]).startswith("via-")]
-
-
 @pytest.mark.parametrize(
     "text",
     ["Dai 5 mg per kg.", "Usa Frontline prima di partire.", "Fai il corso per il patentino."],

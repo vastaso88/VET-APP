@@ -391,6 +391,15 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "de": "nicht einsehen, weil die Einwilligung nicht aktiv ist",
         "fr": "je ne peux pas consulter le dossier médical",
     },
+    # A person hurt or in danger (CHAT_PERSON_HURT_LINE, off: owner 2026-11-20). The
+    # number by country (112 in Europe); English has no country, so the general sentence.
+    "person_hurt_line": {
+        "it": "Se una persona è ferita o in pericolo, chiama subito il 112 o vai al pronto soccorso.",
+        "en": "If a person is hurt or in danger, call your country's emergency number straight away (112 in Europe) or go to the emergency department.",
+        "es": "Si una persona está herida o en peligro, llama enseguida al 112 o ve a urgencias.",
+        "de": "Wenn ein Mensch verletzt oder in Gefahr ist, rufen Sie sofort die 112 an oder gehen Sie in die Notaufnahme.",
+        "fr": "Si une personne est blessée ou en danger, appelez tout de suite le 112 ou allez aux urgences.",
+    },
     "triage_opening": {
         "it": "Hai fatto bene a scrivermi subito. Quello che mi racconti di {pet_name} è un segnale che merita una valutazione veterinaria immediata. Ecco cosa fare adesso:\n",
         "en": "You did the right thing by writing straight away. What you describe about {pet_name} needs immediate veterinary assessment. Here is what to do now:\n",

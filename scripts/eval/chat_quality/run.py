@@ -111,6 +111,7 @@ SCENARIOS: tuple[Scenario, ...] = (
 
 from packages.bootstrap.container import ApplicationContainer  # noqa: E402
 from packages.core.application.ports.llm_client import LLMGenerationRequest  # noqa: E402
+from packages.core.application.services.chat_orchestrator import ChatOrchestrator  # noqa: E402
 from packages.core.application.services.send_chat_message import (  # noqa: E402
     SendChatMessageInput,
 )
@@ -250,6 +251,22 @@ _READ_REPORT = re.compile(
 
 
 DEFAULT_MAX_TOKENS = 40_000
+# With the local claude program (EVAL_CLAUDE_EXE) the calls are paid by the
+# subscription, not by the shared Groq quota the default ceiling protects:
+# no ceiling unless --max-tokens asks for one.
+CLI_MAX_TOKENS = 10**12
+# The local claude program takes 10-40 s per call, the production budget for
+# the model part of an urgency is 12 s: with it every urgency would fall back
+# to the fixed steps and the run would measure the fixed text only.
+CLI_URGENT_ANSWER_TIMEOUT_SECONDS = 90
+
+
+def token_ceiling(requested: int | None) -> int:
+    """The ceiling of this execution: the one asked for, else the default of
+    the provider under test."""
+    if requested:
+        return requested
+    return CLI_MAX_TOKENS if cli_exe() else DEFAULT_MAX_TOKENS
 
 
 class BudgetExceeded(Exception):
@@ -400,6 +417,20 @@ def _use_claude_cli() -> None:
         return ClaudeCliClient(exe, OUTPUT_DIR / "cli", model=cli_model())
 
     ApplicationContainer._build_llm_client = build  # type: ignore[method-assign]
+
+    # The settings say provider "echo" (no answering key is kept), and the
+    # container gives the echo provider no model part in urgencies: the
+    # orchestrator gets the urgency budget of the local program instead.
+    original_init = ChatOrchestrator.__init__
+    if getattr(original_init, "_eval_cli_timeout", False):
+        return
+
+    def init(self: Any, *args: Any, **kwargs: Any) -> None:
+        kwargs["urgent_answer_timeout_seconds"] = CLI_URGENT_ANSWER_TIMEOUT_SECONDS
+        original_init(self, *args, **kwargs)
+
+    init._eval_cli_timeout = True  # type: ignore[attr-defined]
+    ChatOrchestrator.__init__ = init  # type: ignore[method-assign]
 
 
 def build_settings(
@@ -970,7 +1001,7 @@ def command_rejudge(arguments: argparse.Namespace) -> int:
     settings = _eval_settings(arguments)
     container = ApplicationContainer(settings)
     CallCounter.install(container.llm_client)
-    CallCounter.max_tokens = arguments.max_tokens or DEFAULT_MAX_TOKENS
+    CallCounter.max_tokens = token_ceiling(arguments.max_tokens)
     by_id = {scenario.id: scenario for scenario in SCENARIOS}
     results = _previous_results(arguments.label)
     for result in results:
@@ -1019,7 +1050,7 @@ def command_run(arguments: argparse.Namespace) -> int:
     cache = _load_cache()
     judge_container = None if arguments.no_judge else ApplicationContainer(settings)
     CallCounter.install(ApplicationContainer(settings).llm_client)
-    CallCounter.max_tokens = arguments.max_tokens or DEFAULT_MAX_TOKENS
+    CallCounter.max_tokens = token_ceiling(arguments.max_tokens)
     results = _previous_results(arguments.label) if (wanted or arguments.resume) else []
     if wanted:
         results = [r for r in results if r["id"] not in wanted]

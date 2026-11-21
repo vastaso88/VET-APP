@@ -124,6 +124,25 @@ _BODY_WEIGHT = re.compile(
     r"\b(?:pesa|peso|pesava|weighs?|weight|weighed|wiegt|gewicht|pese|poids|pesaba)\b"
     r"[^.;:!?]{0,30}$"
 )
+# Test 2 (20/11): "un canarino di 22 grammi", "a cockatiel of 85 g", "con 22 grammi",
+# "at 85 g": the animal's size said in passing. Only for grams, never mg or ml
+# ("con 20 mg di prednisolone" stays a dose).
+_SIZE_IN_PASSING = re.compile(
+    r"\b(?:un|una|uno|a|an|une|ein|eine|einen)\s+\w+\s+(?:di|da|of|de|von|d')\s*$"
+    r"|\b(?:con|with|mit|avec)\s+(?:i suoi |his |her |its |seinen |ses |sus )?"
+    r"(?:solo |appena |only |just |nur |seulement )?$"
+    r"|\bat\s+(?:only |just )?$"
+)
+_GRAMS = re.compile(r"\d\s*(?:g|grammi|grams?|gramos?|gramm|grammes?)$")
+
+
+def _is_body_weight(sentence: str, amount: re.Match[str]) -> bool:
+    before = sentence[: amount.start()]
+    if _BODY_WEIGHT.search(before):
+        return True
+    return bool(_GRAMS.search(amount.group(0))) and bool(_SIZE_IN_PASSING.search(before))
+
+
 # Drops are food only when they are drops of water ("a few drops of water on the
 # leaves"); "2 gocce nel cibo" is a medicine or a supplement.
 _DROPS = re.compile(r"^(?:gocc\w*|drops?|gotas?|tropfen|gouttes?)$")
@@ -135,7 +154,11 @@ _DRUG_UNIT = re.compile(r"\b\d+(?:[.,]\d+)?\s*(?:mg|mcg|µg|ug|ui|iu|ie)\b")
 def _is_a_food_amount(sentence: str) -> bool:
     """A portion of food or water: food words, no named drug, no unit only a
     medicine has, and every medicine-like word one a food portion shares."""
-    if not _FOOD.search(sentence) or _NAMED_DRUG.search(sentence) or _DRUG_UNIT.search(sentence):
+    # misting and spraying are water too, even without a food word (test 2, 20/11: a
+    # chameleon's leaves sprayed "three times a day" so it drinks the drops)
+    if not (_FOOD.search(sentence) or _WATER.search(sentence)):
+        return False
+    if _NAMED_DRUG.search(sentence) or _DRUG_UNIT.search(sentence):
         return False
     water = bool(_WATER.search(sentence))
     return all(
@@ -144,7 +167,18 @@ def _is_a_food_amount(sentence: str) -> bool:
     )
 
 
+# Drops of blood or of water (test 2, 20/11: "con 22 grammi, anche poche gocce di sangue
+# sono tante" was cut as a dose): the drops are not a medicine form there.
+_NOT_MEDICINE_DROPS = re.compile(
+    r"\b(?:gocc\w*|drops?|droplets?|gotas?|gotitas?|tropfen|gouttes?|gouttelettes?)\s+"
+    r"(?:di |d'|of |de |von |du |de la )?(?:sangue|blood|sangre|blut|sang|acqua|water|agua|"
+    r"wasser|eau|rugiada|dew|rocio|tau|rosee)\b"
+    r"|\b(?:blutstropfen|wassertropfen)\b"
+)
+
+
 def _names_a_medicine(sentence: str) -> bool:
+    sentence = _NOT_MEDICINE_DROPS.sub(" ", sentence)
     return any(not _BARE_UNIT.match(found.group(0)) for found in _MEDICINE.finditer(sentence))
 
 
@@ -183,11 +217,7 @@ def find_dosage(answer: str, *, allowed_text: str = "") -> str | None:
         if not _names_a_medicine(sentence) or _is_a_food_amount(sentence):
             continue
         amount = next(
-            (
-                found
-                for found in _AMOUNT.finditer(sentence)
-                if not _BODY_WEIGHT.search(sentence[: found.start()])
-            ),
+            (found for found in _AMOUNT.finditer(sentence) if not _is_body_weight(sentence, found)),
             None,
         )
         if amount is not None and is_models_own(amount.group(0)):

@@ -29,7 +29,6 @@ from packages.core.application.ports.event_submission_repository import (
     EventSubmissionRepository,
 )
 from packages.core.application.ports.evidence_retriever import EvidenceRetriever
-from packages.core.application.ports.health_card_repository import HealthCardRepository
 from packages.core.application.ports.image_analyzer import ImageAnalyzer
 from packages.core.application.ports.listing_report_repository import ListingReportRepository
 from packages.core.application.ports.llm_client import LLMClient
@@ -92,7 +91,6 @@ from packages.core.application.services.get_or_create_subscription import (
 from packages.core.application.services.get_pet_news import GetPetNewsService
 from packages.core.application.services.get_pet_profile import GetPetProfileService
 from packages.core.application.services.get_user_location import GetUserLocationService
-from packages.core.application.services.health_card_selector import HealthCardSelector
 from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.application.services.list_chat_response_reports import (
     ListChatResponseReportsService,
@@ -175,7 +173,6 @@ from packages.core.application.services.update_pet_profile import UpdatePetProfi
 from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentService
 from packages.core.application.services.urgency_classifier import UrgencyClassifier
 from packages.core.application.services.vet_summary import VetSummaryService
-from packages.core.domain.knowledge.health_cards import load_cards_file
 from packages.core.domain.subscription.limits import DEFAULT_MAX_MEMORIAL_PETS, PlanLimits
 from packages.core.domain.subscription.models import SubscriptionPlan
 from packages.core.domain.travel.cards import load_travel_cards
@@ -242,9 +239,6 @@ from packages.infrastructure.persistence.in_memory_event_catalog import (
 )
 from packages.infrastructure.persistence.in_memory_event_submissions import (
     InMemoryEventSubmissionRepository,
-)
-from packages.infrastructure.persistence.in_memory_health_cards import (
-    InMemoryHealthCardRepository,
 )
 from packages.infrastructure.persistence.in_memory_marketplace_messaging import (
     InMemoryMarketplaceMessagingRepository,
@@ -432,6 +426,9 @@ class ApplicationContainer:
             ),
             consent_interpreter=ConsentInterpreter(self.llm_client),
             enable_interview_loop=settings.enable_interview_loop,
+            answer_v2=settings.chat_answer_v2,
+            urgent_lane=settings.chat_answer_v2_urgent_lane,
+            person_hurt_line=settings.chat_person_hurt_line,
             coverage_target=settings.situation_coverage_target,
             max_interview_questions=settings.interview_max_questions,
             response_language=settings.response_language,
@@ -458,11 +455,6 @@ class ApplicationContainer:
             strong_model=(
                 settings.anthropic_model_strong
                 if settings.sonnet_escalation_enabled and settings.llm_provider == "anthropic"
-                else None
-            ),
-            health_card_selector=(
-                HealthCardSelector(self._build_health_card_repository(), self.llm_client)
-                if settings.health_sources_rule_enabled
                 else None
             ),
             answer_max_tokens=settings.llm_answer_max_tokens,
@@ -1159,22 +1151,6 @@ class ApplicationContainer:
                     return InMemoryLlmUsageRepository()
                 raise
         return InMemoryLlmUsageRepository()
-
-    def _build_health_card_repository(self) -> HealthCardRepository:
-        if self.settings.persistence_backend == "supabase":
-            from packages.infrastructure.persistence.supabase.client import (
-                build_supabase_client,
-            )
-            from packages.infrastructure.persistence.supabase.supabase_health_cards import (
-                SupabaseHealthCardRepository,
-            )
-
-            return SupabaseHealthCardRepository(build_supabase_client(self.settings))
-        # Local runs and evaluations: the manual project's export, approved
-        # cards only unless an evaluation asks for the drafts too.
-        return InMemoryHealthCardRepository(
-            load_cards_file(include_drafts=self.settings.health_cards_include_drafts)
-        )
 
     def _build_answer_cache_repository(self) -> AnswerCacheRepository:
         if self.settings.persistence_backend == "supabase":

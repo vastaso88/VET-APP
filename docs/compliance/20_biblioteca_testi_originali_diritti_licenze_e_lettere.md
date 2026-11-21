@@ -854,6 +854,17 @@ L'Orchestratore riferisce che la sessione Chat, in una prova tecnica **partita p
 
 **Giudizio sui tre siti con barriere.** La Chat ha fatto la cosa giusta: nel dubbio, trattarlo come aggiramento. **Bastano lo stop e la registrazione, con tre precisazioni.** (a) **Nessun nuovo tentativo per sciogliere il dubbio**: ripetere le due richieste per vedere quale passa sarebbe una nuova richiesta a un sito con barriera e, se passasse quella con il nome di browser, un aggiramento certo; il dubbio resta scritto come «possibile». (b) Nessuna comunicazione ai siti e nessun dato da cancellare. (c) I tre host restano **fuori da ogni lettura da programma**, anche al momento: nell'elenco bianco «lettura al momento: no; scarico a mano» (§19). **Gravità:** rischio giuridico **basso** (contenuti con licenza aperta o nota da leggere a mano, una richiesta per sito, nulla conservato, nessuna credenziale né area protetta); **non è una violazione di dati personali** (la procedura delle 72 ore di `docs/security/03` non si applica); è però una violazione della regola «nessuna barriera aggirata» (§18.3, §21.1), riferita al proprietario come incidente. **Test automatico: meglio positivo**: ogni User-Agent deve **iniziare con «Quokka»**; il controllo su «Mozilla» e «Claude» resta come minimo.
 
+### 20.13 Il 112 scritto dal modello: minore solo in casa (20 novembre notte)
+
+**Quesito dell'Orchestratore.** Nella prova 2 la chat nuova, a un ragazzo di 12 anni solo con il cane che sta male, ha scritto da sé «chiama un familiare, un vicino o il 112 se non riesci a trovare nessuno»; la frase fissa del 112 è stata tolta dal proprietario il 20 novembre. **Parere: riformulare**, non lasciare e non vietare ogni accenno, con una regola del prompt valida per tutte le risposte (non è una corsia). **Proposta della Normativa, in attesa del sì del proprietario** per il punto 4; i punti 1–3 non dipendono da lui:
+
+1. Con un minore (da profilo o dichiarato in chat) la prima indicazione è **«un adulto di cui ti fidi»** (un familiare, un vicino): è già la regola raccomandata per i minori (§13.4; registro 08, punto 57).
+2. **Il modello non scrive numeri di telefono, nemmeno il 112**: a memoria possono essere sbagliati per il Paese dell'utente (§16.3) e il 112 non è una linea veterinaria.
+3. Per il cane: se non c'è un adulto e sta molto male, **«una clinica veterinaria»**.
+4. Se il ragazzo o un'altra persona è ferita o in pericolo, **«chiama subito i soccorsi o il numero di emergenza del tuo Paese»**, senza cifre. Non è la riga fissa tolta dal proprietario ma una frase di buon senso dentro la risposta; se il proprietario preferisce che il modello non dica nulla, il punto 4 cade e restano 1–3.
+
+Un utente di 12 anni è sotto l'età minima (14, Termini §1): non cambia la risposta, che coinvolge comunque un adulto. Nessun obbligo di legge: è prudenza per i minori.
+
 ## 21. Elenco bianco: EUR-Lex tramite l'Ufficio delle pubblicazioni e legge svizzera sugli animali (20 novembre notte)
 
 Due domande della sessione Manuale, portate dall'Orchestratore. Pagine e file letti il 20 novembre 2026; i `robots.txt` con una sola richiesta ciascuno.

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import re
 
+from packages.core.domain.safety.clarification_fit import injury_is_on_a_person
 from packages.core.domain.safety.emergency_patterns import normalize_for_matching
 
 
@@ -617,6 +618,91 @@ def warning_toward_others(message: str) -> bool:
         and bool(_CHILD.search(text) or _OTHER_PEOPLE.search(text))
         and not _PLAY.search(text)
     )
+
+
+# Plan docs/llm/08, work A: an animal that attacks, not only warns. With the warning
+# signals above, the two detectors below (people; other animals) put the rule on
+# dangerous behaviour in the prompt (natural_answer_prompt._DANGEROUS_BEHAVIOUR).
+_ATTACK = _words(
+    r"aggred\w*|aggress\w*|attacc\w*|si (?:lancia|scaglia|avventa)|ferit[oaie]|ha ferito|"
+    r"ha ucciso|uccis[oa]|sbranat\w*|"
+    r"attack\w*|lung(?:es|ed|ing) at|went for|goes for|injur\w*|kill(?:ed|s)?|mauled|"
+    r"ataca\w*|agred\w*|se lanza|mat[oó]|herid[oa]|"
+    r"greift|angegriffen|angreif\w*|verletzt|getotet|totgebissen|"
+    r"attaqu\w*|agress\w*|bless[ée]|tu[ée]"
+)
+# People the warning-signal lists do not name: relatives, people met outside.
+_MORE_PEOPLE = _words(
+    r"nipot[ei]|cugin[oiae]|amic[ao]|passant[ei]|ciclist[ie]|jogger|corridor[ie]|postin[oa]|"
+    r"nephews?|nieces?|cousins?|passers?-?by|cyclists?|joggers?|runners?|"
+    r"sobrin[oa]s?|prim[oa]s?|transeuntes?|ciclistas?|corredores?|"
+    r"neffe\w*|nichte\w*|cousin\w*|passant\w*|radfahrer\w*|jogger\w*|"
+    r"neveux?|nieces?|cyclistes?|coureurs?"
+)
+# Chasing, catching, killing: the dangerous picture toward other animals (predation).
+_CHASE = _words(
+    r"insegu\w*|ha preso|li prende|e mort[oa]|chas\w*|caught|persig\w*|caza\w*|jagt|hetzt|"
+    r"poursui\w*|chass\w*"
+)
+_OTHER_ANIMALS = _words(
+    r"altr[oiae] (?:(?:nostr[oiae]|mi[oei]|tu[oei]) )?(?:cane|cani|gatt[oi]|animal[ei])|"
+    r"(?:un|il|i|dei|gli) (?:cane|cani|gatt[oi])|"
+    r"cani al parco|cagnolin[oi]|gatt[oi] del vicin\w*|animal[ei] del vicin\w*|galline|conigli|"
+    r"(?:other|another|the other) (?:dog|dogs|cat|cats|pet|pets|animal|animals)|"
+    r"(?:a|the|our) (?:dog|cat|puppy|kitten)|(?:dogs|cats) at the park|neighbou?r'?s (?:dog|cat)|"
+    r"chickens|"
+    r"otros? (?:perros?|gatos?|animales)|(?:un|el|al) (?:perro|gato)|gallinas|"
+    r"ander(?:e|en|er) (?:hund|hunde|katze|katzen|tiere)|(?:einen|den|dem) (?:hund|kater)|"
+    r"(?:eine|die) katze|hühner|huhner|"
+    r"autres? (?:chiens?|chats?|animaux)|(?:un|le|au) (?:chien|chat)|poules"
+)
+
+
+def aggression_toward_people(message: str) -> bool:
+    """A bite, a scratch, an attack or a threat toward a person (a child, a guest, the
+    owner), outside play: the dangerous-behaviour rule (plan 08)."""
+    text = _without_negated_signals(normalize_for_matching(message))
+    signal = bool(_WARNING_SIGNAL.search(text) or _ATTACK.search(text))
+    person = bool(
+        _CHILD.search(text) or _OTHER_PEOPLE.search(text) or _MORE_PEOPLE.search(text)
+    ) or bool(re.search(r"\b(?:mi ha|me ha|m'a|hat mich|(?:bit|attacked|scratched) me)\b", text))
+    return signal and person and not _PLAY.search(text)
+
+
+_HURT = _words(
+    r"mors[oaie]|morsicat\w*|ha morso|mi ha morso|ferit[oaie]|sangu\w*|graffiat\w*|tagli\w*|"
+    r"bit|bitten|bleed\w*|hurt|injur\w*|scratched|wound\w*|"
+    r"mordi\w*|muerd\w*|herid[oa]s?|sangr\w*|aran\w*|"
+    r"gebissen|biss|blut\w*|verletzt|gekratzt|"
+    r"mordu\w*|bless[ée]e?s?|saign\w*|griff[ée]e?s?"
+)
+
+
+def person_is_hurt(message: str) -> bool:
+    """A person was bitten, scratched or wounded by the animal (Normativa §16: the line
+    with the emergency number goes before anything else)."""
+    text = _without_negated_signals(normalize_for_matching(message))
+    return injury_is_on_a_person(message) or (
+        aggression_toward_people(message) and bool(_HURT.search(text))
+    )
+
+
+def aggression_toward_animals(message: str) -> bool:
+    """An attack, a bite or a fight with another animal (a dog at the park, the other cat
+    at home, the neighbour's cat), outside play: the dangerous-behaviour rule (plan 08).
+    Until 20/11/2026 nothing detected it."""
+    text = _without_negated_signals(normalize_for_matching(message))
+    signal = bool(
+        _ATTACK.search(text)
+        or _WARNING_SIGNAL.search(text)
+        or _CHASE.search(text)
+        or re.search(
+            r"\blitig\w*|\bzuff\w*|\bfight\w*|\bpele\w*|\bpelea\w*|\brauf\w*|"
+            r"\bse bat\w*|\bbagarr\w*",
+            text,
+        )
+    )
+    return signal and bool(_OTHER_ANIMALS.search(text)) and not _PLAY.search(text)
 
 
 # A behaviour named only by a judgement ("fa i dispetti", "è nervoso"): what
