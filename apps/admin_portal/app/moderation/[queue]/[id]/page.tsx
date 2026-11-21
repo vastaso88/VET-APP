@@ -83,6 +83,8 @@ export default async function ModerationDetailPage({
     <AdminShell title="Moderation detail" eyebrow={queue}>
       <div>
         <Link className="table-action-link" href="/moderation">← Back to moderation</Link>
+        {listing && Boolean(listing.owner_id) && !isDeleted(listing.owner_id) && <Link className="table-action-link" href={`/users/${encodeURIComponent(String(listing.owner_id))}`}> · Scheda venditore →</Link>}
+        {conversation && [conversation.buyer_id, conversation.seller_id].filter(owner => typeof owner === "string" && !isDeleted(owner)).map(owner => <Link key={String(owner)} className="table-action-link" href={`/users/${encodeURIComponent(String(owner))}`}> · Scheda utente {String(owner).slice(0, 8)} →</Link>)}
       </div>
 
       <section className="panel">
@@ -183,6 +185,7 @@ export default async function ModerationDetailPage({
             ) : (
               <MarketplaceRestrictForm
                 ownerId={String(conversation.buyer_id ?? "")}
+                caseRef={conversation.buyer_id !== item.reporter_id ? { owner_id: String(conversation.buyer_id), queue: "marketplace_messages", id } : undefined}
                 label="Keep the buyer out"
               />
             )}
@@ -191,6 +194,7 @@ export default async function ModerationDetailPage({
             ) : (
               <MarketplaceRestrictForm
                 ownerId={String(conversation.seller_id ?? "")}
+                caseRef={conversation.seller_id !== item.reporter_id ? { owner_id: String(conversation.seller_id), queue: "marketplace_messages", id } : undefined}
                 label="Keep the seller out"
               />
             )}
@@ -244,6 +248,7 @@ export default async function ModerationDetailPage({
               <h3>Keep the seller out of the Mercatino</h3>
               <MarketplaceRestrictForm
                 ownerId={String(listing.owner_id)}
+                caseRef={{ owner_id: String(listing.owner_id), queue: "marketplace", id }}
                 label="Keep the seller out"
               />
             </div>

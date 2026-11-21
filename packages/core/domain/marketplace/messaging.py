@@ -106,10 +106,11 @@ class MarketplaceRestriction(BaseModel):
     created_by_admin_id: str | None = None
     lifted_at: datetime | None = None
     lifted_by_admin_id: str | None = None
+    expires_at: datetime | None = None
 
     @property
     def active(self) -> bool:
-        return self.lifted_at is None
+        return self.lifted_at is None and (self.expires_at is None or self.expires_at > utc_now())
 
 
 ModerationAccessAction = Literal["read", "close_conversation", "dismiss_report", "reopen_report"]

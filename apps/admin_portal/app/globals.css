@@ -2,8 +2,31 @@
 
 .users-table-scroll { overflow-x: auto; }
 .users-panel { min-width: 0; }
+.users-shell .topbar h1 { overflow-wrap: anywhere; }
+.users-selection { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin: 14px 0; font-size: 13px; }
+.users-selection label { display: flex; gap: 8px; align-items: center; }
+.moderation-case-selection { display: grid; gap: 12px; max-height: 320px; overflow: auto; padding: 8px 0; }
+.moderation-case-selection label { font-size: 13px; overflow-wrap: anywhere; }
+.users-table td:nth-child(2) { overflow-wrap: anywhere; max-width: 260px; }
+.users-table.user-compact-table { min-width: 650px; }
+.users-shell .content > .panel { min-width: 0; }
+.user-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 22px; margin: 24px 0; }
+.user-facts dt { color: var(--muted); font-size: 12px; }
+.user-facts dd { margin: 8px 0 0; overflow-wrap: anywhere; font-size: 14px; }
+.user-actions { margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--border); }
+.support-action-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 16px; }
+.support-action-form label { display: grid; gap: 8px; font-size: 13px; }
+.support-action-form input, .support-action-form select, .support-action-form textarea { width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: white; }
+.support-note { grid-column: 1 / -1; }
+.support-action-form textarea { min-height: 80px; font: inherit; }
+.action-preview { background: var(--accent-soft); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+.action-preview ul { max-height: 260px; overflow: auto; overflow-wrap: anywhere; }
+.user-timeline { list-style: none; padding: 0; }
+.user-timeline li { padding: 18px 0; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; font-size: 14px; }
+.user-timeline small, .user-timeline strong { display: block; margin-bottom: 8px; }
+.user-timeline small { color: var(--muted); }
 .metric-grid.users-metrics { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
-.job-filters.users-search { grid-template-columns: minmax(0, 1fr) auto auto; }
+.job-filters.users-search { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto auto; }
 .users-panel .panel-heading { flex-wrap: wrap; }
 @media (max-width: 700px) {
   .admin-shell.users-shell { grid-template-columns: minmax(0, 1fr); }

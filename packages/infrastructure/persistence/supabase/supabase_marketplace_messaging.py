@@ -225,12 +225,16 @@ class SupabaseMarketplaceMessagingRepository:
             return set()
         response = (
             self._client.table(_RESTRICTIONS)
-            .select("owner_id")
+            .select("*")
             .in_("owner_id", sorted(set(owner_ids)))
             .is_("lifted_at", "null")
             .execute()
         )
-        return {str(row["owner_id"]) for row in _rows(response)}
+        return {
+            str(row["owner_id"])
+            for row in _rows(response)
+            if MarketplaceRestriction.model_validate(row).active
+        }
 
     def list_restrictions(self, limit: int) -> list[MarketplaceRestriction]:
         response = (

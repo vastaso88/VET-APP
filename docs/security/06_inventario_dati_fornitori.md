@@ -16,17 +16,22 @@ certificate; **TIA** = valutazione dell'impatto del trasferimento.
 
 ## 1. Dati trattati
 
-Il portale admin espone in sola lettura (`GET /admin/users`, pagina Users) email,
-ID account, iscrizione, ultimo login, verifica email, sospensione e piano/prova:
-finalità di assistenza e verifica dell'accesso al servizio, sulla base del contratto
-(base da confermare col legale come nel registro). Solo amministratori con email
-verificata nell'allowlist, risposte senza cache; nessuna copia persistente aggiuntiva,
-nessun nuovo fornitore, nessun dato clinico, posizione o data di nascita.
+Il portale admin (`/users` e dettaglio) serve all'assistenza, al controllo degli
+accessi e alla moderazione. Espone email, ID, date account, piano/prova, metriche
+aggregate dei dati ancora conservati, consumi quote degli ultimi 30 giorni,
+dispositivi, nazione e città della residenza con fonte/data. Non espone chat non
+segnalate, indirizzi esatti, coordinate, percorsi o date di nascita.
+Solo amministratori con email verificata nell'allowlist, risposte senza cache;
+nessun nuovo fornitore. I casi Mercatino ricevuti e inviati restano distinti;
+le segnalazioni pseudonime Chat/Radar non vengono deanonimizzate.
+Le azioni richiedono anteprima firmata, conferma, motivazione e ricevuta per account.
 Gli importi restano sconosciuti finché non è disponibile un registro transazioni.
 
 | Categoria | Dati | Dove sono | Base giuridica (da confermare col legale) | Conservazione | Sensibilità |
 | --- | --- | --- | --- | --- | --- |
 | Account | e-mail, hash password (gestito da Supabase Auth), id utente, data creazione, telefono (facoltativo, in arrivo) | Supabase Auth (IE) | contratto (art. 6.1.b) | fino a cancellazione account | media: e-mail = identificatore diretto |
+| Registro login riusciti | ID account e istante del login, senza IP, token o contenuto; raccolto dal cambiamento di `auth.users.last_sign_in_at`, senza ricostruire il passato | `user_login_events` (Supabase, solo backend) | assistenza e sicurezza del servizio, contratto/interesse legittimo da confermare | 90 giorni; job giornaliero se pg_cron presente, altrimenti scheduler esterno obbligatorio; cancellato ed esportato con l'account | media |
+| Interventi amministrativi | ID account, ID amministratore, azione, motivo, nota interna, eventuale caso, scadenza ed esito; nessun pagamento o cancellazione massiva | `admin_user_actions` (Supabase, solo backend, nessuna modifica delle ricevute via API) | gestione del servizio e moderazione, contratto/interesse legittimo da confermare | 365 giorni, stessa pulizia giornaliera; cancellato con l'account. Export senza note interne, ID amministratori o riferimento caso | media |
 | Età dichiarata | data di nascita dichiarata alla registrazione (nessun documento), data della dichiarazione, conferma dell'autorizzazione di un genitore per i piani a pagamento (solo 14-17) | `account_age` (Supabase, scrive solo il backend; l'utente legge solo la propria riga) | obbligo legale e interesse legittimo: età minima per il consenso digitale (art. 8 GDPR; art. 2-quinquies Codice privacy) | fino a cancellazione dell'account. Chi dichiara meno di 14 anni resta bloccato e può eliminare l'account da sé o scrivere al supporto; la cancellazione automatica dopo 30 giorni NON si accende (decisione del 9 novembre 2026): `POST /admin/lifecycle/underage-dry-run` conta soltanto gli account chiusi da oltre 30 giorni. La cancellazione a mano si fa dal portale admin (pagina «Closed by age», rotte `/admin/age/*`, solo admin): elenco con riferimento cifrato e senza data di nascita, cancellazione con lo stesso eraser dell'account (si registra solo il numero di righe), correzione della data da parte del supporto, segnalazione di una correzione richiesta che blocca la cancellazione. Mai mostrata, mai nei log; l'app riceve solo la fascia | media |
 | Richiesta di eliminazione dell'account | identificativo dell'account, data della richiesta, data di cancellazione definitiva | `account_deletion_requests` (Supabase, scrive solo il backend; l'utente legge solo la propria riga) | richiesta dell'interessato (art. 17 GDPR) e periodo di ripensamento a suo favore | per la durata dell'impostazione `ACCOUNT_DELETION_GRACE_DAYS` (oggi 30 giorni, da confermare con la Normativa); alla scadenza il lavoro `POST /admin/lifecycle/purge-deleted-accounts` cancella dati e identità con lo stesso eraser dell'account (acceso solo con `ACCOUNT_DELETION_PURGE_ENABLED=true`) e poi toglie la riga. Nel frattempo l'account è disattivato (403 su ogni richiesta), gli annunci sono nascosti agli altri, i dati sono bloccati | bassa |
 | Account in pausa | identificativo dell'account, data della pausa, ultimo avviso di servizio inviato e quando | `account_pauses` (Supabase, scrive solo il backend; l'utente legge solo la propria riga) | scelta dell'interessato di non essere cancellato (doc 16 §1), contratto | finché l'utente non accede di nuovo (il primo accesso dopo la pausa la termina); eventuale tetto (`PAUSE_MAX_MONTHS`) in attesa del parere della Normativa; cancellata insieme all'account | bassa |

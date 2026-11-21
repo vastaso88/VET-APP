@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from packages.core.application.ports.user_location_repository import UserLocationRepository
 from packages.core.domain.common.entity import utc_now
@@ -10,6 +10,8 @@ class SetUserLocationInput(BaseModel):
     mode: LocationMode | None = None
     home: Coordinates | None = None
     home_label: str | None = None
+    home_country_code: str | None = Field(default=None, pattern=r"^[A-Z]{2}$")
+    home_city: str | None = Field(default=None, max_length=200)
     current: Coordinates | None = None
     current_label: str | None = None
     current_source: LocationSource | None = None
@@ -36,6 +38,14 @@ class SetUserLocationService:
         updates = {
             field: getattr(data, field) for field in fields if field in data.model_fields_set
         }
+        if "home" in data.model_fields_set:
+            updates.update(
+                {
+                    "home_country_code": data.home_country_code,
+                    "home_city": data.home_city,
+                    "home_saved_at": utc_now() if data.home is not None else None,
+                }
+            )
         if "current" in updates:
             updates["current_captured_at"] = utc_now() if updates["current"] is not None else None
         updated = existing.model_copy(update={**updates, "updated_at": utc_now()})

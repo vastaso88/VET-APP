@@ -8,7 +8,6 @@ const sections = [
   { href: "/", label: "Overview" },
   { href: "/users", label: "Users" },
   { href: "/moderation", label: "Moderation" },
-  { href: "/age", label: "Closed by age" },
   { href: "/ai-usage", label: "Consumi IA" },
   { href: "/data/geographic", label: "Geographic data" },
   { href: "/data/scientific", label: "Scientific data" },

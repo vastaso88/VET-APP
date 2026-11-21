@@ -85,6 +85,8 @@ void main() {
     expect(body['query'], '12 Example St, Springfield, 62704, United States');
     expect(result?.displayLabel, '12 Example St, Springfield, IL 62704');
     expect(result?.coordinates.latitude, 41.88);
+    expect(result?.countryCode, 'US');
+    expect(result?.city, 'Springfield');
   });
 
   test('sends no country for a country the radar does not know', () async {
@@ -107,6 +109,7 @@ void main() {
 
     expect((jsonDecode(seen.body) as Map<String, dynamic>).containsKey('country_code'), isFalse);
     expect(result?.displayLabel, 'Somewhere, Japan');
+    expect(result?.countryCode, isNull);
   });
 
   test('returns null on an error status, an empty result, or without a session', () async {

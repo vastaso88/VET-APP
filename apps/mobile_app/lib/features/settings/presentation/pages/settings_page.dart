@@ -258,7 +258,13 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (_) => const _HomeAddressDialog(),
     );
     if (result == null) return;
-    _updateLocation(preference.copyWith(home: result.coordinates, homeLabel: result.displayLabel));
+    _updateLocation(preference.copyWith(
+      home: result.coordinates,
+      homeLabel: result.displayLabel,
+      homeCountryCode: result.countryCode,
+      homeCity: result.city,
+      homeSavedAt: DateTime.now().toUtc(),
+    ));
   }
 
   Future<void> _loadConsents() async {

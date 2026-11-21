@@ -424,6 +424,10 @@ class MarketplaceMessagingModerationService:
                 {
                     **report.model_dump(mode="json"),
                     "listing_title": conversation.listing_title if conversation else None,
+                    "subject_owner_id": (
+                        conversation.seller_id if report.reporter_id == conversation.buyer_id
+                        else conversation.buyer_id
+                    ) if conversation else None,
                 }
             )
         return rows

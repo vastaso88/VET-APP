@@ -47,6 +47,9 @@ class LocationPreferenceStore extends ChangeNotifier {
             : LocationMode.currentPosition,
         home: _coordinatesFromJson(payload['home'] as Map<String, dynamic>?),
         homeLabel: payload['home_label'] as String?,
+        homeCountryCode: payload['home_country_code'] as String?,
+        homeCity: payload['home_city'] as String?,
+        homeSavedAt: DateTime.tryParse((payload['home_saved_at'] ?? '').toString()),
         current: _coordinatesFromJson(payload['current'] as Map<String, dynamic>?),
         currentLabel: payload['current_label'] as String?,
         currentSource: payload['current_source'] == 'device_gps'
@@ -106,6 +109,9 @@ class LocationPreferenceStore extends ChangeNotifier {
       if (preference.home != null)
         'home': {'latitude': preference.home!.latitude, 'longitude': preference.home!.longitude},
       'home_label': preference.homeLabel,
+      'home_country_code': preference.homeCountryCode,
+      'home_city': preference.homeCity,
+      'home_saved_at': preference.homeSavedAt?.toIso8601String(),
       if (preference.current != null)
         'current': {
           'latitude': preference.current!.latitude,
