@@ -26,8 +26,9 @@ if [[ -e "$signing" ]]; then
   echo 'Signing.xcconfig already exists; preserve it and build through Xcode.' >&2
   exit 1
 fi
-export_options="$(mktemp -t quokka-export).plist"
-trap 'rm -f "$signing" "$export_options"' EXIT
+export_options="$(mktemp -t quokka-export)"
+build_started="$(mktemp -t quokka-build-start)"
+trap 'rm -f "$signing" "$export_options" "$build_started"' EXIT
 printf 'DEVELOPMENT_TEAM = %s\nCODE_SIGN_STYLE = Automatic\n' "$APPLE_TEAM_ID" > "$signing"
 cat > "$export_options" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -47,7 +48,11 @@ flutter test
 flutter build ipa --release --build-number="$2" --dart-define-from-file="$defines" --export-options-plist="$export_options"
 shopt -s nullglob
 ipas=(build/ios/ipa/*.ipa)
-if [[ ${#ipas[@]} -eq 0 ]]; then
+fresh_ipa=false
+for ipa in "${ipas[@]}"; do
+  if [[ "$ipa" -nt "$build_started" ]]; then fresh_ipa=true; fi
+done
+if [[ "$fresh_ipa" != true ]]; then
   echo 'Archive may exist, but IPA export failed. Resolve signing in Xcode Organizer.' >&2
   exit 1
 fi

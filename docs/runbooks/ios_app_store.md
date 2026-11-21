@@ -9,7 +9,7 @@ Verifica del 21 novembre 2026, partenza da `main` `498ddba8`. Questa preparazion
 - Progetto Xcode Swift/UIScene in `apps/mobile_app/ios`, iPhone e iPad, deployment target **iOS 15.0**. Questo è il minimo di esecuzione, distinto dall'SDK richiesto per caricare la build.
 - Bundle ID proposto **`net.quokkapet.quokka`**. Va confermato/registrato sul team Apple prima della prima distribuzione; se esiste già un'app, usare il suo Bundle ID in tutte e tre le configurazioni Runner, RunnerTests e `APPLE_BUNDLE_ID` del backend. Non inventare un secondo record per aggiornare un'app esistente.
 - Nome visualizzato **QUOKKA**, icone opache (anche 1024×1024) dal logo già approvato, launch screen Petrolio. Rigenerazione: `dart run tool/make_ios_icons.dart` dalla cartella mobile.
-- CocoaPods per tutti i plugin, Swift Package Manager disattivato solo per questo progetto. Il Podfile abilita i permessi usati dai plugin; Geolocator esclude il permesso Always. Il primo Mac deve risolvere/verificare i pod; conservare `Podfile.lock` della prima risoluzione riuscita.
+- CocoaPods per tutti i plugin, Swift Package Manager disattivato solo per questo progetto. Il Podfile abilita i permessi usati dai plugin; Geolocator esclude il permesso Always. `Podfile.lock` proviene dalla prima build macOS riuscita ed è incluso nel repository.
 - Descrizioni di fotocamera, microfono, libreria foto, salvataggio foto e posizione durante l'uso in EN/IT/FR/DE/ES. Nessun accesso rubrica, calendario, tracking pubblicitario o posizione Always aggiunto.
 - Callback Supabase `vetapp://auth-callback` registrata; `app_links` gestisce il link, il routing automatico Flutter è disabilitato per evitare conflitti. Aggiungere la callback alla allowlist Supabase dell'ambiente di test e provare recupero password/conferma email su dispositivo.
 - Entitlements Runner vuoti: nessun App Group, push/APNs, iCloud o Sign in with Apple senza una funzione corrispondente. In-App Purchase è indicato nelle capabilities Xcode; StoreKit non richiede un entitlement di pagamento inventato. L'autenticazione attuale è email/password, non è stato aggiunto un provider social.
@@ -20,6 +20,18 @@ Verifica del 21 novembre 2026, partenza da `main` `498ddba8`. Questa preparazion
 La PR attiva `.github/workflows/ios-build.yml` su un runner macOS con Flutter 3.47.6: risoluzione con lockfile, analisi, test e `flutter build ios --release --no-codesign`.
 
 L'artefatto `Runner.app` è **non firmato, senza configurazione di servizio, non installabile né caricabile sullo store**. Serve solo per verificare la compilazione nativa. Nessuna credenziale o configurazione di produzione è usata dal workflow.
+
+### Risultati verificati (21–22 novembre 2026)
+
+- [Build iOS riuscita](https://github.com/vastaso88/VET-APP/actions/runs/44958842243), sorgenti `ab2678f`, merge di verifica GitHub `0359b599`. Toolchain: macOS 26.7.2, Xcode **26.6**, iOS SDK **26.5**, Flutter **3.47.6**. `flutter build ios --release --no-codesign` ha prodotto `Runner.app` (40 MB).
+- [Artefatto non firmato](https://github.com/vastaso88/VET-APP/actions/runs/44958842243/artifacts/14728986635), conservato 7 giorni da GitHub. Nessun IPA firmato generato.
+- Analisi Flutter passata su Windows e macOS; suite locale completa: **2.000 test passati, 8 saltati**. Dopo l'aggiunta dei link legali: **62 test billing passati, 1 saltato**, sia localmente sia su macOS. Anche il job Flutter generale della [CI](https://github.com/vastaso88/VET-APP/actions/runs/44958842233) è passato, inclusa la compilazione Android di verifica.
+- **61 test backend billing passati**, **11 test di configurazione release passati**; nuovi file Python controllati con Ruff e mypy, script di archivio controllato per sintassi. Progetto Xcode e property list analizzati correttamente.
+- CI Python generale ancora rossa: tre errori di tipo preesistenti in `scripts/sources/fetcher.py` (righe 178 e 183) e `tests/unit/test_marketplace_rules_gate.py` (riga 110). È stato corretto soltanto l'ordine degli import preesistente in `admin_users.py`, che fermava il lint prima del controllo tipi. Nessuna copertura di test backend generale viene rivendicata da questa CI interrotta.
+- Un controllo preview Vercel è limitato dalla quota di build; il portale admin passa. Nessun merge in `main` e nessuna distribuzione di produzione eseguita.
+- Flutter avverte che `printing` e `video_compress` non supportano ancora Swift Package Manager: CocoaPods compila oggi, ma servirà un aggiornamento/sostituzione prima di un futuro SDK Flutter che lo imponga.
+
+Il lock dei pod e il controllo che l'IPA esportato sia nuovo sono stati aggiunti dopo questa build, senza modificare il wrapper o i plugin compilati. La PR resta in bozza per i blocchi di rilascio descritti sotto.
 
 ## Archivio firmato da un Mac già configurato
 
