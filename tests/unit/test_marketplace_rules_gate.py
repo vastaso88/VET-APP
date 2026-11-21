@@ -88,16 +88,43 @@ def test_an_older_version_or_a_withdrawn_acceptance_does_not_count(
         marketplace_rules.require_marketplace_rules_accepted()
 
 
+# What each language's app calls the feature (glossary), and what must NOT appear there.
+_TERM = {
+    "it": "Mercatino",
+    "en": "marketplace",
+    "es": "mercadillo",
+    "de": "Gebrauchtmarkt",
+    "fr": "marché de l'occasion",
+}
+
+
 def test_the_rules_are_in_the_catalog_with_a_version_in_every_language() -> None:
-    for language in ("it", "en", "es", "de", "fr", None, "ja"):
+    for language, term in _TERM.items():
         entry = build_consent_catalog(language)[KEY]
         assert entry.version == "v1"
-        assert "Mercatino" in entry.text
+        assert term in entry.text, language
+        if language != "it":
+            assert "Mercatino" not in entry.text, language
 
-    assert "Regole del Mercatino" in build_consent_catalog("it")[KEY].text
-    # No reviewed translation yet: the other languages get English, never Italian.
-    assert build_consent_catalog("de")[KEY].text == build_consent_catalog("en")[KEY].text
-    assert "il team di Quokka può leggerla" in build_consent_catalog("it")[KEY].text
+    # No language, or one without a text, gets the English one (never the Italian).
+    for language in (None, "ja"):
+        assert build_consent_catalog(language)[KEY].version == "v1"
+    assert build_consent_catalog("ja")[KEY].text == build_consent_catalog("en")[KEY].text
+
+
+def test_the_texts_say_what_the_italian_says() -> None:
+    texts = {language: build_consent_catalog(language)[KEY].text for language in _TERM}
+
+    assert len(set(texts.values())) == len(_TERM), "five different texts"
+    assert "Regole del Mercatino" in texts["it"]
+    assert "il team di Quokka può leggerla" in texts["it"]
+    for language, text in texts.items():
+        # Eight numbered rules, the same everywhere.
+        for number in range(1, 9):
+            assert f"\n{number}. " in text, (language, number)
+    # The English app: "own responsibility", not "own risk" (that reads as a disclaimer).
+    assert "on your own responsibility" in texts["en"]
+    assert "at your own risk" not in texts["en"]
 
 
 def test_it_is_an_acceptance_that_never_gates_the_app() -> None:
