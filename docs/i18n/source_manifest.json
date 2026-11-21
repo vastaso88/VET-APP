@@ -20707,5 +20707,23 @@
       "de": "24cc89c2178d8c526436ef2768afdc6ebb00020364fe33c91f87f857d30c9f64",
       "fr": "2d42c7c493c1ab9fbfb80f0c2acd714596974d56ac921aef26d12de9c5e0de39"
     }
+  },
+  "ui:petInMemoriesWrite": {
+    "source": "3978cb57e35c1d10fb4cdb9500b77df5a50fce175cad324109902a882b6e8a64",
+    "targets": {
+      "en": "366c694ed21130ef3dc3fdf581e573423d7cca4f424abc30f415dea8f7ba4417",
+      "es": "9512e55867f47d54adc9438fb0d9f6587f265c7aa61dc4768f2fa23d223b4d27",
+      "de": "1e53b207d8b5b7a723d5f68028c1272ee43bb367b59a166582d92b428b89d47c",
+      "fr": "ec41e0c89e2557d9af3caed127e46ae989016e3d53120c43ba341c86963887be"
+    }
+  },
+  "backend:person_hurt_line": {
+    "source": "226b95cb8ccd437fcd0aed7542631fcb45c3db21791772b9b722d6126aa21ad9",
+    "targets": {
+      "en": "55dd31af907b9c119f53aec6d3db427cbdd3b66411b1f95b399480c3cc897106",
+      "es": "a3e3a12ded165194ceb490428a4884d906f8c60bfc394df6e8a6995afadd17f5",
+      "de": "92b512999b2b3b5ff23160c0df94dca25e1da3b3ac85279a621e8cded6d29852",
+      "fr": "96641de587bdbb85c2108ef7f947d29cbe67b18ff52ef8ee3b591cd0466b80c1"
+    }
   }
 }

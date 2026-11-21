@@ -2838,7 +2838,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get petInMemoriesWrite =>
-      'Cet animal est dans Souvenirs, qui est en lecture seule : on ne peut rien y ajouter ni modifier. Si vous l\'avez déplacé par erreur, remettez-le dans Animaux.';
+      'Cet animal est dans Souvenirs, qui sont en lecture seule : aucune donnée ne peut y être ajoutée ni modifiée. Si vous l\'avez déplacé par erreur, remettez-le dans Animaux.';
 
   @override
   String memorialRestoreShortcut(String sex) {

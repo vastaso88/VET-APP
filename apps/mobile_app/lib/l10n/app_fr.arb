@@ -1493,7 +1493,7 @@
   "memorialPageOnThisDay": "Photos de ce jour",
   "memorialPageWalkPhotos": "Les photos de cette promenade",
   "memorialPageOpenWalk": "Revoir le parcours",
-  "petInMemoriesWrite": "Cet animal est dans Souvenirs, qui est en lecture seule : on ne peut rien y ajouter ni modifier. Si vous l'avez déplacé par erreur, remettez-le dans Animaux.",
+  "petInMemoriesWrite": "Cet animal est dans Souvenirs, qui sont en lecture seule : aucune donnée ne peut y être ajoutée ni modifiée. Si vous l'avez déplacé par erreur, remettez-le dans Animaux.",
   "memorialRestoreShortcut": "{sex, select, female{Déplacée par erreur ? Remettre dans Animaux} other{Déplacé par erreur ? Remettre dans Animaux}}",
   "@memorialRestoreShortcut": {
     "placeholders": {

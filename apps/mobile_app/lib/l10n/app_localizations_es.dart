@@ -2819,7 +2819,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get petInMemoriesWrite =>
-      'Este animal está en Recuerdos, que es de solo lectura: no se puede añadir ni modificar nada. Si lo moviste por error, devuélvelo a Animales.';
+      'Este animal está en Recuerdos, que son de solo lectura: no se pueden añadir ni modificar datos. Si lo has movido por error, devuélvelo a Animales.';
 
   @override
   String memorialRestoreShortcut(String sex) {

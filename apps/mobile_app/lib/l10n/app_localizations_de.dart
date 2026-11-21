@@ -2840,7 +2840,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get petInMemoriesWrite =>
-      'Dieses Tier befindet sich unter Andenken, das nur gelesen werden kann: Es lässt sich nichts hinzufügen oder ändern. Wenn Sie es versehentlich verschoben haben, bringen Sie es zurück zu den Tieren.';
+      'Dieses Tier befindet sich unter Andenken, das schreibgeschützt ist: Es lassen sich keine Daten hinzufügen oder ändern. Wenn Sie es versehentlich verschoben haben, bringen Sie es zurück zu den Tieren.';
 
   @override
   String memorialRestoreShortcut(String sex) {
