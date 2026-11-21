@@ -593,3 +593,32 @@ def test_www_and_bare_host_share_one_turn_and_log_holds_the_start_time(tmp_path:
         for x in (tmp_path / "registro_richieste.jsonl").read_text("utf-8").splitlines()
     ]
     assert all(set(r) >= {"quando", "nome", "indirizzo", "esito"} for r in rows)
+
+
+def test_attribution_line_depends_on_host_and_kind_of_text() -> None:
+    from scripts.sources import pipeline as P
+
+    entry = {"classe": "V", "licenza": "OGL v3.0", "attribuzione": ""}
+    ogl = P.attribution_for(entry, "Ente", "https://www.nidirect.gov.uk/x", "2026-11-21")
+    assert "Open Government Licence v3.0" in ogl and "revised" not in ogl
+    leg = P.attribution_for(
+        entry, "Ente", "https://www.legislation.gov.uk/ukpga/2006/45", "2026-11-21"
+    )
+    assert "revised" in leg
+    made = P.attribution_for(
+        entry, "Ente", "https://www.legislation.gov.uk/ukpga/2006/45/enacted", "d"
+    )
+    assert "revised" not in made
+    boe_c = P.attribution_for(entry, "BOE", "https://www.boe.es/buscar/act.php?id=X", "2026-11-21")
+    assert "consolidado" in boe_c and "2026-11-21" in boe_c
+    assert "texto oficial" in P.attribution_for(
+        entry, "BOE", "https://www.boe.es/diario_boe/txt.php?id=X", "d"
+    )
+    de = P.attribution_for(
+        entry, "BMJ", "https://www.gesetze-im-internet.de/tierschg/__1.html", "2026-11-21"
+    )
+    assert "nicht amtliche Fassung, Stand: 2026-11-21" in de
+    ccby = {"classe": "V", "licenza": "CC BY", "attribuzione": "{ente}, CC BY 4.0, modificato."}
+    assert P.attribution_for(ccby, "ECDC", "https://www.ecdc.europa.eu/x", "d").startswith(
+        "ECDC, CC BY"
+    )

@@ -127,12 +127,32 @@ def register_host(
     return entry
 
 
-def attribution_for(entry: dict[str, Any], ente: str) -> str:
+def attribution_for(entry: dict[str, Any], ente: str, url: str = "", today: str = "") -> str:
+    """La riga fonte (condizione della licenza): per ente, e per tipo di testo dove serve."""
+    host = urllib.parse.urlsplit(url).netloc.lower()
+    if host.endswith(
+        "boe.es"
+    ):  # consolidata: carattere informativo; testo della Gazzetta: ufficiale
+        if "act.php" in url:
+            return (
+                "Fuente: BOE, texto consolidado, carácter informativo, sin valor jurídico "
+                f"(actualizado a {today}); riassunto da Quokka."
+            )
+        return f"Fuente: BOE, texto oficial (consultado el {today}); riassunto da Quokka."
+    if host.endswith("gesetze-im-internet.de"):
+        return (
+            "Quelle: gesetze-im-internet.de, Bundesministerium der Justiz (konsolidierte, nicht "
+            f"amtliche Fassung, Stand: {today}); maßgeblich ist das Bundesgesetzblatt; "
+            "riassunto da Quokka."
+        )
     if entry.get("attribuzione"):
-        return str(entry["attribuzione"])
-    key = entry["classe"] if entry["classe"] == "VR" else entry["licenza"]
-    template = ATTRIBUTION.get(key) or ATTRIBUTION["V"]
-    return template.format(ente=ente)
+        text = str(entry["attribuzione"]).replace("{ente}", ente)
+    else:
+        key = entry["classe"] if entry["classe"] == "VR" else entry["licenza"]
+        text = (ATTRIBUTION.get(key) or ATTRIBUTION["V"]).format(ente=ente)
+    if host.endswith("legislation.gov.uk") and "/enacted" not in url and "/made" not in url:
+        text += " Versione aggiornata (revised), non ufficiale."
+    return text
 
 
 def add_source(
@@ -182,7 +202,7 @@ def add_source(
         licenza=entry["licenza"],
         prova=entry["prova"],
         base_legale=entry.get("base_legale", ""),
-        attribuzione=attribution_for(entry, scheda["ente"]),
+        attribuzione=attribution_for(entry, scheda["ente"], url, today),
         impronta=page.fingerprint,
         scaricato_il=today,
         url=page.url if page.url.split("#")[0] != url.split("#")[0] else url,

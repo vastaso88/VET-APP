@@ -148,7 +148,7 @@ def main_text(host: str, raw: str) -> str | None:
 # Suffissi a due livelli dei Paesi che usiamo: «gov.uk» non è un dominio registrabile.
 _TWO_LEVEL = {
     "co.uk", "org.uk", "gov.uk", "ac.uk", "com.au", "gov.au", "org.au", "edu.au", "govt.nz",
-    "co.nz", "gov.it", "gv.at", "co.at", "gob.es", "com.es",
+    "co.nz", "gov.it", "gv.at", "co.at", "gob.es", "com.es", "europa.eu",
 }  # fmt: skip
 
 
