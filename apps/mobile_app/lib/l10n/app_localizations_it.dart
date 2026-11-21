@@ -7948,6 +7948,16 @@ class AppLocalizationsIt extends AppLocalizations {
   String get aroundWorldBlockLimits => 'Cosa questa scheda non copre';
 
   @override
+  String get billingAccountStatusNotice =>
+      'Lo stato del tuo account viene verificato dal servizio. I pagamenti nell’app non sono ancora disponibili.';
+
+  @override
+  String get billingOpenAccount => 'Apri area personale';
+
+  @override
+  String get billingOpenAccountError => 'Impossibile aprire l’area personale.';
+
+  @override
   String storeBillingSubscribeMonthly(String price) {
     return 'Mensile · $price';
   }

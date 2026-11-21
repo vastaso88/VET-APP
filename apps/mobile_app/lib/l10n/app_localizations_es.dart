@@ -7949,6 +7949,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aroundWorldBlockLimits => 'Qué no cubre esta ficha';
 
   @override
+  String get billingAccountStatusNotice =>
+      'El servicio verifica el estado de tu cuenta. Los pagos dentro de la app aún no están disponibles.';
+
+  @override
+  String get billingOpenAccount => 'Abrir mi cuenta';
+
+  @override
+  String get billingOpenAccountError => 'No se pudo abrir tu cuenta.';
+
+  @override
   String storeBillingSubscribeMonthly(String price) {
     return 'Mensual · $price';
   }

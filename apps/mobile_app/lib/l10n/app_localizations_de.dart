@@ -7975,6 +7975,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get aroundWorldBlockLimits => 'Was dieses Merkblatt nicht abdeckt';
 
   @override
+  String get billingAccountStatusNotice =>
+      'Der Dienst überprüft Ihren Kontostatus. Zahlungen in der App sind noch nicht verfügbar.';
+
+  @override
+  String get billingOpenAccount => 'Mein Konto öffnen';
+
+  @override
+  String get billingOpenAccountError =>
+      'Ihr Konto konnte nicht geöffnet werden.';
+
+  @override
   String storeBillingSubscribeMonthly(String price) {
     return 'Monatlich · $price';
   }

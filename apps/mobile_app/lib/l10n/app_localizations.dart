@@ -13183,6 +13183,24 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Cosa questa scheda non copre'**
   String get aroundWorldBlockLimits;
+  /// No description provided for @billingAccountStatusNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'Lo stato del tuo account viene verificato dal servizio. I pagamenti nell’app non sono ancora disponibili.'**
+  String get billingAccountStatusNotice;
+
+  /// No description provided for @billingOpenAccount.
+  ///
+  /// In it, this message translates to:
+  /// **'Apri area personale'**
+  String get billingOpenAccount;
+
+  /// No description provided for @billingOpenAccountError.
+  ///
+  /// In it, this message translates to:
+  /// **'Impossibile aprire l’area personale.'**
+  String get billingOpenAccountError;
+
   /// No description provided for @storeBillingSubscribeMonthly.
   ///
   /// In it, this message translates to:
