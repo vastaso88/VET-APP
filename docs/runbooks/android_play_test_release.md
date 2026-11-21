@@ -26,7 +26,7 @@ Questo documento distingue codice presente, controlli eseguiti e configurazione 
 ## Repository e deployment reali
 
 - [CI della base](https://github.com/vastaso88/VET-APP/actions/runs/44953489604): Flutter e admin portal riusciti; quality fallita per import Python non ordinati in `apps/api/routes/admin_users.py`. Ordinamento corretto qui; `ruff check .` ora passa localmente.
-- Esistono PR aperte, fra cui #61 per errori di tipo in `scripts/sources/fetcher.py`: non risultano integrate nella base esaminata. Non includere le loro correzioni nella readiness di main.
+- Esistono PR aperte, fra cui #61 per errori di tipo in `scripts/sources/fetcher.py`: non risultano integrate nella base esaminata. Non includere le loro correzioni nella readiness di main. Dopo aver riprodotto gli errori di tipo, questa candidatura include una correzione minima indipendente del narrowing charset e rinomina una variabile nel test mercatino, senza cambiare il comportamento previsto.
 - I due status Vercel del commit base (`vet-app`, `vet-app-34xp`) riportano **Deployment rate limited — retry in 24 hours**. Non eseguire retry ripetuti, upgrade di piano o deploy di produzione per aggirarlo.
 - Ultimi deployment riusciti trovati in GitHub: backend/progetto `vet-app`, SHA `9ae05bce283038403b7c3c5736a0b504292fc02d`, [URL](https://vet-58tako63y-vastaso88-7135s-projects.vercel.app); progetto `vet-app-34xp`, SHA `d3dc401eeea828143ea062137caf31edda5577d0`, [URL](https://vet-app-34xp-gobfaincn-vastaso88-7135s-projects.vercel.app). Gli URL immutabili hanno reindirizzato al login Vercel: lo stato READY/success non prova accessibilità per app o revisori.
 - `https://quokkapet.net`, `/legal` e `/delete-account` hanno dato errore TLS da questo ambiente. È una prova di mancata verifica, non una diagnosi definitiva del DNS/certificato. Ripetere da una rete esterna e da Android; nessun bypass TLS nella build.
@@ -105,12 +105,12 @@ Matrice da eseguire e registrare con account/dati di test: acquisto approvato/ri
 
 ## Validazione eseguita e limiti
 
-- Nuovo preparatore Play + preparatore Firebase + suite billing backend/rotte: **70 test e 56 subtest superati**.
-- Test delle schede store: **30 superati**.
+- Suite Python completa sul candidato: **4379 test superati, 2 saltati, 2383 subtest superati** (50,39 s). Include i test di configurazione build, billing backend/rotte, schede store, fonti e mercatino. Suite mirata iniziale: 100 test e 56 subtest superati.
 - `ruff check .`: superato dopo la correzione import. Formattazione Python e mypy del nuovo script: superati.
 - Sito: `npm ci --ignore-scripts`, typecheck e build Next riusciti; `/delete-account` è una pagina statica pubblica nel risultato della build. Non distribuita.
-- Mypy complessivo non verde: errori preesistenti in `scripts/sources/fetcher.py`, un errore di tipo in `tests/unit/test_marketplace_rules_gate.py` e import Presidio mancanti nell’ambiente locale con solo extra dev. Nessuna pretesa di CI completa superata.
-- Nuovi link Flutter: sintassi formattata con Dart locale, **non analizzati/testati con la versione Flutter 3.47.6 in questa macchina**. La CI della base è riuscita, non certifica le modifiche successive. Workflow firmato non eseguito; controllo 16 KB e test dispositivo non eseguiti.
+- Mypy inizialmente bloccato da tre errori preesistenti in fetcher/test mercatino, poi corretti senza modifica del comportamento. Ora **672 file passano localmente disabilitando soltanto gli errori di import mancanti** (`--disable-error-code import-not-found`): Presidio non è installato nell’ambiente locale con extra dev. La CI con tutti gli extra deve confermare il controllo senza esclusioni; nessuna pretesa di CI completa superata prima del risultato remoto.
+- Nuovi link Flutter: analyze e controlli cataloghi riusciti nella prima CI della PR #64 con Flutter 3.47.6; test e compilazione Android ancora in corso al momento di questa nota. Workflow firmato non eseguito; controllo 16 KB e test dispositivo non eseguiti.
+- Preview backend del primo commit PR `b008792`: Vercel ha riportato successo per `https://vet-ntu7o1ifn-vastaso88-7135s-projects.vercel.app`; dal controllo locale il nome host non è stato risolto. Il successo del deploy non dimostra l’accessibilità per Android. Preview sito ancora rate limited.
 
 ## Fonti ufficiali ricontrollate
 
