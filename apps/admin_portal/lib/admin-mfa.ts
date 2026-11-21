@@ -12,7 +12,15 @@ type Factor = {
   factor_type: string;
 };
 
-type FactorList = { factors: Factor[] };
+// GoTrue exposes enrolled MFA factors on GET /auth/v1/user.
+// GET /auth/v1/factors is not a supported list operation (POST enrolls).
+type AuthUserWithFactors = { id: string; factors?: Factor[] | null };
+
+async function listAdminFactors(token: string): Promise<Factor[]> {
+  const user = await supabaseMfaRequest<AuthUserWithFactors>(token, "/user", "GET");
+  if (!user.id) throw new Error("Risposta di autenticazione non valida.");
+  return Array.isArray(user.factors) ? user.factors : [];
+}
 
 async function sessionToken(): Promise<string> {
   await requireAdminSession();
@@ -44,6 +52,9 @@ async function supabaseMfaRequest<T>(
       throw new Error("Sessione non valida: effettua nuovamente il login.");
     }
     if (response.status === 400 || response.status === 422) {
+      if (path === "/factors" && method === "POST") {
+        throw new Error("Registrazione TOTP non riuscita. Verifica che sia abilitato in Supabase.");
+      }
       throw new Error("Codice TOTP non valido o scaduto.");
     }
     throw new Error("Servizio di autenticazione TOTP non disponibile.");
@@ -53,7 +64,7 @@ async function supabaseMfaRequest<T>(
 
 export async function getAdminTotpEnabled(): Promise<boolean> {
   const token = await sessionToken();
-  const { factors } = await supabaseMfaRequest<FactorList>(token, "/factors", "GET");
+  const factors = await listAdminFactors(token);
   return factors.some((factor) => factor.factor_type === "totp" && factor.status === "verified");
 }
 
@@ -62,7 +73,7 @@ export async function beginAdminTotpEnrollment(): Promise<
   { status: "setup"; factorId: string; qrDataUrl: string; secret: string }
 > {
   const token = await sessionToken();
-  const { factors } = await supabaseMfaRequest<FactorList>(token, "/factors", "GET");
+  const factors = await listAdminFactors(token);
   if (factors.some((factor) => factor.factor_type === "totp" && factor.status === "verified")) {
     return { status: "already_enabled" };
   }

@@ -1162,3 +1162,59 @@ export async function changeAdminUserPlan(ownerId: string, plan: "plus" | "pro" 
     body: JSON.stringify({ plan, totp_code: totpCode }),
   });
 }
+
+
+// --- PRICING: internal draft prices and backend-enforced plan features -----
+export type PricingPlan = "plus" | "pro" | "ultra";
+export type PricingStore = "apple" | "google";
+export type PricingPeriod = "monthly" | "yearly";
+export type PricingFeatureKey =
+  "max_pets" | "max_chats_per_pet" | "daily_questions" | "max_devices" | "daily_sonnet_answers";
+export type PricingFeature = {
+  plan: PricingPlan; feature: PricingFeatureKey; enabled: boolean;
+  quota: number; updated_at: string;
+};
+export type PricingPrice = {
+  country_code: string; store: PricingStore; plan: PricingPlan;
+  period: PricingPeriod; currency: string; amount_minor: number;
+  updated_at: string;
+};
+export type PricingAudit = {
+  id: number; admin_id: string; entity_type: string; entity_key: string;
+  before_value: unknown; after_value: unknown; changed_at: string;
+};
+export type PricingSnapshot = {
+  features: PricingFeature[];
+  prices: PricingPrice[];
+  audit: PricingAudit[];
+  store_sync: "manual";
+  prices_are_store_drafts: true;
+};
+export type PricingFeatureUpdate = {
+  plan: PricingPlan; feature: PricingFeatureKey; enabled: boolean;
+  quota: number; totp_code: string;
+};
+export type PricingPriceUpdate = {
+  country_code: string; store: PricingStore; plan: PricingPlan;
+  period: PricingPeriod; currency: string; amount_minor: number | null;
+  totp_code: string;
+};
+
+export async function getAdminPricing(): Promise<PricingSnapshot> {
+  await requireAdminSession();
+  return authenticatedAdminRequest<PricingSnapshot>("/admin/pricing");
+}
+
+export async function saveAdminPricingFeature(input: PricingFeatureUpdate): Promise<void> {
+  await requireAdminSession();
+  await authenticatedAdminRequest("/admin/pricing/features", {
+    method: "POST", body: JSON.stringify(input),
+  });
+}
+
+export async function saveAdminPricingPrice(input: PricingPriceUpdate): Promise<void> {
+  await requireAdminSession();
+  await authenticatedAdminRequest("/admin/pricing/prices", {
+    method: "POST", body: JSON.stringify(input),
+  });
+}

@@ -109,7 +109,7 @@ with check ({update_check(table)});
         for table in GATED_TABLES
     )
 
-    return f"""-- Regole del piano sulle scritture dirette dell'app (proposta A approvata,
+    content = f"""-- Regole del piano sulle scritture dirette dell'app (proposta A approvata,
 -- decisioni del proprietario 2026-11-09). GENERATO da
 -- scripts/maintenance/gen_plan_access_sql.py a partire da limits.py, models.py
 -- e direct_writes.py: non modificare a mano.
@@ -484,7 +484,12 @@ commit;
 --   select tablename, policyname from pg_policies
 --   where policyname like 'plan_access_%' order by 1, 2;
 """
+    return content + PRICING_SQL_OVERLAY
 
+
+PRICING_SQL_OVERLAY = (
+    ROOT / "scripts/setup/plan_access_pricing_overlay.sql"
+).read_text(encoding="utf-8")
 
 def main() -> int:
     check = "--check" in sys.argv[1:]

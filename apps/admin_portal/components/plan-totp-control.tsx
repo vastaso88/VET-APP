@@ -102,24 +102,27 @@ export function PlanTotpControl({
   }
 
   return (
-    <div className="job-filters users-search" aria-label="Modifica piano protetta da TOTP">
+    <section className="plan-totp-control" aria-label="Modifica piano protetta da TOTP">
+      <h3>Modifica piano · verifica Authenticator</h3>
       <p className="muted">
         Operazione sensibile: è obbligatorio il codice temporaneo di un'app Authenticator
         per <strong>ogni modifica</strong>. Il codice non viene conservato.
       </p>
-      {enabled === false || enabled === null ? (
-        <div>
-          <p className="muted">
-            {enabled === null
-              ? "Impossibile verificare lo stato del secondo fattore."
-              : "Secondo fattore TOTP non ancora attivato per questo amministratore."}
-          </p>
+      {enabled === null ? (
+        <div className="plan-totp-fields" role="alert">
+          <p className="muted">Non è stato possibile verificare lo stato del secondo fattore.</p>
+          <button className="ghost-button" type="button" disabled={pending}
+            onClick={() => router.refresh()}>Riprova verifica</button>
+        </div>
+      ) : enabled === false ? (
+        <div className="plan-totp-fields">
+          <p className="muted">Secondo fattore TOTP non ancora attivato per questo amministratore.</p>
           {!setup ? (
             <button className="primary-button" type="button" disabled={pending} onClick={() => void startSetup()}>
               Configura Authenticator
             </button>
           ) : (
-            <div>
+            <div className="plan-totp-fields">
               <p>Scansiona il QR con Google Authenticator, 1Password o un'app TOTP compatibile.</p>
               {/* Supabase Auth emits this QR SVG; only the authenticated admin can request it. */}
               <img src={setup.qrDataUrl} alt="QR per configurare il codice TOTP" width={200} height={200} />
@@ -142,7 +145,7 @@ export function PlanTotpControl({
           )}
         </div>
       ) : (
-        <form onSubmit={(event) => { event.preventDefault(); void submitPlan(); }}>
+        <form className="plan-totp-fields" onSubmit={(event) => { event.preventDefault(); void submitPlan(); }}>
           <label>
             Modifica piano assegnato
             <select value={plan} onChange={(event) => setPlan(event.target.value as Plan)} disabled={pending}>
@@ -169,8 +172,8 @@ export function PlanTotpControl({
           </button>
         </form>
       )}
-      <span className="muted">Le modifiche sono registrate nell'audit. Non costituiscono un pagamento.</span>
-      {message && <p role="status">{message}</p>}
-    </div>
+      <p className="muted">Le modifiche sono registrate nell'audit. Non costituiscono un pagamento.</p>
+      {message && <p className="plan-totp-feedback" role="status">{message}</p>}
+    </section>
   );
 }

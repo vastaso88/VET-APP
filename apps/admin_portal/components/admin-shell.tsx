@@ -12,6 +12,7 @@ const sections = [
   { href: "/ai-usage", label: "Consumi IA" },
   { href: "/age", label: "Closed by age" },
   { href: "/billing", label: "Subscriptions" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/data/geographic", label: "Geographic data" },
   { href: "/data/scientific", label: "Scientific data" },
   { href: "/jobs", label: "Ingestion jobs" },
