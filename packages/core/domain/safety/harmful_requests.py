@@ -1354,7 +1354,7 @@ HOPELESSNESS_OPENING: dict[str, str] = {
         "Quello che scrivi lo prendo sul serio. Un dolore così forte che non fa alzare dal "
         "letto merita di essere detto a qualcuno che può starti accanto: parlane presto con "
         "il tuo medico o con un servizio di ascolto, come Telefono Amico Italia (02 2327 2327, "
-        "gratis, 24 ore su 24), e non restare solo con questo peso. "
+        "gratis, 24 ore su 24), e non tenere questo peso per te. "
     ),
     "en": (
         "I take what you write seriously. A pain so heavy that it keeps you from getting up "
@@ -1366,7 +1366,7 @@ HOPELESSNESS_OPENING: dict[str, str] = {
         "Me tomo en serio lo que escribes. Un dolor tan fuerte que no te deja levantarte "
         "merece contarse a alguien que pueda acompañarte: habla pronto con tu médico o con "
         "un servicio de escucha (en Italia, Telefono Amico Italia: 02 2327 2327, gratis, 24 "
-        "horas al día), y no te quedes solo con este peso. "
+        "horas al día), y no cargues con este peso sin apoyo. "
     ),
     "de": (
         "Was Sie schreiben, nehme ich ernst. Ein Schmerz, der so schwer ist, dass er Sie nicht "

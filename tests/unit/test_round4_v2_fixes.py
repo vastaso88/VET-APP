@@ -268,3 +268,21 @@ def test_an_amount_without_the_medicine_named_counts_after_one_in_the_conversati
     assert asks_an_amount("quanto ne metto?")
     assert asks_an_amount("¿cuánto le pongo?")
     assert not asks_an_amount("how many drops of water on the leaves?")
+
+
+# --- fixed texts never address the owner in the masculine (Orchestrator, 21/11) ----------
+
+
+def test_the_fixed_texts_for_a_hard_moment_have_no_gender_for_the_owner() -> None:
+    import re
+
+    from packages.core.domain.safety.harmful_requests import HOPELESSNESS_OPENING
+
+    gendered = re.compile(
+        r"\b(?:sei sol[oa]|restare sol[oa]|da sol[oa]|estás sol[oa]|quedes sol[oa]|"
+        r"êtes pas seule?|restez pas seule?|correctement seule?)\b",
+        re.IGNORECASE,
+    )
+    for texts in (EUTHANASIA_REFUSAL, HOPELESSNESS_OPENING):
+        for language, text in texts.items():
+            assert not gendered.search(text), (language, text)
