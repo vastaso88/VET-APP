@@ -453,7 +453,7 @@ class Settings(BaseSettings):
     # Plan docs/llm/08 (20/11/2026), work A: the chat answers without the fixed texts
     # triggered by keywords (clarifying questions, emergency openings, off-topic refusal);
     # they become prompt rules, the safety guards stay. Off = the chat of today.
-    chat_answer_v2: bool = Field(default=False, alias="CHAT_ANSWER_V2")
+    chat_answer_v2: bool = Field(default=True, alias="CHAT_ANSWER_V2")
     # Test-2 comparison arm only: v2 with the earlier urgency lane (fixed legal opening).
     chat_answer_v2_urgent_lane: bool = Field(default=False, alias="CHAT_ANSWER_V2_URGENT_LANE")
     # The 112 line for a hurt person under v2: removed by the owner (2026-11-20), kept as an

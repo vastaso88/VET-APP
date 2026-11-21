@@ -96,8 +96,10 @@ def _system(llm: RecordingLLMClient, purpose: str = "answer") -> str:
     return requests[-1].system_prompt
 
 
-def test_the_switch_is_off_by_default() -> None:
-    assert Settings().chat_answer_v2 is False
+def test_the_switch_is_on_by_default_on_the_test_branch() -> None:
+    # Branch pasticcio-di-ciccio: the new chat is the default so it can be tried.
+    # On main it stays off until the owner decides.
+    assert Settings().chat_answer_v2 is True
 
 
 # --- 1. no fixed clarifying question ------------------------------------------------------
