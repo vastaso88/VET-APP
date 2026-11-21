@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { changePlan } from "../actions";
 import { notFound } from "next/navigation";
 import { AdminShell } from "../../../components/admin-shell";
 import { UserActions } from "../../../components/user-actions";
@@ -115,6 +116,20 @@ export default async function UserPage({
             </dd>
           </div>
         </dl>
+        <form action={changePlan} className="job-filters users-search">
+          <input type="hidden" name="owner_id" value={user.id} />
+          <label>
+            Modifica piano assegnato
+            <select name="plan" defaultValue={user.stored_plan ?? "none"}>
+              <option value="none">Nessun piano (prova / scaduto)</option>
+              <option value="plus">Plus</option>
+              <option value="pro">Pro</option>
+              <option value="ultra">Ultra</option>
+            </select>
+          </label>
+          <button className="primary-button" type="submit">Salva piano</button>
+          <span className="muted">Modifica amministrativa registrata; non costituisce un pagamento.</span>
+        </form>
         <p className="muted">
           La residenza è quella salvata dall’utente, non una verifica di
           domicilio. Non vengono mostrati indirizzo esatto, coordinate o
