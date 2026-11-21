@@ -8,7 +8,11 @@ da rivedere). Scadenze: leggi 3 mesi, guide 6 mesi (piano del 21/11/2026, §5).
 from __future__ import annotations
 
 import json
+import os
 import re
+import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import date, timedelta
 from pathlib import Path
@@ -23,7 +27,14 @@ LEVELS = {
 }
 # in_uso (V, VR: il silenzio vale sì), non_approvata (No del proprietario), in_sospeso (N o
 # sparita), in_attesa_normativa (G), non_usabile (R)
-STATES = ("in_uso", "non_approvata", "in_sospeso", "in_attesa_normativa", "non_usabile")
+STATES = (
+    "in_uso",
+    "non_approvata",
+    "in_sospeso",
+    "in_attesa_normativa",
+    "non_usabile",
+    "scartata",
+)  # scartata: letta e giudicata non adatta (qualità), mai sulla pagina
 VALID_CLASSES = ("V", "VR", "G", "R", "N")
 PROOF_FIELDS = ("frase", "url", "data", "regola", "robots", "terzi")  # frasi extra: "frasi_extra"
 REQUIRED = (
@@ -113,16 +124,46 @@ class Store:
         validate(src)
         if src["stato"] == "in_uso" and src["classe"] not in ("V", "VR"):
             raise SourceError("solo le fonti V e VR possono essere in uso")
-        data = self.load()
-        if src["id"] in data:
-            return False
-        src = dict(src)
-        src.setdefault("visto", False)
-        today = date.fromisoformat(src["notte"])
-        src.setdefault("prossimo_controllo", next_review(src["livello"], today))
-        data[src["id"]] = src
-        self.save(data)
-        return True
+        with self._locked():
+            data = self.load()
+            if src["id"] in data:
+                return False
+            src = dict(src)
+            src.setdefault("visto", False)
+            today = date.fromisoformat(src["notte"])
+            src.setdefault("prossimo_controllo", next_review(src["livello"], today))
+            data[src["id"]] = src
+            self.save(data)
+            return True
+
+    @contextmanager
+    def _locked(self) -> Iterator[None]:
+        """Blocco semplice per più comandi insieme (file di lock, attesa breve)."""
+        lock = self.path.with_suffix(".lock")
+        lock.parent.mkdir(parents=True, exist_ok=True)
+        for _ in range(200):
+            try:
+                handle = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                break
+            except FileExistsError:
+                if time.time() - lock.stat().st_mtime > 30:  # lock rimasto da un comando morto
+                    lock.unlink(missing_ok=True)
+                time.sleep(0.05)
+        else:
+            raise SourceError("elenco occupato da un altro comando")
+        try:
+            yield
+        finally:
+            os.close(handle)
+            lock.unlink(missing_ok=True)
+
+    def discard(self, source_id: str, motivo: str) -> None:
+        """Fonte letta e giudicata non adatta: fuori dall'uso e dalla pagina."""
+        with self._locked():
+            data = self.load()
+            data[source_id]["stato"] = "scartata"
+            data[source_id]["motivo_scarto"] = motivo
+            self.save(data)
 
     def apply_decision(self, source_id: str, decisione: str | None, nota: str = "") -> None:
         """Legge la scelta del proprietario: ok -> resta in uso; no -> non_approvata."""
@@ -160,7 +201,7 @@ class Store:
 
 def on_page(src: dict[str, Any]) -> bool:
     """Alla pagina vanno solo V, VR e N: i G alla Normativa, gli R al foglio."""
-    return src["classe"] in ("V", "VR", "N")
+    return src["classe"] in ("V", "VR", "N") and src["stato"] != "scartata"
 
 
 def page_doc(src: dict[str, Any]) -> dict[str, Any]:

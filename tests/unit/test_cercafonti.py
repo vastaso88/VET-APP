@@ -421,3 +421,175 @@ def test_italian_public_administration_rule() -> None:
     reserved = "Tutti i diritti riservati. Uso consentito solo con consenso scritto."
     assert L.classify_text(reserved, italian_pa=True).classe == L.G
     assert L.classify_text("Licence CC BY 4.0", italian_pa=True).classe == L.V
+
+
+def test_pdf_is_read_as_text(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import subprocess
+
+    class Done:
+        stdout = b"Codice di benessere  per i cani.\n\n\nSecondo paragrafo"
+
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: Done())
+    table = {
+        "https://a.example.org/robots.txt": (404, ""),
+        "https://a.example.org/guida.pdf": (200, "%PDF-1.4", "application/pdf"),
+    }
+    fetcher, _, _ = make(tmp_path, table)
+    page = fetcher.get("https://a.example.org/guida.pdf")
+    assert page.text.startswith("Codice di benessere per i cani.") and page.fingerprint
+
+
+def test_body_is_decoded_with_the_declared_charset() -> None:
+    latin = "Bundesamt für Justiz".encode("latin-1")
+    assert F.decode_body(latin, "text/html; charset=ISO-8859-1") == "Bundesamt für Justiz"
+    assert F.decode_body(b'<meta charset="iso-8859-1">f\xfcr', "text/html").endswith("für")
+    assert F.decode_body("für".encode(), "text/html") == "für"
+
+
+def _scheda(url: str, sid: str = "guida-uno") -> dict[str, Any]:
+    return {
+        "id": sid, "titolo": "Guida", "url": url, "ente": "Ente", "paese": "Regno Unito",
+        "lingua": "en", "livello": "guida_proprietari", "scritto_per": "proprietari",
+        "specie": ["S11"], "temi": ["T02"], "perche": "Guida ufficiale",
+    }  # fmt: skip
+
+
+def test_add_source_uses_the_host_proof_and_never_refetches(tmp_path: Path) -> None:
+    from scripts.sources import pipeline as P
+
+    table = {
+        "https://a.example.org/robots.txt": (404, ""),
+        "https://a.example.org/g": (
+            200,
+            "<html><title>G</title><p>Tieni l'acqua pulita.</p></html>",
+        ),
+        "https://a.example.org/r": (200, "<p>All rights reserved by someone.</p>"),
+    }
+    fetcher, opener, _ = make(tmp_path, table)
+    store = S.Store(tmp_path / "f.json")
+    registry = P.Registry(tmp_path / "h.json")
+    assert P.add_source(
+        fetcher, store, registry, _scheda("https://a.example.org/g"), tmp_path
+    ).startswith("DA_REGISTRARE")
+    entry = {"classe": "V", "licenza": "OGL v3.0", "copre": ["a.example.org"],
+             "prova": PROOF, "base_legale": "", "attribuzione": ""}  # fmt: skip
+    registry.save_entry("a.example.org", entry)
+    out = P.add_source(fetcher, store, registry, _scheda("https://a.example.org/g"), tmp_path)
+    assert (
+        out.startswith("NUOVA") and store.load()["guida-uno"]["prova"]["controllata_nella_pagina"]
+    )
+    assert (tmp_path / "pagine" / "guida-uno.txt").exists()
+    seen = len(opener.seen)
+    assert P.add_source(
+        fetcher, store, registry, _scheda("https://a.example.org/g"), tmp_path
+    ).startswith("GIA_PRESENTE")
+    assert len(opener.seen) == seen  # nessuna nuova richiesta
+    assert P.add_source(
+        fetcher, store, registry, _scheda("https://a.example.org/r", "guida-due"), tmp_path
+    ).startswith("RISERVA")
+    assert "guida-due" not in store.load()
+
+
+def test_discarded_sources_leave_coverage_and_the_page(tmp_path: Path) -> None:
+    store = S.Store(tmp_path / "f.json")
+    store.add(good())
+    store.discard("uk-defra-fish", "per produttori")
+    assert store.coverage() == {} and not S.on_page(store.load()["uk-defra-fish"])
+
+
+def test_two_commands_starting_together_do_not_hit_the_host_at_once(tmp_path: Path) -> None:
+    a, _, clock_a = make(tmp_path, {})
+    b, _, clock_b = make(tmp_path, {})
+    clock_b.t = clock_a.t  # partono nello stesso istante
+    a._pause("h.example.org", 0.0)
+    b._pause("h.example.org", 0.0)
+    assert not clock_a.slept  # il primo passa subito
+    assert clock_b.slept and clock_b.slept[0] >= 9.99  # il secondo aspetta il suo turno
+    c, _, clock_c = make(tmp_path, {})
+    clock_c.t = clock_a.t
+    c._pause("h.example.org", 0.0)
+    assert clock_c.slept[0] >= 19.99  # il terzo è dopo il secondo
+
+
+def test_one_403_stops_every_host_of_the_same_domain_for_everyone(tmp_path: Path) -> None:
+    table = {
+        "https://www.a.example.org/robots.txt": (404, ""),
+        "https://www.a.example.org/p": (403, "no"),
+    }
+    first, _, _ = make(tmp_path, table)
+    with pytest.raises(F.Blocked):
+        first.get("https://www.a.example.org/p")
+    other, opener, _ = make(tmp_path, {})  # un altro comando, avviato dopo
+    with pytest.raises(F.Blocked, match="host fermato"):
+        other.get("https://sub.a.example.org/x")  # stesso dominio registrabile
+    with pytest.raises(F.Blocked, match="host fermato"):
+        other.robots("sub.a.example.org")
+    assert opener.seen == []
+    assert F.registrable_domain("www.aphis.usda.gov") == "usda.gov"
+    assert F.registrable_domain("assets.publishing.service.gov.uk") == "service.gov.uk"
+
+
+def test_stop_file_is_read_before_every_request_not_only_at_start(tmp_path: Path) -> None:
+    table = {
+        "https://a.example.org/robots.txt": (404, ""),
+        "https://a.example.org/1": (200, "<p>uno</p>"),
+        "https://a.example.org/2": (200, "<p>due</p>"),
+    }
+    runner, opener, _ = make(tmp_path, table)
+    runner.get("https://a.example.org/1")
+    (tmp_path / "host_fermati.json").write_text(
+        '{"a.example.org": "fermato da un altro lavoratore"}'
+    )
+    with pytest.raises(F.Blocked, match="fermato da un altro lavoratore"):
+        runner.get("https://a.example.org/2")
+    assert all("/2" not in u for u, _ in opener.seen)
+
+
+def test_log_check_flags_requests_closer_than_ten_seconds(tmp_path: Path) -> None:
+    from scripts.sources import pipeline as P
+
+    log = tmp_path / "registro.jsonl"
+    rows = [
+        ("2026-11-21T10:00:00+01:00", "https://h.example.org/a"),
+        ("2026-11-21T10:00:12+01:00", "https://h.example.org/b"),
+        ("2026-11-21T10:00:13+01:00", "https://h.example.org/c"),  # solo 1 s dopo
+        ("2026-11-21T10:00:13+01:00", "https://k.example.org/a"),
+    ]
+    log.write_text(
+        "\n".join(json.dumps({"quando": w, "indirizzo": u, "esito": 200}) for w, u in rows)
+    )
+    robots = tmp_path / "robots_cache.json"
+    ok, violations, minimum = P.check_log(log, robots)
+    assert not ok and "h.example.org" in violations[0] and minimum["h.example.org"] == 1.0
+    ok2, _, _ = P.check_log(log, robots, since="2026-11-21T10:00:13+01:00")
+    assert ok2  # dopo la correzione non ci sono coppie sotto soglia
+    robots.write_text(json.dumps({"k.example.org": {"text": "User-agent: *\nCrawl-delay: 30\n"}}))
+    log.write_text(
+        "\n".join(
+            json.dumps({"quando": w, "indirizzo": u, "esito": 200})
+            for w, u in [
+                ("2026-11-21T10:00:00+01:00", "https://k.example.org/a"),
+                ("2026-11-21T10:00:12+01:00", "https://k.example.org/b"),
+            ]
+        )
+    )
+    assert not P.check_log(log, robots)[0]  # 12 s ma il robots chiede 30 s
+
+
+def test_www_and_bare_host_share_one_turn_and_log_holds_the_start_time(tmp_path: Path) -> None:
+    table = {
+        "https://x.example.org/robots.txt": (404, ""),
+        "https://www.x.example.org/robots.txt": (404, ""),
+        "https://x.example.org/a": (200, "<p>a</p>"),
+        "https://www.x.example.org/b": (200, "<p>b</p>"),
+    }
+    fetcher, _, clock = make(tmp_path, table)
+    fetcher.get("https://x.example.org/a")
+    before = len(clock.slept)
+    fetcher.get("https://www.x.example.org/b")
+    assert len(clock.slept) > before  # stesso server: aspetta il suo turno
+    rows = [
+        json.loads(x)
+        for x in (tmp_path / "registro_richieste.jsonl").read_text("utf-8").splitlines()
+    ]
+    assert all(set(r) >= {"quando", "nome", "indirizzo", "esito"} for r in rows)

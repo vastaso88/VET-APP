@@ -14,16 +14,21 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
+import subprocess
+import tempfile
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
+from typing import Any
 from urllib.robotparser import RobotFileParser
 
 USER_AGENT = (
@@ -140,6 +145,56 @@ def main_text(host: str, raw: str) -> str | None:
     return None
 
 
+# Suffissi a due livelli dei Paesi che usiamo: «gov.uk» non è un dominio registrabile.
+_TWO_LEVEL = {
+    "co.uk", "org.uk", "gov.uk", "ac.uk", "com.au", "gov.au", "org.au", "edu.au", "govt.nz",
+    "co.nz", "gov.it", "gv.at", "co.at", "gob.es", "com.es",
+}  # fmt: skip
+
+
+def registrable_domain(host: str) -> str:
+    """Il dominio registrabile (es. «usda.gov» per «www.aphis.usda.gov»), approssimato."""
+    labels = host.lower().split(":")[0].split(".")
+    if len(labels) >= 3 and ".".join(labels[-2:]) in _TWO_LEVEL:
+        return ".".join(labels[-3:])
+    return ".".join(labels[-2:])
+
+
+def decode_body(body: bytes, ctype: str) -> str:
+    """Decodifica con il charset dichiarato (intestazione o meta), altrimenti UTF-8."""
+    match = re.search(r"charset=([\w-]+)", ctype, re.I) or re.search(
+        rb"<meta[^>]+charset=[\"']?([\w-]+)", body[:4000], re.I
+    )
+    name = (
+        (match.group(1).decode() if isinstance(match.group(1), bytes) else match.group(1))
+        if match
+        else "utf-8"
+    )
+    try:
+        return body.decode(name, "replace")
+    except LookupError:
+        return body.decode("utf-8", "replace")
+
+
+def pdf_text(body: bytes) -> str:
+    """Testo di un PDF con `pdftotext` (se manca, testo vuoto: la fonte non viene letta)."""
+    with tempfile.TemporaryDirectory() as folder:
+        source = Path(folder) / "documento.pdf"
+        source.write_bytes(body)
+        try:
+            proc = subprocess.run(
+                ["pdftotext", "-enc", "UTF-8", str(source), "-"],
+                capture_output=True,
+                timeout=90,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return ""
+    text = proc.stdout.decode("utf-8", "replace")
+    text = re.sub(r"[ \t ]+", " ", text)
+    return re.sub(r"\n\s*\n+", "\n", text).strip()
+
+
 def fingerprint_of(text: str) -> str:
     """Impronta del testo normalizzato (maiuscole, spazi e punteggiatura non contano)."""
     norm = re.sub(r"\W+", " ", text.lower()).strip()
@@ -174,28 +229,106 @@ class Fetcher:
             self._stopped = json.loads(self.stop_path.read_text("utf-8"))
 
     # -- registro -------------------------------------------------------------------------
-    def _log(self, url: str, esito: object, nota: str = "") -> None:
-        row = {"quando": now_iso(), "nome": USER_AGENT, "indirizzo": url, "esito": esito}
+    def _log(self, url: str, esito: object, nota: str = "", started: str = "") -> None:
+        """`quando` è l'istante di PARTENZA della richiesta (la distanza di 10 s si misura lì)."""
+        row = {
+            "quando": started or now_iso(),
+            "nome": USER_AGENT,
+            "indirizzo": url,
+            "esito": esito,
+        }
         if nota:
             row["nota"] = nota
         with self.log_path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
-    def _save_last(self) -> None:
-        self.last_path.write_text(json.dumps(self._last), "utf-8")
+    def _merge_file(self, path: Path, mine: dict[str, Any]) -> None:
+        """Più comandi possono girare insieme: si fonde con il file, non lo si riscrive."""
+        current: dict[str, Any] = {}
+        if path.exists():
+            try:
+                current = json.loads(path.read_text("utf-8"))
+            except json.JSONDecodeError:
+                current = {}
+        current.update(mine)
+        tmp = path.with_suffix(f".{os.getpid()}.tmp")
+        tmp.write_text(json.dumps(current, ensure_ascii=False, indent=1), "utf-8")
+        tmp.replace(path)
+
+    def _save_last(self, host: str) -> None:
+        """Registra l'istante di fine richiesta, senza mai riportare indietro un turno prenotato."""
+        key = host.removeprefix("www.")
+        with self._slot_lock(host):
+            current = float(self._disk_last().get(key, -1e9))
+            self._merge_file(self.last_path, {key: max(current, self._last[key])})
 
     def _stop_host(self, host: str, reason: str) -> None:
         self._stopped[host] = f"{now_iso()} {reason}"
-        self.stop_path.write_text(json.dumps(self._stopped, ensure_ascii=False, indent=1), "utf-8")
+        self._merge_file(self.stop_path, {host: self._stopped[host]})
 
     def is_stopped(self, host: str) -> str | None:
-        return self._stopped.get(host)
+        """Interruttore condiviso: letto dal file prima di OGNI richiesta, per host e dominio."""
+        if self.stop_path.exists():
+            try:
+                self._stopped.update(json.loads(self.stop_path.read_text("utf-8")))
+            except json.JSONDecodeError:
+                pass
+        if host in self._stopped:
+            return self._stopped[host]
+        domain = registrable_domain(host)
+        for stopped_host, reason in self._stopped.items():
+            if registrable_domain(stopped_host) == domain:
+                return f"{reason} (stesso dominio di {stopped_host})"
+        return None
 
     # -- una richiesta ---------------------------------------------------------------------
+    @contextmanager
+    def _slot_lock(self, host: str) -> Iterator[None]:
+        lock = self.last_path.with_suffix(".lock")
+        for _ in range(400):
+            try:
+                handle = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                break
+            except FileExistsError:
+                try:
+                    if time.time() - lock.stat().st_mtime > 20:  # lock di un comando morto
+                        lock.unlink(missing_ok=True)
+                except FileNotFoundError:
+                    pass
+                time.sleep(0.05)
+        else:
+            raise Blocked(host, "prenotazione del turno non riuscita")
+        try:
+            yield
+        finally:
+            os.close(handle)
+            lock.unlink(missing_ok=True)
+
+    def _disk_last(self) -> dict[str, Any]:
+        if self.last_path.exists():
+            try:
+                data: dict[str, Any] = json.loads(self.last_path.read_text("utf-8"))
+                return data
+            except json.JSONDecodeError:
+                return {}
+        return {}
+
     def _pause(self, host: str, delay: float) -> None:
-        wait = self._last.get(host, -1e9) + max(MIN_PAUSE_SECONDS, delay) - self.clock()
-        if wait > 0:
-            self.sleep(wait)
+        """Prenota il prossimo turno sull'host in modo atomico tra tutti i comandi in corso.
+
+        Senza prenotazione due comandi che partono insieme leggerebbero lo stesso «ultimo
+        turno» e colpirebbero l'host nello stesso istante: il turno si scrive PRIMA di aspettare.
+        """
+        gap = max(MIN_PAUSE_SECONDS, delay)
+        host = host.removeprefix("www.")  # «www.x» e «x» sono lo stesso server
+        with self._slot_lock(host):
+            last = max(self._last.get(host, -1e9), float(self._disk_last().get(host, -1e9)))
+            now = self.clock()
+            slot = max(now, last + gap)
+            self._last[host] = slot
+            self._merge_file(self.last_path, {host: slot})
+        if slot > now:
+            self.sleep(slot - now)
 
     def _raw_get(
         self, url: str, host: str, delay: float, accept: str
@@ -209,6 +342,7 @@ class Fetcher:
         )
         self.requests_made += 1
         location = ""
+        started = now_iso()
         try:
             with self.opener.open(req, timeout=45) as resp:
                 status = resp.status
@@ -220,13 +354,13 @@ class Fetcher:
             location = err.headers.get("Location", "") if err.headers else ""
             body = err.read(20_000) if err.fp else b""
         except Exception as err:  # rete, timeout: una sola prova, nessuna riprova
-            self._last[host] = self.clock()
-            self._save_last()
-            self._log(url, f"errore {type(err).__name__}")
+            self._last[host.removeprefix("www.")] = self.clock()
+            self._save_last(host)
+            self._log(url, f"errore {type(err).__name__}", started=started)
             raise Blocked(host, f"errore di rete {type(err).__name__}") from err
-        self._last[host] = self.clock()
-        self._save_last()
-        self._log(url, status)
+        self._last[host.removeprefix("www.")] = self.clock()
+        self._save_last(host)
+        self._log(url, status, started=started)
         return status, ctype, body, location
 
     def _robots_cached(self, host: str) -> tuple[int, str] | None:
@@ -244,6 +378,8 @@ class Fetcher:
         self.robots_path.write_text(json.dumps(cache, ensure_ascii=False), "utf-8")
 
     def robots(self, host: str, scheme: str = "https") -> RobotsInfo:
+        if reason := self.is_stopped(host):
+            raise Blocked(host, f"host fermato: {reason}")
         if host in self._robots:
             return self._robots[host]
         cached = self._robots_cached(host)
@@ -302,12 +438,15 @@ class Fetcher:
             page = Page(current, status, ctype, body)
             if status == 200:
                 if "html" in ctype.lower() or "xml" in ctype.lower():
-                    raw = body.decode("utf-8", "replace")
+                    raw = decode_body(body, ctype)
                     page.title, page.text = html_to_text(raw)
                     page.full_text = html_to_text(raw, keep_chrome=True)[1]
                     if law_text := main_text(urllib.parse.urlsplit(current).netloc.lower(), raw):
                         page.text = law_text
                     page.fingerprint = fingerprint_of(page.text)
+                elif "pdf" in ctype.lower():
+                    page.text = page.full_text = pdf_text(body)
+                    page.fingerprint = fingerprint_of(page.text) if page.text else ""
                 else:
                     page.fingerprint = hashlib.sha256(body).hexdigest()[:24]
             return page
