@@ -12,18 +12,20 @@ const speciesOptions = Object.entries(speciesLabels);
 export default async function PetsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string; species?: string; status?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; species?: string; status?: string; country?: string; region?: string }>;
 }) {
   const params = await searchParams;
   const q = (params.q ?? "").slice(0, 200);
   const species = speciesOptions.some(([key]) => key === params.species) ? params.species! : "";
   const status = ["active", "inactive", "exotic", "memorial"].includes(params.status ?? "")
     ? params.status! : "";
+  const country = (params.country ?? "").slice(0, 2).toUpperCase();
+  const region = (params.region ?? "").slice(0, 200);
   const parsedPage = Number(params.page);
   const page = Number.isInteger(parsedPage) && parsedPage > 0 ? Math.min(parsedPage, 2000) : 1;
-  const data = await getAdminPets(q, page, species, status);
+  const data = await getAdminPets(q, page, species, status, country, region);
   const pageUrl = (target: number) =>
-    `/pets?${new URLSearchParams({ q, species, status, page: String(target) })}`;
+    `/pets?${new URLSearchParams({ q, species, status, country, region, page: String(target) })}`;
 
   return (
     <AdminShell title="Pets" eyebrow="Profiles & support" className="users-shell">
@@ -35,31 +37,7 @@ export default async function PetsPage({
           </div>
           <span className="tag">read-only</span>
         </div>
-        <form className="job-filters users-search" action="/pets">
-          <label>
-            Search by name, breed, pet ID or owner ID
-            <input type="search" name="q" maxLength={200} defaultValue={q} placeholder="Search pets" />
-          </label>
-          <label>
-            Species
-            <select name="species" defaultValue={species}>
-              <option value="">All species</option>
-              {speciesOptions.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-            </select>
-          </label>
-          <label>
-            Status
-            <select name="status" defaultValue={status}>
-              <option value="">All statuses</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="exotic">Exotic</option>
-              <option value="memorial">Memorial</option>
-            </select>
-          </label>
-          <button className="ghost-button" type="submit">Filter</button>
-          {(q || species || status) && <Link className="ghost-button" href="/pets">Clear</Link>}
-        </form>
+
       </section>
       {!data ? (
         <section className="panel" role="alert">
@@ -75,10 +53,21 @@ export default async function PetsPage({
               {Math.min(data.page * data.page_size, data.total)} of {data.total}
             </span>
           </div>
+          <form id="pet-table-filters" action="/pets" />
+          <div className="pets-filter-actions">
+            <button className="ghost-button" type="submit" form="pet-table-filters">Apply filters</button>
+            <Link className="ghost-button" href="/pets">Clear</Link>
+          </div>
           <div className="pets-table-scroll">
             <table className="users-table">
               <thead><tr>
-                <th>Name</th><th>Species</th><th>Breed</th><th>Status</th><th>Owner</th><th>Pet ID</th>
+                <th>Name<input aria-label="Filter by pet name or ID" form="pet-table-filters" type="search" name="q" defaultValue={q} placeholder="Search name / ID" /></th>
+                <th>Species<select aria-label="Filter species" form="pet-table-filters" name="species" defaultValue={species}><option value="">All</option>{speciesOptions.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></th>
+                <th>Breed</th>
+                <th>Status<select aria-label="Filter status" form="pet-table-filters" name="status" defaultValue={status}><option value="">All</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="exotic">Exotic</option><option value="memorial">Memorial</option></select></th>
+                <th>Country<input aria-label="Filter country" form="pet-table-filters" name="country" maxLength={2} defaultValue={country} placeholder="ISO code" /></th>
+                <th>Region / city<input aria-label="Filter locality" form="pet-table-filters" name="region" maxLength={200} defaultValue={region} placeholder="City" /></th>
+                <th>Owner</th><th>Pet ID</th>
               </tr></thead>
               <tbody>
                 {data.pets.map((pet) => (
@@ -91,6 +80,8 @@ export default async function PetsPage({
                       pet.is_exotic ? "Exotic" : null,
                       pet.is_memorial ? "Memorial" : null,
                     ].filter(Boolean).join(" · ") || "—"}</td>
+                    <td>{pet.country || "—"}</td>
+                    <td>{pet.region || pet.city || "—"}</td>
                     <td><Link className="table-action-link" href={`/users/${encodeURIComponent(pet.owner_id)}`}>{pet.owner_id}</Link></td>
                     <td><code>{pet.id}</code></td>
                   </tr>
