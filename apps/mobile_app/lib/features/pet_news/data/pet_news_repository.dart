@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
@@ -6,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../language/data/language_store.dart';
 import '../domain/pet_news_edition.dart';
+import 'pet_news_disk_cache.dart';
 import '../domain/pet_news_item.dart';
 
 abstract class PetNewsRepository {
@@ -68,13 +70,16 @@ class BackendPetNewsRepository implements PetNewsRepository {
     http.Client? client,
     AppRuntimeConfigLoader? configLoader,
     PetNewsEdition Function()? editionProvider,
+    PetNewsDiskCache? diskCache,
   })  : _client = client ?? http.Client(),
+        _disk = diskCache ?? const PetNewsDiskCache(),
         _configLoader = configLoader ?? const AppRuntimeConfigLoader(),
         _editionProvider = editionProvider ?? currentPetNewsEdition;
 
   final http.Client _client;
   final AppRuntimeConfigLoader _configLoader;
   final PetNewsEdition Function() _editionProvider;
+  final PetNewsDiskCache _disk;
 
   // One request returns every category, so the whole answer is kept for a
   // while and shared by every repository instance (Home, News page, splash
@@ -92,6 +97,10 @@ class BackendPetNewsRepository implements PetNewsRepository {
   @visibleForTesting
   static Duration retryPause = const Duration(seconds: 2);
   static const _itemsPerCategory = 12;
+
+  /// With a kept copy to show, how long to wait for the network before showing it
+  /// (the request goes on and refreshes the shared answer when it lands).
+  static const _patience = Duration(seconds: 6);
 
   /// Forgets the shared answer (tests).
   static void resetCache() {
@@ -112,14 +121,28 @@ class BackendPetNewsRepository implements PetNewsRepository {
       return cached.byCategory;
     }
 
-    final pending = _inFlight ??= _fetchAll().whenComplete(() => _inFlight = null);
-    final fresh = await pending;
-    if (fresh != null) {
-      _cache = _CacheEntry(fresh, DateTime.now());
-      return fresh;
-    }
+    final pending = _inFlight ??= _fetchAll().then((value) {
+      // Kept even when the caller stopped waiting, so the next ask is instant.
+      if (value != null) _cache = _CacheEntry(value, DateTime.now());
+      return value;
+    }).whenComplete(() => _inFlight = null);
+
+    // A copy kept on the phone lets a slow request give way after a short wait.
+    final kept = cached == null ? await _keptCopy() : null;
+    final fresh = kept == null
+        ? await pending
+        : await pending.timeout(_patience, onTimeout: () => null);
+    if (fresh != null) return fresh;
     // The backend did not answer: an older answer beats an empty section.
-    return cached?.byCategory ?? const {};
+    return cached?.byCategory ?? kept?.byCategory ?? const {};
+  }
+
+  /// The last good answer kept on the phone, parsed; null when there is none.
+  Future<_CacheEntry?> _keptCopy() async {
+    final stored = await _disk.load();
+    if (stored == null) return null;
+    final parsed = _parse(stored.body);
+    return parsed == null ? null : _CacheEntry(parsed, stored.savedAt);
   }
 
   Future<Map<String, List<PetNewsItem>>?> _fetchAll() async {
@@ -139,7 +162,20 @@ class BackendPetNewsRepository implements PetNewsRepository {
           .timeout(_timeout);
       if (response.statusCode != 200) return null;
 
-      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final parsed = _parse(response.body);
+      // Only an answer with at least one headline is worth keeping for later.
+      if (parsed != null && parsed.values.any((items) => items.isNotEmpty)) {
+        unawaited(_disk.save(response.body, DateTime.now()));
+      }
+      return parsed;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Map<String, List<PetNewsItem>>? _parse(String body) {
+    try {
+      final json = jsonDecode(body) as Map<String, dynamic>;
       final categories = json['categories'] as Map<String, dynamic>? ?? const {};
       return {
         for (final entry in categories.entries)

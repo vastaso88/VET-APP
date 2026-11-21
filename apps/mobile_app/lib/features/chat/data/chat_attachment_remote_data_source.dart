@@ -198,6 +198,7 @@ const _knownCodes = {
   'unsupported_attachment_type',
   'pdf_too_many_pages',
   'pdf_unreadable',
+  'pet_in_memories',
 };
 
 String _messageFor(String? detailCode, int statusCode) {
@@ -210,6 +211,8 @@ String _messageFor(String? detailCode, int statusCode) {
       return appL10n.chatErrorPdfTooManyPages;
     case 'pdf_unreadable':
       return appL10n.chatErrorPdfUnreadable;
+    case 'pet_in_memories':
+      return appL10n.petInMemoriesWrite;
   }
   if (statusCode == 413) return appL10n.chatErrorAttachmentTooLarge;
   return appL10n.chatErrorAttachmentUpload;

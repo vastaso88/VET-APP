@@ -329,6 +329,7 @@ void main() {
           .copyWith(memorialDate: DateTime(2026, 11, 14), microchipNumber: '380260000000001');
       await open(tester, pet, _Calls());
       expect(find.textContaining('al 14 nov 2026'), findsOneWidget);
+      await tester.scrollUntilVisible(find.byKey(const ValueKey('memorial-switch-birthday')), 200);
       expect(find.byKey(const ValueKey('memorial-switch-birthday')), findsOneWidget);
       await tester.scrollUntilVisible(find.textContaining('anagrafe'), 200);
       expect(find.textContaining('Se Moka era iscritta all'), findsOneWidget);

@@ -229,18 +229,21 @@ void main() {
       expect(restores.count, 0);
     });
 
-    test('any other failure keeps the old behaviour: kept on the phone, flagged', () async {
+    test('any other failure is undone here and says so: the pet stays in Ricordi', () async {
       final store = PetDemoStore.instance;
       final memorial = await store.upsert(_pet('m', memorial: true));
       store.debugUpsertRow = (row) async {
         throw const PostgrestException(message: 'boom', code: '500');
       };
 
-      final back =
-          await _Restores().service((limit: null, upgradePlan: null)).restore(memorial);
+      await expectLater(
+        _Restores().service((limit: null, upgradePlan: null)).restore(memorial),
+        throwsA(isA<PetSyncException>()),
+      );
 
-      expect(back.isMemorial, isFalse);
-      expect(store.isUnsynced('m'), isTrue);
+      expect(store.memorialPets().single.id, 'm');
+      expect(store.list(), isEmpty);
+      expect(store.isUnsynced('m'), isFalse);
     });
 
     test('a refused new pet is still flagged, as before (no revert without a return)', () async {

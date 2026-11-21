@@ -281,18 +281,22 @@ void main() {
       expect(moves.walksStopped, ['a']);
     });
 
-    test('any other failure keeps the old behaviour: moved on the phone, flagged', () async {
+    test('any other failure is undone here and says so: the pet stays among the active ones',
+        () async {
       final store = PetDemoStore.instance;
       final pet = await store.upsert(_pet('a', name: 'Rex'));
       store.debugUpsertRow = (row) async {
         throw const PostgrestException(message: 'boom', code: '500');
       };
 
-      final moved =
-          await _Moves().service().moveToMemories(pet, lossDate: DateTime(2026, 11, 1));
+      await expectLater(
+        _Moves().service().moveToMemories(pet, lossDate: DateTime(2026, 11, 1)),
+        throwsA(isA<PetSyncException>()),
+      );
 
-      expect(moved.isMemorial, isTrue);
-      expect(store.isUnsynced('a'), isTrue);
+      expect(store.list().single.id, 'a');
+      expect(store.memorialPets(), isEmpty);
+      expect(store.isUnsynced('a'), isFalse);
     });
 
     test('a refusal is recognised as the cap, with its own message and number', () {

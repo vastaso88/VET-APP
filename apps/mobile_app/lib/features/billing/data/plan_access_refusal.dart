@@ -20,6 +20,10 @@ enum PlanRefusalKind {
 
   /// The plan does not allow more of [PlanAccessRefusal.limitKind].
   planLimitReached,
+
+  /// The pet is in Ricordi, which is read-only: nothing is added to it or changed
+  /// (database SQLSTATE `PT409`, backend HTTP 409 `pet_in_memories`).
+  petInMemories,
 }
 
 class PlanAccessRefusal {
@@ -39,6 +43,7 @@ class PlanAccessRefusal {
   /// the chat already uses for the backend's answers.
   String get message {
     if (kind == PlanRefusalKind.subscriptionRequired) return appL10n.billingPaywallTitle;
+    if (kind == PlanRefusalKind.petInMemories) return appL10n.petInMemoriesWrite;
     return switch (limitKind) {
       // The pets limit also says that pets in Ricordi do not count.
       'pets' => appL10n.billingPlanLimitPets,
@@ -51,11 +56,12 @@ class PlanAccessRefusal {
 
 const _subscriptionRequired = 'subscription_required';
 const _planLimitReached = 'plan_limit_reached';
+const _petInMemories = 'pet_in_memories';
 
 /// Recognises a refusal in a backend answer (JSON body with `code`; the
 /// older `detail: "<code>: ..."` text is accepted too). Null for anything else.
 PlanAccessRefusal? planRefusalFromHttp(int statusCode, String body) {
-  if (statusCode != 402 && statusCode != 403) return null;
+  if (statusCode != 402 && statusCode != 403 && statusCode != 409) return null;
   String? code;
   String? kind;
   int? limit;
@@ -74,6 +80,9 @@ PlanAccessRefusal? planRefusalFromHttp(int statusCode, String body) {
     }
   } catch (_) {
     return null; // Non-JSON body (a plain 502 from a proxy).
+  }
+  if (statusCode == 409) {
+    return code == _petInMemories ? const PlanAccessRefusal(PlanRefusalKind.petInMemories) : null;
   }
   if (statusCode == 402 && (code == null || code == _subscriptionRequired)) {
     return const PlanAccessRefusal(PlanRefusalKind.subscriptionRequired);
@@ -104,6 +113,9 @@ PlanAccessRefusal? planRefusalFromError(
     final message = error.message;
     if (code == 'PT402' || message == _subscriptionRequired) {
       return const PlanAccessRefusal(PlanRefusalKind.subscriptionRequired);
+    }
+    if (code == 'PT409' || message == _petInMemories) {
+      return const PlanAccessRefusal(PlanRefusalKind.petInMemories);
     }
     if (message == _planLimitReached) {
       return PlanAccessRefusal(

@@ -212,12 +212,11 @@ void main() {
       expect(restore.hitTestable(), findsOneWidget);
       expect(find.text('Spostata per errore? Riporta tra gli animali'), findsOneWidget);
       expect(find.textContaining('Qui tutto resta com'), findsOneWidget);
-      final delete = find.byKey(const ValueKey('memorial-delete'), skipOffstage: false);
-      expect(delete, findsOneWidget);
-      expect(
-        tester.getTopLeft(restore).dy,
-        lessThan(tester.getTopLeft(delete).dy),
-      );
+      // Delete stays at the bottom: not in view until the page is scrolled to it.
+      final delete = find.byKey(const ValueKey('memorial-delete'));
+      expect(delete.hitTestable(), findsNothing);
+      await tester.scrollUntilVisible(delete, 400);
+      expect(delete.hitTestable(), findsOneWidget);
     });
   });
 

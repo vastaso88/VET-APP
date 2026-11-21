@@ -79,7 +79,11 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   }
 
   Future<List<PetNewsItem>> _loadPetNewsUnguarded() async {
-    await PetDemoStore.instance.ensureHydrated();
+    // The pet list only orders the cards by species: it never holds the news up
+    // for more than a few seconds (or fails them).
+    try {
+      await PetDemoStore.instance.ensureHydrated().timeout(const Duration(seconds: 4));
+    } catch (_) {}
     final owned = PetDemoStore.instance.list().map((pet) => pet.species).toSet().toList();
 
     final nonGenericCategories = <String>[

@@ -1493,6 +1493,7 @@
   "memorialPageOnThisDay": "Foto di questo giorno",
   "memorialPageWalkPhotos": "Le foto di quella passeggiata",
   "memorialPageOpenWalk": "Rivedi il percorso",
+  "petInMemoriesWrite": "Questo animale è nei Ricordi, che sono di sola lettura: non si possono aggiungere né modificare dati. Se l'hai spostato per errore, riportalo tra gli animali.",
   "memorialRestoreShortcut": "{sex, select, female{Spostata per errore? Riporta tra gli animali} other{Spostato per errore? Riporta tra gli animali}}",
   "@memorialRestoreShortcut": {
     "placeholders": {

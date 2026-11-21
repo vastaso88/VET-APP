@@ -2801,6 +2801,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get memorialPageOpenWalk => 'See the route again';
 
   @override
+  String get petInMemoriesWrite =>
+      'This animal is in Memories, which is read-only: nothing can be added or changed. If you moved it by mistake, bring it back to Pets.';
+
+  @override
   String memorialRestoreShortcut(String sex) {
     String _temp0 = intl.Intl.selectLogic(
       sex,

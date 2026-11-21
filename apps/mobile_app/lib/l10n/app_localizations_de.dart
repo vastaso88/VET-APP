@@ -2839,6 +2839,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get memorialPageOpenWalk => 'Route noch einmal ansehen';
 
   @override
+  String get petInMemoriesWrite =>
+      'Dieses Tier befindet sich unter Andenken, das nur gelesen werden kann: Es lässt sich nichts hinzufügen oder ändern. Wenn Sie es versehentlich verschoben haben, bringen Sie es zurück zu den Tieren.';
+
+  @override
   String memorialRestoreShortcut(String sex) {
     String _temp0 = intl.Intl.selectLogic(
       sex,

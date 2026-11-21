@@ -47,6 +47,13 @@ class LoadingAnimation extends StatelessWidget {
 class SplashAnimalTicker extends StatefulWidget {
   const SplashAnimalTicker({super.key});
 
+  /// How the animals are ordered for each ticker: shuffled. Tests replace it
+  /// with one that keeps the listed order.
+  static List<String> Function(List<String> animals) orderOf = _shuffled;
+
+  static List<String> _shuffled(List<String> animals) =>
+      List<String>.of(animals)..shuffle(math.Random());
+
   @override
   State<SplashAnimalTicker> createState() => _SplashAnimalTickerState();
 }
@@ -55,6 +62,10 @@ class _SplashAnimalTickerState extends State<SplashAnimalTicker>
     with SingleTickerProviderStateMixin {
   static const _slot = 56.0;
   static const _windowWidth = 4 * _slot;
+
+  /// The strip's order, drawn once per ticker: it does not always start with
+  /// the dog and the cat.
+  late final List<String> _order = SplashAnimalTicker.orderOf(splashAnimals);
 
   late final AnimationController _controller = AnimationController(
     vsync: this,
@@ -115,7 +126,7 @@ class _SplashAnimalTickerState extends State<SplashAnimalTicker>
       top: 8 + bob,
       width: _slot,
       child: Text(
-        splashAnimals[index],
+        _order[index],
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 34),
       ),

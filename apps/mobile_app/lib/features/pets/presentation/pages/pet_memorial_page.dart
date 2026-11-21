@@ -154,6 +154,9 @@ class _PetMemorialPageState extends State<PetMemorialPage> {
     } on PetLimitBlocksRestore catch (blocked) {
       // The plan has no free place: the pet stays in Ricordi, nothing is lost.
       if (mounted) await showMemorialRestoreBlocked(context, _pet.name, blocked);
+    } on PetSyncException catch (refused) {
+      // The server did not take it: the pet is still in Ricordi, and this says why.
+      messenger.showSnackBar(SnackBar(content: Text(refused.message)));
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text(l10n.memorialSaveFailed)));
     }
@@ -271,17 +274,48 @@ class _PetMemorialPageState extends State<PetMemorialPage> {
                 dateLine: _dateLine(context),
                 onChangeDate: _busy ? null : _changeLossDate,
               ),
-              // Easy to find, so a move made by mistake (or out of curiosity)
-              // is undone without hunting for it.
-              Center(
-                child: TextButton.icon(
-                  key: const ValueKey('memorial-restore'),
-                  onPressed: _busy ? null : _restore,
-                  icon: const Icon(Icons.undo_rounded, size: 18),
-                  label: Text(
-                    l10n.memorialRestoreShortcut(_sexKey(_pet)),
-                    textAlign: TextAlign.center,
-                  ),
+              // Says plainly that this page is read-only, with the way back right
+              // under it: a move made by mistake (or out of curiosity) is undone
+              // without hunting for it.
+              Container(
+                key: const ValueKey('memorial-read-only-notice'),
+                margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppRadii.large),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.lock_outline_rounded, size: 20, color: AppColors.mutedText),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            l10n.memorialReadOnlyNote(_pet.name),
+                            style: AppTextStyles.bodySmall,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.tonalIcon(
+                        key: const ValueKey('memorial-restore'),
+                        onPressed: _busy ? null : _restore,
+                        icon: const Icon(Icons.undo_rounded, size: 18),
+                        label: Text(
+                          l10n.memorialRestoreShortcut(_sexKey(_pet)),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               if (widget.focus != null && !loading) ...[
@@ -346,11 +380,6 @@ class _PetMemorialPageState extends State<PetMemorialPage> {
                 icon: Icons.badge_outlined,
                 label: l10n.memorialPageProfile,
                 onTap: () => _open(PetDataPage(petId: _pet.id, initialPet: _pet)),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                l10n.memorialReadOnlyNote(_pet.name),
-                style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
               ),
               if ((_pet.microchipNumber ?? '').isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.lg),

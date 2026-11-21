@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 
 
-import '../../../../app/splash/loading_animation.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -166,7 +165,7 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
             const SizedBox(height: AppSpacing.md),
             Expanded(
               child: _loading
-                  ? Center(child: LoadingAnimation(label: context.l10n.petNewsLoading))
+                  ? Center(child: PetLoader(label: context.l10n.petNewsLoading))
                   : RefreshIndicator(
                       onRefresh: _refresh,
                       child: _shown.isEmpty

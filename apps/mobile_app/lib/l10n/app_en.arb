@@ -1493,6 +1493,7 @@
   "memorialPageOnThisDay": "Photos from this day",
   "memorialPageWalkPhotos": "Photos from that walk",
   "memorialPageOpenWalk": "See the route again",
+  "petInMemoriesWrite": "This animal is in Memories, which is read-only: nothing can be added or changed. If you moved it by mistake, bring it back to Pets.",
   "memorialRestoreShortcut": "{sex, select, other{Moved by mistake? Bring back to Pets}}",
   "@memorialRestoreShortcut": {
     "placeholders": {

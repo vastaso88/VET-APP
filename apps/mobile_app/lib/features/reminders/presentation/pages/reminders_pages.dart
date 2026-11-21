@@ -1,3 +1,4 @@
+import '../../../../shared/widgets/pet_loader.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -2096,9 +2097,8 @@ class _Card extends StatelessWidget {
           Text(body, style: AppTextStyles.bodySmall),
           const SizedBox(height: AppSpacing.xl),
           if (loading) ...[
-            const _Skeleton(width: double.infinity),
-            const SizedBox(height: AppSpacing.sm),
-            const _Skeleton(width: 180),
+            // The spinning animal, like everywhere else something loads.
+            const Center(child: PetLoader()),
           ] else ...[
             SizedBox(
               width: double.infinity,
@@ -2109,24 +2109,6 @@ class _Card extends StatelessWidget {
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-class _Skeleton extends StatelessWidget {
-  const _Skeleton({required this.width});
-
-  final double width;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: 16,
-      decoration: BoxDecoration(
-        color: AppColors.secondarySoft,
-        borderRadius: BorderRadius.circular(999),
       ),
     );
   }

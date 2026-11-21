@@ -1,3 +1,4 @@
+import '../features/pet_news/data/pet_news_disk_cache.dart';
 import '../shared/widgets/short_notice.dart';
 import 'dart:async';
 
@@ -109,6 +110,7 @@ Future<void> bootstrap() async {
           unawaited(OwnerJsonCache.clearAll());
           unawaited(RouteRestoration.instance.forget());
           unawaited(ShortNoticeStore.instance.clear());
+          unawaited(const PetNewsDiskCache().clear());
           unawaited(CrashReporting.instance.onSignedOut());
           // Everything else the previous account left on this device
           // (security audit 2026-10-26): home address and last position,

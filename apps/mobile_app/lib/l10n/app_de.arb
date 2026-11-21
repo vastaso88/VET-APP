@@ -1493,6 +1493,7 @@
   "memorialPageOnThisDay": "Fotos von diesem Tag",
   "memorialPageWalkPhotos": "Fotos von diesem Spaziergang",
   "memorialPageOpenWalk": "Route noch einmal ansehen",
+  "petInMemoriesWrite": "Dieses Tier befindet sich unter Andenken, das nur gelesen werden kann: Es lässt sich nichts hinzufügen oder ändern. Wenn Sie es versehentlich verschoben haben, bringen Sie es zurück zu den Tieren.",
   "memorialRestoreShortcut": "{sex, select, other{Versehentlich verschoben? Zurück zu den Tieren}}",
   "@memorialRestoreShortcut": {
     "placeholders": {

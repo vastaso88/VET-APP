@@ -4802,6 +4802,12 @@ abstract class AppLocalizations {
   /// **'Rivedi il percorso'**
   String get memorialPageOpenWalk;
 
+  /// No description provided for @petInMemoriesWrite.
+  ///
+  /// In it, this message translates to:
+  /// **'Questo animale è nei Ricordi, che sono di sola lettura: non si possono aggiungere né modificare dati. Se l\'hai spostato per errore, riportalo tra gli animali.'**
+  String get petInMemoriesWrite;
+
   /// No description provided for @memorialRestoreShortcut.
   ///
   /// In it, this message translates to:

@@ -92,6 +92,8 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
     'unsupported_attachment_type',
     'pdf_too_many_pages',
     'pdf_unreadable',
+    // A pet in Ricordi takes nothing new: no "save only here" either.
+    'pet_in_memories',
   };
 
   @override

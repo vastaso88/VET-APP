@@ -340,6 +340,18 @@ class PetDemoStore {
         _saveToCache();
         return _SaveOutcome.refusedByPlan;
       }
+      if (revertOnPlanLimit != null) {
+        // A move to / return from Ricordi the server did not take, for any other
+        // reason (no plan, the pet is in Ricordi, no connection): it is undone
+        // here too, so the screen never says "done" for something that is not,
+        // and the real reason reaches the owner.
+        _putLocal(revertOnPlanLimit);
+        _unsynced.remove(pet.id);
+        changes.value++;
+        _saveToCache();
+        if (refusal != null) applyPlanRefusal(refusal);
+        throw PetSyncException(refusal?.message ?? appL10n.memorialSaveFailed);
+      }
       // Trial over / pet limit reached: the paywall or the limit message
       // instead of a silent "not synced" flag (the pet stays flagged too).
       handlePlanRefusal(error, showMessage: true);

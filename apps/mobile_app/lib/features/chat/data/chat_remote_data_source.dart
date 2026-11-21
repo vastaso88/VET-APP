@@ -654,9 +654,11 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
     if (refusal == null) return null;
     applyPlanRefusal(refusal);
     return AppNetworkError(
-      code: refusal.kind == PlanRefusalKind.subscriptionRequired
-          ? 'subscription_required'
-          : 'plan_limit_reached',
+      code: switch (refusal.kind) {
+        PlanRefusalKind.subscriptionRequired => 'subscription_required',
+        PlanRefusalKind.planLimitReached => 'plan_limit_reached',
+        PlanRefusalKind.petInMemories => 'pet_in_memories',
+      },
       message: refusal.message,
     );
   }

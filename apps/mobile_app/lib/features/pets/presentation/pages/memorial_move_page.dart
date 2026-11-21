@@ -8,6 +8,7 @@ import '../../../../l10n/date_formats.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../billing/data/billing_demo_store.dart';
 import '../../application/memorial_service.dart';
+import '../../data/pet_demo_store.dart';
 import '../../data/memorial_moments.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
@@ -108,6 +109,11 @@ class _MemorialMovePageState extends State<MemorialMovePage> {
       setState(() => _saving = false);
       await showMemorialMoveBlocked(context, widget.pet.name, blocked);
       if (mounted) Navigator.of(context).pop();
+    } on PetSyncException catch (refused) {
+      // The server did not take the move: the pet stays among the active ones.
+      if (!mounted) return;
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(refused.message)));
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
