@@ -660,3 +660,16 @@ def test_second_agency_blocked_the_same_day_stops_the_whole_umbrella(tmp_path: P
         third.get("https://www.eea.europa.eu/x")
     assert opener.seen == []
     assert third.is_stopped("www.nidirect.gov.uk") is None  # altri suffissi non toccati
+
+
+def test_topics_are_optional_validated_and_counted(tmp_path: Path) -> None:
+    store = S.Store(tmp_path / "f.json")
+    store.add(good(argomenti=["gatto-lettiera", "gatto-lettiera-nuova"]))
+    store.add(good(id="altra", argomenti=["gatto-lettiera"]))
+    store.add(good(id="senza"))  # il campo è facoltativo
+    assert store.topic_coverage() == {"gatto-lettiera": 2, "gatto-lettiera-nuova": 1}
+    with pytest.raises(S.SourceError, match="argomenti"):
+        store.add(good(id="male", argomenti=["", "ok"]))
+    assert S.page_doc(good(argomenti=["x"]))["argomenti"] == ["x"]
+    store.discard("altra", "non adatta")
+    assert store.topic_coverage()["gatto-lettiera"] == 1  # le scartate non contano

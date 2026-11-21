@@ -6,6 +6,7 @@
   python -m scripts.sources.cli coverage                  fonti in uso per casella
   python -m scripts.sources.cli scarta <id> <motivo>      fonte letta e non adatta
   python -m scripts.sources.cli controlla [--da ISO]      distanza minima per host nel registro
+  python -m scripts.sources.cli coverage-argomenti [--elenco f.json]  fonti per argomento
   python -m scripts.sources.cli hosts                     enti con licenza e host fermati
   python -m scripts.sources.cli source <file.json>        propone fonti (prova dal registro)
 
@@ -196,6 +197,26 @@ def main(argv: list[str]) -> None:
                 "FERMATI (nessuna richiesta):",
                 ", ".join(sorted(json.loads(stop.read_text("utf-8")))),
             )
+    elif cmd == "coverage-argomenti":
+        counts = Store(DATA / "fonti.json").topic_coverage()
+        wanted = _opt(rest, "--elenco")
+        if wanted:  # un file con una lista di identificativi di argomenti
+            ids = json.loads(Path(wanted).read_text("utf-8"))
+            ids = [x["id"] if isinstance(x, dict) else x for x in ids]
+            poor = [i for i in ids if counts.get(i, 0) < 3]
+            print(
+                json.dumps(
+                    {
+                        "argomenti": len(ids),
+                        "con_3_o_piu": len(ids) - len(poor),
+                        "da_riempire": poor,
+                    },
+                    ensure_ascii=False,
+                    indent=1,
+                )
+            )
+        else:
+            print(json.dumps(counts, ensure_ascii=False, indent=1, sort_keys=True))
     elif cmd == "coverage":
         print(json.dumps(Store(DATA / "fonti.json").coverage(), indent=1, sort_keys=True))
     else:

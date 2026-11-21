@@ -101,6 +101,9 @@ def validate(src: dict[str, Any]) -> None:
         raise SourceError(f"stato sconosciuto: {src['stato']}")
     if not set(src["specie"]) <= set(SPECIES) or not set(src["temi"]) <= set(THEMES):
         raise SourceError("codici di specie o tema non validi (S01-S12, T01-T12)")
+    topics = src.get("argomenti", [])
+    if not isinstance(topics, list) or not all(isinstance(x, str) and x.strip() for x in topics):
+        raise SourceError("argomenti: lista di identificativi non vuoti")
 
 
 @dataclass
@@ -187,6 +190,16 @@ class Store:
             and s.get("prossimo_controllo", "9999") <= today.isoformat()
         ]
 
+    def topic_coverage(self) -> dict[str, int]:
+        """Fonti verdi in uso per argomento (identificativi dell'elenco degli argomenti comuni)."""
+        counts: dict[str, int] = {}
+        for src in self.load().values():
+            if src["stato"] != "in_uso" or src["classe"] not in ("V", "VR"):
+                continue
+            for topic in src.get("argomenti", []):
+                counts[topic] = counts.get(topic, 0) + 1
+        return counts
+
     def coverage(self) -> dict[str, int]:
         """Fonti in uso per casella `Sxx-Tyy` (solo verdi, né rosse né non approvate)."""
         counts: dict[str, int] = {}
@@ -223,6 +236,7 @@ def page_doc(src: dict[str, Any]) -> dict[str, Any]:
         "notte",
         "attribuzione",
         "avvertenza",
+        "argomenti",
     )
     doc = {k: src[k] for k in keys if k in src}
     doc["visto"] = bool(src.get("visto"))
