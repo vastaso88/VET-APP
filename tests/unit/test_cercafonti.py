@@ -622,3 +622,41 @@ def test_attribution_line_depends_on_host_and_kind_of_text() -> None:
     assert P.attribution_for(ccby, "ECDC", "https://www.ecdc.europa.eu/x", "d").startswith(
         "ECDC, CC BY"
     )
+
+
+def test_umbrella_suffix_list_is_closed() -> None:
+    expected = {
+        "co.uk", "org.uk", "gov.uk", "ac.uk", "com.au", "gov.au", "org.au", "edu.au", "govt.nz",
+        "co.nz", "gov.it", "gv.at", "co.at", "gob.es", "com.es", "europa.eu",
+    }  # fmt: skip
+    assert F.UMBRELLA_SUFFIXES == expected  # cambiare l'elenco richiede il parere della Normativa
+    assert F.umbrella_of("www.ecdc.europa.eu") == "europa.eu"
+    assert F.umbrella_of("www.nidirect.gov.uk") == "gov.uk"
+    assert F.umbrella_of("www.usda.gov") == ""
+
+
+def _blocked_fetcher(tmp_path: Path, host: str) -> F.Fetcher:
+    table = {f"https://{host}/robots.txt": (404, ""), f"https://{host}/p": (403, "no")}
+    fetcher, _, _ = make(tmp_path, table)
+    with pytest.raises(F.Blocked):
+        fetcher.get(f"https://{host}/p")
+    return fetcher
+
+
+def test_one_block_under_an_umbrella_stops_only_that_agency(tmp_path: Path) -> None:
+    _blocked_fetcher(tmp_path, "www.ecdc.europa.eu")
+    other, opener, _ = make(tmp_path, {"https://www.efsa.europa.eu/robots.txt": (404, "")})
+    assert other.is_stopped("www.efsa.europa.eu") is None  # un altro ente: resta aperto
+    assert other.is_stopped("sub.ecdc.europa.eu")  # stesso ente: fermo
+    assert other.is_stopped("www.ecdc.europa.eu")
+
+
+def test_second_agency_blocked_the_same_day_stops_the_whole_umbrella(tmp_path: Path) -> None:
+    _blocked_fetcher(tmp_path, "www.ecdc.europa.eu")
+    second = _blocked_fetcher(tmp_path, "www.efsa.europa.eu")
+    assert second.is_stopped("www.anything.europa.eu")  # protezione condivisa
+    third, opener, _ = make(tmp_path, {})
+    with pytest.raises(F.Blocked, match="suffisso europa.eu"):
+        third.get("https://www.eea.europa.eu/x")
+    assert opener.seen == []
+    assert third.is_stopped("www.nidirect.gov.uk") is None  # altri suffissi non toccati

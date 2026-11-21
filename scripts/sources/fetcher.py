@@ -145,8 +145,11 @@ def main_text(host: str, raw: str) -> str | None:
     return None
 
 
-# Suffissi a due livelli dei Paesi che usiamo: «gov.uk» non è un dominio registrabile.
-_TWO_LEVEL = {
+# Suffissi «ombrello»: sotto ognuno ci sono enti diversi con server diversi (gov.uk, europa.eu...).
+# Un 403, 429 o sfida ferma quell'host e i suoi sottodomini; se un SECONDO ente sotto lo stesso
+# suffisso dà un blocco nello stesso giorno, si ferma tutto il suffisso. Elenco CHIUSO: ogni
+# modifica richiede il parere della Normativa e l'aggiornamento del test.
+UMBRELLA_SUFFIXES = {
     "co.uk", "org.uk", "gov.uk", "ac.uk", "com.au", "gov.au", "org.au", "edu.au", "govt.nz",
     "co.nz", "gov.it", "gv.at", "co.at", "gob.es", "com.es", "europa.eu",
 }  # fmt: skip
@@ -155,9 +158,15 @@ _TWO_LEVEL = {
 def registrable_domain(host: str) -> str:
     """Il dominio registrabile (es. «usda.gov» per «www.aphis.usda.gov»), approssimato."""
     labels = host.lower().split(":")[0].split(".")
-    if len(labels) >= 3 and ".".join(labels[-2:]) in _TWO_LEVEL:
+    if len(labels) >= 3 and ".".join(labels[-2:]) in UMBRELLA_SUFFIXES:
         return ".".join(labels[-3:])
     return ".".join(labels[-2:])
+
+
+def umbrella_of(host: str) -> str:
+    """Il suffisso ombrello dell'host («europa.eu» per «www.ecdc.europa.eu»), o stringa vuota."""
+    host = host.lower().split(":")[0]
+    return next((u for u in sorted(UMBRELLA_SUFFIXES) if host.endswith("." + u)), "")
 
 
 def decode_body(body: bytes, ctype: str) -> str:
@@ -265,6 +274,20 @@ class Fetcher:
     def _stop_host(self, host: str, reason: str) -> None:
         self._stopped[host] = f"{now_iso()} {reason}"
         self._merge_file(self.stop_path, {host: self._stopped[host]})
+        umbrella = umbrella_of(host)
+        if umbrella:
+            today = now_iso()[:10]
+            others = {
+                registrable_domain(other)
+                for other, when in self._stopped.items()
+                if not other.startswith("*.")
+                and other.endswith("." + umbrella)
+                and when.startswith(today)
+            }
+            if len(others) >= 2:
+                key = f"*.{umbrella}"
+                self._stopped[key] = f"{now_iso()} secondo ente fermato oggi sotto {umbrella}"
+                self._merge_file(self.stop_path, {key: self._stopped[key]})
 
     def is_stopped(self, host: str) -> str | None:
         """Interruttore condiviso: letto dal file prima di OGNI richiesta, per host e dominio."""
@@ -275,6 +298,9 @@ class Fetcher:
                 pass
         if host in self._stopped:
             return self._stopped[host]
+        for key, reason in self._stopped.items():
+            if key.startswith("*.") and host.endswith(key[1:]):
+                return f"{reason} (suffisso {key[2:]} fermato)"
         domain = registrable_domain(host)
         for stopped_host, reason in self._stopped.items():
             if registrable_domain(stopped_host) == domain:
