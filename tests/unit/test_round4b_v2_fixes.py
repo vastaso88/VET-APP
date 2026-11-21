@@ -288,7 +288,7 @@ def test_a_dog_that_cannot_get_up_is_not_the_owner_in_distress() -> None:
     assert expresses_hopelessness("I can't even get up in the morning")
 
 
-def test_an_owner_of_unknown_country_gets_no_number_in_the_self_harm_reply() -> None:
+def test_the_self_harm_reply_has_no_number_in_german() -> None:
     llm = RecordingLLMClient()
     result = _orchestrator(llm, v2=False).answer(
         ChatOrchestratorInput(
@@ -300,7 +300,7 @@ def test_an_owner_of_unknown_country_gets_no_number_in_the_self_harm_reply() -> 
     )
     assert result.model == "self-harm-guard"
     assert not any(c.isdigit() for c in result.answer)
-    assert "Notruf" in result.answer
+    assert "Rettungsdienst" in result.answer  # the generic sentence (owner, 21/11/2026)
 
 
 # --- round 4d (21/11) -----------------------------------------------------------------------

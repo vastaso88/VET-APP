@@ -1326,9 +1326,9 @@ def mentions_a_death(message: str) -> bool:
 
 def expresses_hopelessness(message: str) -> bool:
     """ "Niente ha più senso, nemmeno alzarmi": taken seriously, without a
-    diagnosis; a fixed opening line points to the doctor or a listening
-    service (Telefono Amico Italia, number checked on its own site), then
-    the model goes on about the animal. Words about ending one's life go
+    diagnosis; a fixed opening line points, generically and with no number,
+    to the emergency services or a listening service of their country (owner's
+    decision, 21/11/2026), then the model goes on about the animal. Words about ending one's life go
     to ``expresses_self_harm`` instead, which has no model at all."""
     return bool(_HOPELESSNESS.search(normalize_for_matching(message)))
 
@@ -1595,58 +1595,58 @@ QUOTA_TEXTS: dict[str, str] = {
 
 SELF_HARM_TEXTS: dict[str, str] = {
     "it": (
-        "Mi dispiace davvero che tu stia così male, e hai fatto bene a scriverlo. Rivolgiti "
-        "subito ai servizi di emergenza o a un servizio di ascolto del tuo Paese: quello che "
-        "senti merita persone vere, pronte ad ascoltarti. Io posso parlarti del tuo animale; "
-        "quando vuoi, io resto qui."
+        "Mi dispiace davvero che tu stia così male, e hai fatto bene a scriverlo. Se stai "
+        "male o sei in pericolo, rivolgiti subito ai servizi di emergenza o a un servizio di "
+        "ascolto del tuo Paese. Io posso parlarti del tuo animale; quando vuoi, io resto qui."
     ),
     "en": (
-        "I am truly sorry you feel this bad, and you did the right thing by writing it. Please "
-        "reach out right away to the emergency services or a helpline in your country: "
-        "what you feel deserves real people, ready to listen. I can talk with you about your "
-        "animal; I am here whenever you want."
+        "I am truly sorry you feel this bad, and you did the right thing writing it. If you "
+        "are unwell or in danger, contact the emergency services or a listening service in "
+        "your country straight away. I can talk with you about your animal; I am here "
+        "whenever you want."
     ),
     "es": (
-        "Siento de verdad que te encuentres tan mal, e hiciste bien en escribirlo. Acude "
-        "enseguida a los servicios de emergencia o a una línea de ayuda de tu país: lo que "
-        "sientes merece personas reales, dispuestas a escucharte. Puedo hablar contigo de tu "
-        "animal; aquí sigo cuando quieras."
+        "Siento de verdad que te encuentres tan mal, e hiciste bien en escribirlo. Si te "
+        "encuentras mal o estás en peligro, acude de inmediato a los servicios de emergencia "
+        "o a un servicio de escucha de tu país. Puedo hablar contigo de tu animal; aquí sigo "
+        "cuando quieras."
     ),
     "de": (
         "Es tut mir wirklich leid, dass es Ihnen so schlecht geht, und es war richtig, das zu "
-        "schreiben. Wenden Sie sich bitte sofort an den Notruf oder an eine Beratungsstelle in "
-        "Ihrem Land: Was Sie fühlen, verdient echte Menschen, die zuhören. Ich kann mit Ihnen "
-        "über Ihr Tier sprechen; ich bin da, wann immer Sie möchten."
+        "schreiben. Wenn es Ihnen schlecht geht oder Sie in Gefahr sind, wenden Sie sich "
+        "sofort an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Ich kann "
+        "mit Ihnen über Ihr Tier sprechen; ich bin da, wann immer Sie möchten."
     ),
     "fr": (
         "Je suis vraiment désolé que vous alliez si mal, et vous avez bien fait de l'écrire. "
-        "Adressez-vous tout de suite aux services d'urgence ou à un service d'écoute de votre "
-        "pays : ce que vous ressentez mérite de vraies personnes, prêtes à écouter. Je peux "
-        "vous parler de votre animal ; je reste là quand vous voulez."
+        "Si vous allez mal ou si vous êtes en danger, adressez-vous immédiatement aux "
+        "services d'urgence ou à un service d'écoute de votre pays. Je peux vous parler de "
+        "votre animal ; je reste là quand vous voulez."
     ),
 }
 
 HOPELESSNESS_OPENING: dict[str, str] = {
     "it": (
-        "Quello che scrivi lo prendo sul serio: rivolgiti subito ai servizi di emergenza o a un "
-        "servizio di ascolto del tuo Paese, e non tenere questo peso per te. "
+        "Quello che scrivi lo prendo sul serio. Se stai male o sei in pericolo, rivolgiti "
+        "subito ai servizi di emergenza o a un servizio di ascolto del tuo Paese. "
     ),
     "en": (
-        "I take what you write seriously: please reach out right away to the emergency services or "
-        "a helpline in your country, and do not carry this weight on your own. "
+        "I take what you write seriously. If you are unwell or in danger, contact the "
+        "emergency services or a listening service in your country straight away. "
     ),
     "es": (
-        "Me tomo en serio lo que escribes: acude enseguida a los servicios de emergencia o a una "
-        "línea de ayuda de tu país, y no cargues con este peso sin apoyo. "
+        "Me tomo en serio lo que escribes. Si te encuentras mal o estás en peligro, acude de "
+        "inmediato a los servicios de emergencia o a un servicio de escucha de tu país. "
     ),
     "de": (
-        "Was Sie schreiben, nehme ich ernst: Wenden Sie sich bitte sofort an den Notruf oder an "
-        "eine Beratungsstelle in Ihrem Land, und bleiben Sie mit dieser Last nicht allein. "
+        "Was Sie schreiben, nehme ich ernst. Wenn es Ihnen schlecht geht oder Sie in Gefahr "
+        "sind, wenden Sie sich sofort an den Rettungsdienst oder an eine Beratungsstelle in "
+        "Ihrem Land. "
     ),
     "fr": (
-        "Je prends ce que vous écrivez au sérieux : adressez-vous tout de suite aux services "
-        "d'urgence ou à un service d'écoute de votre pays, et ne gardez pas ce poids pour "
-        "vous. "
+        "Je prends ce que vous écrivez au sérieux. Si vous allez mal ou si vous êtes en "
+        "danger, adressez-vous immédiatement aux services d'urgence ou à un service d'écoute "
+        "de votre pays. "
     ),
 }
 
