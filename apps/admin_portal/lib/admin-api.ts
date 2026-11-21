@@ -48,6 +48,41 @@ export async function getAdminUsers(q: string, page: number, country = ""): Prom
   }
 }
 
+export type AdminPet = {
+  id: string;
+  owner_id: string;
+  name: string;
+  species: string;
+  species_group: string | null;
+  breed: string | null;
+  is_active: boolean | null;
+  is_exotic: boolean | null;
+  is_memorial: boolean | null;
+};
+
+export type AdminPets = {
+  pets: AdminPet[];
+  total: number;
+  page: number;
+  page_size: number;
+};
+
+export async function getAdminPets(
+  q: string,
+  page: number,
+  species = "",
+  status = "",
+): Promise<AdminPets | null> {
+  await requireAdminSession();
+  const params = new URLSearchParams({ q, page: String(page), species, status });
+  try {
+    return await authenticatedAdminRequest<AdminPets>(`/admin/pets?${params}`);
+  } catch (error) {
+    if (error instanceof AdminApiError || error instanceof TypeError) return null;
+    throw error;
+  }
+}
+
 export type UserCase = { owner_id: string; queue: "marketplace" | "marketplace_messages"; id: string };
 export type UserActionInput = {
   action: "restrict_marketplace" | "lift_marketplace" | "revoke_devices";

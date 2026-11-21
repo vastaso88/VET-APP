@@ -7,6 +7,7 @@ import { logout } from "../app/login/actions";
 const sections = [
   { href: "/", label: "Overview" },
   { href: "/users", label: "Users" },
+  { href: "/pets", label: "Pets" },
   { href: "/moderation", label: "Moderation" },
   { href: "/ai-usage", label: "Consumi IA" },
   { href: "/data/geographic", label: "Geographic data" },

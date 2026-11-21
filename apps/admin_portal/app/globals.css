@@ -1017,3 +1017,30 @@ button, input, select { font: inherit; }
 @media (max-width: 1050px) {
   .usage-table .table-row { grid-template-columns: 1.4fr repeat(6, minmax(0, 1fr)); font-size: 12px; }
 }
+
+
+/* Overview drill-down links and the administrative pet directory. */
+.overview-link { display: block; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.overview-link:hover, .overview-kpi-link:hover {
+  border-color: #8dbbad;
+  box-shadow: 0 3px 12px rgba(31,111,92,.08);
+}
+.overview-link:hover { transform: translateY(-1px); }
+.overview-link:focus-visible, .overview-kpi-link:focus-visible,
+.overview-table-link:focus-visible, .operation-list a:focus-visible,
+.overview-panel-link h2 a:focus-visible {
+  outline: 3px solid #4d9b83;
+  outline-offset: 2px;
+}
+.mini-kpi-grid > .overview-kpi-link {
+  display: block; border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px; background: #fafbfc;
+}
+.overview-kpi-link span, .overview-kpi-link strong { display: block; }
+.overview-kpi-link span { color: var(--muted); font-size: 11px; font-weight: 700; }
+.overview-kpi-link strong { margin-top: 6px; font-size: 20px; }
+.overview-table-link:hover { background: var(--accent-soft); }
+.operation-list a { display: block; padding: 14px 0; border-top: 1px solid #edf0f2; }
+.operation-list a:hover { color: var(--accent); background: #f8fbf9; }
+.pets-table-scroll { width: 100%; overflow-x: auto; }
+.pets-table-scroll .users-table { min-width: 900px; }
