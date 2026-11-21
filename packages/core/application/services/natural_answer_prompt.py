@@ -561,8 +561,10 @@ _SEVERITY_RULE = (
 # when the reply contains a delay or a reassurance (delay_in_answer.py).
 SEVERITY_CHECK_PROMPT = (
     "You check a reply that a pet-care chat wrote to an animal owner, before the owner "
-    "reads it. You get the conversation so far, the owner's last message and the reply.\n"
-    "1. SERIOUS: from what the owner described, in this message or earlier in the "
+    "reads it. You get the conversation so far (and, when present, lines of other recent "
+    "conversations about the same animal), the owner's last message and the reply.\n"
+    "1. SERIOUS: from what the owner described, in this message, in the other recent "
+    "conversations about this animal or earlier in the "
     "conversation, does the animal need a vet NOW, not just today? Serious: difficulty or "
     "noisy breathing, open-mouth or fast breathing; straining with few drops or no urine; a "
     "hard or swollen belly with retching, drooling or vomiting; collapse, lying flat, cannot "
@@ -590,10 +592,15 @@ SEVERITY_CHECK_PROMPT = (
     "often just...') and any wait for a sign the owner has already described. Keep "
     "everything else: the same language, the same steps, the same length or shorter, the "
     "same form of address. Never add a phone number, a medicine, a dose, a diagnosis or a "
-    "fact the owner did not write.\n"
+    "fact the owner did not write. Delays also: 'if it still has fever', 'if he is still "
+    "eating less', 'before the move', 'it is reassuring that he still plays'.\n"
+    "3. OPEN CASE: if the other recent conversations describe a serious case that no vet "
+    "has seen yet and the reply does not speak of it at its start, the reply delays: "
+    "rewrite it by putting first one or two sentences on that case (call the vet or go now, "
+    "and why, in a few words), then the reply as it was.\n"
     'Answer ONLY with JSON: {"serious": true|false, "delays": true|false (the reply does '
-    'not say now at its start, or softens), "rewrite": "the full rewritten reply when '
-    'serious and delays are both true, else empty"}'
+    'not say now at its start, softens, or leaves an open case unsaid), "rewrite": "the '
+    'full rewritten reply when serious and delays are both true, else empty"}'
 )
 
 # Synthetic users round 4 (21/11/2026), v2 rules for every answer.
@@ -671,7 +678,16 @@ _MINOR_AND_NUMBERS_RULE = (
     "such as 112. When the writer is a minor (the profile says so, or they say their age or "
     "that they are a child), the first thing to do is to find an adult they trust (a family "
     "member, a neighbour). If no adult can be reached and the animal is very unwell, the "
-    "next step is a veterinary clinic."
+    "next step is a veterinary clinic. "
+    # Normativa doc 20 §20.13 point 4, approved by the owner on 21/11/2026 ("Sì alla frase
+    # sui soccorsi, senza numeri").
+    "When the writer or another person is hurt or in danger now (a bite that bleeds, a "
+    "fall, a fire or smoke, someone who cannot breathe), say kindly, in one sentence, to "
+    "call the emergency services or the emergency number of their country right away, "
+    "without any digits. Never for a general malaise or a health condition the owner only "
+    "mentions (blood pressure, not driving). The answer never leaves the animal out: that "
+    "sentence comes after the advice on the animal, or first when the person's danger is "
+    "serious."
 )
 
 

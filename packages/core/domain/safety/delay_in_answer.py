@@ -49,7 +49,12 @@ _DELAY = re.compile(
     r"\baujourd'?hui\b|\bce soir\b|\bdemain\b|\bdans les (?:prochains jours|prochaines heures)\b|"
     r"\bd'ici (?:demain|ce soir|\d+|deux|quelques)\b|\bdes que possible\b|"
     r"\bsi (?:ca|cela|il|elle) (?:s'aggrave|empire|ne s'ameliore pas|continue)\b|"
-    r"\bjusqu'a (?:" + _DAYS + r")\b"
+    r"\bjusqu'a (?:" + _DAYS + r")\b|"
+    # round 4c (21/11): a condition on a sign already known, an event far off
+    r"\bse (?:\w+ )?(?:ha|e|sta) ancora\b|\bif \w+ (?:is |has )?still\b|"
+    r"\bsi (?:sigue|todavia|aun)\b|\bwenn (?:er|sie|es) (?:noch|immer noch)\b|"
+    r"\bs'il (?:a|est) (?:encore|toujours)\b|\bavant (?:le|la) (?:demenagement|depart)\b|"
+    r"\bprima (?:del|della) (?:trasloco|partenza)\b|\bbefore the (?:move|trip)\b"
 )
 
 _REASSURANCE = re.compile(
@@ -62,7 +67,8 @@ _REASSURANCE = re.compile(
     r"\bgutes zeichen\b|\bgute nachricht\b|\b(?:oft|meist|meistens) (?:nur|harmlos)\b|"
     r"\bnicht schlimm\b|\bkeine sorge\b|"
     r"\bbon signe\b|\bbonne nouvelle\b|\b(?:souvent|generalement) (?:c'est|une|un|rien)\b|"
-    r"\brien de grave\b|\bne vous inquietez pas\b"
+    r"\brien de grave\b|\bne vous inquietez pas\b|"
+    r"\brassicurant\w*|\breassuring\b|\btranquilizador\w*|\bberuhigend\b|\brassurant\w*"
 )
 
 

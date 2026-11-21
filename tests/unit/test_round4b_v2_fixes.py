@@ -210,3 +210,65 @@ def test_a_cat_called_calin_is_not_a_hug_and_petit_is_not_a_child() -> None:
         assert not mentions_a_child_at_risk(message, "Câlin")
     assert mentions_child_handling("mon fils tire la queue du chat", "Câlin")
     assert mentions_child_handling("les petits font des câlins au chien", "Rex")
+
+
+# --- round 4c (21/11): an open case in another chat is checked even without a delay word -----
+
+
+def test_with_other_chats_the_severity_check_always_runs() -> None:
+    # round 4c #43: a reply on harnesses had no delay word, the trigger never fired
+    llm = RecordingLLMClient(
+        "Per un pastore tedesco che fa passeggiate lunghe conviene la pettorina.",
+        by_purpose={
+            "severity_check": json.dumps(
+                {
+                    "serious": True,
+                    "delays": True,
+                    "rewrite": "Prima di tutto: per i conati di stanotte chiama il veterinario "
+                    "adesso. Per le passeggiate conviene la pettorina.",
+                }
+            )
+        },
+    )
+    other = [ChatMessage(role="user", content="Argo ha conati a vuoto e la pancia dura")]
+    result = _ask(llm, "meglio pettorina o collare?", other_chats=other)
+
+    assert result.answer.startswith("Prima di tutto")
+    (request,) = llm.requests_for("severity_check")
+    assert "conati a vuoto" in request.user_prompt
+
+
+def test_without_other_chats_a_reply_with_no_delay_is_not_checked() -> None:
+    llm = RecordingLLMClient("Per un pastore tedesco conviene la pettorina.")
+    _ask(llm, "meglio pettorina o collare?")
+
+    assert llm.requests_for("severity_check") == []
+
+
+# --- Normativa §20.13 point 4 (owner's yes 21/11): emergency services, never digits ---------
+
+
+def test_every_v2_prompt_has_the_emergency_services_sentence_without_digits() -> None:
+    llm = RecordingLLMClient("Risposta di prova, concreta e breve.")
+    _ask(llm, "il cane ha morso mio figlio sulla mano e sanguina")
+    (request,) = llm.requests_for("answer")
+    system = request.system_prompt
+    assert "emergency number of their country" in system
+    assert "without any digits" in system
+    assert "Never for a general malaise" in system  # case #82 stays as it is
+    assert "never leaves the animal out" in system
+
+
+def test_the_emergency_sentence_without_digits_reaches_the_owner_and_digits_never_do() -> None:
+    sentence = "Chiama subito i soccorsi o il numero di emergenza del tuo Paese per tuo figlio."
+    body = (
+        " Poi separa il cane in un'altra stanza, senza sgridarlo, e scrivimi quando il bambino "
+        "è al sicuro: vediamo insieme cosa è successo e cosa fare con lui."
+    )
+    llm = RecordingLLMClient(sentence + body)
+    result = _ask(llm, "il cane ha morso mio figlio sulla mano e sanguina")
+    assert sentence in result.answer
+
+    llm = RecordingLLMClient("Chiama subito il 112 per tuo figlio." + body)
+    result = _ask(llm, "il cane ha morso mio figlio sulla mano e sanguina")
+    assert "112" not in result.answer

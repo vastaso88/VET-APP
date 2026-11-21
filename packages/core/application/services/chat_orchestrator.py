@@ -2019,7 +2019,10 @@ class ChatOrchestrator:
         ):
             return result
         response = self._severity_checked(
-            response, history_block=history_block, owner_message=owner_message
+            response,
+            history_block=history_block,
+            owner_message=owner_message,
+            open_case_elsewhere=bool(data.recent_other_chats),
         )
         follow_up = clean_answer_text(response.content).strip()
         if len(follow_up) < 40:
@@ -2027,13 +2030,20 @@ class ChatOrchestrator:
         return result.model_copy(update={"answer": f"{result.answer.rstrip()}\n\n{follow_up}"})
 
     def _severity_checked(
-        self, response: LLMResponse, *, history_block: str, owner_message: str
+        self,
+        response: LLMResponse,
+        *,
+        history_block: str,
+        owner_message: str,
+        open_case_elsewhere: bool = False,
     ) -> LLMResponse:
         """Plan 08, v2 (synthetic users round 4): a reply that puts off the visit or softens
         the case is read again; when the case is serious it is rewritten to "now". Not a
-        lane and not a fixed text: the same check for every answer, called only when the
-        reply contains a delay or a reassurance. Whatever goes wrong keeps the reply."""
-        if not delays_or_reassures(response.content):
+        lane and not a fixed text: the same check for every answer, called when the reply
+        contains a delay or a reassurance, and always when other recent chats about the
+        animal travel with the message (round 4c: a reply on harnesses ignored the open
+        case, with no delay word to catch). Whatever goes wrong keeps the reply."""
+        if not (open_case_elsewhere or delays_or_reassures(response.content)):
             return response
         try:
             checked = self._llm_client.generate(
@@ -4036,7 +4046,10 @@ class ChatOrchestrator:
         if self._answer_v2:
             # synthetic users round 4: "oggi stesso" in a serious case, read again
             response = self._severity_checked(
-                response, history_block=history_block, owner_message=anonymized_message
+                response,
+                history_block=history_block,
+                owner_message=anonymized_message,
+                open_case_elsewhere=bool(data.recent_other_chats),
             )
 
         validation = validate_answer(response.content, sources_count=len(sources))

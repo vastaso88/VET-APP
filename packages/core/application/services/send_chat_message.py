@@ -179,14 +179,15 @@ class SendChatMessageService:
     _MAX_OTHER_PETS = 12
     _OTHER_CHATS_WINDOW = timedelta(hours=72)
     _OTHER_CHATS_MAX = 2  # conversations
-    _OTHER_CHATS_LINES = 2  # last messages of each
+    _OTHER_CHATS_LINES = 2  # last messages of each, after the owner's first one
 
     def _recent_other_chat_lines(
         self, conversation: Conversation, record_allowed: bool, now: datetime
     ) -> list[ChatMessage]:
-        """The last lines of the pet's OTHER conversations of the last 72 hours, oldest
-        first: a serious case opened there stays known in a new chat. Same owner, same pet,
-        the same consent rule as the history; nothing beyond what the app already stores."""
+        """The owner's first line and the last two lines of the pet's OTHER conversations of
+        the last 72 hours, oldest first: a serious case opened there stays known in a new
+        chat. Same owner, same pet, the same consent rule as the history; nothing beyond
+        what the app already stores."""
         if not self._recent_other_chats:
             return []
         try:
@@ -208,11 +209,12 @@ class SendChatMessageService:
                 messages = history_without_record(
                     messages, conversation_had_consent=other.medical_record_consent is True
                 )
-            lines += [
-                m
-                for m in messages[-self._OTHER_CHATS_LINES :]
-                if now - m.created_at <= self._OTHER_CHATS_WINDOW
-            ]
+            # The owner's first message is where the case was described (round 4c: the lily
+            # was in it, the last two lines only spoke of a medicine); then the last lines.
+            first = next((m for m in messages if m.role == "user"), None)
+            chosen = [first] if first is not None else []
+            chosen += [m for m in messages[-self._OTHER_CHATS_LINES :] if m is not first]
+            lines += [m for m in chosen if now - m.created_at <= self._OTHER_CHATS_WINDOW]
         return lines
 
     def _other_pets(self, owner_id: str, pet_id: str) -> list[str]:
