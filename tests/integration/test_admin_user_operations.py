@@ -335,3 +335,18 @@ def test_expired_restriction_does_not_block_marketplace() -> None:
         owner_id="a", reason="spam", expires_at=datetime.now(UTC) - timedelta(seconds=1)
     )
     assert not restriction.active
+
+
+def test_action_tokens_are_signed_with_the_secret_value_not_its_accessor() -> None:
+    """The key is the configured secret string; a bound method's repr would
+    change whenever any setting changes and is not the intended key."""
+    import hashlib
+    import hmac
+
+    from apps.api.routes.admin_user_actions import _signature
+
+    secret = get_container().settings.reporter_pseudonym_secret()
+    expected = hmac.new(
+        f"admin-user-actions:{secret}".encode(), b"payload", hashlib.sha256
+    ).hexdigest()
+    assert _signature("payload") == expected

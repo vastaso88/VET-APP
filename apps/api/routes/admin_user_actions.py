@@ -61,7 +61,7 @@ class ExecuteRequest(BaseModel):
 
 
 def _signature(raw: str) -> str:
-    secret = get_container().settings.reporter_pseudonym_secret
+    secret = get_container().settings.reporter_pseudonym_secret()
     return hmac.new(
         f"admin-user-actions:{secret}".encode(), raw.encode(), hashlib.sha256
     ).hexdigest()
