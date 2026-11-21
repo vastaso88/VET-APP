@@ -9,6 +9,16 @@ from packages.shared.errors.base import ProviderError, SubscriptionRequiredError
 logger = logging.getLogger(__name__)
 
 
+def allowlist_email(user: object) -> str:
+    """The address to compare with DEVELOPER_EMAILS / BILLING_PLAN_OVERRIDES:
+    the user's e-mail only when the provider confirmed it, else "". Anyone can
+    sign up with a team address; an unconfirmed one must never unlock limits,
+    quotas or plans. (AuthenticatedUser always carries the flag.)"""
+    if not getattr(user, "email_verified", True):
+        return ""
+    return str(getattr(user, "email", "") or "").strip().lower()
+
+
 def owner_has_access() -> bool:
     """Whether the signed-in owner may use the whole app (trial open, a plan,
     the developer allowlist or the public test). Billing deployments reject

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from apps.api.dependencies.container import get_container
-from apps.api.dependencies.subscription import require_active_subscription
+from apps.api.dependencies.subscription import allowlist_email, require_active_subscription
 from apps.api.schemas.pets import (
     CreatePetProfileRequest,
     SetMedicalRecordConsentRequest,
@@ -46,7 +46,9 @@ def create_pet(request: CreatePetProfileRequest) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
     result = container.create_pet_profile_service().execute(
-        CreatePetProfileInput(owner_id=user.id, owner_email=user.email, **request.model_dump())
+        CreatePetProfileInput(
+            owner_id=user.id, owner_email=allowlist_email(user), **request.model_dump()
+        )
     )
     return result.model_dump()
 

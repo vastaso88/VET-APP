@@ -95,3 +95,35 @@ def test_select_plan_rejects_unknown_plan() -> None:
 
     with pytest.raises(ValidationError):
         service.execute(SelectPlanInput(owner_id="user-1", plan="gold"))
+
+
+def test_an_unconfirmed_developer_address_is_not_a_developer() -> None:
+    """Anyone can sign up with a team address: only a confirmed one counts."""
+    service = GetOrCreateSubscriptionService(InMemorySubscriptionRepository(), _DEVELOPER_EMAILS)
+    for verified, expected in ((False, False), (True, True), (None, True)):
+        result = service.execute(
+            GetOrCreateSubscriptionInput(
+                owner_id=f"dev-{verified}", email="dev1@example.com", email_verified=verified
+            )
+        )
+        assert result.is_developer is expected
+
+
+def test_allowlist_email_blanks_an_unconfirmed_address() -> None:
+    from types import SimpleNamespace
+
+    from apps.api.dependencies.subscription import allowlist_email
+
+    confirmed = SimpleNamespace(email=" Dev1@Example.com ", email_verified=True)
+    unconfirmed = SimpleNamespace(email="dev1@example.com", email_verified=False)
+    assert allowlist_email(confirmed) == "dev1@example.com"
+    assert allowlist_email(unconfirmed) == ""
+    assert "" not in _DEVELOPER_EMAILS
+
+
+def test_a_blank_developer_entry_is_dropped() -> None:
+    from packages.bootstrap.container import ApplicationContainer
+    from packages.shared.config.settings import Settings
+
+    settings = Settings().model_copy(update={"developer_emails": ["dev1@example.com", " ", ""]})
+    assert "" not in ApplicationContainer(settings).developer_emails
