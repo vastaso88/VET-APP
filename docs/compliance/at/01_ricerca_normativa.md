@@ -81,7 +81,6 @@ Premessa di fatto: titolare **italiano** (UE): nessun rappresentante ex art. 27 
 3. Avviso IA (doc 05) più severo: **nessuna ipotesi diagnostica**.
 4. Termini con Rücktritt FAGG, pulsante d'ordine e, dal 01/10/2026, Rücktrittsfunktion § 13a (doc 03).
 5. Mercatino senza animali vivi.
-6. Numeri utili (doc 06).
 
 ## 9. Incertezze
 
@@ -94,5 +93,5 @@ Premessa di fatto: titolare **italiano** (UE): nessun rappresentante ex art. 27 
 
 ## Fonti consultate (2026-10-14)
 
-Primarie: [TeleVetRL 24/05/2024](https://tieraerztekammer.at/fileadmin/daten/Oeffentlicher_Bereich/Kammer/Kundmachungen/2024/Richtlinie_Veterinaermedizinische_Telemedezin_Endversion.pdf) · [gesundheit.gv.at – VIZ](https://www.gesundheit.gv.at/service/notruf/vergiftungsinformationszentrale.html).
+Primarie: [TeleVetRL 24/05/2024](https://tieraerztekammer.at/fileadmin/daten/Oeffentlicher_Bereich/Kammer/Kundmachungen/2024/Richtlinie_Veterinaermedizinische_Telemedezin_Endversion.pdf).
 Secondarie: WKO (Impressum, FAGG, Widerrufsbutton, PrAG), IT-Recht-Kanzlei, CMS, Bird & Bird, Securiti, recordinglaw, Leupold (Uni Salzburg), Land NÖ, Salzburg24, Tierschutzombudsfrau.

@@ -19,6 +19,8 @@ Quokka vous aide à prendre soin de vos animaux : dossiers, rappels, promenades,
 
 **Quokka n'est pas un service vétérinaire.** L'assistant fournit des informations générales. Il ne pose pas de diagnostic, ne prescrit aucun médicament, n'indique aucune posologie et ne remplace pas un vétérinaire. Si votre animal semble malade ou si vous avez un doute, contactez votre cabinet vétérinaire. En cas d'urgence, rendez-vous immédiatement chez un vétérinaire ou dans une clinique vétérinaire. Voir l'avis sur l'IA et l'avis vétérinaire.
 
+**Quokka ne gère pas les urgences.** L'application et le chat ne sont pas un service d'urgence, de premiers secours, d'écoute ou de secours, ni pour les animaux ni pour les personnes : ils ne sont pas conçus pour évaluer si une situation est urgente, peuvent ne pas reconnaître une urgence et ne promettent aucune réponse dans un délai précis. Si vous pensez que votre animal est gravement malade, ou si vous ou une autre personne êtes en danger, n'utilisez pas l'application et n'attendez pas de réponse : adressez-vous immédiatement à un vétérinaire ou à une clinique vétérinaire, aux services d'urgence ou à un service d'écoute de votre pays. Si le chat ne signale pas d'urgence, cela ne veut pas dire qu'il n'y en a pas.
+
 ## 3. Votre compte
 
 Vous devez fournir des informations exactes et protéger vos identifiants. Vous êtes responsable de ce qui se passe avec votre compte. Prévenez-nous si vous pensez que quelqu'un d'autre l'a utilisé.

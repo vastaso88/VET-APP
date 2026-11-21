@@ -10,7 +10,7 @@ Data: 2026-10-14. Base normativa: **AI Act art. 50 par. 1** (in applicazione dal
 - Per prudenza si applica la linea francese (**più severa della Germania**): non basta evitare la parola «diagnostic». Il confine, secondo il CNOV francese (🟡), è tra **informazione generale** e **consiglio personalizzato fondato su un'anamnesi**; per il Belgio non l'ho verificato. I testi qui sotto parlano sempre di «informations générales» e rimandano al veterinario; **l'assistente non deve raccogliere un'anamnesi per arrivare a un consiglio o a un'ipotesi** (punto da decidere, doc 08 domanda 4).
 - Mai «diagnostic», «ordonnance», «prescrire», «téléconsultation», «vétérinaire virtuel», «remplace le vétérinaire» riferiti a ciò che l'app *fa*. Sì a «informations générales», «vous aide à vous préparer», «parlez-en à votre vétérinaire».
 - L'assistente non indica posologie né suggerisce medicinali e **non cita nomi commerciali di medicinali soggetti a prescrizione**.
-- Con segnali di emergenza il messaggio indirizza al veterinario *subito*, con i riferimenti del doc 06.
+- L'app non gestisce le urgenze (decisione del proprietario, 21 novembre 2026): nessun banner di emergenza, nessuna risposta d'urgenza e nessun numero di telefono; vale la clausola di [22](../22_clausola_quokka_non_gestisce_urgenze.md) §2, in versione breve nel blocco «Emergenze» dell'avviso.
 - Il titolo dell'etichetta riconosce la natura dell'IA in modo chiaro («Généré par IA»); la sola parola «assistant» non basta (linee guida art. 50, fonte secondaria, `de/01` §6).
 - Chiavi consigliate per l'ARB (prefisso `legalAi…`), una per frase.
 
@@ -50,15 +50,9 @@ Cette réponse a été rédigée par un système d'IA. Elle peut contenir des er
 Quokka fournit des informations générales, pas un avis vétérinaire. Pour toute question sur la santé de votre animal, parlez-en toujours à votre vétérinaire.
 ```
 
-## 4. Banner di emergenza (mostrato quando il triage rileva segnali gravi)
+## 4. Banner di emergenza (tolto il 21 novembre 2026)
 
-```
-Cela pourrait être une urgence.
-Contactez dès maintenant un vétérinaire. Si vous ne joignez pas votre cabinet, appelez le service de garde indiqué sur son répondeur ou rendez-vous dans la clinique vétérinaire d'urgence la plus proche.
-Si votre animal a pu avaler une substance toxique, appelez sans attendre votre vétérinaire ou le Centre Antipoisons : [070 245 245].
-```
-
-Nota: il **Centre Antipoisons belga 070 245 245** è attivo 24 ore su 24, tutti i giorni, e la chiamata è gratuita (🟡 rapporti annuali del centro e stampa); i rapporti 2022–2025 indicano che le chiamate per intossicazioni di animali sono in aumento, quindi il servizio accoglie i casi di animali. La riga è tra parentesi quadre perché **non ho potuto leggere la pagina ufficiale sugli animali** (poisoncentre.be/fr → 404): telefonare una volta per conferma prima della pubblicazione. Il centro non cura: consiglia e rimanda al veterinario. Se l'animale collassa, la priorità resta il veterinario d'urgenza. Il banner mostra i riferimenti del *paese impostato nell'app*.
+Tolto per decisione del proprietario: l'app non gestisce le urgenze, quindi non c'è un banner di emergenza e non c'è nessun numero di telefono. Vale la clausola «Quokka non gestisce le urgenze» ([22](../22_clausola_quokka_non_gestisce_urgenze.md) §2).
 
 ## 5. Avviso sui farmaci
 
@@ -96,7 +90,7 @@ Erreurs
 L'IA peut se tromper, être dépassée ou oublier quelque chose d'important. Vérifiez ce qu'elle vous dit auprès de votre vétérinaire, en particulier en cas de symptômes, d'alimentation, de médicaments ou de comportement qui s'aggrave.
 
 Urgences
-L'assistant n'est pas un service d'urgence. Si vous pensez que votre animal est en danger, contactez immédiatement un vétérinaire.
+Quokka ne gère pas les urgences : en cas d'urgence, adressez-vous immédiatement à un vétérinaire, aux services d'urgence ou à un service d'écoute de votre pays. N'attendez pas la réponse de l'application.
 
 Décisions vous concernant
 Nous n'utilisons pas l'assistant pour prendre des décisions qui produisent des effets juridiques à votre égard ou vous affectent de manière significative.
@@ -120,4 +114,3 @@ Questions ou préoccupations
 2. Verificare se la distinzione «informazione generale / consiglio personalizzato» vale anche in Belgio o se è solo francese.
 3. Confermare ruolo (fornitore) e testo definitivo dell'art. 50 AI Act; autorità belga competente.
 4. Verificare le schede dello store e le pratiche ingannevoli (Livre VI CDE).
-5. Confermare il numero e le modalità del Centre Antipoisons per i proprietari di animali.

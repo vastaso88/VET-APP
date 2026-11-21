@@ -8,8 +8,8 @@ Testi per gli utenti in inglese australiano. Base: `docs/compliance/01_ai_disclo
 
 1. **In Australia non c'è un obbligo di legge generale come l'art. 50 dell'AI Act.** Il badge IA resta per coerenza, per la guida OAIC sulla trasparenza e per le pratiche volontarie DISR. Le affermazioni sull'accuratezza devono essere vere (ACL, pratiche ingannevoli).
 2. **Quokka non è un veterinario.** Le leggi statali regolano i veterinari registrati; la diagnosi a distanza è un atto riservato (almeno in NSW). Quindi: informazioni generali, orientamento, mai diagnosi né prescrizione, mai dosaggi di farmaci su prescrizione per un animale specifico.
-3. **Emergenza → veterinario subito.** Nei sintomi gravi la chat dice «vai da un veterinario ora» prima di ogni altra cosa. Questo è il comportamento già descritto dal triage di sicurezza italiano (risposte rule-based, `ai_generated=False`).
-4. I numeri in questo testo (000, Animal Poisons Helpline) sono verificati nel file 06 con la data di consultazione. Se cambiano, aggiornare qui.
+3. **L'app non gestisce le urgenze** (decisione del proprietario, 21 novembre 2026): nessun banner di emergenza, nessuna risposta d'urgenza e nessun numero di telefono; vale la clausola di [22](../22_clausola_quokka_non_gestisce_urgenze.md) §2.
+4. Nessun numero di telefono in questi testi.
 
 ## 1. Etichetta breve sul messaggio (badge)
 
@@ -22,23 +22,19 @@ Testi per gli utenti in inglese australiano. Base: `docs/compliance/01_ai_disclo
 >
 > It can make mistakes, and its replies are always labelled as AI-generated. Use them as a starting point and check anything important with a registered veterinarian, especially if your pet seems unwell.
 >
-> **If it's an emergency, don't wait: call your nearest veterinary clinic or emergency hospital now.**
+> **Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a listening service in your country straight away. Do not wait for the app's reply.**
 
 ## 3. Nota sotto il campo chat (sempre visibile)
 
 > General information only. Not a vet. In an emergency, call a vet now.
 
-## 4. Quando la chat riconosce un'emergenza (risposta fissa, non generata da IA)
+## 4. Risposta d'emergenza (tolta il 21 novembre 2026)
 
-> This could be serious. Please **call a veterinarian or your nearest emergency veterinary clinic now**. Don't wait to see if it improves.
->
-> If your pet may have eaten something poisonous, call the **Animal Poisons Helpline on 1300 869 738** [confirm hours — see file 06] while you are on your way.
->
-> I can't diagnose or treat your pet, but I can help you note down what happened so you can tell the vet.
+Tolto per decisione del proprietario: l'app non gestisce le urgenze, quindi non c'è un banner di emergenza e non c'è nessun numero di telefono. Vale la clausola «Quokka non gestisce le urgenze» ([22](../22_clausola_quokka_non_gestisce_urgenze.md) §2).
 
 ## 5. Dosaggi e farmaci (risposta tipo)
 
-> I can't tell you what dose of a medicine to give. The right dose depends on your pet's weight, health and other medicines, and some human medicines are dangerous for pets. Please ask a registered veterinarian or a pharmacist who treats animals. If you have already given something, call a vet or the Animal Poisons Helpline on **1300 869 738** now.
+> I can't tell you what dose of a medicine to give. The right dose depends on your pet's weight, health and other medicines, and some human medicines are dangerous for pets. Please ask a registered veterinarian or a pharmacist who treats animals. If you have already given something, contact a vet now.
 
 *(Nota per la sessione Chat: è la traduzione in spirito del «dosage-safety-gate» italiano; il testo italiano ha una nota aperta sulla frase illogica. Non toccare codice qui.)*
 
@@ -52,7 +48,7 @@ Testi per gli utenti in inglese australiano. Base: `docs/compliance/01_ai_disclo
 >
 > **It can be wrong.** AI can give information that is incomplete, out of date or incorrect. Replies are labelled as AI-generated so you can tell.
 >
-> **Emergencies.** If your pet is collapsed, having trouble breathing, bleeding, in a seizure, has been in a hot car, bitten by a snake or tick-paralysed, or may have eaten something toxic: **contact a vet immediately.** Don't use the app to decide whether to wait.
+> **Emergencies.** Quokka does not handle emergencies. If your pet is collapsed, having trouble breathing, bleeding, in a seizure, has been in a hot car, bitten by a snake or tick-paralysed, or may have eaten something toxic: **contact a vet immediately.** Don't use the app to decide whether to wait.
 >
 > **Your health records.** If you allow it, the assistant can read your pet's recent records to give more accurate advice. You can withdraw that permission at any time.
 >

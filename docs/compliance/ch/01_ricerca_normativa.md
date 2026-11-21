@@ -86,7 +86,6 @@ Premessa di fatto: titolare **italiano** (UE), utenti in Svizzera → per la Svi
 4. Decidere recesso volontario (doc 03 §5).
 5. Avviso IA e disclaimer prudenti (doc 05).
 6. Mercatino senza animali vivi.
-7. Numeri utili (doc 06): Tox Info Suisse 145 per persone; per animali ❓.
 
 ## 10. Incertezze
 
@@ -102,4 +101,3 @@ Premessa di fatto: titolare **italiano** (UE), utenti in Svizzera → per la Svi
 
 Primarie: [EDÖB – Swiss-US DPF 15/08/2024](https://www.edoeb.admin.ch/en/15082024-new-swiss-us-data-privacy-framework) · [SECO – FAQ PBV](https://www.seco.admin.ch/de/faq-pbv).
 Secondarie: Onlinekommentar (art. 14, 15, 21, 60), foraus, activemind, recordinglaw, consentmanager, captain.legal, Handelsverband.swiss, law.ch, IT-Recht-Kanzlei, onlinemarktplatz, BLV, Swissmedic, SRF, Beobachter, Blick, netzwoche.
-Non raggiungibili: `toxinfo.ch/299_en` (404).

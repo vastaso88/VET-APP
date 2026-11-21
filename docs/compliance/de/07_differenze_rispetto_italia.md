@@ -44,11 +44,10 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; quelle con
 | Temperatura | °C | °C | Uguale |
 | Telefono | `+39 3xx xxx xxxx` | `+49 1xx xxxxxxx` (cellulare), `030 12345678` (fisso); prefisso nazionale 0 | Esempio fittizio: `030 1234567` (non verificato che il numero sia riservato a finzione ❓) |
 | Indirizzo | via, civico, CAP, città | **Straße + Hausnummer, PLZ (5 cifre), Ort** (`Musterstraße 1, 12345 Musterstadt`) | Campo «PLZ» invece di CAP; Bundesland opzionale |
-| Numero d'emergenza persone | 112 | 112 (polizia 110) | Non confondere con animali: doc 06 |
 | Veterinario | «veterinario» | «Tierarzt/Tierärztin», «Tierarztpraxis» | Usare forma neutra in UI se possibile |
 | Microchip | obbligatorio per i cani | obbligo di marcatura per cani non uniforme nei Länder; registro volontario (TASSO, FINDEFIX) (🟡/❓) | Contenuti informativi; non è un obbligo dell'app |
 | Passaporto animali | Passaporto europeo | Passaporto europeo (UE) | Uguale |
-| Autorità animali | ASL, Comune | Veterinäramt (Landkreis/kreisfreie Stadt) | Doc 06 |
+| Autorità animali | ASL, Comune | Veterinäramt (Landkreis/kreisfreie Stadt) | |
 | Razze | ENCI | VDH / FCI | Dati razze: non toccati |
 | Termini d'uso | «Termini di Servizio» | «Nutzungsbedingungen» (AGB) | Uguale concetto |
 | Politica privacy | «Informativa» | «Datenschutzerklärung» | |
@@ -58,8 +57,7 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; quelle con
 
 1. Voce «Impressum» nelle Impostazioni e nello store.
 2. Campo indirizzo: «PLZ» (5 cifre) e «Straße + Hausnummer».
-3. Numeri utili per paese (doc 06): niente numero «avvelenamenti animali» per la Germania.
-4. Consensi per `de-DE` (doc 04); lingua mostrata salvata.
-5. Etichette IA e disclaimer (doc 05).
-6. Pulsanti di ordine, disdetta e recesso sulla web app (doc 03 §5).
-7. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26); non è più una regola della Germania.
+3. Consensi per `de-DE` (doc 04); lingua mostrata salvata.
+4. Etichette IA e disclaimer (doc 05).
+5. Pulsanti di ordine, disdetta e recesso sulla web app (doc 03 §5).
+6. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26); non è più una regola della Germania.

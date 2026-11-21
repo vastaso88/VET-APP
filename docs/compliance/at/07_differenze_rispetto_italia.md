@@ -38,10 +38,9 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; ✅ = conf
 | Distanza / peso / temperatura | km, kg, °C | km, kg, °C | Uguale |
 | Telefono | `+39 3xx xxx xxxx` | `+43 6xx xxxxxxx` (cellulare), `01 xxxxxxx` (Wien) | Prefisso nazionale 0 |
 | Indirizzo | via, civico, CAP | **Straße + Hausnummer, PLZ (4 cifre), Ort** (`Musterstraße 1, 1010 Wien`) | **PLZ a 4 cifre**, non 5 come in DE: controllare le validazioni |
-| Numero d'emergenza persone | 112 | 112 (144 ambulanza, 133 polizia) | Non confondere con animali: doc 06 |
 | Veterinario | «veterinario» | «Tierarzt/Tierärztin», «Tierarztpraxis/Ordination» | |
 | Microchip / registro | obbligatorio per i cani | obbligatorio per cani e gatti da riproduzione; **Heimtierdatenbank**; castrazione gatti (🟡 [Gemeinde Velden](https://velden.gv.at/fileadmin/velden_am_woerther_see/Unterlagen_Kundmachungen__Ausschreibungen__etc/Interessantes_aus_dem_TschG_und_seinen_VO_.pdf)) | Contenuti informativi |
-| Autorità animali | ASL, Comune | Bezirkshauptmannschaft / Magistrat; Tierschutzombudsstelle del Land | Doc 06 |
+| Autorità animali | ASL, Comune | Bezirkshauptmannschaft / Magistrat; Tierschutzombudsstelle del Land | |
 | Razze | ENCI | ÖKV / FCI | Dati razze: non toccati |
 
 ## Cosa cambiare nell'app (indicativo)
@@ -49,5 +48,5 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; ✅ = conf
 1. «Impressum» nelle Impostazioni e nello store.
 2. Campo indirizzo: PLZ a 4 cifre.
 3. Termini «Rücktritt» (non «Widerruf») nelle etichette dei pulsanti austriaci.
-4. Consensi `de-AT` (doc 04), IA e disclaimer (doc 05), numeri utili (doc 06).
+4. Consensi `de-AT` (doc 04), IA e disclaimer (doc 05).
 5. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26).

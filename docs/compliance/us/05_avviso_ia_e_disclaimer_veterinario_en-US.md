@@ -19,7 +19,7 @@ Quokka's assistant is powered by artificial intelligence (AI). Here is what that
 
 4. Always see a veterinarian when it matters. Contact a veterinarian if your pet is sick, hurt, or just "not right," if symptoms last or get worse, before giving any medicine, supplement, or home remedy, and before changing food or treatment.
 
-5. Emergencies. If you think your pet may be in an emergency, don't wait for the assistant: call your veterinarian or the nearest 24-hour emergency animal hospital now. If your pet may have eaten something toxic, call an animal poison control service right away. Numbers are in the app under Emergency numbers.
+5. Emergencies. Quokka does not handle emergencies. If you think your pet may be in an emergency, don't wait for the assistant: call your veterinarian or the nearest 24-hour emergency animal hospital now. If your pet may have eaten something toxic, call an animal poison control service right away.
    Emergency signs can include trouble breathing, collapse, seizures, severe bleeding, a swollen or hard belly, repeated vomiting, inability to urinate, suspected poisoning, heatstroke, or serious injury. This list is not complete.
 
 6. Your information. What you type, upload, or record in the chat is sent to the AI provider to write the answer. Some personal details may be removed first, but not all. See the Privacy Policy. Your pet's health record is shared with the assistant only if you allow it.
@@ -33,9 +33,7 @@ Quokka's assistant is powered by artificial intelligence (AI). Here is what that
 |---|---|
 | Badge sulle risposte `ai_generated = true` | `AI-generated` |
 | Sotto il campo di scrittura della chat (sempre visibile) | `AI can make mistakes. Not veterinary advice. In an emergency, call a vet.` |
-| Prima apertura della chat (schermata singola) | `Meet your AI assistant. It gives general pet information and helps you decide what to do next. It's not a veterinarian and can't diagnose or prescribe. If your pet may be in an emergency, call a vet or poison control now.` — pulsanti: `Got it` / `See emergency numbers` |
-| Risposta di triage "urgente" (templata, `ai_generated = false`) | `This may be urgent. Please contact a veterinarian or an emergency animal hospital now. We can show you nearby clinics and emergency numbers.` |
-| Risposta di triage "possibile veleno" | `If your pet may have swallowed something harmful, call an animal poison control service right away — don't wait for symptoms. We can show you the numbers.` |
+| Prima apertura della chat (schermata singola) | `Meet your AI assistant. It gives general pet information and helps you decide what to do next. It's not a veterinarian and can't diagnose or prescribe. Quokka does not handle emergencies: in an emergency, contact a vet or the emergency services in your country straight away.` — pulsante: `Got it` |
 | Quando l'utente chiede una diagnosi | `I can't diagnose your pet. I can share general information and help you prepare questions for your vet. Would you like to describe what you've noticed?` |
 | Quando l'utente chiede un dosaggio | `I can't give you a dose for your pet. Please ask your veterinarian or pharmacist.` (verificare che il *dosage safety gate* esistente usi una frase coerente) |
 | Spiegazione di un referto | `This is general information about what this kind of test usually measures. It is not an interpretation of your pet's results. Please go over them with your vet.` |

@@ -16,7 +16,6 @@ Vale tutto `../ch/07` (nLPD, PFPDT senza potere di multa, DPF Swiss–US dal 15/
 | Mediatore | obbligatorio | servizio federale | non obbligatorio |
 | Telemedicina vet. | nessuna base legale (✅) | nessun quadro (❓) | Rx solo se si conosce l'animale (🟡) |
 | Annunci animali | privati non vendono cani/gatti online (✅) | regionale ❓ | TSchV / AMICUS 🟡 |
-| Numero avvelenamenti animali | CNITV / CAPAE | Centre Antipoisons 070 245 245 | **145** ❓ |
 
 ## Formati e linguaggio
 
@@ -31,7 +30,6 @@ Vale tutto `../ch/07` (nLPD, PFPDT senza potere di multa, DPF Swiss–US dal 15/
 | Distanza / peso / temperatura | km, kg, °C | km, kg, °C | Uguale |
 | Telefono | `+39 3xx xxx xxxx` | `+41 7x xxx xx xx` (cellulare), `0xx xxx xx xx` (fisso); prefisso nazionale 0 | Esempio fittizio non verificato ❓ |
 | Indirizzo | via, civico, CAP, città | **rue + numéro, NPA (4 cifre), localité** (`Rue Exemple 12, 1204 Genève`); **canton** con sigla | In Romandia «NPA» (numéro postal d'acheminement) al posto di «code postal»; campo «canton» opzionale |
-| Numero d'emergenza persone | 112 | 112 (144 ambulanza, 117 polizia, 145 Tox Info Suisse) | Non confondere con animali: doc 06 |
 | Veterinario | «veterinario» | «vétérinaire», «cabinet vétérinaire», «hôpital vétérinaire» | |
 | Microchip / registro | obbligatorio per i cani | **cani: chip e AMICUS**; gatti: ANIS (❓) | Contenuti informativi |
 | Autorità animali | ASL, Comune | **vétérinaire cantonal** (service vétérinaire cantonal) | |
@@ -44,6 +42,6 @@ Vale tutto `../ch/07` (nLPD, PFPDT senza potere di multa, DPF Swiss–US dal 15/
 ## Cosa cambiare nell'app (indicativo)
 
 1. Valuta CHF (formato fr-CH da decidere), campo «NPA» a 4 cifre, «canton» opzionale.
-2. Consensi `fr-CH` (doc 04), avviso IA (doc 05), numeri utili (doc 06; 145 solo dopo conferma).
+2. Consensi `fr-CH` (doc 04), avviso IA (doc 05).
 3. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26).
 4. Decidere se `fr-CH` si apre insieme a `de-CH` (domanda 1 in `08`).

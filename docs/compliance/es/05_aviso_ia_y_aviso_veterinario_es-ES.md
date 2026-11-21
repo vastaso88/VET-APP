@@ -9,7 +9,7 @@ Data: 2026-10-14. Base normativa: **AI Act art. 50 par. 1** (obbligo dal 02/08/2
 
 - Mai «diagnóstico», «diagnosticar», «recetar», «sustituye a su veterinario» riferiti a ciò che l'app *fa*. Sì a «información general», «le ayuda a prepararse», «consulte con su clínica veterinaria».
 - L'assistente non indica posologie né suggerisce farmaci e **non cita nomi commerciali di medicinali soggetti a prescrizione**. La prescrizione richiede esame clinico (RD 666/2023 art. 32.2).
-- Se ci sono segnali di emergenza il messaggio manda dal veterinario *subito*, con i riferimenti del doc 06.
+- L'app non gestisce le urgenze (decisione del proprietario, 21 novembre 2026): nessun banner di emergenza, nessuna risposta d'urgenza e nessun numero di telefono; vale la clausola di [22](../22_clausola_quokka_non_gestisce_urgenze.md) §2, in versione breve nel blocco «Emergenze» dell'avviso.
 - Chiavi consigliate per l'ARB: prefisso `legalAi…`, una per frase.
 - Il titolo dell'etichetta riconosce la natura IA: la sola parola «Asistente» non basta (linee guida art. 50, fonte secondaria).
 - Registro: «usted» (l'ARB della UI usa «tú»: decisione in doc 08).
@@ -50,15 +50,9 @@ Esta respuesta la ha redactado un sistema de IA. Puede contener errores.
 Quokka ofrece información general, no asesoramiento veterinario. Ante cualquier duda sobre la salud de su animal, consulte siempre a su clínica veterinaria.
 ```
 
-## 4. Banner di emergenza (mostrato quando il triage rileva segnali gravi)
+## 4. Banner di emergenza (tolto il 21 novembre 2026)
 
-```
-Esto podría ser una urgencia.
-Contacte ahora con un veterinario. Si no localiza a su clínica, busque un servicio de urgencias veterinarias o la clínica veterinaria abierta más cercana.
-Si su animal puede haber ingerido algo tóxico, llame de inmediato a su clínica veterinaria o a un servicio de urgencias veterinarias. También puede llamar al Servicio de Información Toxicológica, 91 562 04 20 (24 horas): orienta, pero no sustituye al veterinario.
-```
-
-Nota: il SIT (91 562 04 20) è un servizio pubblico del Ministerio de Justicia che, secondo la sua memoria 2020, riceve consultazioni su **intossicazioni di animali** (2.089 nel 2020, il 58,5% da privati) ✅ (doc 06). Rispondono medici/forensi; per animali l'orientamento è informativo: la frase «Si su animal puede haber ingerido algo tóxico…» deve restare. **Non** mostrare il numero come «servicio veterinario de urgencias». Se l'utente è fuori dalla Spagna il banner mostra i riferimenti del *paese impostato nell'app*. SEVEMUR non è incluso finché non verificato (doc 06).
+Tolto per decisione del proprietario: l'app non gestisce le urgenze, quindi non c'è un banner di emergenza e non c'è nessun numero di telefono. Vale la clausola «Quokka non gestisce le urgenze» ([22](../22_clausola_quokka_non_gestisce_urgenze.md) §2).
 
 ## 5. Avviso sui farmaci
 
@@ -96,7 +90,7 @@ Errores
 La IA puede equivocarse, estar desactualizada u omitir algo importante. Contraste lo que le diga con su clínica veterinaria, sobre todo si hay síntomas, alimentación, medicamentos o comportamientos que empeoran.
 
 Urgencias
-El asistente no es un servicio de urgencias. Si cree que su animal está en peligro, contacte de inmediato con un veterinario.
+Quokka no gestiona urgencias: ante una emergencia, acuda de inmediato a un veterinario, a los servicios de emergencia o a un servicio de escucha de su país. No espere la respuesta de la aplicación.
 
 Decisiones sobre usted
 No usamos el asistente para tomar decisiones que produzcan efectos jurídicos sobre usted o le afecten significativamente de modo similar.

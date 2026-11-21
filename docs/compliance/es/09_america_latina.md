@@ -26,10 +26,10 @@ Tre fatti comuni: (1) **Groq/USA** è un trasferimento internazionale anche qui:
 1. **Autorità e procedure.** Nessun «one-stop-shop» UE e nessun reclamo all'AEPD/Garante: serve indicare l'autorità locale e, in alcuni paesi, valutare **registrazione** delle banche dati (Colombia RNBD, Argentina AAIP) o la nomina di un referente locale (❓ Cile e Messico).
 2. **Consenso e dati sensibili.** In Colombia i dati sensibili (la salute dell'utente; quella dell'animale non lo è, ma i documenti caricati possono contenere dati dell'utente) richiedono consenso esplicito e opzionale; in Messico la nuova legge ha un regime proprio per i dati sensibili; in Cile e in Messico le nuove leggi sono recenti e le prassi non sono consolidate (🟡).
 3. **Diritto di recesso.** I termini sono più brevi (5–10 giorni) e, in Argentina, esiste un **pulsante** specifico: il pulsante «Desistir del contrato» di Spagna (doc 03 §5) non basta, serve la variante locale.
-4. **Veterinaria e farmaci.** Ogni paese ha il proprio ordine/legge di esercizio e le proprie regole su prescrizione, telemedicina e vendita di farmaci (non cercate qui ❓). La linea «nessuna diagnosi, nessun dosaggio, nessun Rx» (doc 05) è prudente, ma i numeri utili e i riferimenti a ordini/colegios vanno rifatti.
+4. **Veterinaria e farmaci.** Ogni paese ha il proprio ordine/legge di esercizio e le proprie regole su prescrizione, telemedicina e vendita di farmaci (non cercate qui ❓). La linea «nessuna diagnosi, nessun dosaggio, nessun Rx» (doc 05) è prudente, ma i riferimenti a ordini/colegios vanno rifatti.
 5. **Animali.** Regole su vendita e cessione di animali, microchip e annunci non verificate. Per il Mercatino non serve verificarle: gli animali sono vietati in tutti i paesi (decisione del proprietario, 2026-10-26).
 6. **IA.** Non c'è un equivalente dell'art. 50 AI Act già in vigore in tutti e quattro (progetti di legge in vari paesi, ❓ non cercati): per prudenza si mantiene l'etichetta «Generado por IA».
-7. **Emergenza e numeri utili.** Tutto da rifare (112 vale in Spagna, non qui): Messico, Argentina, Colombia, Cile hanno numeri diversi (❓ non verificati) e non ho verificato se esistano centri antitossici che rispondono a proprietari di animali.
+7. **Emergenza e numeri utili.** Decaduta (21 novembre 2026): nessun numero di telefono nei testi fissi, per nessun Paese.
 8. **Fiscale e pagamenti.** Valute locali, IVA/impuestos sui servizi digitali dei fornitori esteri, store locali e sistemi di pagamento: ⚖️ non valutati.
 
 ## 3. Cosa servirebbe per aprire in ciascun paese (checklist)
@@ -37,7 +37,7 @@ Tre fatti comuni: (1) **Groq/USA** è un trasferimento internazionale anche qui:
 **Per ogni paese (comune):**
 1. Un legale locale (privacy, consumo, e-commerce) e conferma del perimetro dell'extraterritorialità.
 2. Testi `v1` propri (privacy, termini, consensi, avviso IA/veterinario) nel registro locale e con autorità, diritti e trasferimenti del paese; consensi con `locale` salvato (doc 04).
-3. Numeri utili verificati, ordine dei veterinari, regole su telemedicina e farmaci.
+3. Ordine dei veterinari, regole su telemedicina e farmaci.
 4. Prezzi e imposte in valuta locale; scelta dei canali di pagamento; fatturazione.
 5. Scheda store e valutazione d'età per il paese; localizzazione UI (voseo, termini) se si vuole.
 6. Mercatino senza animali, in tutti i paesi (decisione del proprietario, 2026-10-26).
@@ -55,7 +55,7 @@ Il Brasile non rientra negli `es-*`: serve portoghese (`pt-BR`), testi propri e 
 
 ## 4. Raccomandazione
 
-Non aprire in America Latina con i testi `es-ES`. Se c'è interesse commerciale, **un paese alla volta**, partendo da quello con più utenti potenziali, con un legale locale e un budget per testi, imposte e numeri utili. Il Cile ha una scadenza vicina (01/12/2026) e leggi nuove: è il paese con più incertezza normativa nel breve periodo; Argentina è il più vicino all'UE (adeguatezza ❓). Messico e Colombia sono mercati grandi ma con regimi in riforma.
+Non aprire in America Latina con i testi `es-ES`. Se c'è interesse commerciale, **un paese alla volta**, partendo da quello con più utenti potenziali, con un legale locale e un budget per testi e imposte. Il Cile ha una scadenza vicina (01/12/2026) e leggi nuove: è il paese con più incertezza normativa nel breve periodo; Argentina è il più vicino all'UE (adeguatezza ❓). Messico e Colombia sono mercati grandi ma con regimi in riforma.
 
 ## Fonti consultate (2026-10-14, tutte 🟡 salvo diversa indicazione)
 

@@ -9,7 +9,7 @@ Data: 2026-10-13. Base normativa: Veterinary Surgeons Act 1966 ss. 19 e 27 (diag
 
 - Mai le parole «diagnosis», «diagnose», «prescribe», «replaces your vet» riferite a ciò che l'app *fa*. Sì a «general information», «helps you prepare», «talk to your vet».
 - L'assistente non indica dosaggi di farmaci né suggerisce farmaci per uso su animali. Per i farmaci su prescrizione (POM-V) serve un veterinario che abbia l'animale in cura (RCVS cap. 4).
-- In caso di segnali di emergenza, il messaggio indirizza al veterinario *subito*, con i numeri del doc 06.
+- L'app non gestisce le urgenze (decisione del proprietario, 21 novembre 2026): nessun banner di emergenza, nessuna risposta d'urgenza e nessun numero di telefono; vale la clausola di [22](../22_clausola_quokka_non_gestisce_urgenze.md) §2, in versione breve nel blocco «Emergenze» dell'avviso.
 - Chiavi consigliate per l'ARB (prefisso `legalAi…`), uno per frase.
 
 ---
@@ -48,15 +48,9 @@ This answer was written by an AI system. It may contain mistakes.
 Quokka gives general information, not veterinary advice. Always speak to your vet about your pet's health.
 ```
 
-## 4. Banner di emergenza (mostrato quando il triage rileva segnali gravi)
+## 4. Banner di emergenza (tolto il 21 novembre 2026)
 
-```
-This could be an emergency.
-Contact a vet now. If you cannot reach your own vet, call an out-of-hours emergency vet.
-If your pet may have eaten something poisonous, call Animal PoisonLine on 01202 509 000 (24 hours, there is a fee) or your vet.
-```
-
-Il numero e la tariffa vanno confermati prima della pubblicazione (doc 06). Se un utente può essere fuori dal UK (viaggi), il banner mostra i numeri del *paese impostato nell'app*.
+Tolto per decisione del proprietario: l'app non gestisce le urgenze, quindi non c'è un banner di emergenza e non c'è nessun numero di telefono. Vale la clausola «Quokka non gestisce le urgenze» ([22](../22_clausola_quokka_non_gestisce_urgenze.md) §2).
 
 ## 5. Avviso sui farmaci
 
@@ -94,7 +88,7 @@ Mistakes
 AI can be wrong, out of date, or miss something important. Check what it tells you with your vet, especially about symptoms, food, medicines or behaviour that is getting worse.
 
 Emergencies
-The assistant is not an emergency service. If you think your pet is in danger, contact a vet immediately.
+Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a listening service in your country straight away. Do not wait for the app's reply.
 
 Decisions about you
 We do not use the assistant to make decisions that have legal or similarly significant effects on you.

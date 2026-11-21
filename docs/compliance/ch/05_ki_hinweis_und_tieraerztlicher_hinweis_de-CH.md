@@ -46,15 +46,9 @@ Diese Antwort wurde von einem KI-System geschrieben. Sie kann Fehler enthalten.
 Quokka gibt allgemeine Informationen, keinen tierärztlichen Rat. Sprechen Sie bei Fragen zur Gesundheit Ihres Tieres immer mit Ihrer Tierarztpraxis.
 ```
 
-## 4. Banner di emergenza (triage rileva segnali gravi)
+## 4. Banner di emergenza (tolto il 21 novembre 2026)
 
-```
-Das könnte ein Notfall sein.
-Wenden Sie sich jetzt an eine Tierärztin oder einen Tierarzt. Wenn Sie Ihre Praxis nicht erreichen, suchen Sie den tierärztlichen Notfalldienst oder das nächste Tierspital auf.
-Wenn Ihr Tier möglicherweise etwas Giftiges gefressen hat, rufen Sie sofort Ihre Tierarztpraxis oder den tierärztlichen Notfalldienst an.
-```
-
-Nota: **Tox Info Suisse (145)** è il servizio nazionale per avvelenamenti, 24 h, ma i risultati letti non confermano che consigli i **proprietari di animali** (la pagina «Poisoning in animals» esiste ma la pagina è stata 404 in questa sessione, `ch/06`). Non mostrarlo nel banner finché non è confermato con una telefonata.
+Tolto per decisione del proprietario: l'app non gestisce le urgenze, quindi non c'è un banner di emergenza e non c'è nessun numero di telefono. Vale la clausola «Quokka non gestisce le urgenze» ([22](../22_clausola_quokka_non_gestisce_urgenze.md) §2).
 
 ## 5. Avviso sui farmaci
 
@@ -92,7 +86,7 @@ Fehler
 KI kann sich irren, veraltet sein oder etwas Wichtiges übersehen. Klären Sie das, was sie Ihnen sagt, mit Ihrer Tierarztpraxis, besonders bei Symptomen, Futter, Arzneimitteln oder Verhalten, das schlimmer wird.
 
 Notfälle
-Der Assistent ist kein Notfalldienst. Wenn Sie glauben, dass Ihr Tier in Gefahr ist, wenden Sie sich sofort an eine Tierärztin oder einen Tierarzt.
+Quokka bearbeitet keine Notfälle: Wenden Sie sich in einem Notfall sofort an eine Tierärztin oder einen Tierarzt, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Warten Sie nicht auf die Antwort der App.
 
 Entscheide über Sie
 Wir nutzen den Assistenten nicht, um Entscheide zu treffen, die Ihnen gegenüber eine Rechtsfolge haben oder Sie erheblich beeinträchtigen.

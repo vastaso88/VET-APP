@@ -22,7 +22,7 @@ Raggruppate per tema, con la mia raccomandazione. Le 5 più importanti sono in c
 11. **Retention:** periodi di conservazione per chat, percorsi di passeggiata, log (campi [TBD] in 02, sez. 7). La posizione GPS è sensibile in molti stati; raccomando di eliminare i punti dopo il termine della passeggiata o dopo un periodo breve.
 12. **Cancellazione account:** Apple (5.1.1(v)) e Google (in-app **e** link web) la richiedono. Esiste già nell'app? Dalla mia ricerca non l'ho verificata nel codice (fuori incarico).
 13. **DMCA / contenuti degli utenti:** vogliamo registrare un "designated agent" presso l'US Copyright Office per foto e segnalazioni? Domanda per il legale (03, sez. 9).
-14. **Dichiarazioni di mercato e sponsor:** lo store/sito non dirà "AI vet" o "diagnosi" (05, sez. 3). Esistono accordi con ASPCA o Pet Poison Helpline? Se sì, vanno dichiarati (06).
+14. **Dichiarazioni di mercato e sponsor:** lo store/sito non dirà "AI vet" o "diagnosi" (05, sez. 3). Esistono accordi con sponsor o partner? Se sì, vanno dichiarati.
 15. **Chi rivede?** Serve un avvocato abilitato negli USA (privacy e consumer) prima della pubblicazione; tutti i testi sono bozze. Budget e tempi?
 
 ## Verifiche tecniche collegate (per la sessione backend)

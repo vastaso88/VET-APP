@@ -9,7 +9,7 @@ Data: 2026-10-14. Base normativa: **AI Act art. 50 par. 1** (in vigore dal 02/08
 
 - Mai «Diagnose», «diagnostizieren», «verschreiben», «ersetzt Ihre Tierärztin / Ihren Tierarzt» riferiti a ciò che l'app *fa*. Sì a «allgemeine Informationen», «hilft Ihnen, sich vorzubereiten», «sprechen Sie mit Ihrer Tierarztpraxis».
 - L'assistente non indica dosaggi di farmaci né suggerisce farmaci per uso su animali e **non cita nomi commerciali di medicinali soggetti a prescrizione** (HWG § 10 secondo la BTK). Per i Rx serve un veterinario che conosce l'animale (BTK).
-- In caso di segnali di emergenza il messaggio indirizza al veterinario *subito*, con i riferimenti del doc 06.
+- L'app non gestisce le urgenze (decisione del proprietario, 21 novembre 2026): nessun banner di emergenza, nessuna risposta d'urgenza e nessun numero di telefono; vale la clausola di [22](../22_clausola_quokka_non_gestisce_urgenze.md) §2, in versione breve nel blocco «Emergenze» dell'avviso.
 - Chiavi consigliate per l'ARB (prefisso `legalAi…`), una per frase.
 - Il titolo dell'etichetta deve riconoscere la natura dell'IA in modo chiaro: la sola parola «Assistent» non basta (linee guida art. 50, fonte secondaria, doc 01 §6).
 
@@ -49,15 +49,9 @@ Diese Antwort wurde von einem KI-System geschrieben. Sie kann Fehler enthalten.
 Quokka gibt allgemeine Informationen, keinen tierärztlichen Rat. Sprechen Sie bei Fragen zur Gesundheit Ihres Tieres immer mit Ihrer Tierarztpraxis.
 ```
 
-## 4. Banner di emergenza (mostrato quando il triage rileva segnali gravi)
+## 4. Banner di emergenza (tolto il 21 novembre 2026)
 
-```
-Das könnte ein Notfall sein.
-Wenden Sie sich jetzt an eine Tierärztin oder einen Tierarzt. Wenn Sie Ihre Praxis nicht erreichen, suchen Sie den tierärztlichen Notdienst oder die nächste Tierklinik auf.
-Wenn Ihr Tier möglicherweise etwas Giftiges gefressen hat, rufen Sie sofort Ihre Tierarztpraxis oder den tierärztlichen Notdienst an.
-```
-
-Nota: in Germania **non esiste** un numero nazionale per avvelenamenti di animali (doc 06). Il banner non mostra alcun numero finché il proprietario non ne conferma uno verificato; mostra «Tierarzt/Notdienst» e il link dell'ordine dei veterinari del Land. Se un utente può essere fuori dalla Germania (viaggi), il banner mostra i riferimenti del *paese impostato nell'app*.
+Tolto per decisione del proprietario: l'app non gestisce le urgenze, quindi non c'è un banner di emergenza e non c'è nessun numero di telefono. Vale la clausola «Quokka non gestisce le urgenze» ([22](../22_clausola_quokka_non_gestisce_urgenze.md) §2).
 
 ## 5. Avviso sui farmaci
 
@@ -95,7 +89,7 @@ Fehler
 KI kann sich irren, veraltet sein oder etwas Wichtiges übersehen. Klären Sie das, was sie Ihnen sagt, mit Ihrer Tierarztpraxis, besonders bei Symptomen, Futter, Arzneimitteln oder Verhalten, das schlimmer wird.
 
 Notfälle
-Der Assistent ist kein Notdienst. Wenn Sie glauben, dass Ihr Tier in Gefahr ist, wenden Sie sich sofort an eine Tierärztin oder einen Tierarzt.
+Quokka bearbeitet keine Notfälle: Wenden Sie sich in einem Notfall sofort an eine Tierärztin oder einen Tierarzt, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Warten Sie nicht auf die Antwort der App.
 
 Entscheidungen über Sie
 Wir nutzen den Assistenten nicht, um Entscheidungen zu treffen, die Ihnen gegenüber rechtliche Wirkung entfalten oder Sie in ähnlicher Weise erheblich beeinträchtigen.

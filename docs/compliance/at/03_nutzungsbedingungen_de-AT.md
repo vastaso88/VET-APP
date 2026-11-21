@@ -19,6 +19,8 @@ Quokka hilft Ihnen bei der Versorgung Ihrer Tiere: Akten, Erinnerungen, Spazierg
 
 **Quokka ist kein tierärztlicher Dienst.** Der Assistent gibt allgemeine Informationen. Er stellt keine Diagnosen, verschreibt keine Arzneimittel, nennt keine Dosierungen und ersetzt keine Tierärztin und keinen Tierarzt. Diagnose und Behandlung von Tieren sind in Österreich Tierärztinnen und Tierärzten vorbehalten. Wenn Ihr Tier krank wirkt oder Sie unsicher sind, wenden Sie sich an Ihre Tierarztpraxis. Im Notfall gehen Sie sofort zu einer Tierärztin oder einem Tierarzt. Siehe KI-Hinweis und Tierärztlichen Hinweis.
 
+**Quokka bearbeitet keine Notfälle.** Die App und der Chat sind kein Notfall-, Erste-Hilfe-, Beratungs- oder Rettungsdienst, weder für Tiere noch für Menschen: Sie sind nicht dafür gedacht zu beurteilen, ob eine Situation dringend ist, erkennen einen Notfall womöglich nicht und versprechen keine Antwort innerhalb einer bestimmten Zeit. Wenn Sie glauben, dass es Ihrem Tier ernsthaft schlecht geht, oder wenn Sie oder eine andere Person in Gefahr sind, nutzen Sie die App nicht und warten Sie nicht auf eine Antwort: Wenden Sie sich sofort an eine Tierärztin, einen Tierarzt oder eine Tierklinik, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Wenn der Chat keinen Notfall meldet, heißt das nicht, dass keiner vorliegt.
+
 ## 3. Ihr Konto
 
 Sie müssen richtige Angaben machen und Ihre Zugangsdaten sicher aufbewahren. Sie sind für alles verantwortlich, was über Ihr Konto geschieht. Informieren Sie uns, wenn Sie vermuten, dass jemand anderes es benutzt hat.

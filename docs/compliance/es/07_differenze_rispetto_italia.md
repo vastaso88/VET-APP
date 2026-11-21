@@ -46,11 +46,10 @@ Data: 2026-10-14. Le voci con ✅ sono confermate nei doc 01/06; le altre sono �
 | Temperatura | °C | °C | Uguale |
 | Telefono | `+39 3xx xxx xxxx` | `+34 6xx xx xx xx` (cellulare), `91 xxx xx xx` (Madrid) | Numero fittizio di esempio: ❓ non verificato che sia riservato a finzione |
 | Indirizzo | via, civico, CAP, città | **Calle + número, código postal (5 cifre), localidad, provincia** | Campo «Provincia» (in Spagna è parte standard dell'indirizzo) |
-| Emergenza persone | 112 | 112 | Per animali: doc 06 |
 | Veterinario | «veterinario» | «veterinario/a», «clínica veterinaria», «urgencias veterinarias» | Preferire forma neutra |
 | Microchip | obbligatorio per cani | obbligatorio per cani, gatti, furetti (Ley 7/2023 art. 51 ✅) | Contenuti informativi |
 | Passaporto | europeo | europeo | Uguale |
-| Autorità animali | ASL, Comune | Ayuntamiento, CCAA, SEPRONA | Doc 06 |
+| Autorità animali | ASL, Comune | Ayuntamiento, CCAA, SEPRONA | |
 | Termini d'uso | «Termini di Servizio» | «Condiciones de uso» (o «Términos y condiciones») | |
 | Politica privacy | «Informativa» | «Política de privacidad» | |
 | Avviso IA | — | «Aviso sobre la IA» | |
@@ -60,8 +59,7 @@ Data: 2026-10-14. Le voci con ✅ sono confermate nei doc 01/06; le altre sono �
 
 1. Voce «Información legal» nelle Impostazioni e nello store.
 2. Campo indirizzo: «Código postal» (5 cifre), «Provincia».
-3. Numeri utili per paese (doc 06): SIT 91 562 04 20 con la frase «orienta, no sustituye al veterinario».
-4. Consensi per `es-ES` (doc 04); lingua mostrata salvata.
-5. Etichette IA e disclaimer (doc 05).
-6. Pulsanti «Pedido con obligación de pago», «Darme de baja», «Desistir del contrato» sulla web app; avviso di rinnovo a 15 giorni (doc 03 §5).
-7. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26); non è più una regola della Spagna.
+3. Consensi per `es-ES` (doc 04); lingua mostrata salvata.
+4. Etichette IA e disclaimer (doc 05).
+5. Pulsanti «Pedido con obligación de pago», «Darme de baja», «Desistir del contrato» sulla web app; avviso di rinnovo a 15 giorni (doc 03 §5).
+6. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26); non è più una regola della Spagna.

@@ -14,6 +14,6 @@ Data: 2026-10-14. Massimo 8 domande, raggruppate. Per ognuna: la mia raccomandaz
 
 ## Secondarie
 
-6. **Numeri utili e avvelenamenti.** Il CNITV risponde ai privati ma non pubblica tariffa né numero sul sito; CAPAE-Ouest non ha sito raggiungibile. Vuoi che si telefoni ai due centri per confermare numero, orari e costo prima di mostrarli nel banner di emergenza? Raccomando di sì; fino ad allora il banner mostra solo veterinario/clinica d'urgenza. *Impatto: doc 05 §4, doc 06.*
+6. **Decaduta (21 novembre 2026):** nessun numero di telefono nei testi fissi, per nessun Paese.
 7. **Territorio e lingua dei testi.** Solo Francia metropolitana o anche i territori d'oltremare (DOM-TOM; non studiati)? Un utente in Francia con app in inglese/italiano: mostro i testi legali in francese (regione) o nella lingua dell'interfaccia? Raccomando: **solo metropolitana**, testi legali in francese seguendo la **regione**. *Impatto: doc 04 regola 5.*
 8. **Dimensioni e strumenti.** Quanti addetti e che fatturato (accessibilità: microimpresa < 10 persone e ≤ 2 M€; DPO; DSA)? Si attiva uno strumento di analisi (oggi nessuno)? Raccomando di togliere `analytics` dal catalogo francese finché non c'è uno strumento, o di attivarne uno con consenso e pulsanti di pari rilievo. *Impatto: doc 01 §1 e §8, doc 04 §4.*

@@ -22,7 +22,6 @@ Sessione: Legale ES. Data di consultazione di tutte le fonti: **2026-10-14**. Li
 | Ley 7/2023 (bienestar animal) | Mercatino: **vietare animali vivi** (vendita online vietata, art. 57) | Alta |
 | Ley 44/2003 + RD 666/2023 | Nessuna diagnosi, nessuna ricetta/posologia, nessuna vendita a distanza di farmaci Rx | Alta |
 | AI Act art. 50 | Dichiarare che si parla con un'IA (dal 02/08/2026); legge spagnola di governance in Parlamento | Alta |
-| Numeri utili | SIT 915 620 420 (copre anche animali, ✅); SEVEMUR ❓ | Media |
 | Store | Dati «trader» (DSA), eliminazione account, scheda privacy, età | Media |
 
 ## 1. RGPD e LOPDGDD (Ley Orgánica 3/2018)
@@ -116,7 +115,6 @@ Fonte: [BOE-A-2023-7936](https://www.boe.es/buscar/act.php?id=BOE-A-2023-7936) (
 - Stato parlamentare della legge IA (BOCG 12/06/2026) e di quella sui minori digitali.
 - Ruolo di Quokka nell'AI Act; testo integrale delle linee guida art. 50 (PDF non letto).
 - Hojas de reclamaciones e autorità DSA/accessibilità.
-- SEVEMUR: numero e ambito (doc 06).
 
 ## Fonti consultate (2026-10-14)
 
@@ -127,5 +125,4 @@ Fonte: [BOE-A-2023-7936](https://www.boe.es/buscar/act.php?id=BOE-A-2023-7936) (
 - [LSSI-CE, BOE-A-2002-13758](https://www.boe.es/buscar/act.php?id=BOE-A-2002-13758) e [TRLGDCU, BOE-A-2007-20555](https://www.boe.es/buscar/act.php?id=BOE-A-2007-20555) — estratti del consolidato.
 - [AEPD – guida cookie (nota 11/07/2023)](https://www.aepd.es/prensa-y-comunicacion/notas-de-prensa/aepd-actualiza-guia-cookies-para-adaptarla-a-nuevas-directrices-cepd); [AEPD – guida IA](https://www.aepd.es/prensa-y-comunicacion/notas-de-prensa/la-aepd-publica-una-guia-para-adaptar-al-rgpd-los-productos-y); [AEPD – decálogo verificación de edad](https://aepd.es/guias/decalogo-principios-verificacion-edad-proteccion-menores.pdf).
 - [Ministerio de Consumo – suscripciones y Ley 10/2025](https://www.dsca.gob.es/es/consumo/nota-informativa-nueva-regulacion-suscripciones-ley-servicios-atencion-clientela).
-- [SIT – Ministerio de Justicia](https://www.mjusticia.gob.es/es/institucional/organismos/instituto-nacional/servicios/servicio-informacion/servicio-informacion1) e [intoxicaciones veterinarias](https://www.mjusticia.gob.es/es/institucional/organismos/instituto-nacional/servicios/servicio-informacion/intoxicaciones-frecuentes/veterinarias); [Memoria SIT 2020](https://www.mjusticia.gob.es/es/ElMinisterio/OrganismosMinisterio/Documents/Memoria%20SIT%202020.pdf).
 - Stampa/studi legali (🟡): proyecto de ley IA (BOCG 12/06/2026), proyecto de ley menores digitales, Código Deontológico veterinario (colvema.org, colvet.es).

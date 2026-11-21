@@ -7,7 +7,7 @@ Sessione: Legale FR. Data di consultazione: **2026-10-14**. Lingua dei testi per
 ## Come leggere questo documento
 
 - **Marcatori.** ✅ letto su sito di un'autorità/ente ufficiale · 🟡 solo fonte secondaria (studi legali, stampa, forum) o articolo di legge **non letto sul testo** · ❓ non verificato / incerto · ⚖️ da decidere con l'avvocato.
-- **Nessun testo di legge belga è stato letto** (Moniteur belge/Justel non cercati direttamente; il sito dell'APD `autoriteprotectiondonnees.be` e `poisoncentre.be/fr` non hanno restituito pagine utili). Quasi tutto è quindi 🟡. Più delle altre sessioni, qui i dati vengono da **studi legali e stampa** e vanno riletti dall'avvocato sul testo ufficiale.
+- **Nessun testo di legge belga è stato letto** (Moniteur belge/Justel non cercati direttamente; il sito dell'APD `autoriteprotectiondonnees.be` non ha restituito pagine utili). Quasi tutto è quindi 🟡. Più delle altre sessioni, qui i dati vengono da **studi legali e stampa** e vanno riletti dall'avvocato sul testo ufficiale.
 - Premessa: titolare **italiano**, stabilito nell'UE: nessun rappresentante ex art. 27 GDPR; autorità capofila probabilmente il **Garante** (🟡), l'utente belga può reclamare all'**APD/GBA** (art. 77 GDPR).
 
 ## 0. Quadro in una pagina
@@ -96,4 +96,4 @@ Sessione: Legale FR. Data di consultazione: **2026-10-14**. Lingua dei testi per
 ## Fonti consultate (2026-10-14)
 
 Secondarie (🟡): [droitbelge.be](https://droitbelge.be/news_detail.asp?id=1199) · [CMS Belgium, 23/09/2026](https://cms.law/en/bel/legal-updates/belgian-consumer-law-reform-new-rules-on-online-sales-subscription-renewals-sustainability-claims-and-consumer-complaints) · [actualitesdroitbelge.be](https://www.actualitesdroitbelge.be/legislation/code-de-droit-economique/code-de-droit-economique---les-contrats-en-ligne/article-vi-47-du-code-de-droit-economique) · [Camera dei rappresentanti, 56K0970](https://www.dekamer.be/FLWB/Pdf/56/0970/56K0970001.pdf) (documento parlamentare, non legge) · [Lextenso su C-400/22](https://www.labase-lextenso.fr/jp-europe-commente/cjue/2024-05/cjue-30052024-62022cj0400) · iubenda, Hunton, Forbes Belgium, Lexgo, police.be, BX1, Test-Achats, DH, juridischforum.be.
-Non raggiungibili/non utili: poisoncentre.be/fr (404), autoriteprotectiondonnees.be (non restituito), Justel/Moniteur belge (non interrogati).
+Non raggiungibili/non utili: autoriteprotectiondonnees.be (non restituito), Justel/Moniteur belge (non interrogati).

@@ -38,10 +38,9 @@ Data: 2026-10-14. La Svizzera **non è nell'UE** né nello SEE. Le voci «conosc
 | Distanza / peso / temperatura | km, kg, °C | km, kg, °C | Uguale |
 | Telefono | `+39 3xx xxx xxxx` | `+41 7x xxx xx xx` (cellulare), `0x1 xxx xx xx` (fisso); prefisso nazionale 0 | Esempio fittizio: `044 123 45 67` (non verificato come riservato) |
 | Indirizzo | via, civico, CAP | **Strasse + Hausnummer, PLZ (4 cifre), Ort**; Cantone con sigla (`ZH`) | PLZ a 4 cifre; il campo «Kanton» opzionale |
-| Numero d'emergenza persone | 112 | 112 (144 ambulanza, 117 polizia, 145 Tox Info Suisse) | Non confondere con animali: doc 06 |
 | Veterinario | «veterinario» | «Tierarzt/Tierärztin», «Tierarztpraxis», «Tierspital» | |
 | Microchip / registro | obbligatorio per i cani | **cani: chip e AMICUS**; gatti non obbligatori in generale (🟡) | Contenuti informativi |
-| Autorità animali | ASL, Comune | Kantonstierarzt / Veterinäramt | Doc 06 |
+| Autorità animali | ASL, Comune | Kantonstierarzt / Veterinäramt | |
 | Razze | ENCI | SKG / FCI | Dati razze: non toccati |
 | Lingue del paese | it | de, fr, it, rm | I testi legali per utenti CH con UI francese/italiana: ⚖️ domanda 6 in `de/08` |
 
@@ -50,5 +49,5 @@ Data: 2026-10-14. La Svizzera **non è nell'UE** né nello SEE. Le voci «conosc
 1. Valuta CHF con formato `CHF 1’234.50` (non solo il simbolo) per `de-CH`.
 2. Campo indirizzo: PLZ a 4 cifre, Kanton opzionale.
 3. Ortografia «ss»: attenzione a eventuali sostituzioni automatiche «ß» nella pipeline ARB.
-4. Consensi `de-CH` (doc 04), avviso IA (doc 05), numeri utili (doc 06).
+4. Consensi `de-CH` (doc 04), avviso IA (doc 05).
 5. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26).

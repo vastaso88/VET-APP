@@ -32,7 +32,6 @@ Marcatori come in `../ch/01`: ✅ letto su sito di un'autorità/ente · 🟡 fon
 
 - 🟡 **Swiss–US Data Privacy Framework:** il Consiglio federale ha aggiunto gli USA all'elenco dei paesi con protezione adeguata nella seduta del **14/08/2024**; la modifica è entrata in vigore il **15/09/2024**; i dati possono andare a imprese americane **certificate** (anche per l'estensione svizzera) senza garanzie supplementari, ma non a terzi non certificati. Fonti: [fr.ch – Swiss-US DPF](https://www.fr.ch/atprdm/actualites/swiss-us-data-privacy-framework-les-entreprises-americaines-certifiees-offrent-un-niveau-de-protection-des-donnees-adequat), [PFPDT, comunicato](https://www.edoeb.admin.ch/edoeb/en/home/kurzmeldungen/2023/20230410_eu_us_dpf.html). Conferma `ch/01`: **Groq non risulta certificata** ❓ (stessa domanda al proprietario).
 - ✅/🟡 **nLPD in vigore dal 01/09/2023** (PFPDT; è al Consiglio federale decidere i paesi adeguati). Rappresentanza in Svizzera (art. 14): non confermata con fonti nuove ❓ (vedi `ch/01` §1).
-- 🟡 **Tox Info Suisse (145).** I rapporti annuali del centro (JB 2012, 2013, 2022 in francese) contengono un capitolo **«Intoxications chez l'animal»** e il sito ha una sezione per i veterinari con farmacovigilanza veterinaria; il Cantone di Friburgo scrive che il Tox risponde «gratuitement, jour et nuit» a ogni chiamata su un'intossicazione manifesta o sospetta. È quindi **plausibile** che il 145 consigli anche per animali, ma non ho trovato la frase che dica che risponde ai **proprietari** di animali ❓ (il capitolo può riguardare chiamate di veterinari). Fonti: [Tox Info Suisse – Rapport annuel 2022 (fr)](https://www.toxinfo.ch/customer/files/1042/Tox_Jahresbericht_2022_FR_Web_150dpi.pdf), [Rapport annuel 2012 (fr)](https://www.toxinfo.ch/customer/files/154/9132248_Tox_JB12_F_ARCHIV.pdf), [Fribourg – produits chimiques](https://www.fr.ch/sante/securite-sanitaire/les-produits-chimiques-au-quotidien). I PDF non sono stati letti per esteso (solo titoli e snippet).
 - ❓ Nessun numero verificato per i **servizi di guardia veterinaria** dei cantoni romandi (VD, GE, FR, NE, JU, VS, BE francofono): le società cantonali dei veterinari non sono state verificate. Il banner d'emergenza non mostra un numero unico.
 
 ## 3. Specifico della Romandia
@@ -53,9 +52,9 @@ Marcatori come in `../ch/01`: ✅ letto su sito di un'autorità/ente · 🟡 fon
 ## 5. Incertezze (da non trasformare in affermazioni)
 
 - Tutto quanto in `ch/01` §10 vale anche qui (Fedlex/RIS non letti; Groq DPF svizzero; recesso volontario; Rx e TAMV; animali vivi; art. 14 nLPD; TVA).
-- Se Tox Info Suisse risponde ai proprietari di animali; servizi di guardia veterinari romandi; formato valuta fr-CH; eventuali obblighi di lingua.
+- Servizi di guardia veterinari romandi; formato valuta fr-CH; eventuali obblighi di lingua.
 - Nomi francesi delle leggi (OIP, LCD, LTC, CO): da conoscenza generale, da confermare su Fedlex in francese.
 
 ## Fonti consultate (2026-10-14)
 
-Autorità/ente (✅/🟡): [PFPDT](https://www.edoeb.admin.ch) · [Tox Info Suisse](https://www.toxinfo.ch) · [Canton de Fribourg](https://www.fr.ch). Per il resto: `../ch/01_ricerca_normativa.md` §Fonti.
+Autorità/ente (✅/🟡): [PFPDT](https://www.edoeb.admin.ch) · [Canton de Fribourg](https://www.fr.ch). Per il resto: `../ch/01_ricerca_normativa.md` §Fonti.

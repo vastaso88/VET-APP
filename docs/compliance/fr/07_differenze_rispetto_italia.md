@@ -42,11 +42,10 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; quelle con
 | Distanza / peso / temperatura | km, kg, °C | km, kg, °C | Uguale |
 | Telefono | `+39 3xx xxx xxxx` | `+33 6 12 34 56 78` (cellulare), `01 23 45 67 89` (fisso); prefisso nazionale 0 | Esempio fittizio: `01 99 00 12 34` (ARCEP riserva intervalli alla finzione, ❓ non verificato) |
 | Indirizzo | via, civico, CAP, città | **numéro + rue, code postal (5 cifre), ville** (`12 rue Exemple, 75001 Paris`) | Campo «code postal» invece di CAP; il «numéro» precede la via; «Cedex» facoltativo |
-| Numero d'emergenza persone | 112 | 112 (SAMU 15, polizia 17, pompieri 18) | Non confondere con animali: doc 06 |
 | Veterinario | «veterinario» | «vétérinaire», «cabinet vétérinaire», «clinique vétérinaire» | |
 | Microchip | obbligatorio per i cani | **obbligatorio per cani e gatti, registrato in I-CAD** (✅ justice.fr) | Contenuti informativi |
 | Passaporto animali | Passaporto europeo | Passeport européen (UE) | Uguale |
-| Autorità animali | ASL, Comune | **DDPP** (🟡); fourrière comunale | Doc 06 |
+| Autorità animali | ASL, Comune | **DDPP** (🟡); fourrière comunale | |
 | Razze | ENCI | **SCC / LOF** (conoscenza generale) | Dati razze: non toccati |
 | Termini d'uso | «Termini di Servizio» | «Conditions générales d'utilisation (et de vente)» | |
 | Politica privacy | «Informativa» | «Politique de confidentialité» | |
@@ -57,8 +56,7 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; quelle con
 
 1. Voce «Mentions légales» nelle Impostazioni e nello store.
 2. Campo indirizzo: «code postal» (5 cifre), «numéro + rue».
-3. Numeri utili per paese (doc 06); banner di emergenza solo con numeri confermati.
-4. Consensi per `fr-FR` (doc 04); lingua mostrata salvata.
-5. Etichette IA e disclaimer (doc 05) — in particolare la linea «informazioni generali».
-6. Pulsanti di ordine, risoluzione, recesso e avvisi di rinnovo sulla web app (doc 03 §5).
-7. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26); non è più una regola della Francia.
+3. Consensi per `fr-FR` (doc 04); lingua mostrata salvata.
+4. Etichette IA e disclaimer (doc 05) — in particolare la linea «informazioni generali».
+5. Pulsanti di ordine, risoluzione, recesso e avvisi di rinnovo sulla web app (doc 03 §5).
+6. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26); non è più una regola della Francia.

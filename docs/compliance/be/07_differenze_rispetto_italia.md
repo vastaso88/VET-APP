@@ -41,11 +41,10 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; 🟡 = fon
 | Distanza / peso / temperatura | km, kg, °C | km, kg, °C | Uguale |
 | Telefono | `+39 3xx xxx xxxx` | `+32 4xx xx xx xx` (cellulare), `02 123 45 67` (fisso Bruxelles); prefisso nazionale 0 | Esempio fittizio non verificato come riservato ❓ |
 | Indirizzo | via, civico, CAP, città | **rue + numéro, code postal (4 cifre), localité** (`Rue Exemple 12, 1000 Bruxelles`) | Il numero civico **segue** la via (come in Italia, diverso dalla Francia); CAP a 4 cifre |
-| Numero d'emergenza persone | 112 | 112 (polizia 101) | Non confondere con animali: doc 06 |
 | Veterinario | «veterinario» | «vétérinaire», «médecin vétérinaire» | |
 | Microchip / registro | obbligatorio per i cani | **cani e gatti: identificazione e registrazione (DogID/CatID)** (🟡) | Contenuti informativi |
 | Passaporto animali | Passaporto europeo | Passeport européen (UE) | Uguale |
-| Autorità animali | ASL, Comune | Servizi regionali; polizia (🟡) | Doc 06 |
+| Autorità animali | ASL, Comune | Servizi regionali; polizia (🟡) | |
 | Termini d'uso | «Termini di Servizio» | «Conditions générales d'utilisation (et de vente)» | |
 | Politica privacy | «Informativa» | «Politique de confidentialité» | |
 | Avviso IA | — | «Avis sur l'IA» | |
@@ -54,9 +53,8 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; 🟡 = fon
 
 1. Voce «Informations légales» nelle Impostazioni e nello store.
 2. Campo indirizzo: «code postal» (4 cifre), numero civico dopo la via.
-3. Numeri utili per paese (doc 06).
-4. Consensi per `fr-BE` (doc 04); lingua mostrata salvata.
-5. Etichette IA e disclaimer (doc 05).
-6. Funzione di recesso a due passaggi sulla web app (doc 03 §5).
-7. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26); non è più una regola del Belgio.
-8. Decidere se aggiungere `nl-BE` prima di aprire Fiandre e Bruxelles.
+3. Consensi per `fr-BE` (doc 04); lingua mostrata salvata.
+4. Etichette IA e disclaimer (doc 05).
+5. Funzione di recesso a due passaggi sulla web app (doc 03 §5).
+6. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26); non è più una regola del Belgio.
+7. Decidere se aggiungere `nl-BE` prima di aprire Fiandre e Bruxelles.

@@ -15,5 +15,5 @@ Data: 2026-10-14. Massimo 8 domande, raggruppate. Per ognuna: la mia raccomandaz
 ## Secondarie
 
 6. **Lingua dei testi legali.** Un utente in Germania con app in inglese o italiano: mostro i testi legali in tedesco (regione) o nella lingua dell'interfaccia (con la traduzione di cortesia)? Idem per utenti DACH con app francese/italiana (specialmente CH). Raccomando: i testi legali seguono la **regione** (de-DE/de-AT/de-CH), mostrati in tedesco, con l'UI nella lingua scelta. *Impatto: doc 04, regola 5.*
-7. **Numeri utili e avvelenamenti.** Non esiste un numero nazionale per avvelenamenti di animali in Germania. Vuoi che io (o una persona) telefoni ai Giftnotruf per chiedere se rispondono ai proprietari di animali? Raccomando di sì prima del lancio; fino ad allora il banner mostra solo veterinario/Notdienst. *Impatto: doc 05 §4, doc 06.*
+7. **Decaduta (21 novembre 2026):** nessun numero di telefono nei testi fissi, per nessun Paese.
 8. **Dimensioni e strumenti.** Quanti addetti e che fatturato (BFSG: microimpresa < 10 persone e ≤ € 2 mln; DSA per micro/piccole imprese)? Si attiva uno strumento di analisi (oggi nessuno): raccomando di togliere la voce `analytics` dal catalogo tedesco finché non c'è uno strumento, o di attivarne uno con consenso e pulsanti pari rilievo. *Impatto: doc 01 §2 e §9, doc 02 §10, doc 04 §4.*

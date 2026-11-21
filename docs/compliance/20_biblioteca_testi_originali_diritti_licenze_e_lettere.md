@@ -292,6 +292,7 @@ Elenco ordinato e vie di contatto in [20a](20a_lettere_permesso_ai_titolari.md) 
 21. Se leggere pagine pubbliche con un nome di browser contro i termini d'uso o contro un `robots.txt` scritto per nome è una violazione contrattuale azionabile nell'Unione europea, un'elusione di misure tecnologiche (art. 102-quater L. 633/1941) o un accesso abusivo (art. 615-ter c.p.), e se il passaggio al browser dopo una sfida anti-robot cambia la valutazione (§22.3, n. 1–3).
 22. Se un filtro automatico che applica la tabella di §23 (licenza dichiarata, elenco chiuso di portali per gli atti ufficiali, controlli di accesso) basta come controllo per documento per le licenze aperte e per l'attribuzione CC BY, senza lettura umana e con il silenzio del proprietario come assenso di prodotto; e se l'elenco di §23.3 (Spagna art. 13 LPI, Paesi Bassi art. 11 Auteurswet, Australia, Nuova Zelanda s. 27, Canada, USA §105 fuori dagli USA) regge per l'uso in tutti i Paesi in cui l'app è offerta.
 23. Se i documenti pubblicati da una pubblica amministrazione italiana senza licenza espressa sono dati aperti per legge (art. 52, c. 2, CAD) anche quando il sito riporta «tutti i diritti riservati» sui documenti, e se per le leggi e i regolamenti regionali la riserva del portale è ininfluente (art. 5 L. 633/1941) (§23.11).
+24. Se la clausola «Quokka non gestisce le urgenze», scritta come descrizione del servizio, esce dal giudizio di vessatorietà (art. 34, c. 2, Codice del consumo) e dall'art. 1341, c. 2, c.c.; e se l'approvazione specifica delle altre clausole dei Termini è dovuta nei contratti con consumatori ([22](22_clausola_quokka_non_gestisce_urgenze.md) §3).
 
 ## 12. Abstract e metadati (aggiunta del 17 novembre sera)
 
@@ -475,7 +476,7 @@ L'API di Europe PMC restituisce l'abstract di quasi tutti i record, anche non ap
 
 La frase della Chat, «Se una persona è ferita o in pericolo, vai al pronto soccorso o chiama il 112.», è **approvata con due ritocchi**:
 1. **L'ordine e l'urgenza:** «Se una persona è ferita o in pericolo, chiama subito il 112 o vai al pronto soccorso.» (con una ferita grave non ci si sposta da soli).
-2. **Il Paese:** «112» vale per l'Italia e per DE, AT, CH, ES, FR, BE (file `06_numeri_utili_<paese>.md` di ogni cartella per paese); per il Regno Unito è 999 (112 funziona), per gli USA 911, per l'Australia 000. Il testo cambia **per Paese dell'utente**, non per lingua; se il Paese non è noto: «chiama il numero di emergenza del tuo Paese (112 in Europa)».
+2. **Il Paese:** *superato il 21 novembre 2026: nessun numero di telefono nei testi fissi, per nessun Paese.*
 
 Va **prima** di ogni altra riga quando c'è una persona ferita (le persone prima). Dal 20 novembre notte non c'è più un'apertura urgente per l'animale (§20): la frase si ripete nella riga fissa (§20.5).
 
@@ -756,7 +757,7 @@ La frase «Se una persona è ferita o in pericolo, chiama subito il 112 o vai al
 
 - **Non rientra nella decisione sugli animali.** La decisione del proprietario riguarda le urgenze dell'animale. Per le persone l'app non gestisce nulla: indica soltanto dove rivolgersi. Non è un servizio, è un rinvio.
 - **Rischio reale e prevedibile**: morsi, graffi, calci (anche di animali grandi), morsi di serpente, zoonosi; il Manuale e la chat trattano già il morso (casi 37 e 60, §15). Il danno alla persona è proprio quello che nessun avviso può escludere (art. 36 c. 2 lett. a; art. 1229 c.c.): l'unica difesa è dire dove andare. Costo: una riga.
-- **Meglio nella riga fissa** («Persona ferita o in pericolo: 112»), così non dipende da un riconoscimento fatto dal sistema; per **Paese dell'utente** come in §16.3 (112 per Italia, Germania, Austria, Svizzera, Spagna, Francia, Belgio; 999 Regno Unito; 911 Stati Uniti; 000 Australia; se il Paese non è noto: «chiama il numero di emergenza del tuo Paese (112 in Europa)»).
+- **Meglio nella riga fissa** («Persona ferita o in pericolo: 112»), così non dipende da un riconoscimento fatto dal sistema; per **Paese dell'utente** come in §16.3 (*superato il 21 novembre 2026: nessun numero nei testi fissi*).
 - Se la Chat tiene anche un messaggio **a regole su parole chiave** (lavoro A: «comportamento pericoloso verso persone»), va bene: è un rinvio ai soccorsi, non un percorso per gli animali; lo si presenti al proprietario come tale. Il testo resta condizionale («Se una persona è ferita…»), mai «ho capito che sei ferito».
 - AI Act, allegato III, punto 5(d): un rinvio fisso non è uno smistamento di soccorsi; lo sarebbe di più un sistema che classifica i messaggi d'emergenza delle persone. Un motivo in più per il testo statico ⚖️ (rischio basso).
 
@@ -1102,7 +1103,7 @@ Io rispondo con la decisione per il gruppo, la riga da aggiungere alle tabelle e
 
 ### 23.8 Paesi e fornitori nuovi: che cosa segnalare
 
-- **Paese nuovo** (come fonte): Paese; lingue ufficiali; portale ufficiale delle leggi e dei ministeri (indirizzo); norma nazionale sul diritto d'autore per gli atti ufficiali (articolo e indirizzo del testo ufficiale); licenza o termini di riuso del portale (indirizzo e frase, al massimo 25 parole); esito di `robots.txt`; traduzioni ufficiali; se l'app è o sarà offerta lì (lo decide l'Orchestratore). Lo aggiungo alla tabella B; se l'app è offerta nel Paese preparo anche i documenti del Paese (numeri utili, termini, informativa).
+- **Paese nuovo** (come fonte): Paese; lingue ufficiali; portale ufficiale delle leggi e dei ministeri (indirizzo); norma nazionale sul diritto d'autore per gli atti ufficiali (articolo e indirizzo del testo ufficiale); licenza o termini di riuso del portale (indirizzo e frase, al massimo 25 parole); esito di `robots.txt`; traduzioni ufficiali; se l'app è o sarà offerta lì (lo decide l'Orchestratore). Lo aggiungo alla tabella B; se l'app è offerta nel Paese preparo anche i documenti del Paese (termini, informativa).
 - **Fornitore nuovo** (strumenti del Cercafonti, anche per ricerca, lettura, hosting, foglio Google, pagina di controllo): nome; Paese del fornitore e dei server; servizio; **che cosa riceve** (solo specie e tema? indirizzo IP del computer? mai dati personali né testi di utenti); conservazione e uso per l'addestramento (indirizzo dei termini o del DPA); account usato (di chi); costo. Lo segnalo alla Sicurezza per `docs/security/06` **prima dell'uso** (§18.7: ricerca solo con specie e tema, mai `user_location`).
 
 ### 23.9 Foglio «Quokka – fonti da chiedere»: che cosa scrivere

@@ -41,7 +41,7 @@ Dall'app: Impostazioni → Contattaci.
 
 **L'assistente ha sbagliato.** Usa il pulsante per segnalare la risposta: ci aiuta a correggere il problema. Ricorda che l'assistente è un'intelligenza artificiale: dà informazioni generali, non fa diagnosi né prescrizioni e non sostituisce il veterinario.
 
-**Il mio animale sta male.** Quokka non è un servizio di emergenza. Chiama subito il tuo veterinario o la clinica veterinaria più vicina. [NUMERI_UTILI_ITALIA]
+**Il mio animale sta male.** Quokka non gestisce le urgenze: non aspettare la risposta dell'app. Chiama subito il tuo veterinario o la clinica veterinaria più vicina.
 
 **Un luogo è sbagliato o chiuso.** Dal luogo tocca la segnalazione («Segnala!»): serve a correggere la mappa per tutti.
 
@@ -63,5 +63,4 @@ Se pensi di aver trovato un problema di sicurezza, scrivi a [EMAIL_SICUREZZA]. N
 1. Tre indirizzi dedicati (assistenza, privacy, sicurezza) su quokkapet.net evitano di mettere in pubblico un indirizzo personale del proprietario; possono anche inoltrare alla stessa casella.
 2. Non promettere tempi di risposta (nessun «entro N giorni») finché non c'è un processo presidiato.
 3. L'elenco delle azioni dell'app è quello del codice al 2026-10-28; se cambiano i nomi delle voci in Impostazioni va aggiornato.
-4. Numeri utili: l'app non ha un elenco per l'Italia; decidere se metterne uno qui [da decidere].
-5. La risposta su cosa succede dopo la prova descrive funzioni non ancora nel codice (nota 10 di `03_termini_di_servizio_it.md`); quella sull'età è nel codice dal 9 novembre.
+4. La risposta su cosa succede dopo la prova descrive funzioni non ancora nel codice (nota 10 di `03_termini_di_servizio_it.md`); quella sull'età è nel codice dal 9 novembre.

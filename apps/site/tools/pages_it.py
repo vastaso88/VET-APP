@@ -165,7 +165,7 @@ PAGES = [
 
 <h2 id="emergenze">Se il tuo animale sta male</h2>
 <div class="callout">
-<p><strong>Quokka non è un servizio di emergenza.</strong> Chiama subito il tuo veterinario o la clinica veterinaria più vicina. Non rimandare una visita per qualcosa che ha detto l'app.</p>
+<p><strong>Quokka non gestisce le urgenze: non aspettare la risposta dell'app.</strong> Chiama subito il tuo veterinario o la clinica veterinaria più vicina. Non rimandare una visita per qualcosa che ha detto l'app.</p>
 </div>
 
 <h2 id="dati">Che fine fanno le tue domande</h2>

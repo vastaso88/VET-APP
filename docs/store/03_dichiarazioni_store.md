@@ -121,7 +121,7 @@ Una voce per paese di disponibilità; il testo legale vero è nei documenti coll
 |---|---|---|---|
 | Italia | 14 anni | Informativa `09_…`; consensi `04_…`; IA `01_…` | `docs/compliance/` |
 | Regno Unito | 13 anni; Children's Code se «probabile accesso di minori» | Valutazione scritta del Codice se l'app può essere usata da minori; l'app resta 18+ | `docs/compliance/uk/` |
-| Stati Uniti | COPPA sotto 13 anni solo con conoscenza effettiva; leggi statali (California ecc.) | Scheda privacy con le categorie CCPA; numeri utili in `06_numeri_utili_us.md` | `docs/compliance/us/` |
+| Stati Uniti | COPPA sotto 13 anni solo con conoscenza effettiva; leggi statali (California ecc.) | Scheda privacy con le categorie CCPA | `docs/compliance/us/` |
 | Australia | Codice sulla privacy online dei minori da registrare entro il 10/12/2026 | Domanda aperta sull'età minima e sui contenuti degli utenti | `docs/compliance/au/` |
 | Germania | 16 anni; minori con capacità limitata (§§ 104 ss. BGB) | Impressum obbligatorio nelle schede e nell'app | `docs/compliance/de/` |
 | Austria | 14 anni (§ 4 DSG) | come la Germania | `docs/compliance/at/` |

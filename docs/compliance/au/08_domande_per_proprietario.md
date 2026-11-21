@@ -27,8 +27,8 @@ Ordinate per importanza. Per ognuna: perché conta e cosa consiglio. Le prime ci
 7. **Legge applicabile.** Quale stato scegliere per la legge dei Termini (es. NSW, VIC)? Dipende da dove ha sede il servizio.
 8. **Analytics.** C'è davvero uno strumento di analisi attivo? Se no, togliere il consenso `analytics` in Australia.
 9. **Contatto privacy e supporto.** Quale indirizzo email e quali tempi di risposta (30 giorni accesso/reclami; 10 giorni lavorativi supporto)?
-10. **Numeri utili.** Ok a mostrare solo numeri verificati (000, Animal Poisons Helpline, WIRES, RSPCA statale) e a delegare le cliniche 24 ore al radar? Vuoi una lista curata per le grandi città?
-11. **Orari e gratuità dell'Animal Poisons Helpline.** Il sito dice 24/7, un articolo del 2024 dice 9–17. Può confermare chi gestisce il canale con loro?
+10. **Decaduta (21 novembre 2026):** nessun numero di telefono nei testi fissi, per nessun Paese.
+11. **Decaduta (21 novembre 2026):** nessun numero di telefono nei testi fissi, per nessun Paese.
 12. **Rating negli store.** Quale classificazione per età (Apple/Google)? Una chat IA e contenuti degli utenti possono spingere il rating; Apple blocca i 18+ in Australia dal 24/02/2026 senza conferma di maggiore età.
 13. **Procedura di violazione dati.** Chi decide e notifica a OAIC e agli utenti?
 14. **Lingua.** Un solo inglese con bandiera AU: confermi che i testi legali AU sono separati da UK/US (consenso, versione, lingua/regione registrata)?

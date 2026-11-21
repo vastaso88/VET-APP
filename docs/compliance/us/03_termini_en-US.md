@@ -22,9 +22,9 @@ You must be **at least 18** [VERIFY: age of majority varies by state] and able t
 
 Quokka helps you organize your pets' information (profiles, health records, reminders, walks), find nearby places, and ask an AI assistant general questions.
 
-**Quokka is not a veterinarian, a veterinary clinic, or a substitute for professional veterinary care.** The assistant is an AI. It can be wrong or out of date, and it does not diagnose, prescribe, or treat. Never delay or skip seeing a veterinarian because of something Quokka said. **If your animal may be in an emergency — or may have eaten something toxic — call a veterinarian or an animal poison control service right away** (numbers are in the app). See the AI and Veterinary Notice.
+**Quokka is not a veterinarian, a veterinary clinic, or a substitute for professional veterinary care.** The assistant is an AI. It can be wrong or out of date, and it does not diagnose, prescribe, or treat. Never delay or skip seeing a veterinarian because of something Quokka said. **If your animal may be in an emergency — or may have eaten something toxic — call a veterinarian or an animal poison control service right away**. See the AI and Veterinary Notice.
 
-If a person is in danger or has been poisoned, call 911 or Poison Help at 1-800-222-1222.
+**Quokka does not handle emergencies.** The app and the chat are not an emergency, first-aid, listening or rescue service, whether for animals or for people: they are not designed to judge whether a situation is urgent, they may fail to recognise an emergency, and they do not promise a reply within any set time. If you think your animal is seriously unwell, or if you or someone else is in danger, do not use the app and do not wait for a reply: contact a veterinarian or veterinary clinic, the emergency services or a listening service in your country straight away. If the chat does not flag an emergency, that does not mean there is none.
 
 ## 4. Your account and your content
 

@@ -126,7 +126,7 @@ Le leggi sulla privacy proteggono i dati di **persone**. I dati clinici dell'*an
 | Informazione generale, educativa, con fonti | Diagnosticare ("il tuo cane ha il diabete") |
 | Raccogliere sintomi e fare **triage** ("vai dal veterinario ora / entro 24 h") | Prescrivere o indicare dosaggi di farmaci su misura per un animale specifico |
 | Promemoria, scadenze, cartella dell'utente, spiegazione generica di un referto ("cosa significa in generale questo valore") con invito a discuterne col veterinario | Sostituire una visita; dire "non serve il veterinario" |
-| Dare numeri utili (centri antiveleni, pronto soccorso 24 h) | Promettere esiti o accuratezza non dimostrata |
+| Invitare l'utente a rivolgersi a un veterinario | Promettere esiti o accuratezza non dimostrata |
 | Mostrare servizi veterinari vicini | Dichiararsi "veterinario", "dottore", "clinica", usare titoli professionali |
 
 - Il **dosage safety gate** già presente nella chat va rivisto per gli USA (nomi di farmaci e unità diversi: lb, °F).
@@ -186,9 +186,6 @@ Fonte generale: [S] Orrick, "2026 State Chatbot Laws", https://www.orrick.com/en
 - https://developer.apple.com/app-store/review/guidelines/
 - https://support.google.com/googleplay/android-developer/answer/13327111
 - https://www.vmb.ca.gov/licensees/ab1399_faqs.shtml
-- https://www.aspca.org/pet-care/animal-poison-control
-- https://www.petpoisonhelpline.com/faq/
-- https://www.poison.org/
 
 [S] secondarie: tutti gli altri URL indicati nel testo.
 

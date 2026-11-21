@@ -32,7 +32,6 @@ Per la sessione coordinatrice e per chi implementa le regioni. Le righe «legale
 | Temperatura | °C | **°C** (stesso) | |
 | Ora | 24 h | più comune 12 h («9:30 am»); 24 h per orari tecnici | Preferire il formato del dispositivo |
 | Telefono | +39 … | **+61**; mobile 04xx xxx xxx; fisso (0x) xxxx xxxx; 1300 xxx xxx; 13 xx xx | Prefisso paese +61 senza lo 0 iniziale. I numeri 1300/13 non si chiamano dall'estero |
-| Emergenza | 112 | **000** | Per le persone. Veterinari: nessun numero nazionale (file 06) |
 | Indirizzi | via, civico, CAP 5 cifre | numero + via, suburb, **stato**, **postcode 4 cifre** | Campo «stato/territorio» obbligatorio: NSW, VIC, QLD, WA, SA, TAS, ACT, NT |
 | Fusi orari | uno (+DST UE) | più fusi (AEST/ACST/AWST), DST diverso per stato: QLD, NT e WA **senza** DST | Promemoria locali: usare il fuso dell'utente, non un offset fisso |
 | Stagioni | Emisfero nord | **Emisfero sud**: estate dicembre–febbraio | Contenuti stagionali (caldo, zecche, serpenti, ecc.) invertiti rispetto all'Italia. Questo è un'inferenza, non una fonte |
@@ -46,4 +45,3 @@ Per la sessione coordinatrice e per chi implementa le regioni. Le righe «legale
 - **Termini:** prezzi in A$ con GST; clausola ACL (non escludibile); legge di uno stato [da scegliere].
 - **Privacy:** APP al posto di GDPR; OAIC al posto del Garante.
 - **Consensi:** testi e versione propri `en-AU v1`; registrare lingua/regione mostrata.
-- **Numeri utili:** 000, Animal Poisons Helpline, WIRES, RSPCA statali; nessun elenco di cliniche.

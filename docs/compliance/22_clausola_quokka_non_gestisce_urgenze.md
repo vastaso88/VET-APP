@@ -1,0 +1,94 @@
+# Clausola «Quokka non gestisce le urgenze»: testo, approvazione, riaccettazione e schermata
+
+Data: 2026-11-21. Richiesta dell'Orchestratore dopo la decisione del proprietario. Non è consulenza legale; i punti ⚖️ vanno a un legale.
+
+## 1. Decisione del proprietario (parole sue, riferite dall'Orchestratore)
+
+«questo è il caso di qualcosa a cui l'app non deve rispondere, bisogna essere generici. L'APP NON GESTISCE URGENZE! mettilo anche nei disclaimers e fallo approvare all'utente, inseriscilo tra termini e condizioni».
+
+Conseguenze:
+
+1. **Nessun numero di telefono nei testi fissi, per nessun Paese**: solo frasi generiche. Il lavoro sui numeri è chiuso e cancellato per decisione del proprietario e **non si riavvia**. Tolti anche i file `06_numeri_utili_*` e il segnaposto `[NUMERI_UTILI_ITALIA]`.
+2. **La clausola «Quokka non gestisce le urgenze»** va nei disclaimer ([11](11_esclusioni_responsabilita.md) §3.2, Info e riga fissa della chat), nei Termini e condizioni (it/03 e le versioni per Paese) e nella schermata di accettazione, **con approvazione esplicita dell'utente**.
+
+## 2. Il testo (domanda a)
+
+**Versione completa, per i Termini §2** (italiano; le altre lingue sono bozze da far rivedere):
+
+> **Quokka non gestisce le urgenze.** L'app e la chat non sono un servizio di emergenza, di pronto soccorso, di ascolto o di soccorso, né per gli animali né per le persone: non sono fatte per valutare se una situazione è urgente, possono non riconoscere un'emergenza e non garantiscono una risposta in un tempo preciso. Se pensi che il tuo animale stia male in modo grave, o se tu o un'altra persona siete in pericolo, non usare l'app e non aspettare una risposta: rivolgiti subito a un veterinario o a una clinica veterinaria, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Se la chat non segnala un'urgenza, non vuol dire che non ci sia.
+
+**Versione breve** (Info della chat, prima schermata, negozio e sito):
+
+> Quokka non gestisce le urgenze: in emergenza rivolgiti subito a un veterinario, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Non aspettare la risposta dell'app.
+
+**Riga fissa sotto il campo di scrittura** (proposta, in attesa del sì del proprietario; sostituisce quella del [20](20_biblioteca_testi_originali_diritti_licenze_e_lettere.md) §20.11):
+
+> Risponde un'IA e può sbagliare. Non gestisce le urgenze: nel dubbio, chiama il veterinario.
+
+**Frase generica per i testi fissi di sconforto, autolesionismo e minori** (nessuna cifra, nessun nome di servizio, per nessun Paese):
+
+> Se stai male o sei in pericolo, rivolgiti subito ai servizi di emergenza o a un servizio di ascolto del tuo Paese.
+
+### Bozze nelle altre lingue (da far rivedere dalla Revisione traduzioni)
+
+| Lingua | Versione completa (Termini) | Versione breve |
+|---|---|---|
+| **EN** | **Quokka does not handle emergencies.** The app and the chat are not an emergency, first-aid, listening or rescue service, whether for animals or for people: they are not designed to judge whether a situation is urgent, they may fail to recognise an emergency, and they do not promise a reply within any set time. If you think your animal is seriously unwell, or if you or someone else is in danger, do not use the app and do not wait for a reply: contact a vet or veterinary clinic, the emergency services or a listening service in your country straight away. If the chat does not flag an emergency, that does not mean there is none. | Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a listening service in your country straight away. Do not wait for the app's reply. |
+| **DE** | **Quokka bearbeitet keine Notfälle.** Die App und der Chat sind kein Notfall-, Erste-Hilfe-, Beratungs- oder Rettungsdienst, weder für Tiere noch für Menschen: Sie sind nicht dafür gedacht zu beurteilen, ob eine Situation dringend ist, erkennen einen Notfall womöglich nicht und versprechen keine Antwort innerhalb einer bestimmten Zeit. Wenn Sie glauben, dass es Ihrem Tier ernsthaft schlecht geht, oder wenn Sie oder eine andere Person in Gefahr sind, nutzen Sie die App nicht und warten Sie nicht auf eine Antwort: Wenden Sie sich sofort an eine Tierärztin, einen Tierarzt oder eine Tierklinik, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Wenn der Chat keinen Notfall meldet, heißt das nicht, dass keiner vorliegt. | Quokka bearbeitet keine Notfälle: Wenden Sie sich in einem Notfall sofort an eine Tierärztin oder einen Tierarzt, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Warten Sie nicht auf die Antwort der App. |
+| **FR** | **Quokka ne gère pas les urgences.** L'application et le chat ne sont pas un service d'urgence, de premiers secours, d'écoute ou de secours, ni pour les animaux ni pour les personnes : ils ne sont pas conçus pour évaluer si une situation est urgente, peuvent ne pas reconnaître une urgence et ne promettent aucune réponse dans un délai précis. Si vous pensez que votre animal est gravement malade, ou si vous ou une autre personne êtes en danger, n'utilisez pas l'application et n'attendez pas de réponse : adressez-vous immédiatement à un vétérinaire ou à une clinique vétérinaire, aux services d'urgence ou à un service d'écoute de votre pays. Si le chat ne signale pas d'urgence, cela ne veut pas dire qu'il n'y en a pas. | Quokka ne gère pas les urgences : en cas d'urgence, adressez-vous immédiatement à un vétérinaire, aux services d'urgence ou à un service d'écoute de votre pays. N'attendez pas la réponse de l'application. |
+| **ES** | **Quokka no gestiona urgencias.** La aplicación y el chat no son un servicio de emergencias, de primeros auxilios, de escucha ni de rescate, ni para animales ni para personas: no están diseñados para valorar si una situación es urgente, pueden no reconocer una emergencia y no garantizan una respuesta en un plazo determinado. Si crees que tu animal está gravemente enfermo, o si tú u otra persona estáis en peligro, no uses la aplicación ni esperes una respuesta: acude de inmediato a un veterinario o a una clínica veterinaria, a los servicios de emergencia o a un servicio de escucha de tu país. Si el chat no avisa de una urgencia, eso no significa que no la haya. | Quokka no gestiona urgencias: ante una emergencia, acude de inmediato a un veterinario, a los servicios de emergencia o a un servicio de escucha de tu país. No esperes la respuesta de la aplicación. |
+
+Frase generica nelle altre lingue: EN «If you are unwell or in danger, contact the emergency services or a listening service in your country straight away.» · DE «Wenn es Ihnen schlecht geht oder Sie in Gefahr sind, wenden Sie sich sofort an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land.» · FR «Si vous allez mal ou si vous êtes en danger, adressez-vous immédiatement aux services d'urgence ou à un service d'écoute de votre pays.» · ES «Si te encuentras mal o estás en peligro, acude de inmediato a los servicios de emergencia o a un servicio de escucha de tu país.» Registro dello spagnolo: la app usa «tú»; le bozze `es/03` e `es/05` usano «usted» e riportano il testo in quel registro.
+
+**Come è scritto, e perché.** È una **descrizione di ciò che il servizio non fa** e di che cosa deve fare l'utente, non un esonero. Non contiene «Quokka non risponde di…»: una frase così trasformerebbe la clausola in una limitazione di responsabilità (§3). Dice «non sono fatte per valutare» e «possono non riconoscere» perché è vero: la chat non giudica la gravità del caso senza una fonte ([20](20_biblioteca_testi_originali_diritti_licenze_e_lettere.md) §20.4) e il silenzio della chat non rassicura. Non dice «non valutano» in assoluto: una risposta fondata su una fonte può dire che un sintomo è grave, e la clausola sarebbe falsa se lo negasse. Copre **animali e persone** (come ha detto il proprietario) e anche l'ascolto in crisi.
+
+## 3. Serve la doppia approvazione specifica? (domanda b)
+
+**Risposta breve: non come condizione di validità; basta l'accettazione dei Termini. Consiglio però un'accettazione esplicita dedicata** (casella separata, non pre-spuntata, con la versione breve sotto gli occhi).
+
+1. **Perché non serve la doppia approvazione.** L'art. 1341, c. 2, c.c. richiede l'approvazione specifica per iscritto per le condizioni che stabiliscono «limitazioni di responsabilità», facoltà di recesso o sospensione, decadenze, tacita proroga, clausole compromissorie e deroghe alla competenza. La clausola, come scritta, **non è nessuna di queste**: definisce l'**oggetto del servizio** (che cosa fa e non fa) e gli obblighi di cautela dell'utente. Nei contratti con i consumatori la valutazione di vessatorietà **non riguarda l'oggetto del contratto**, se è individuato in modo chiaro e comprensibile (art. 34, c. 2, Codice del consumo) ⚖️. Resta il requisito di chiarezza (art. 35): testo semplice, nel punto d'uso.
+2. **Quando invece servirebbe.** Se una frase suonasse come esonero («Quokka non risponde delle conseguenze di…», «a tuo rischio»): allora è una limitazione di responsabilità e serve l'approvazione specifica per iscritto (la doppia casella). Anche così **non varrebbe** per la morte o il danno alla persona (art. 36, c. 2, lett. a, Codice del consumo) né per dolo e colpa grave (art. 1229 c.c.), e una clausola nulla attira l'attenzione dell'AGCM ([11](11_esclusioni_responsabilita.md) §2). Per questo **non va scritta come esonero**.
+3. **Perché consiglio comunque un'accettazione dedicata.** Non perché la legge la imponga, ma per: (a) la **prova** che l'utente è stato avvertito in modo specifico (concorso del fatto colposo, art. 1227 c.c.; art. 36, c. 2, lett. c: una regola che l'utente non ha potuto conoscere non vale); (b) la **trasparenza** al punto d'uso; (c) la volontà del proprietario. Non rende lecito ciò che sarebbe vessatorio.
+4. **Le altre clausole del tipo dell'art. 1341, c. 2** nei Termini (responsabilità §14, modifica del servizio e dei termini §13, sospensione e chiusura §12, foro §15, rinnovo e prezzi §4): per i contratti con consumatori l'approvazione specifica **non sana** una clausola vessatoria, ma è prassi di mercato e prudenza; la giurisprudenza non è uniforme sul suo obbligo verso i consumatori ⚖️. Consiglio di aggiungere **una seconda casella** nel flusso di registrazione: «Approvo specificamente le clausole dei §§ 4, 12, 13, 14 e 15», con l'elenco leggibile. Punto aperto del registro 08 (riga 73).
+5. **Coerenza.** La clausola deve essere vera: l'app non deve comportarsi come se gestisse urgenze (nessuna corsia, nessun numero di telefono, regola «mai giudicare la gravità senza fonte»), e negozio, sito, post e reel devono dire lo stesso ([20](20_biblioteca_testi_originali_diritti_licenze_e_lettere.md) §20.6). **Non cancella** l'obbligo di conformità del servizio (artt. 135-octies ss. Codice del consumo): se la chat dà un'informazione sbagliata, la clausola non la copre.
+
+## 4. Come farla riaccettare agli utenti già registrati (domanda c)
+
+Il meccanismo c'è: `CURRENT_VERSIONS` in `packages/core/domain/consent/account_consent_text.py` (ogni testo ha una versione; una versione identifica «il testo che l'utente ha visto»), `ConsentRecord.version` e `CONSENT_ENFORCEMENT_ENABLED` (oggi `False`).
+
+1. **Prima del lancio** (oggi gli account sono di tester, non di consumatori): la clausola entra nella versione dei Termini che va in produzione. Si alza `TERMS_OF_SERVICE` da `v1` a `v2` (o `v3`, come i Termini) con il testo breve nuovo; con l'applicazione dei consensi accesa, **tutti gli account esistenti devono accettare prima di continuare**.
+2. **Accettazione dedicata (consigliata).** Un nuovo tipo di consenso (per esempio `EMERGENCY_NOTICE`, versione `v1`, obbligatorio, mai pre-spuntato) separato dai consensi sulla privacy: la clausola è un **riconoscimento**, non un consenso GDPR, e va tenuta distinguibile (art. 7, par. 2, GDPR). In alternativa, la clausola entra nel testo breve di `TERMS_OF_SERVICE`: valido, ma prova più debole.
+3. **Dopo il lancio** (modifica dei Termini con utenti consumatori): vale il §13 dei Termini (preavviso di [PREAVVISO_GIORNI] giorni, diritto di non accettare e andarsene) e le regole sulla modifica del servizio digitale (art. 33, c. 2, lett. m, e artt. 135-octies ss. Codice del consumo ⚖️). Poiché la clausola aggiunge un obbligo di cautela, la si tratta come **modifica sostanziale**: avviso nell'app e per e-mail, schermata alla prima apertura dopo l'aggiornamento, rifiuto possibile.
+4. **Rifiuto.** «Non accetto» porta a una pagina che spiega le alternative: esportare i dati, eliminare l'account, annullare l'abbonamento (rimborso del periodo non goduto per i piani a pagamento, se i Termini lo prevedono: da verificare). Nessuna colpevolizzazione, stessa evidenza del pulsante di accettazione.
+5. **Registrare** versione del testo, data e ora, identificativo dell'account (niente indirizzo IP, niente testo dei messaggi).
+6. **Lingue.** Le cinque lingue condividono la versione; una lingua senza testo rivisto è servita in inglese, mai in italiano (commento del codice): le bozze di §2 vanno riviste prima del rilascio.
+
+## 5. Che cosa deve mostrare la schermata (domanda d)
+
+Decide l'Orchestratore dopo questo parere; i requisiti legali:
+
+1. **Titolo**: «Quokka non gestisce le urgenze».
+2. **Testo**: la versione breve, **sempre visibile senza scorrere** (non solo un collegamento ai Termini).
+3. **Casella dedicata, non pre-spuntata**: «Ho capito che Quokka non gestisce le urgenze e non lo uso in caso di emergenza.» **Continua** attivo solo con la casella spuntata.
+4. **«Non accetto»** con lo stesso peso visivo, che porta alle alternative (§4, punto 4).
+5. **Collegamento** al testo completo (Termini §2).
+6. **Accessibilità**: contrasto, dimensione del carattere, etichette per i lettori di schermo.
+7. **Quando**: nel flusso di registrazione (con i Termini) e alla prima apertura dopo l'aggiornamento per gli account esistenti; **una volta per versione**, non a ogni apertura (stanchezza da avvisi, [11](11_esclusioni_responsabilita.md) §2).
+8. **Dove altro**: riga fissa della chat, Info della chat, negozio e sito (versione breve). **Mai numeri di telefono.**
+
+## 6. Che cosa ho cambiato
+
+- **Termini**: [it/03](it/03_termini_di_servizio_it.md) §2 (clausola; tolta la frase sui numeri di terzi), §9 (rinvio al §2) e nota 18 per il revisore e, nelle loro lingue, le bozze per Paese `at`, `au`, `be`, `ch`, `ch-fr`, `de`, `es`, `fr`, `uk`, `us` (`03_*`): traduzioni da far rivedere.
+- **Disclaimer**: [11](11_esclusioni_responsabilita.md) §3.2 (Info, riga fissa proposta, voce nuova per la clausola) e le bozze per Paese `05_*` (blocco «Emergenze» con la versione breve della clausola).
+- **Numeri**: cancellati il doc 21 e i dieci `06_numeri_utili_*`; nelle dieci bozze `05_*` tolti il «banner di emergenza» e ogni numero (centri antiveleni compresi), con la versione breve della clausola nel blocco «Emergenze» dell'avviso; tolti i numeri anche in `us/03` (911 e Poison Help) e nei file per Paese `01`, `07`, `08` e `09`; segnaposto tolto da it/04 e it/08 (domanda 15 decaduta).
+- Registro 08 (riga 72 superata, riga 73 nuova), punto ⚖️ 24 in [20](20_biblioteca_testi_originali_diritti_licenze_e_lettere.md) §11, README.
+- **Fuori da `docs/compliance`**: tolto il rinvio al file cancellato in `docs/store/03_dichiarazioni_store.md`. **Non toccati**: la pagina del sito `apps/site/it/supporto/index.html` (riga 41: il segnaposto `[NUMERI_UTILI_ITALIA]`; lo fa togliere l'Orchestratore alla sessione del sito), le stringhe dell'app `billingPaywallEmergencyTitle` e `billingPaywallEmergencyBody` (senza numeri; si può aggiungere «Quokka non gestisce le urgenze»), il commento in `harmful_requests.py` e `docs/llm/06_stato_chat_per_codex.md` (Chat).
+
+## 7. Aperti
+
+1. **Tipo di accettazione** (nuovo consenso dedicato o testo breve di `TERMS_OF_SERVICE`) e schermata: l'Orchestratore.
+2. **Seconda casella** per le altre clausole del tipo dell'art. 1341, c. 2 (§3, punto 4) ⚖️.
+3. **Traduzioni** (4 lingue): le mando io alla Revisione traduzioni quando il proprietario approva il testo italiano (l'Orchestratore mi avvisa); **pagine di assistenza, negozio e sito** da allineare (versione breve, nessun numero).
+4. **Il codice** (Chat): fatto (nessuna cifra nei testi fissi né nelle note e nei prompt letti dal modello; test `tests/unit/test_no_phone_numbers_in_fixed_texts.py`); segnalati alla Chat il commento in `harmful_requests.py` e `docs/llm/06_stato_chat_per_codex.md`.
+5. **Punto ⚖️ 24**: la clausola, scritta come descrizione del servizio, esce dal giudizio di vessatorietà (art. 34, c. 2) e dall'art. 1341, c. 2; e se l'approvazione specifica delle altre clausole è dovuta verso i consumatori.
+6. **Coerenza con la clausola.** I Termini §4 (elenco di ciò che resta dopo la prova) dicono che si possono «leggere le indicazioni di emergenza» e nel codice c'è `first_aid.py`: se sono schermate o testi dell'app, vanno presentati come informazioni generali con la clausola accanto, oppure tolti (scelta del proprietario: l'Orchestratore gliela chiede e mi dice). Le stringhe `billingPaywallEmergency*` dicono già di chiamare il veterinario, senza numeri: coerenti.

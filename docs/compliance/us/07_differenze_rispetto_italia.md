@@ -43,7 +43,6 @@ Confronto tra la versione italiana (docs/compliance/01–09) e la versione USA (
 | Nome del veterinario | "dott./dott.ssa" | "Dr." / "DVM" | Non usare titoli professionali per l'assistente. |
 | Termini sanitari | "libretto sanitario", "microchip", "antiparassitario" | "vaccination record" / "health record", "microchip", "flea & tick / heartworm prevention" [N] | Eventuali vaccini e profilassi hanno nomi e calendari diversi (rabbia obbligatoria per legge statale in molti stati [N]). |
 | Farmaci | Principi attivi europei | Nomi commerciali USA; unità in mg/lb [N] | Il *dosage safety gate* deve evitare dosi; se serve un elenco di sostanze tossiche, includere **xylitol** (gomme/sciroppi), uva e uvetta, cioccolato, ibuprofene/acetaminofene, FANS umani [N]. |
-| Numeri di emergenza | 112 | 911 (persone); centri veleni animali a pagamento (06) | |
 
 ## 3. Cosa resta uguale
 

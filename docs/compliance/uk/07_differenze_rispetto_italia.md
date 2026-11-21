@@ -39,11 +39,10 @@ Data: 2026-10-13. Le voci «conoscenza generale» sono da verificare; quelle con
 | Telefono | `+39 3xx xxx xxxx` / `0x xxxx` | `+44 7xxx xxxxxx` (cellulare), `0xxxx xxxxxx` (fisso); prefisso nazionale 0, prefisso internazionale +44 | Esempio fittizio: `07700 900123` (intervallo riservato a finzione Ofcom — da verificare) |
 | Indirizzo | via, civico, CAP, città | numero civico + via, città, **postcode** (es. «SW1A 1AA») | Il postcode ha formato variabile; il campo CAP deve diventare «Postcode» |
 | Città | provincia | contea (county) opzionale | Non obbligatoria |
-| Numero d'emergenza persone | 112 | 999 (e 112 funziona) | Non confondere con animali: doc 06 |
 | Veterinario | «veterinario» | «vet» / «veterinary surgeon» | Usare «vet» nel testo |
 | Microchip | obbligatorio per i cani | obbligatorio per i cani; per i gatti in Inghilterra obbligatorio dal 10/06/2024 (da verificare) | Contenuti informativi; non è un obbligo dell'app |
 | Passaporto animali | Passaporto europeo | Il UK ha un regime diverso dopo la Brexit (da verificare) | Contenuti sui viaggi vanno verificati |
-| Autorità animali | ASL, Comune | Local authority, RSPCA, polizia | Doc 06 |
+| Autorità animali | ASL, Comune | Local authority, RSPCA, polizia | |
 | Riconoscimento delle razze | ENCI | The Kennel Club | Dati razze: non toccati |
 | Vaccini | calendario italiano | Schemi dei veterinari UK (es. «booster», «kennel cough») | Contenuti informativi |
 | Termini d'uso | «Termini di Servizio» | «Terms of Service» | Uguale concetto |
@@ -53,6 +52,5 @@ Data: 2026-10-13. Le voci «conoscenza generale» sono da verificare; quelle con
 1. Valuta per paese: £ nei piani (`billing_models.dart`: oggi `symbol: '€'` fisso) e nel Mercatino.
 2. Distanze: miglia/km in base al paese.
 3. Campo indirizzo: «Postcode».
-4. Numeri utili per paese (doc 06).
-5. Consensi per `en-GB` (doc 04).
-6. Etichette IA e disclaimer (doc 05).
+4. Consensi per `en-GB` (doc 04).
+5. Etichette IA e disclaimer (doc 05).

@@ -6,7 +6,7 @@ Sessione: Legale EN-UK. Data di consultazione di tutte le fonti: **2026-10-13**.
 
 ## Come leggere questo documento
 
-- **Affidabilità delle fonti.** Ogni punto indica se la fonte è *primaria* (legislation.gov.uk, ico.org.uk, rcvs.org.uk, animalpoisonline.co.uk, vpisglobal.com, rspca.org.uk) o *secondaria* (studi legali, stampa di settore, blog). Le fonti secondarie vanno riverificate dal solicitor sulla fonte primaria. Dove ho letto solo un riassunto, lo scrivo.
+- **Affidabilità delle fonti.** Ogni punto indica se la fonte è *primaria* (legislation.gov.uk, ico.org.uk, rcvs.org.uk, rspca.org.uk) o *secondaria* (studi legali, stampa di settore, blog). Le fonti secondarie vanno riverificate dal solicitor sulla fonte primaria. Dove ho letto solo un riassunto, lo scrivo.
 - **Marcatori.** ✅ confermato su fonte primaria · 🟡 solo fonte secondaria o parziale · ❓ non verificato / incerto · ⚖️ da decidere con il solicitor.
 - **Nessuna norma inventata.** Dove non ho trovato conferma lo dico in «Incertezze» (sezione 12). I riferimenti a norme che conosco ma che non ho riletto in questa sessione sono segnati «(da verificare)».
 - Il Regno Unito non è un blocco unico: **Inghilterra, Galles, Scozia e Irlanda del Nord** hanno differenze (p. es. veterinary medicines, tribunali, benessere animale). Questo documento tratta il livello UK; le differenze regionali sono ❓.
@@ -148,6 +148,6 @@ Sessione: Legale EN-UK. Data di consultazione di tutte le fonti: **2026-10-13**.
 
 ## Fonti consultate (2026-10-13)
 
-Primarie: legislation.gov.uk (VSA 1966 ss. 19 e 27; CRA 2015 digital content; CCR 2013 reg. 37; SI 2026/82), ico.org.uk (fee, cookies/PECR, Children's code, DUAA, ISS e consenso), rcvs.org.uk (cap. 4, 3, 23, Find a Vet), animalpoisonline.co.uk, vpisglobal.com, rspca.org.uk, ofcom.org.uk (illegal content duties).
+Primarie: legislation.gov.uk (VSA 1966 ss. 19 e 27; CRA 2015 digital content; CCR 2013 reg. 37; SI 2026/82), ico.org.uk (fee, cookies/PECR, Children's code, DUAA, ISS e consenso), rcvs.org.uk (cap. 4, 3, 23, Find a Vet), rspca.org.uk, ofcom.org.uk (illegal content duties).
 Secondarie: studi legali e stampa citati in linea.
 Non raggiungibili (404/403): ICO DPIA, ICO contatti, ICO DUAA (URL originale), RCVS «under care and out-of-hours emergency cover», Vets Now (403), RSPCA emergencies.
