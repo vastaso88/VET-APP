@@ -19,3 +19,6 @@ Vedi `02_configurazione_store.md` §6. Nessun acquisto reale.
 | Flutter `in_app_purchase` | scritto, **non compilato né analizzato** qui (manca Flutter); da `flutter pub get`, `flutter analyze`, prova su dispositivo |
 | Admin portal | pagina scritta, **non compilata** qui (mancano i node_modules) |
 | Produzione | **non pronta**: mancano configurazione store e collaudo sandbox end-to-end |
+
+## Decisione aperta (Rob e proprietario)
+- Piano cambiato dal team nel portale (`POST /admin/users/{id}/plan`, tabella di registro `admin_plan_changes`): con `BILLING_ENABLED=true` la verifica successiva con gli store (`sync_plan`) lo sovrascrive, e con `SUBSCRIPTION_TEST_PLAN` impostato non ha effetto; per gli account del team esiste già `BILLING_PLAN_OVERRIDES`. Da decidere se il cambio fatto dal team debba prevalere sugli store, durare fino a una data, o servire solo con il billing spento.

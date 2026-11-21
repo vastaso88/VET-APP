@@ -350,3 +350,56 @@ def test_action_tokens_are_signed_with_the_secret_value_not_its_accessor() -> No
         f"admin-user-actions:{secret}".encode(), b"payload", hashlib.sha256
     ).hexdigest()
     assert _signature("payload") == expected
+
+
+# --- plan change by the team (PR #62) ------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "caller",
+    [
+        AuthenticatedUser(id="b", email="b@example.com", email_verified=True),
+        # The admin address, not confirmed: someone who signed up with it.
+        AuthenticatedUser(id="x", email="admin@example.com", email_verified=False),
+    ],
+)
+def test_only_a_confirmed_admin_can_change_a_plan(
+    portal: tuple[TestClient, Database],
+    monkeypatch: pytest.MonkeyPatch,
+    caller: AuthenticatedUser,
+) -> None:
+    monkeypatch.setattr(get_container().auth_provider, "get_current_user", lambda: caller)
+    browser, database = portal
+    assert browser.post("/admin/users/a/plan", json={"plan": "ultra"}).status_code == 403
+    database.rpc.assert_not_called()
+
+
+def test_a_team_account_plan_cannot_be_changed(portal: tuple[TestClient, Database]) -> None:
+    browser, database = portal
+    database.users.append(account("admin"))
+    database.users[-1].email = "admin@example.com"
+    assert browser.post("/admin/users/admin/plan", json={"plan": None}).status_code == 403
+    database.rpc.assert_not_called()
+
+
+def test_admin_plan_change_goes_through_the_audited_function(
+    portal: tuple[TestClient, Database],
+) -> None:
+    browser, database = portal
+    response = browser.post("/admin/users/a/plan", json={"plan": "pro"})
+    assert response.status_code == 200
+    assert response.json() == {"owner_id": "a", "plan": "pro"}
+    database.rpc.assert_called_once_with(
+        "admin_change_user_plan", {"p_owner_id": "a", "p_admin_id": "admin", "p_plan": "pro"}
+    )
+    assert browser.post("/admin/users/a/plan", json={"plan": "gold"}).status_code == 422
+
+
+def test_admin_plan_change_failure_does_not_leak_details(
+    portal: tuple[TestClient, Database],
+) -> None:
+    browser, database = portal
+    database.rpc = Mock(side_effect=RuntimeError("operator does not exist: text = uuid"))
+    response = browser.post("/admin/users/a/plan", json={"plan": "plus"})
+    assert response.status_code == 503
+    assert "uuid" not in response.text

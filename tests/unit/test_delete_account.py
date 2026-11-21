@@ -444,3 +444,52 @@ def test_a_fresh_sign_in_can_delete_the_account() -> None:
 
     assert client.db["pet_profiles"] == []
     assert client.auth.admin.deleted_users == [owner]
+
+
+class _DatabaseError(Exception):
+    """Shaped like postgrest's APIError: only the code matters here."""
+
+    def __init__(self, code: str) -> None:
+        super().__init__(code)
+        self.code = code
+
+
+class _FailingQuery(_Query):
+    def __init__(self, db: dict[str, list[dict[str, Any]]], table: str, code: str) -> None:
+        super().__init__(db, table)
+        self._code = code
+
+    def execute(self) -> _Response:
+        raise _DatabaseError(self._code)
+
+
+class _OneTableFails(FakeSupabase):
+    def __init__(self, table: str, code: str) -> None:
+        super().__init__()
+        self._failing = (table, code)
+
+    def table(self, name: str) -> _Query:
+        if name == self._failing[0]:
+            return _FailingQuery(self.db, name, self._failing[1])
+        return super().table(name)
+
+
+@pytest.mark.parametrize("code", ["42P01", "PGRST205"])
+def test_a_table_whose_migration_was_not_run_does_not_block_the_deletion(code: str) -> None:
+    owner = "11111111-1111-4111-8111-111111111111"
+    client = _OneTableFails("admin_plan_changes", code)
+    _seed(client, owner, tag="a")
+
+    report = _eraser(client).erase_data(owner)
+
+    assert client.db["pet_profiles"] == []
+    assert any("admin_plan_changes" in note for note in report.notes)
+    assert "admin_plan_changes" not in report.rows_deleted
+
+
+def test_any_other_database_error_still_stops_the_deletion() -> None:
+    owner = "11111111-1111-4111-8111-111111111111"
+    client = _OneTableFails("admin_plan_changes", "42501")
+    _seed(client, owner, tag="a")
+    with pytest.raises(_DatabaseError):
+        _eraser(client).erase_data(owner)

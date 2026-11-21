@@ -245,3 +245,29 @@ def test_in_memory_export_isolates_owners() -> None:
     assert export.data["conversations"] == []
     assert [row["title"] for row in export.data["reminders"]] == ["Vaccino"]
     assert "segreto" not in str(export.model_dump())
+
+
+def test_export_skips_a_table_not_created_yet_and_says_so() -> None:
+    from test_delete_account import _DatabaseError, _FailingQuery
+
+    class _Missing(_SigningFake):
+        def table(self, name: str) -> Any:
+            if name == "admin_plan_changes":
+                return _FailingQuery(self.db, name, "PGRST205")
+            return super().table(name)
+
+    client = _Missing()
+    _seed(client, OWNER_A, tag="a")
+    export = _exporter(client).export_data(OWNER_A)
+    assert export.data["admin_plan_changes"] == []
+    assert any("admin_plan_changes" in note for note in export.notes)
+    assert export.data["pet_profiles"]
+
+    class _Denied(_SigningFake):
+        def table(self, name: str) -> Any:
+            if name == "admin_plan_changes":
+                return _FailingQuery(self.db, name, "42501")
+            return super().table(name)
+
+    with pytest.raises(_DatabaseError):
+        _exporter(_Denied()).export_data(OWNER_A)

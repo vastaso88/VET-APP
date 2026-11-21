@@ -15,6 +15,10 @@ from uuid import UUID
 from packages.core.application.ports.account_exporter import AccountExport, ExportedFile
 from packages.core.domain.feedback.pseudonym import reporter_ref
 from packages.core.domain.radar_reports.models import contributor_pseudonym
+from packages.infrastructure.persistence.supabase.missing_table import (
+    is_missing_table,
+    missing_table_note,
+)
 from packages.infrastructure.persistence.supabase.supabase_account_eraser import (
     CHAT_REPORT_REF,
     HANDLED_ELSEWHERE,
@@ -88,9 +92,12 @@ class SupabaseAccountExporter:
         now = datetime.now(UTC)
         export = AccountExport(generated_at=now, owner_id=owner_id)
         export.account = self._account(owner_id)
+        # Tables not created yet on the database (migration pending): exported
+        # as empty, with a note, instead of failing the whole export.
+        missing: list[str] = []
 
         for table, column in OWNER_TABLES:
-            export.data[table] = self._select_where(table, column, owner_id)
+            export.data[table] = self._select_where(table, column, owner_id, missing=missing)
 
         pet_ids = [str(row["id"]) for row in export.data.get("pet_profiles", []) if "id" in row]
         export.data["clinical_events"] = (
@@ -104,13 +111,13 @@ class SupabaseAccountExporter:
         export.data.update(self._marketplace_messages(owner_id))
         # A pending deletion request is data about the owner too (when and until).
         export.data["account_deletion_requests"] = self._select_where(
-            "account_deletion_requests", "owner_id", owner_id
+            "account_deletion_requests", "owner_id", owner_id, missing=missing
         )
 
         if self._radar_pseudonym_key:
             pseudonym = contributor_pseudonym(owner_id, key=self._radar_pseudonym_key)
             for table, column in RADAR_PSEUDONYM_TABLES:
-                export.data[table] = self._select_where(table, column, pseudonym)
+                export.data[table] = self._select_where(table, column, pseudonym, missing=missing)
         else:
             for table, _ in RADAR_PSEUDONYM_TABLES:
                 export.data.setdefault(table, [])
@@ -119,7 +126,10 @@ class SupabaseAccountExporter:
         if self._chat_reporter_secret:
             table, column = CHAT_REPORT_REF
             keyed = self._select_where(
-                table, column, reporter_ref(owner_id, self._chat_reporter_secret)
+                table,
+                column,
+                reporter_ref(owner_id, self._chat_reporter_secret),
+                missing=missing,
             )
             seen = {row.get("id") for row in export.data.get(table, [])}
             export.data[table] = export.data.get(table, []) + [
@@ -137,6 +147,7 @@ class SupabaseAccountExporter:
                 for row in rows
             ]
 
+        export.notes.extend(missing_table_note(table) for table in dict.fromkeys(missing))
         export.files = self._files(owner_id, export.data, now)
         export.notes.append(
             f"file links expire {SIGNED_URL_SECONDS // 60} minutes after generated_at"
@@ -266,8 +277,18 @@ class SupabaseAccountExporter:
 
     # -- helpers -------------------------------------------------------------
 
-    def _select_where(self, table: str, column: str, value: str) -> list[dict[str, Any]]:
-        response = self._client.table(table).select("*").eq(column, value).execute()
+    def _select_where(
+        self, table: str, column: str, value: str, *, missing: list[str] | None = None
+    ) -> list[dict[str, Any]]:
+        """With [missing], a table that does not exist yet reads as empty and is
+        recorded there; any other error (and any error without it) propagates."""
+        try:
+            response = self._client.table(table).select("*").eq(column, value).execute()
+        except Exception as exc:
+            if missing is None or not is_missing_table(exc):
+                raise
+            missing.append(table)
+            return []
         return self._rows(response)
 
     @staticmethod
