@@ -49,6 +49,9 @@ export async function getAdminUsers(q: string, page: number, country = ""): Prom
 }
 
 export type AdminPet = {
+  country: string | null;
+  region: string | null;
+  city: string | null;
   id: string;
   owner_id: string;
   name: string;
@@ -72,9 +75,11 @@ export async function getAdminPets(
   page: number,
   species = "",
   status = "",
+  country = "",
+  region = "",
 ): Promise<AdminPets | null> {
   await requireAdminSession();
-  const params = new URLSearchParams({ q, page: String(page), species, status });
+  const params = new URLSearchParams({ q, page: String(page), species, status, country, region });
   try {
     return await authenticatedAdminRequest<AdminPets>(`/admin/pets?${params}`);
   } catch (error) {
