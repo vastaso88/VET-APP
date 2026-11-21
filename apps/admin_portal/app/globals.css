@@ -1053,3 +1053,35 @@ button, input, select { font: inherit; }
   display: block; width: 100%; min-width: 100px; max-width: 180px;
   margin-top: 8px; padding: 7px; font-size: 12px;
 }
+
+
+/* Admin PRICING */
+.pricing-tabs { display:flex; gap:8px; flex-wrap:wrap; }
+.pricing-tabs button { border:1px solid var(--border); background:white; padding:11px 16px; border-radius:8px; cursor:pointer; }
+.pricing-tabs button.active { background:var(--accent); color:white; border-color:var(--accent); }
+.pricing-scroll { max-width:100%; overflow-x:auto; margin-top:18px; }
+.pricing-table { border-collapse:collapse; width:100%; min-width:740px; font-size:13px; }
+.pricing-table th,.pricing-table td { padding:12px; text-align:left; border-bottom:1px solid var(--border); vertical-align:middle; }
+.pricing-table th { color:var(--muted); font-weight:650; }
+.pricing-table tbody th { min-width:180px; color:var(--text); }
+.pricing-table tbody th strong,.pricing-table tbody th small { display:block; }
+.pricing-table tbody th small { margin-top:4px; font-weight:400; }
+.pricing-table input,.pricing-table select,.pricing-add input,.pricing-add select,.pricing-code input,.pricing-filter input,.pricing-enrollment input {
+  border:1px solid var(--border); border-radius:7px; padding:9px; background:#fff; color:var(--text); max-width:100%; min-width:0;
+}
+.pricing-table input[type="text"] { width:95px; }
+.pricing-table button { border:1px solid var(--border); background:#fff; border-radius:7px; padding:8px 10px; cursor:pointer; }
+.pricing-table button:disabled { opacity:.45; cursor:default; }
+.pricing-actions { white-space:nowrap; }
+.pricing-actions button { margin-right:6px; }
+.pricing-feature-cell { min-width:135px; display:grid; gap:8px; }
+.pricing-feature-cell label { display:flex; align-items:center; gap:7px; font-size:12px; }
+.pricing-feature-cell input[type="number"] { width:70px; }
+.pricing-feature-cell input[type="checkbox"] { width:16px; height:16px; }
+.pricing-code,.pricing-filter label,.pricing-add label { display:grid; gap:7px; font-size:13px; }
+.pricing-code { max-width:230px; }
+.pricing-add { display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); gap:14px; margin-top:18px; align-items:end; }
+.pricing-filter { display:flex; gap:18px; align-items:end; justify-content:space-between; margin-top:18px; }
+.pricing-filter label { max-width:180px; }
+.pricing-enrollment { display:grid; gap:12px; justify-items:start; }
+.pricing-message { font-weight:650; }
