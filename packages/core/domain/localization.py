@@ -395,7 +395,7 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
     # number by country (112 in Europe); English has no country, so the general sentence.
     "person_hurt_line": {
         "it": "Se una persona è ferita o in pericolo, rivolgiti subito ai servizi di emergenza o al pronto soccorso.",
-        "en": "If a person is hurt or in danger, turn right away to the emergency services or the emergency department.",
+        "en": "If a person is hurt or in danger, contact the emergency services right away or go to the emergency department.",
         "es": "Si una persona está herida o en peligro, acude enseguida a los servicios de emergencia o a urgencias.",
         "de": "Wenn ein Mensch verletzt oder in Gefahr ist, wenden Sie sich sofort an den Notruf oder gehen Sie in die Notaufnahme.",
         "fr": "Si une personne est blessée ou en danger, adressez-vous tout de suite aux services d'urgence ou allez aux urgences.",

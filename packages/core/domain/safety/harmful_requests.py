@@ -1601,14 +1601,14 @@ SELF_HARM_TEXTS: dict[str, str] = {
         "quando vuoi, io resto qui."
     ),
     "en": (
-        "I am truly sorry you feel this bad, and you did the right thing writing it. Please "
-        "turn right away to the emergency services or a listening service in your country: "
+        "I am truly sorry you feel this bad, and you did the right thing by writing it. Please "
+        "reach out right away to the emergency services or a helpline in your country: "
         "what you feel deserves real people, ready to listen. I can talk with you about your "
         "animal; I am here whenever you want."
     ),
     "es": (
         "Siento de verdad que te encuentres tan mal, e hiciste bien en escribirlo. Acude "
-        "enseguida a los servicios de emergencia o a un servicio de escucha de tu país: lo que "
+        "enseguida a los servicios de emergencia o a una línea de ayuda de tu país: lo que "
         "sientes merece personas reales, dispuestas a escucharte. Puedo hablar contigo de tu "
         "animal; aquí sigo cuando quieras."
     ),
@@ -1621,8 +1621,8 @@ SELF_HARM_TEXTS: dict[str, str] = {
     "fr": (
         "Je suis vraiment désolé que vous alliez si mal, et vous avez bien fait de l'écrire. "
         "Adressez-vous tout de suite aux services d'urgence ou à un service d'écoute de votre "
-        "pays : ce que vous ressentez mérite de vraies personnes, prêtes à écouter. Je peux "
-        "vous parler de votre animal ; je reste là quand vous voulez."
+        "pays : ce que vous ressentez mérite de vraies personnes, prêtes à écouter. Je peux "
+        "vous parler de votre animal ; je reste là quand vous voulez."
     ),
 }
 
@@ -1632,19 +1632,19 @@ HOPELESSNESS_OPENING: dict[str, str] = {
         "servizio di ascolto del tuo Paese, e non tenere questo peso per te. "
     ),
     "en": (
-        "I take what you write seriously: please turn right away to the emergency services or "
-        "a listening service in your country, and do not carry this weight on your own. "
+        "I take what you write seriously: please reach out right away to the emergency services or "
+        "a helpline in your country, and do not carry this weight on your own. "
     ),
     "es": (
-        "Me tomo en serio lo que escribes: acude enseguida a los servicios de emergencia o a un "
-        "servicio de escucha de tu país, y no cargues con este peso sin apoyo. "
+        "Me tomo en serio lo que escribes: acude enseguida a los servicios de emergencia o a una "
+        "línea de ayuda de tu país, y no cargues con este peso sin apoyo. "
     ),
     "de": (
         "Was Sie schreiben, nehme ich ernst: Wenden Sie sich bitte sofort an den Notruf oder an "
         "eine Beratungsstelle in Ihrem Land, und bleiben Sie mit dieser Last nicht allein. "
     ),
     "fr": (
-        "Je prends ce que vous écrivez au sérieux : adressez-vous tout de suite aux services "
+        "Je prends ce que vous écrivez au sérieux : adressez-vous tout de suite aux services "
         "d'urgence ou à un service d'écoute de votre pays, et ne gardez pas ce poids pour "
         "vous. "
     ),
@@ -1669,7 +1669,7 @@ HUMAN_HEALTH_TEXTS: dict[str, str] = {
     "en": (
         "I am sorry you are unwell. For people's health, though, I am not the right source: "
         "Quokka is about animals and the people who live with them. For you, a doctor or a "
-        "pharmacist; if you feel really ill, turn right away to the emergency services of "
+        "pharmacist; if you feel really ill, reach out right away to the emergency services of "
         "your country. I am here for your animal whenever you want."
     ),
     "es": (
@@ -1686,8 +1686,8 @@ HUMAN_HEALTH_TEXTS: dict[str, str] = {
     ),
     "fr": (
         "Je suis désolé que vous ne vous sentiez pas bien. Pour la santé des personnes, je ne "
-        "suis pas la bonne source : Quokka s'occupe des animaux et de ceux qui vivent avec "
-        "eux. Pour vous, médecin ou pharmacien ; si vous allez vraiment mal, adressez-vous tout "
+        "suis pas la bonne source : Quokka s'occupe des animaux et de ceux qui vivent avec "
+        "eux. Pour vous, médecin ou pharmacien ; si vous allez vraiment mal, adressez-vous tout "
         "de suite aux services d'urgence de votre pays. Pour votre animal, je suis là quand "
         "vous voulez."
     ),
