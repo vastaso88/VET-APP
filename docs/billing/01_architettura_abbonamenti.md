@@ -52,6 +52,7 @@ App (in_app_purchase)            Backend FastAPI                       Store
 - **Upgrade/downgrade**: Google crea un nuovo token con `linkedPurchaseToken` → il vecchio diventa `replaced`; Apple mantiene `originalTransactionId` e cambia `productId` (il downgrade vale dal rinnovo, come dice lo store).
 - **Rimborso/revoca**: `REFUND`/`REVOKE` (Apple), `voidedPurchaseNotification` e `SUBSCRIPTION_REVOKED` (Google) tolgono l'accesso subito.
 - **Ambienti**: un deployment accetta solo `BILLING_STORE_ENVIRONMENT` (sandbox o production), mai entrambi.
+- **Account del team e demo**: `DEVELOPER_EMAILS` resta come prima (accesso illimitato, nessun piano richiesto, anche con billing attivo). `BILLING_PLAN_OVERRIDES` (`email:piano,...`, solo variabile d'ambiente) tiene un account su un piano fisso senza store; `/subscription/status` lo dichiara con `plan_source: "override"`. Togliere l'email dalla variabile rimette l'account sotto lo store al controllo successivo. Nessuna richiesta può attivarlo.
 - **Admin test**: `POST /admin/billing/test-grant`, solo admin, rifiutato in produzione e se `BILLING_ADMIN_TEST_GRANTS` non è `true`; crea un diritto `admin_test` marcato come anomalia, separato dai flussi pubblici.
 
 ## Vincoli delle policy (da riverificare sulle versioni correnti prima dell'invio)

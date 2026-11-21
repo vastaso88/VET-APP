@@ -81,6 +81,10 @@ class Settings(BaseSettings):
     billing_verification_tolerance_hours: int = Field(
         default=24, ge=0, le=72, alias="BILLING_VERIFICATION_TOLERANCE_HOURS"
     )
+    # Team/demo accounts kept on a fixed plan without the store, by e-mail:
+    # "a@example.com:ultra,b@example.com:pro". Environment only (real
+    # addresses never in the repository); a request cannot set it.
+    billing_plan_overrides: str = Field(default="", alias="BILLING_PLAN_OVERRIDES")
     billing_admin_test_grants: bool = Field(default=False, alias="BILLING_ADMIN_TEST_GRANTS")
     apple_bundle_id: str = Field(default="", alias="APPLE_BUNDLE_ID")
     apple_issuer_id: str = Field(default="", alias="APPLE_ISSUER_ID")

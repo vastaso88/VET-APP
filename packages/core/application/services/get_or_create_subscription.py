@@ -14,9 +14,11 @@ from packages.core.domain.subscription.limits import (
     PlanLimits,
     effective_limits,
 )
-from packages.core.domain.subscription.models import Subscription
+from packages.core.domain.subscription.models import Subscription, SubscriptionPlan
 from packages.core.domain.subscription.retention import data_kept_until
 from packages.core.domain.subscription.store import best_plan
+
+PLAN_KEYS = SubscriptionPlan.ALL
 
 if TYPE_CHECKING:
     from packages.core.application.services.store_billing import StoreBillingService
@@ -60,6 +62,9 @@ class GetOrCreateSubscriptionOutput(BaseModel):
     # The verified store subscription behind the plan (Apple/Google), or the
     # most recent one when none grants access (to show "expired"/"refunded").
     store_subscription: StoreSubscriptionView | None = None
+    # Where the access comes from: store | override (team/demo account, no
+    # store) | developer | test_period | trial | legacy (billing off) | None.
+    plan_source: str | None = None
 
 
 class GetOrCreateSubscriptionService:
@@ -86,7 +91,11 @@ class GetOrCreateSubscriptionService:
         access_sync: PlanAccessSync | None = None,
         trial_days: int = 14,
         store_billing: StoreBillingService | None = None,
+        plan_overrides: dict[str, str] | None = None,
     ) -> None:
+        self._plan_overrides = {
+            k.strip().lower(): v for k, v in (plan_overrides or {}).items() if v in PLAN_KEYS
+        }
         # With store billing on, the plan is only what a verified store
         # subscription says (StoreBillingService.sync_plan).
         self._store_billing = store_billing
@@ -108,13 +117,34 @@ class GetOrCreateSubscriptionService:
                 )
             )
 
+        email = data.email.strip().lower()
+        override = self._plan_overrides.get(email) if self._test_plan is None else None
         store_view: StoreSubscriptionView | None = None
-        if self._store_billing is not None and self._test_plan is None:
+        if override is not None:
+            # Team/demo account (BILLING_PLAN_OVERRIDES, environment only): a
+            # fixed plan without the store. Saved so the database rules on the
+            # app's direct writes see it too; removing the override hands the
+            # account back to the store on the next check.
+            if subscription.plan != override:
+                subscription = self._repository.save(
+                    subscription.model_copy(update={"plan": override})
+                )
+            plan_source: str | None = "override"
+        elif self._store_billing is not None and self._test_plan is None:
             plan = self._store_billing.sync_plan(data.owner_id)
             subscription = subscription.model_copy(update={"plan": plan})
             store_view = self._store_view(data.owner_id)
+            plan_source = "store" if subscription.plan is not None else None
+        else:
+            plan_source = "legacy" if subscription.plan is not None else None
 
-        is_developer = data.email.strip().lower() in self._developer_emails
+        is_developer = email in self._developer_emails
+        if is_developer:
+            plan_source = "developer"
+        elif self._test_plan is not None:
+            plan_source = "test_period"
+        elif plan_source is None and subscription.is_trial_active():
+            plan_source = "trial"
         if self._access_sync is not None:
             self._access_sync.sync(
                 owner_id=data.owner_id, is_developer=is_developer, test_plan=self._test_plan
@@ -132,6 +162,7 @@ class GetOrCreateSubscriptionService:
                 has_access=True,
                 limits=effective_limits(reported, is_developer=is_developer),
                 test_period=True,
+                plan_source=plan_source,
             )
 
         return GetOrCreateSubscriptionOutput(
@@ -145,6 +176,7 @@ class GetOrCreateSubscriptionService:
                 else None
             ),
             store_subscription=store_view,
+            plan_source=plan_source,
         )
 
     def _store_view(self, owner_id: str) -> StoreSubscriptionView | None:

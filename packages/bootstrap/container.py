@@ -275,6 +275,18 @@ from packages.shared.config.settings import Settings, get_settings
 logger = logging.getLogger(__name__)
 
 
+def _parse_plan_overrides(raw: str) -> dict[str, str]:
+    """"email:plan,email:plan" -> {email: plan}; malformed or unknown plans
+    are ignored (never a crash, never a plan that does not exist)."""
+    result: dict[str, str] = {}
+    for item in raw.split(","):
+        email, _, plan = item.strip().rpartition(":")
+        plan = plan.strip().lower()
+        if email.strip() and plan in SubscriptionPlan.ALL:
+            result[email.strip().lower()] = plan
+    return result
+
+
 def _resolve_subscription_test_plan(raw: str) -> str | None:
     """SUBSCRIPTION_TEST_PLAN as a plan key, or None for the normal behaviour.
     A value that is not a plan is ignored with a warning rather than refused:
@@ -452,6 +464,7 @@ class ApplicationContainer:
             access_sync=self.plan_access_sync,
             trial_days=self.settings.billing_trial_days,
             store_billing=self.store_billing_service() if self.settings.billing_enabled else None,
+            plan_overrides=_parse_plan_overrides(self.settings.billing_plan_overrides),
         )
 
     def _build_store_entitlement_repository(self) -> StoreEntitlementRepository:

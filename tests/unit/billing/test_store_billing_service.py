@@ -503,3 +503,52 @@ def test_admin_test_grant_is_a_separate_marked_entitlement() -> None:
     entitlement = world.service.grant_admin_test("a", "pro", 7)
     assert entitlement.store == Store.ADMIN_TEST and entitlement.anomaly == "admin_test_grant"
     assert _status(world, "a").has_access is True  # type: ignore[attr-defined]
+
+
+# --- team / demo accounts ------------------------------------------------------
+
+
+def _status_as(world: World, owner: str, email: str, overrides: dict[str, str]) -> object:
+    return GetOrCreateSubscriptionService(
+        world.subscriptions,
+        frozenset({"dev@example.com"}),
+        store_billing=world.service,
+        plan_overrides=overrides,
+    ).execute(GetOrCreateSubscriptionInput(owner_id=owner, email=email))
+
+
+def test_override_keeps_a_demo_account_on_its_plan_without_the_store() -> None:
+    world = World()
+    world.owner("demo")
+    status = _status_as(world, "demo", "Demo@Example.com", {"demo@example.com": "ultra"})
+    assert status.has_access is True  # type: ignore[attr-defined]
+    assert status.subscription.plan == "ultra"  # type: ignore[attr-defined]
+    assert status.plan_source == "override"  # type: ignore[attr-defined]
+    # Removing the override hands the account back to the store: no purchase, no plan.
+    assert _status_as(world, "demo", "demo@example.com", {}).has_access is False  # type: ignore[attr-defined]
+
+
+def test_developer_keeps_unlimited_access_with_billing_on() -> None:
+    world = World()
+    world.owner("dev")
+    status = _status_as(world, "dev", "dev@example.com", {})
+    assert status.has_access is True and status.limits is None  # type: ignore[attr-defined]
+    assert status.plan_source == "developer"  # type: ignore[attr-defined]
+
+
+def test_override_with_an_unknown_plan_is_ignored() -> None:
+    world = World()
+    world.owner("demo")
+    status = _status_as(world, "demo", "demo@example.com", {"demo@example.com": "gold"})
+    assert status.has_access is False  # type: ignore[attr-defined]
+
+
+def test_override_parsing() -> None:
+    from packages.bootstrap.container import _parse_plan_overrides
+
+    assert _parse_plan_overrides(
+        " A@example.com:Pro , bad, b@example.com:gold,c@example.com:plus"
+    ) == {
+        "a@example.com": "pro",
+        "c@example.com": "plus",
+    }

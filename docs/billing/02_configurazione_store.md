@@ -23,6 +23,7 @@ L'app mostra sempre il prezzo restituito dallo store. Formato di `BILLING_CATALO
 | `BILLING_VERIFICATION_TOLERANCE_HOURS` | 24 | 24 | 24 (max 72) | no |
 | `BILLING_CATALOG_JSON` | vuoto | vuoto o override | vuoto o override | no |
 | `BILLING_ADMIN_TEST_GRANTS` | `true` se serve | `true` se serve | ignorato (sempre rifiutato) | no |
+| `BILLING_PLAN_OVERRIDES` | account demo/team | idem | account del team e demo (`email:piano,...`): piano fisso senza store, niente ricavi | no (ma dati personali: solo nell'ambiente) |
 | `SUBSCRIPTION_TEST_PLAN` | vuoto | vuoto | vuoto (altrimenti tutti sul piano di test) | no |
 | `APPLE_BUNDLE_ID` | — | bundle id app | bundle id app | no |
 | `APPLE_ISSUER_ID`, `APPLE_KEY_ID` | — | da App Store Connect | idem | no (ma riservati) |
