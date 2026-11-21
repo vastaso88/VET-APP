@@ -1155,10 +1155,10 @@ export async function getBillingUser(ownerId: string): Promise<BillingUser> {
     `/admin/billing/users/${encodeURIComponent(ownerId)}`,
   );
 }
-export async function changeAdminUserPlan(ownerId: string, plan: "plus" | "pro" | "ultra" | null): Promise<void> {
+export async function changeAdminUserPlan(ownerId: string, plan: "plus" | "pro" | "ultra" | null, totpCode: string): Promise<void> {
   await requireAdminSession();
   await authenticatedAdminRequest(`/admin/users/${encodeURIComponent(ownerId)}/plan`, {
     method: "POST",
-    body: JSON.stringify({ plan }),
+    body: JSON.stringify({ plan, totp_code: totpCode }),
   });
 }
