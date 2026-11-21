@@ -62,9 +62,9 @@ class MarketplaceMessageModerationRequest(BaseModel):
 
 
 class MarketplaceRestrictionRequest(BaseModel):
-    owner_id: str = Field(min_length=1, max_length=100)
+    owner_id: str = Field(min_length=1, max_length=100, pattern=r"^[A-Za-z0-9_-]+$")
     reason: Literal["spam", "scam", "harassment", "prohibited_items", "other"]
-    note: str | None = Field(default=None, max_length=1000)
+    note: str | None = Field(default=None, min_length=3, max_length=1000)
 
 
 class AdminScheduleRequest(BaseModel):
@@ -819,6 +819,36 @@ def admin_marketplace_restrictions() -> dict[str, object]:
 def admin_restrict_marketplace_user(request: MarketplaceRestrictionRequest) -> dict[str, object]:
     """Keeps one person out of the Mercatino: no new ads, no edits, no messages."""
     admin = _require_admin()
+    if get_container().settings.persistence_backend == "supabase":
+        from apps.api.routes.admin_user_actions import (
+            ExecuteRequest,
+            PreviewRequest,
+            execute,
+            preview,
+        )
+
+        prepared = preview(
+            PreviewRequest(
+                owner_ids=[request.owner_id.strip()],
+                action="restrict_marketplace",
+                reason=request.reason,
+                note=(request.note or "").strip() or f"Moderation: {request.reason}",
+                duration_days=7,
+            )
+        )
+        outcome = execute(ExecuteRequest(token=prepared["token"], confirmed=True))
+        if outcome["results"][0]["status"] not in {"applied", "already_applied"}:
+            raise HTTPException(status_code=409, detail="Prepare the user action again")
+        rows = (
+            _admin_client()
+            .table("marketplace_user_restrictions")
+            .select("*")
+            .eq("owner_id", request.owner_id.strip())
+            .limit(1)
+            .execute()
+            .data
+        )
+        return {"restriction": rows[0] if rows else None}
     restriction = (
         get_container()
         .marketplace_messaging_moderation_service()
@@ -830,6 +860,35 @@ def admin_restrict_marketplace_user(request: MarketplaceRestrictionRequest) -> d
 @router.post("/moderation/marketplace_restrictions/{owner_id}/lift")
 def admin_lift_marketplace_restriction(owner_id: str) -> dict[str, object]:
     admin = _require_admin()
+    if get_container().settings.persistence_backend == "supabase":
+        from apps.api.routes.admin_user_actions import (
+            ExecuteRequest,
+            PreviewRequest,
+            execute,
+            preview,
+        )
+
+        prepared = preview(
+            PreviewRequest(
+                owner_ids=[owner_id],
+                action="lift_marketplace",
+                reason="other",
+                note="Manual release from the moderation queue",
+            )
+        )
+        outcome = execute(ExecuteRequest(token=prepared["token"], confirmed=True))
+        if outcome["results"][0]["status"] not in {"applied", "already_applied"}:
+            raise HTTPException(status_code=409, detail="Prepare the user action again")
+        rows = (
+            _admin_client()
+            .table("marketplace_user_restrictions")
+            .select("*")
+            .eq("owner_id", owner_id)
+            .limit(1)
+            .execute()
+            .data
+        )
+        return {"restriction": rows[0] if rows else None}
     restriction = (
         get_container().marketplace_messaging_moderation_service().lift(owner_id, admin.id)
     )

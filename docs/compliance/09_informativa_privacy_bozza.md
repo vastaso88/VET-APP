@@ -20,6 +20,7 @@ Versione di prova: 2026-10-28 (aggiunti cognome, telefono facoltativo e foto pro
 | Contributi | Segnalazioni di luoghi, stelle sulle aree cani, voti. Associati a uno pseudonimo, non al tuo nome | Tu |
 | Mercatino | Gli annunci che pubblichi: titolo, descrizione, prezzo, foto, categoria, specie, città e posizione approssimata (circa 1 km). Gli altri utenti li vedono nella loro zona; il tuo nome e la tua e-mail non vengono mostrati | Tu |
 | Dati tecnici | Indirizzo IP e registri dei server | Il sistema, per funzionamento e sicurezza |
+| Assistenza e moderazione | Registriamo data e ora degli accessi riusciti per 90 giorni, senza aggiungere IP o token a questo registro. Conserviamo gli interventi amministrativi sull'account per 365 giorni, con motivo ed eventuale caso. Il personale autorizzato può consultare le metriche d'uso aggregate, i dispositivi registrati e nazione/città della residenza che hai salvato, senza aprire chat non segnalate o vedere i tuoi percorsi | Il sistema e il personale autorizzato, per assistenza e sicurezza |
 | Rapporti sugli errori (facoltativi) | Se li consenti: tipo di errore, cosa stava facendo l'app, modello del telefono, versione di Android e dell'app, lingua e fuso orario. Mai il testo dei messaggi, foto, posizione, il tuo nome o la tua e-mail | Il sistema, solo se li attivi in Impostazioni |
 | Abbonamento | Piano scelto, inizio e fine della prova. Nessun dato di pagamento: i pagamenti non sono ancora attivi | Tu e il sistema |
 

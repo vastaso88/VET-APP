@@ -28,6 +28,7 @@ def portal(monkeypatch: pytest.MonkeyPatch) -> tuple[TestClient, Mock]:
         lambda: AuthenticatedUser(id="admin", email="admin@example.com", email_verified=True),
     )
     client = Mock()
+    monkeypatch.setattr("apps.api.routes.admin_users.countries", lambda _: {})
     client.auth.admin.list_users.return_value = []
     monkeypatch.setattr("apps.api.routes.admin_users._admin_client", lambda: client)
     return TestClient(app), client

@@ -89,6 +89,8 @@ jobs:
         run: npm install
       - name: Admin typecheck
         run: npm run typecheck
+      - name: User operations SQL transactions and permissions
+        run: npm run test:sql
       - name: Admin build
         run: npm run build
 

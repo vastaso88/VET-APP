@@ -1,50 +1,40 @@
-import { restrictMarketplaceUser } from "../app/moderation/actions";
+"use client";
 
-export const RESTRICTION_REASONS = [
-  ["spam", "Spam"],
-  ["scam", "Scam"],
-  ["harassment", "Harassment"],
-  ["prohibited_items", "Prohibited items"],
-  ["other", "Other rule breach"],
-] as const;
+import { useState } from "react";
+import type { UserCase } from "../lib/admin-api";
+import { UserActions } from "./user-actions";
 
-/**
- * Keeps one person out of the Mercatino (no new ads, no edits, no messages).
- * The person sees the reason in their own language and the date; the note stays
- * in the portal.
- */
 export function MarketplaceRestrictForm({
   ownerId,
   label,
+  caseRef,
 }: {
   ownerId?: string | null;
   label: string;
+  caseRef?: UserCase;
 }) {
+  const [manualId, setManualId] = useState("");
+  const target = ownerId || manualId.trim();
   return (
-    <form action={restrictMarketplaceUser} className="moderation-action-form">
-      {ownerId ? (
-        <input type="hidden" name="owner_id" value={ownerId} />
-      ) : (
+    <div>
+      <h4>{label}</h4>
+      {!ownerId && (
         <label>
-          User id
-          <input name="owner_id" required maxLength={100} placeholder="Account id" />
+          ID utente{" "}
+          <input
+            maxLength={100}
+            value={manualId}
+            onChange={(event) => setManualId(event.target.value)}
+          />
         </label>
       )}
-      <label>
-        Reason
-        <select name="reason" defaultValue="spam">
-          {RESTRICTION_REASONS.map(([value, text]) => (
-            <option key={value} value={value}>{text}</option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Note (team only)
-        <input name="note" maxLength={1000} placeholder="Optional, never shown to the person" />
-      </label>
-      <div className="form-actions">
-        <button className="danger-button" type="submit">{label}</button>
-      </div>
-    </form>
+      {target && (
+        <UserActions
+          key={target}
+          ownerIds={caseRef ? [] : [target]}
+          cases={caseRef ? [caseRef] : []}
+        />
+      )}
+    </div>
   );
 }

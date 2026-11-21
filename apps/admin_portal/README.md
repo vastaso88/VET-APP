@@ -14,6 +14,15 @@ This is intentionally a separate product surface from `apps/mobile_app`.
 
 ## v0.2
 
+Users now has country filters, account details, retained-data/30-day quota metrics,
+device registrations, successful-login history, Marketplace case links and a
+filterable timeline. Signed previews support individual and bulk Marketplace
+restrictions/lifts and device revocation, with atomic per-account audit receipts.
+Closed-by-age operations live under Users. See
+`../../docs/runbooks/admin_user_operations.md` for data meaning and mandatory SQL /
+retention-scheduler setup before deployment. Next.js is pinned to 16.4.6 for its
+security patch.
+
 - Supabase-backed login through the existing FastAPI `/auth/login`
 - server-side admin allowlist enforced by FastAPI
 - Overview with live Auth / pet / conversations / Radar / moderation / scrape metrics
@@ -23,7 +32,8 @@ This is intentionally a separate product surface from `apps/mobile_app`.
   trial deadline. Read-only: opening the page never starts a trial or changes a plan.
   Public-test and developer access follow the backend subscription rules.
   Payments are explicitly unavailable: a selected plan is not proof of payment;
-  the current model has no transaction ledger. No new environment variables or SQL.
+  the current model has no transaction ledger. No new environment variables;
+  apply the Users operations SQL migration before deploying this version.
   Deploy the backend endpoint before the portal; unavailable data shows an error,
   not a zero-user or zero-revenue report.
 - "Consumi IA" (`/ai-usage`): what the AI costs, from the backend's `GET /admin/llm-usage`
