@@ -16,6 +16,8 @@ def list_admin_pets(
     page_size: int = Query(default=50, ge=1, le=100),
     species: str = Query(default="", max_length=50),
     status: str = Query(default="", pattern=r"^(|active|inactive|exotic|memorial)$"),
+    country: str = Query(default="", max_length=2),
+    region: str = Query(default="", max_length=200),
 ) -> dict[str, Any]:
     _require_admin()
     try:
@@ -27,6 +29,23 @@ def list_admin_pets(
             .execute()
         )
         rows = list(getattr(response, "data", None) or [])
+        # UserLocation stores country and city, but has no region field.
+        owner_ids = sorted({str(row["owner_id"]) for row in rows if row.get("owner_id")})
+        locations: dict[str, dict[str, Any]] = {}
+        for start in range(0, len(owner_ids), 100):
+            result = (
+                client.table("user_locations")
+                .select("owner_id,home_country_code,home_city")
+                .in_("owner_id", owner_ids[start:start + 100])
+                .execute()
+            )
+            for location in getattr(result, "data", None) or []:
+                locations[str(location["owner_id"])] = location
+        for row in rows:
+            location = locations.get(str(row.get("owner_id")), {})
+            row["country"] = location.get("home_country_code")
+            row["region"] = None  # No administrative region persisted for users.
+            row["city"] = location.get("home_city")
         needle = q.strip().casefold()
         if needle:
             rows = [
@@ -34,6 +53,10 @@ def list_admin_pets(
                 if any(needle in str(row.get(field) or "").casefold()
                        for field in ("name", "id", "owner_id", "breed"))
             ]
+        if country:
+            rows = [row for row in rows if (row.get("country") or "").upper() == country.upper()]
+        if region:
+            rows = [row for row in rows if region.casefold() in (row.get("city") or "").casefold()]
         if species:
             rows = [row for row in rows if _species_bucket(row) == species]
         if status:
