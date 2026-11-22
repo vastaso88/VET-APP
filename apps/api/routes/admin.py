@@ -357,12 +357,12 @@ def admin_me() -> dict[str, str]:
 @router.get("/overview")
 def admin_overview() -> dict[str, object]:
     _require_admin()
-    return _cached_admin_overview(int(time.monotonic() // 30))
+    return _cached_admin_overview(int(time.monotonic() // 120))
 
 
 @lru_cache(maxsize=2)
 def _cached_admin_overview(_bucket: int) -> dict[str, object]:
-    """Cache expensive aggregate dashboard queries for up to 30 seconds."""
+    """Cache expensive aggregate dashboard queries for up to 120 seconds."""
     client = _admin_client()
 
     auth_users = _list_auth_users(client)

@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import {
   ADMIN_COOKIE,
+  ADMIN_REFRESH_COOKIE,
+  ADMIN_REFRESH_MAX_AGE,
   requireAdminSession,
   supabasePublishableKey,
   supabaseUrl,
@@ -93,18 +95,31 @@ export async function finishAdminTotpEnrollment(factorId: string, code: string):
   const challenge = await supabaseMfaRequest<{ id: string }>(
     token, `/factors/${encodeURIComponent(factorId)}/challenge`, "POST", {},
   );
-  const verified = await supabaseMfaRequest<{ access_token: string; expires_in?: number }>(
+  const verified = await supabaseMfaRequest<{
+    access_token: string; refresh_token?: string; expires_in?: number;
+  }>(
     token, `/factors/${encodeURIComponent(factorId)}/verify`, "POST",
     { challenge_id: challenge.id, code },
   );
   if (!verified.access_token) throw new Error("Impossibile attivare TOTP.");
   // The first verification upgrades the session and revokes other sessions.
   // Keep this server-side httpOnly; never expose the upgraded JWT to the client.
-  (await cookies()).set(ADMIN_COOKIE, verified.access_token, {
+  const store = await cookies();
+  store.set(ADMIN_COOKIE, verified.access_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: Math.min(3600, Math.max(60, verified.expires_in ?? 3600)),
+    maxAge: Math.max(60, verified.expires_in ?? 3600),
   });
+  // MFA verification may rotate the session's refresh token too.
+  if (verified.refresh_token) {
+    store.set(ADMIN_REFRESH_COOKIE, verified.refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: ADMIN_REFRESH_MAX_AGE,
+    });
+  }
 }

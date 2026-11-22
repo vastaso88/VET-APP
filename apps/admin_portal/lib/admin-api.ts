@@ -1,8 +1,20 @@
+import { createHash } from "node:crypto";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import {
+  ADMIN_COOKIE,
+  apiBaseUrl,
+} from "./admin-auth-config";
 
-export const ADMIN_COOKIE = "vet_admin_access_token";
+export {
+  ADMIN_COOKIE,
+  ADMIN_REFRESH_COOKIE,
+  ADMIN_REFRESH_MAX_AGE,
+  apiBaseUrl,
+  supabaseUrl,
+  supabasePublishableKey,
+} from "./admin-auth-config";
 
 export type AdminUser = {
   id: string;
@@ -530,30 +542,6 @@ export type ModerationDetail = {
   votes?: Array<{ vote: number; created_at: string }>;
 };
 
-export function apiBaseUrl(): string {
-  const configured = process.env.VET_API_BASE_URL?.trim();
-  if (configured) return configured.replace(/\/$/, "");
-
-  return "https://vet-app-psi-nine.vercel.app";
-}
-
-export function supabaseUrl(): string {
-  const configured =
-    process.env.ADMIN_SUPABASE_URL?.trim() ??
-    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  if (configured) return configured.replace(/\/$/, "");
-
-  return "https://ywbuzgwbkrmkukkpysbz.supabase.co";
-}
-
-export function supabasePublishableKey(): string {
-  return (
-    process.env.ADMIN_SUPABASE_PUBLISHABLE_KEY?.trim() ??
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ??
-    "sb_publishable_t5vFAehg91FYPh_rFLOiUQ_Wv9tFh5m"
-  );
-}
-
 async function tokenFromCookie(): Promise<string | null> {
   const cookieStore = await cookies();
   return cookieStore.get(ADMIN_COOKIE)?.value ?? null;
@@ -573,6 +561,7 @@ async function adminFetch(
       ...(init.headers ?? {}),
     },
     cache: "no-store",
+    signal: init.signal ?? AbortSignal.timeout(path === "/admin/me" ? 8000 : 20000),
   });
 }
 
@@ -598,7 +587,8 @@ async function authenticatedAdminRequest<T>(
   if (!token) redirect("/login");
 
   const response = await adminFetch(path, token, init);
-  if (response.status === 401 || response.status === 403) redirect("/login");
+  if (response.status === 401) redirect("/login");
+  // 403 means denied, not an expired session; don't bounce to login.
   if (!response.ok) {
     let detail = `Admin API unavailable (${response.status})`;
     try {
@@ -613,17 +603,54 @@ async function authenticatedAdminRequest<T>(
   return (await response.json()) as T;
 }
 
+// A warm Next.js worker can reuse the backend-verified admin identity for
+// 30 seconds. Cache keys are SHA-256 hashes of the full token (never stored),
+// and every protected data/mutation endpoint still authenticates at the API.
+const sessionCache = new Map<string, { user: AdminUser; until: number }>();
+const SESSION_TTL_MS = 30_000;
+const SESSION_CACHE_MAX = 256;
+
+function tokenExpiryMs(token: string): number {
+  try {
+    const body = JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString("utf8")) as {
+      exp?: number;
+    };
+    return typeof body.exp === "number" ? body.exp * 1000 : 0;
+  } catch {
+    return 0;
+  }
+}
+
 export const getAdminSession = cache(async (): Promise<AdminUser | null> => {
   const token = await tokenFromCookie();
   if (!token) return null;
+  const key = createHash("sha256").update(token).digest("hex");
+  const now = Date.now();
+  const cached = sessionCache.get(key);
+  if (cached && cached.until > now) return cached.user;
+  sessionCache.delete(key);
 
-  try {
-    const response = await adminFetch("/admin/me", token);
-    if (!response.ok) return null;
-    return (await response.json()) as AdminUser;
-  } catch {
-    return null;
+  // A transient error should render an error boundary, NEVER force a logout.
+  // Only the backend's definitive 401 means the token is invalid/expired.
+  const response = await adminFetch("/admin/me", token);
+  if (response.status === 401) return null;
+  if (!response.ok) {
+    throw new AdminApiError(response.status, "Verifica amministratore temporaneamente non disponibile.");
   }
+  const user = (await response.json()) as AdminUser;
+  if (!user.id || !user.email) throw new Error("Risposta identità amministratore non valida.");
+  const expiry = tokenExpiryMs(token) - 15_000;
+  const until = Math.min(now + SESSION_TTL_MS, expiry);
+  if (until > now) {
+    if (sessionCache.size >= SESSION_CACHE_MAX) {
+      for (const [k, value] of sessionCache) {
+        if (value.until <= now) sessionCache.delete(k);
+      }
+      if (sessionCache.size >= SESSION_CACHE_MAX) sessionCache.delete(sessionCache.keys().next().value!);
+    }
+    sessionCache.set(key, { user, until });
+  }
+  return user;
 });
 
 export async function requireAdminSession(): Promise<AdminUser> {

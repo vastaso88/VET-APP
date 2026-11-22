@@ -43,7 +43,7 @@ export async function AdminShell({
 
         <nav className="sidebar-nav" aria-label="Admin navigation">
           {sections.map((item) => (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} href={item.href} prefetch={false}>
               {item.label}
             </Link>
           ))}
