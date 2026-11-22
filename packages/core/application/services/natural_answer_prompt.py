@@ -337,7 +337,7 @@ _GRIEF = (
 )
 _HOPELESSNESS = (
     "THE OWNER SAYS NOTHING MAKES SENSE OR CANNOT GET UP. The opening line (turn to the "
-    "emergency services or a listening service of their country) is already written before "
+    "emergency services or a helpline of their country) is already written before "
     "your text: do not repeat it, never add a phone number, do not diagnose, do not "
     "minimise, no advice on the person's own health (sleep, food, medicines, therapy). Stay "
     "with the person and the animal they lost, in a few warm sentences."

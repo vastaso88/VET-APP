@@ -1327,7 +1327,7 @@ def mentions_a_death(message: str) -> bool:
 def expresses_hopelessness(message: str) -> bool:
     """ "Niente ha più senso, nemmeno alzarmi": taken seriously, without a
     diagnosis; a fixed opening line points, generically and with no number,
-    to the emergency services or a listening service of their country (owner's
+    to the emergency services or a helpline of their country (owner's
     decision, 21/11/2026), then the model goes on about the animal. Words about ending one's life go
     to ``expresses_self_harm`` instead, which has no model at all."""
     return bool(_HOPELESSNESS.search(normalize_for_matching(message)))
@@ -1601,14 +1601,14 @@ SELF_HARM_TEXTS: dict[str, str] = {
     ),
     "en": (
         "I am truly sorry you feel this bad, and you did the right thing writing it. If you "
-        "are unwell or in danger, contact the emergency services or a listening service in "
+        "are unwell or in danger, contact the emergency services or a helpline in "
         "your country straight away. I can talk with you about your animal; I am here "
         "whenever you want."
     ),
     "es": (
         "Siento de verdad que te encuentres tan mal, e hiciste bien en escribirlo. Si te "
         "encuentras mal o estás en peligro, acude de inmediato a los servicios de emergencia "
-        "o a un servicio de escucha de tu país. Puedo hablar contigo de tu animal; aquí sigo "
+        "o a una línea de ayuda de tu país. Puedo hablar contigo de tu animal; aquí sigo "
         "cuando quieras."
     ),
     "de": (
@@ -1632,11 +1632,11 @@ HOPELESSNESS_OPENING: dict[str, str] = {
     ),
     "en": (
         "I take what you write seriously. If you are unwell or in danger, contact the "
-        "emergency services or a listening service in your country straight away. "
+        "emergency services or a helpline in your country straight away. "
     ),
     "es": (
         "Me tomo en serio lo que escribes. Si te encuentras mal o estás en peligro, acude de "
-        "inmediato a los servicios de emergencia o a un servicio de escucha de tu país. "
+        "inmediato a los servicios de emergencia o a una línea de ayuda de tu país. "
     ),
     "de": (
         "Was Sie schreiben, nehme ich ernst. Wenn es Ihnen schlecht geht oder Sie in Gefahr "

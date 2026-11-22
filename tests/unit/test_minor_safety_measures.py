@@ -236,3 +236,17 @@ def test_the_send_service_reads_the_declared_age_on_every_turn() -> None:
     teen_prompt, adult_prompt = (r.system_prompt for r in client.requests[-2:])
     assert "THE ACCOUNT BELONGS TO A TEENAGER" in teen_prompt
     assert "THE ACCOUNT BELONGS TO A TEENAGER" not in adult_prompt
+
+
+def test_the_generic_sentence_uses_the_approved_words_in_english_and_spanish() -> None:
+    # Normativa, review of the "Quokka does not handle urgencies" translations (23/11/2026)
+    from packages.core.domain.safety.harmful_requests import (
+        HOPELESSNESS_OPENING,
+        SELF_HARM_TEXTS,
+    )
+
+    for texts in (SELF_HARM_TEXTS, HOPELESSNESS_OPENING):
+        assert "a helpline in your country" in texts["en"]
+        assert "listening service" not in texts["en"]
+        assert "una línea de ayuda de tu país" in texts["es"]
+        assert "servicio de escucha" not in texts["es"]
