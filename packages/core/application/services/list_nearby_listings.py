@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
+from packages.core.domain.geo.bounding_box import bounding_box
 from packages.core.domain.geo.models import Coordinates, haversine_distance_km
 from packages.core.domain.marketplace.models import ListingCategory, MarketplaceListing
 from packages.core.domain.territory.rules import (
@@ -28,9 +29,10 @@ class ListNearbyListingsOutput(BaseModel):
 
 
 class ListNearbyListingsService:
-    """Filters/sorts in Python, not SQL - fine at MVP scale, and it keeps
-    the fuzzed-coordinate privacy boundary entirely inside this codebase
-    rather than depending on a geo-aware database extension.
+    """The database narrows the candidates by category and by a latitude/longitude box
+    around the search circle (no geo extension needed); here the exact distance, the
+    visibility rules and the order are applied in Python, which keeps the
+    fuzzed-coordinate privacy boundary entirely inside this codebase.
 
     Hard rules (owner decisions 2026-10-14 and 2026-10-26): the radius is
     mandatory, between ``MARKETPLACE_MIN_RADIUS_KM`` and
@@ -57,7 +59,11 @@ class ListNearbyListingsService:
 
         # Distance is the filter: a buyer near a border also sees the ads just
         # across it (each one carries its seller's country, flag and currency).
-        candidates = self._repository.list_active()
+        # Only the ads inside a box around the circle reach Python (QK-08), not every
+        # active ad of every country: the box is a superset, the exact distance follows.
+        candidates = self._repository.list_active_in_box(
+            bounding_box(data.buyer_location, radius), data.category
+        )
         if self._hidden_owner_ids is not None:
             hidden = self._hidden_owner_ids()
             candidates = [item for item in candidates if item.owner_id not in hidden]
@@ -69,7 +75,7 @@ class ListNearbyListingsService:
             for item in candidates
         }
         nearby = [item for item in candidates if distances[item.id] <= radius]
-        nearby.sort(key=lambda item: distances[item.id])
+        nearby.sort(key=lambda item: (distances[item.id], item.id))
         return ListNearbyListingsOutput(
             listings=nearby, distances_km={item.id: distances[item.id] for item in nearby}
         )

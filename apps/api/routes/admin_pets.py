@@ -4,7 +4,9 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
-from apps.api.routes.admin import _admin_client, _require_admin, _species_bucket
+from apps.api.routes.admin import _admin_client, _require_admin
+from apps.api.routes.admin_directories_legacy import legacy_pets_directory
+from packages.infrastructure.admin.user_reports import pets_directory
 
 router = APIRouter(prefix="/admin/pets", tags=["admin"])
 
@@ -22,60 +24,35 @@ def list_admin_pets(
     _require_admin()
     try:
         client = _admin_client()
-        # Fetch only administrative directory fields, never medical notes or records.
-        response = (
-            client.table("pet_profiles")
-            .select("id,owner_id,name,species,species_group,breed,is_active,is_exotic,is_memorial")
-            .execute()
+        # Search, filters, order and page run in the database (QK-07): the directory
+        # fields of one page come back, never medical notes or the whole pet table.
+        directory = pets_directory(
+            client,
+            q=q,
+            species=species,
+            status=status,
+            country=country,
+            region=region,
+            page=page,
+            page_size=page_size,
+            # TEMPORARY: the old logic while the database function does not exist yet.
+            fallback=lambda: legacy_pets_directory(
+                client,
+                q=q,
+                species=species,
+                status=status,
+                country=country,
+                region=region,
+                page=page,
+                page_size=page_size,
+            ),
         )
-        rows = list(getattr(response, "data", None) or [])
-        # UserLocation stores country and city, but has no region field.
-        owner_ids = sorted({str(row["owner_id"]) for row in rows if row.get("owner_id")})
-        locations: dict[str, dict[str, Any]] = {}
-        for start in range(0, len(owner_ids), 100):
-            result = (
-                client.table("user_locations")
-                .select("owner_id,home_country_code,home_city")
-                .in_("owner_id", owner_ids[start : start + 100])
-                .execute()
-            )
-            for location in getattr(result, "data", None) or []:
-                locations[str(location["owner_id"])] = location
-        for row in rows:
-            location = locations.get(str(row.get("owner_id")), {})
-            row["country"] = location.get("home_country_code")
-            row["region"] = None  # No administrative region persisted for users.
-            row["city"] = location.get("home_city")
-        needle = q.strip().casefold()
-        if needle:
-            rows = [
-                row
-                for row in rows
-                if any(
-                    needle in str(row.get(field) or "").casefold()
-                    for field in ("name", "id", "owner_id", "breed")
-                )
-            ]
-        if country:
-            rows = [row for row in rows if (row.get("country") or "").upper() == country.upper()]
-        if region:
-            rows = [row for row in rows if region.casefold() in (row.get("city") or "").casefold()]
-        if species:
-            rows = [row for row in rows if _species_bucket(row) == species]
-        if status:
-            flag = {
-                "active": "is_active",
-                "inactive": "is_active",
-                "exotic": "is_exotic",
-                "memorial": "is_memorial",
-            }[status]
-            expected = status != "inactive"
-            rows = [row for row in rows if row.get(flag) is expected]
-        rows.sort(key=lambda row: (str(row.get("name") or "").casefold(), str(row.get("id") or "")))
-        total = len(rows)
-        page = min(page, max(1, (total + page_size - 1) // page_size))
-        selected = rows[(page - 1) * page_size : page * page_size]
-        return {"pets": selected, "total": total, "page": page, "page_size": page_size}
+        return {
+            "pets": directory["rows"],
+            "total": directory["total"],
+            "page": directory["page"],
+            "page_size": page_size,
+        }
     except HTTPException:
         raise
     except Exception:

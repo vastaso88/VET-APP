@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
@@ -107,41 +106,6 @@ class PetsScaffold extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class RoundedSurface extends StatelessWidget {
-  const RoundedSurface({
-    required this.child,
-    super.key,
-    this.padding = const EdgeInsets.all(AppSpacing.xl),
-    this.backgroundColor = AppColors.surface,
-    this.borderColor = AppColors.border,
-  });
-
-  final Widget child;
-  final EdgeInsets padding;
-  final Color backgroundColor;
-  final Color borderColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppRadii.xl),
-        border: Border.all(color: borderColor),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.shadowSoft,
-            blurRadius: 24,
-            offset: Offset(0, 14),
-          ),
-        ],
-      ),
-      child: child,
     );
   }
 }

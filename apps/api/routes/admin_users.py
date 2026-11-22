@@ -4,8 +4,8 @@ import base64
 import hashlib
 import hmac
 import json
-from collections import Counter
 from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
 from typing import Any, Literal
 
 import httpx
@@ -13,12 +13,39 @@ from fastapi import APIRouter, HTTPException, Path, Query
 from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
-from apps.api.routes.admin import _admin_client, _list_auth_users, _parse_datetime, _require_admin
+from apps.api.routes.admin import _admin_client, _parse_datetime, _require_admin
+from apps.api.routes.admin_directories_legacy import legacy_users_directory
 from packages.core.domain.subscription.models import Subscription
-from packages.infrastructure.admin.user_reports import countries, moderation
+from packages.infrastructure.admin.user_reports import moderation, users_directory
 from packages.shared.auth_context import get_access_token
 
 router = APIRouter(prefix="/admin/users", tags=["admin"])
+
+
+def _directory_user(row: dict[str, Any]) -> SimpleNamespace:
+    """A directory row shaped like the Auth user `_account` reads, plus its location."""
+    country_code = row.get("home_country_code")
+    city = row.get("home_city")
+    saved_at = row.get("home_saved_at")
+    located = country_code is not None or city is not None or saved_at is not None
+    return SimpleNamespace(
+        id=row["id"],
+        email=row.get("email"),
+        created_at=row.get("created_at"),
+        last_sign_in_at=row.get("last_sign_in_at"),
+        email_confirmed_at=row.get("email_confirmed_at"),
+        banned_until=row.get("banned_until"),
+        location=(
+            {
+                "country_code": country_code,
+                "city": city,
+                "source": "residence" if country_code else None,
+                "updated_at": saved_at,
+            }
+            if located
+            else None
+        ),
+    )
 
 
 def _account(user: Any, row: dict[str, Any] | None, now: datetime) -> dict[str, Any]:
@@ -71,36 +98,20 @@ def list_users(
     _require_admin()
     try:
         client = _admin_client()
-        users = _list_auth_users(client)
-        locations = countries(client)
-        needle = q.strip().casefold()
-        if needle:
-            users = [
-                user
-                for user in users
-                if needle in str(getattr(user, "email", "") or "").casefold()
-                or needle in str(user.id).casefold()
-            ]
-        country_counts = Counter(
-            locations.get(str(user.id), {}).get("country_code") or "unknown" for user in users
-        )
-        if country:
-            users = [
-                user
-                for user in users
-                if (locations.get(str(user.id), {}).get("country_code") or "unknown") == country
-            ]
-        users.sort(
-            key=lambda user: (
-                _parse_datetime(getattr(user, "created_at", None))
-                or datetime.min.replace(tzinfo=UTC),
-                str(user.id),
+        # Search, country filter, order and page are applied in the database (QK-07):
+        # one page of accounts comes back, not every account of the project.
+        directory = users_directory(
+            client,
+            q=q,
+            country=country,
+            page=page,
+            page_size=page_size,
+            # TEMPORARY: the old logic while the database function does not exist yet.
+            fallback=lambda: legacy_users_directory(
+                client, q=q, country=country, page=page, page_size=page_size
             ),
-            reverse=True,
         )
-        total = len(users)
-        page = min(page, max(1, (total + page_size - 1) // page_size))
-        selected = users[(page - 1) * page_size : page * page_size]
+        selected = [_directory_user(row) for row in directory["rows"]]
         subscriptions = {}
         if selected:
             response = (
@@ -115,16 +126,16 @@ def list_users(
             "users": [
                 {
                     **_account(user, subscriptions.get(str(user.id)), now),
-                    "location": locations.get(str(user.id)),
+                    "location": user.location,
                 }
                 for user in selected
             ],
-            "total": total,
-            "page": page,
+            "total": directory["total"],
+            "page": directory["page"],
             "page_size": page_size,
             "test_plan": get_container().subscription_test_plan,
             "payments_available": False,
-            "countries": dict(sorted(country_counts.items())),
+            "countries": dict(sorted(directory["countries"].items())),
         }
     except HTTPException:
         raise

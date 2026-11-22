@@ -3,7 +3,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../design_system/tokens/app_spacing.dart';
 import '../../design_system/tokens/app_text_styles.dart';
 import '../../l10n/l10n.dart';
 import 'splash_messages.dart';
@@ -11,37 +10,6 @@ import '../../design_system/tokens/app_colors.dart';
 
 /// How often the feature teaser under the animation changes.
 const splashMessageInterval = Duration(milliseconds: 2500);
-
-/// The splash's animal-ticker + rotating-teaser animation, extracted so any
-/// other slow-loading screen can reuse the same "the app is working on
-/// something" moment instead of a bare spinner — first reused by the News
-/// page's loading state (2026-09-30).
-class LoadingAnimation extends StatelessWidget {
-  const LoadingAnimation({super.key, this.label, this.messageColor});
-
-  /// Colour of the rotating phrases when the ground is not the usual light one.
-  final Color? messageColor;
-
-  /// Shown above the animation, e.g. "Carico le News...". Omit to match
-  /// the splash's own bare animation (no caption).
-  final String? label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (label != null) ...[
-          Text(label!, style: AppTextStyles.title, textAlign: TextAlign.center),
-          const SizedBox(height: AppSpacing.lg),
-        ],
-        const SplashAnimalTicker(),
-        const SizedBox(height: AppSpacing.lg),
-        SplashRotatingMessages(color: messageColor),
-      ],
-    );
-  }
-}
 
 /// Continuously scrolling strip of pet emojis with a small bobbing motion.
 class SplashAnimalTicker extends StatefulWidget {

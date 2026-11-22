@@ -15,6 +15,7 @@ import '../features/account/data/profile_photo_repository.dart';
 import '../features/auth/data/remember_me_store.dart';
 import '../features/billing/data/billing_demo_store.dart';
 import '../features/billing/data/store_billing_controller.dart';
+import '../features/chat/data/chat_demo_store.dart';
 import '../features/dog_walks/data/active_walk_recovery_store.dart';
 import '../features/dog_walks/data/walk_home_widget.dart';
 import '../features/location/data/location_preference_store.dart';
@@ -119,6 +120,8 @@ Future<void> bootstrap() async {
           // home-screen widget's pet list, the profile photo in memory.
           unawaited(LocationPreferenceStore.instance.clear());
           PetDemoStore.instance.reset();
+          // The chats held in memory (and any read still in flight) go too.
+          ChatDemoStore.instance.reset();
           unawaited(const ActiveWalkRecoveryStore().clear());
           unawaited(syncPetsToHomeWidget(const []));
           ProfilePhotoRepository.clearLocalCache();

@@ -56,6 +56,24 @@ class PetPhotoEntry {
   bool get isVideo => kind == PetMediaKind.video;
 }
 
+/// What one pet's gallery folder counts.
+class PetMediaCounts {
+  const PetMediaCounts({this.photos = 0, this.videos = 0});
+
+  final int photos;
+  final int videos;
+}
+
+/// Reads one page of the light `pet_photos` rows (`pet_id` and, when
+/// [withMediaType], `media_type`) of [petIds]: the source of
+/// [PetPhotoRepository.countsForPets], replaceable in tests.
+typedef PetMediaCountRows = Future<List<dynamic>> Function(
+  List<String> petIds, {
+  required bool withMediaType,
+  required int from,
+  required int to,
+});
+
 /// One `pet_photos` row as an entry; rows without `media_type` (every row
 /// written before videos existed) are photos.
 PetPhotoEntry petPhotoEntryFromRow(Map<String, dynamic> map) {
@@ -214,10 +232,12 @@ class PetPhotoRepository {
     PetPhotoDiskCache? diskCache,
     PetPhotoObjectStore? objects,
     String? Function()? ownerIdResolver,
+    PetMediaCountRows? mediaCountRows, // test seam: replaces the read of the counts
   })  : _client = client,
         _disk = diskCache ?? PetPhotoDiskCache.instance,
         _objects = objects,
-        _ownerIdResolver = ownerIdResolver;
+        _ownerIdResolver = ownerIdResolver,
+        _mediaCountRows = mediaCountRows;
 
   static const bucket = 'pet-photos';
 
@@ -262,6 +282,7 @@ class PetPhotoRepository {
   final PetPhotoDiskCache _disk;
   final PetPhotoObjectStore? _objects;
   final String? Function()? _ownerIdResolver;
+  final PetMediaCountRows? _mediaCountRows;
 
   PetPhotoObjectStore? _objectStore() {
     final injected = _objects;
@@ -490,6 +511,82 @@ class PetPhotoRepository {
     return (rows as List<dynamic>)
         .map((row) => petPhotoEntryFromRow(row as Map<String, dynamic>))
         .toList(growable: false);
+  }
+
+  /// How many photos and videos each of [petIds] has, for the folder captions
+  /// of the gallery: ONE request for the whole group (two light columns per
+  /// row, never the full rows [list] returns), instead of one full list per pet.
+  /// A pet with no media is simply absent from the map (read it as 0 and 0).
+  ///
+  /// Only the requested pets are counted, and the table's row-level policy
+  /// (`pet_photos_select_own`) already hides every other account's rows.
+  /// Rows written before videos existed carry no `media_type` and are photos.
+  /// Throws on a failed read, so the caller can tell "no media" from "unknown".
+  Future<Map<String, PetMediaCounts>> countsForPets(Iterable<String> petIds) async {
+    final ids = petIds.toSet().toList(growable: false);
+    if (ids.isEmpty) return const {};
+    final fetch = _mediaCountRows ?? _selectMediaCountRows;
+    if (_mediaCountRows == null && _resolveClient() == null) return const {};
+    try {
+      return await _countMedia(ids, fetch, withMediaType: true);
+    } on PostgrestException catch (error) {
+      // The video column is not on a table the migration has not reached: count
+      // every row as a photo, as the gallery did before videos. Any other error
+      // is a real failure and stays one.
+      if (error.code != '42703' && error.code != 'PGRST204') rethrow;
+      return _countMedia(ids, fetch, withMediaType: false);
+    }
+  }
+
+  Future<Map<String, PetMediaCounts>> _countMedia(
+    List<String> ids,
+    PetMediaCountRows fetch, {
+    required bool withMediaType,
+  }) async {
+    final wanted = ids.toSet();
+    final photos = <String, int>{};
+    final videos = <String, int>{};
+    // The server returns at most 1000 rows a request: a bigger gallery is read in
+    // pages, so a count is never silently cut short.
+    for (var from = 0;; from += _countPageSize) {
+      final rows = await fetch(
+        ids,
+        withMediaType: withMediaType,
+        from: from,
+        to: from + _countPageSize - 1,
+      );
+      for (final row in rows) {
+        final map = row as Map<String, dynamic>;
+        final petId = map['pet_id'].toString();
+        if (!wanted.contains(petId)) continue;
+        final target = map['media_type'] == 'video' ? videos : photos;
+        target[petId] = (target[petId] ?? 0) + 1;
+      }
+      if (rows.length < _countPageSize) break;
+    }
+    return {
+      for (final petId in {...photos.keys, ...videos.keys})
+        petId: PetMediaCounts(photos: photos[petId] ?? 0, videos: videos[petId] ?? 0),
+    };
+  }
+
+  static const _countPageSize = 1000;
+
+  Future<List<dynamic>> _selectMediaCountRows(
+    List<String> petIds, {
+    required bool withMediaType,
+    required int from,
+    required int to,
+  }) async {
+    final client = _resolveClient();
+    if (client == null) return const [];
+    final rows = await client
+        .from('pet_photos')
+        .select(withMediaType ? 'pet_id, media_type' : 'pet_id')
+        .inFilter('pet_id', petIds)
+        .order('id')
+        .range(from, to);
+    return rows as List<dynamic>;
   }
 
   /// Makes [photo] the profile picture: flips `is_profile` on the pet's

@@ -271,3 +271,23 @@ def test_export_skips_a_table_not_created_yet_and_says_so() -> None:
 
     with pytest.raises(_DatabaseError):
         _exporter(_Denied()).export_data(OWNER_A)
+
+
+def test_plan_changes_made_by_the_team_are_exported_for_the_owner_only_without_the_admin() -> None:
+    """QK-07c: owner_id of admin_plan_changes is text; the export finds the owner's rows
+    by that id, never another owner's, and leaves out the team member's id."""
+    client = _SigningFake()
+    client.db["admin_plan_changes"] = [
+        {"id": 1, "owner_id": OWNER_A, "admin_id": "team-1", "old_plan": None, "new_plan": "plus"},
+        {"id": 2, "owner_id": OWNER_B, "admin_id": "team-1", "old_plan": "plus", "new_plan": "pro"},
+        {"id": 3, "owner_id": OWNER_A, "admin_id": "team-2", "old_plan": "plus", "new_plan": None},
+    ]
+
+    rows = _exporter(client).export_data(OWNER_A).data["admin_plan_changes"]
+
+    assert [(row["id"], row["old_plan"], row["new_plan"]) for row in rows] == [
+        (1, None, "plus"),
+        (3, "plus", None),
+    ]
+    assert all("admin_id" not in row for row in rows)
+    assert OWNER_B not in str(rows) and "team-" not in str(rows)

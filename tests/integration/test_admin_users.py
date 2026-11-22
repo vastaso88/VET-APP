@@ -28,18 +28,31 @@ def portal(monkeypatch: pytest.MonkeyPatch) -> tuple[TestClient, Mock]:
         lambda: AuthenticatedUser(id="admin", email="admin@example.com", email_verified=True),
     )
     client = Mock()
-    monkeypatch.setattr("apps.api.routes.admin_users.countries", lambda _: {})
-    client.auth.admin.list_users.return_value = []
+    reply(client, [])
     monkeypatch.setattr("apps.api.routes.admin_users._admin_client", lambda: client)
     return TestClient(app), client
 
 
-def account(user_id: str, **kwargs: Any) -> SimpleNamespace:
-    return SimpleNamespace(
-        id=user_id,
-        email=f"{user_id}@example.com",
-        created_at=datetime(2026, 1, 1, tzinfo=UTC),
+def account(user_id: str, **kwargs: Any) -> dict[str, Any]:
+    """A row of the admin_users_directory function (QK-07), not an Auth user."""
+    return {
+        "id": user_id,
+        "email": f"{user_id}@example.com",
+        "created_at": datetime(2026, 1, 1, tzinfo=UTC).isoformat(),
         **kwargs,
+    }
+
+
+def reply(client: Mock, rows: list[dict[str, Any]], **page: Any) -> None:
+    """What the database function answers: one page plus total and country counts."""
+    client.rpc.return_value.execute.return_value = SimpleNamespace(
+        data={
+            "total": page.get("total", len(rows)),
+            "page": page.get("page", 1),
+            "page_size": 50,
+            "countries": page.get("countries", {}),
+            "rows": rows,
+        }
     )
 
 
@@ -56,6 +69,7 @@ def test_non_admin_cannot_list_other_accounts(
         lambda: AuthenticatedUser(id="b", email="b@example.com", email_verified=verified),
     )
     assert browser.get(PATH).status_code == 403
+    client.rpc.assert_not_called()
     client.auth.admin.list_users.assert_not_called()
 
 
@@ -82,28 +96,63 @@ def test_unauthenticated_is_denied(
     assert portal[0].get(PATH).status_code == 401
 
 
-def test_search_pagination_and_accounts_without_subscriptions(
+def test_the_page_comes_from_the_database_and_accounts_without_subscriptions_are_listed(
     portal: tuple[TestClient, Mock],
 ) -> None:
     browser, client = portal
-    client.auth.admin.list_users.return_value = [account("a"), account("b"), account("c")]
+    # The database answers page 2 of 3 (one account per page): the API sends the filters
+    # and the page to it and never lists Auth users itself.
+    reply(client, [account("b")], total=3, page=2, countries={"IT": 2, "unknown": 1})
     query = client.table.return_value.select.return_value.in_.return_value
     query.execute.return_value = SimpleNamespace(data=[])
-    body = browser.get(PATH, params={"page": 2, "page_size": 1}).json()
-    assert body["total"] == 3
+    body = browser.get(
+        PATH, params={"page": 2, "page_size": 1, "q": " A@Example ", "country": "IT"}
+    )
+    body = body.json()
+    client.rpc.assert_called_once_with(
+        "admin_users_directory",
+        {"p_q": "A@Example", "p_country": "IT", "p_page": 2, "p_page_size": 1},
+    )
+    client.auth.admin.list_users.assert_not_called()
+    assert body["total"] == 3 and body["page"] == 2
     assert [user["id"] for user in body["users"]] == ["b"]
+    assert body["countries"] == {"IT": 2, "unknown": 1}
     client.table.return_value.select.return_value.in_.assert_called_with("owner_id", ["b"])
     user = body["users"][0]
     assert user["access"] == "not_started"
     assert user["trial_ends_at"] is None
     assert user["total_paid_minor"] is None
+    assert user["location"] is None
     assert not body["payments_available"]
-    body = browser.get(PATH, params={"q": "A@EXAMPLE", "page": 99}).json()
-    assert body["total"] == 1 and body["page"] == 1
-    assert body["users"][0]["id"] == "a"
+    # An empty page makes no subscription lookup at all.
+    reply(client, [], total=0)
+    client.table.reset_mock()
     assert browser.get(PATH, params={"q": "not-found"}).json()["users"] == []
+    client.table.assert_not_called()
     client.table.return_value.insert.assert_not_called()
     client.table.return_value.upsert.assert_not_called()
+
+
+def test_the_residence_comes_with_the_row(portal: tuple[TestClient, Mock]) -> None:
+    browser, client = portal
+    reply(
+        client,
+        [
+            account("a", home_country_code="IT", home_city="Example city", home_saved_at="x"),
+            account("b", home_country_code=None, home_city="Elsewhere"),
+        ],
+    )
+    client.table.return_value.select.return_value.in_.return_value.execute.return_value = (
+        SimpleNamespace(data=[])
+    )
+    first, second = browser.get(PATH).json()["users"]
+    assert first["location"] == {
+        "country_code": "IT",
+        "city": "Example city",
+        "source": "residence",
+        "updated_at": "x",
+    }
+    assert second["location"]["country_code"] is None and second["location"]["source"] is None
 
 
 @pytest.mark.parametrize(
@@ -128,15 +177,18 @@ def test_access_matches_subscription_rules_and_never_implies_payment(
 ) -> None:
     browser, client = portal
     now = datetime.now(UTC)
-    client.auth.admin.list_users.return_value = [
-        account(
-            "a",
-            email_confirmed_at=now,
-            last_sign_in_at=now,
-            banned_until=now + timedelta(days=1),
-            user_metadata={"role": "admin", "private": "DO NOT RETURN"},
-        )
-    ]
+    reply(
+        client,
+        [
+            account(
+                "a",
+                email_confirmed_at=now.isoformat(),
+                last_sign_in_at=now.isoformat(),
+                banned_until=(now + timedelta(days=1)).isoformat(),
+                user_metadata={"role": "admin", "private": "DO NOT RETURN"},
+            )
+        ],
+    )
     client.table.return_value.select.return_value.in_.return_value.execute.return_value = (
         SimpleNamespace(
             data=[
@@ -169,7 +221,7 @@ def test_provider_failure_is_not_an_empty_list_or_leaked_error(
     portal: tuple[TestClient, Mock],
 ) -> None:
     browser, client = portal
-    client.auth.admin.list_users.side_effect = RuntimeError("password=secret person@example.com")
+    client.rpc.side_effect = RuntimeError("password=secret person@example.com")
     response = browser.get(PATH)
     assert response.status_code == 503
     assert "secret" not in response.text and "person@example.com" not in response.text

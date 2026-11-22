@@ -33,6 +33,7 @@ void main() {
     );
     for (final reset in [
       'PetDemoStore.instance.reset()',
+      'ChatDemoStore.instance.reset()',
       'MarketplaceUnreadStore.instance.reset()',
       'BillingDemoStore.instance.reset()',
       'OwnerJsonCache.clearAll()',

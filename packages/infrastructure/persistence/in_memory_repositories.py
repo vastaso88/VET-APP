@@ -41,10 +41,15 @@ from packages.core.domain.coverage.models import RadarCoverage
 from packages.core.domain.device.models import UserDevice
 from packages.core.domain.dog_walk.models import WalkSession
 from packages.core.domain.feedback.models import ChatResponseReport, ChatResponseReportCounter
+from packages.core.domain.geo.bounding_box import GeoBox
 from packages.core.domain.geo.models import UserLocation
 from packages.core.domain.llm_usage.models import LlmUsageEvent, ModelDailyUsage
 from packages.core.domain.local_activity.models import LocalActivity
-from packages.core.domain.marketplace.models import ListingReport, MarketplaceListing
+from packages.core.domain.marketplace.models import (
+    ListingCategory,
+    ListingReport,
+    MarketplaceListing,
+)
 from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.pet_profile.weight_measurement import WeightMeasurement
@@ -446,6 +451,17 @@ class InMemoryMarketplaceListingRepository(MarketplaceListingRepository):
             item
             for item in self._items.values()
             if item.status == "active" and (country is None or item.country == country)
+        ]
+
+    def list_active_in_box(
+        self, box: GeoBox, category: ListingCategory | None = None
+    ) -> list[MarketplaceListing]:
+        return [
+            item
+            for item in self._items.values()
+            if item.status == "active"
+            and box.contains(item.location)
+            and (category is None or item.category == category)
         ]
 
     def statuses(self, listing_ids: list[str]) -> dict[str, str]:

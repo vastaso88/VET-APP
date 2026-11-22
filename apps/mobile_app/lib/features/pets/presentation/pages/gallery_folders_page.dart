@@ -26,12 +26,18 @@ class GalleryFoldersPage extends StatefulWidget {
 class _GalleryFoldersPageState extends State<GalleryFoldersPage> {
   late final Future<List<PetProfile>> _pets = _load();
 
+  /// The captions of every folder, read together once the pets are known.
+  Future<Map<String, PetMediaCounts>>? _counts;
+
   Future<List<PetProfile>> _load() async {
     await PetDemoStore.instance.ensureHydrated();
-    return PetDemoStore.instance
+    final pets = PetDemoStore.instance
         .list()
         .where((pet) => !pet.isMemorial)
         .toList(growable: false);
+    // One request for all the folders, not one full list per pet.
+    _counts = PetPhotoRepository().countsForPets([for (final pet in pets) pet.id]);
+    return pets;
   }
 
   @override
@@ -95,6 +101,7 @@ class _GalleryFoldersPageState extends State<GalleryFoldersPage> {
                     itemCount: pets.length,
                     itemBuilder: (context, index) => _FolderCard(
                       pet: pets[index],
+                      counts: _counts!,
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute<void>(
                             builder: (_) => PetGalleryPage(pet: pets[index])),
@@ -113,9 +120,15 @@ class _GalleryFoldersPageState extends State<GalleryFoldersPage> {
 
 /// "12 foto", "12 foto · 2 video" or "1 video" for a folder's caption.
 String galleryCountLabel(List<PetPhotoEntry> entries) {
-  final l10n = appL10n;
   final videos = entries.where((entry) => entry.isVideo).length;
-  final photos = entries.length - videos;
+  return galleryCountLabelFor(PetMediaCounts(photos: entries.length - videos, videos: videos));
+}
+
+/// The same caption from counts already read (no list of entries needed).
+String galleryCountLabelFor(PetMediaCounts counts) {
+  final l10n = appL10n;
+  final videos = counts.videos;
+  final photos = counts.photos;
   if (videos == 0) return l10n.petsMediaCountPhotos(photos);
   if (photos == 0) return l10n.petsMediaCountVideos(videos);
   return l10n.petsMediaCountPhotosAndVideos(
@@ -125,9 +138,10 @@ String galleryCountLabel(List<PetPhotoEntry> entries) {
 }
 
 class _FolderCard extends StatefulWidget {
-  const _FolderCard({required this.pet, required this.onTap});
+  const _FolderCard({required this.pet, required this.counts, required this.onTap});
 
   final PetProfile pet;
+  final Future<Map<String, PetMediaCounts>> counts;
   final VoidCallback onTap;
 
   @override
@@ -135,8 +149,6 @@ class _FolderCard extends StatefulWidget {
 }
 
 class _FolderCardState extends State<_FolderCard> {
-  late final Future<List<PetPhotoEntry>> _photos =
-      PetPhotoRepository().list(widget.pet.id);
   late final Future<Uint8List?>? _cover = widget.pet.photoPath == null
       ? null
       : PetPhotoRepository().loadThumbnail(widget.pet.photoPath!);
@@ -167,14 +179,17 @@ class _FolderCardState extends State<_FolderCard> {
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.title.copyWith(fontSize: 16)),
                   const SizedBox(height: AppSpacing.xs),
-                  FutureBuilder<List<PetPhotoEntry>>(
-                    future: _photos,
+                  FutureBuilder<Map<String, PetMediaCounts>>(
+                    future: widget.counts,
                     builder: (context, snapshot) {
-                      final entries = snapshot.data;
+                      if (snapshot.hasError) return const SizedBox.shrink();
+                      final counts = snapshot.data;
                       return Text(
-                        entries == null
+                        counts == null
                             ? context.l10n.petsMediaFolderCounting
-                            : galleryCountLabel(entries),
+                            : galleryCountLabelFor(
+                                counts[widget.pet.id] ?? const PetMediaCounts(),
+                              ),
                         style: AppTextStyles.caption,
                       );
                     },

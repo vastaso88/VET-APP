@@ -61,6 +61,15 @@ alter table public.pet_profiles add column if not exists coat_color text;
 alter table public.pet_profiles add column if not exists body_condition text;
 alter table public.pet_profiles add column if not exists activity_level text;
 
+-- QK-07b (2026-11-22): three columns that already exist in production (read from the
+-- real database) but were defined in no script. The admin pet directory and overview
+-- read them (apps/api/routes/admin.py, admin_pets.py, supabase/migrations/
+-- 20261122100000_admin_directories.sql). NOTE the real default of is_active is FALSE
+-- and neither the app nor the backend ever writes it, so existing pets read as inactive.
+alter table public.pet_profiles add column if not exists is_active boolean not null default false;
+alter table public.pet_profiles add column if not exists is_exotic boolean;
+alter table public.pet_profiles add column if not exists species_group text;
+
 alter table public.pet_profiles drop constraint if exists pet_profiles_microchip_number_check;
 alter table public.pet_profiles add constraint pet_profiles_microchip_number_check
     check (microchip_number is null or microchip_number ~ '^[0-9]{15}$');
@@ -2799,10 +2808,11 @@ $$;
 
 -- Audit of plan changes made by the team (POST /admin/users/{id}/plan). Full
 -- script with the function and the policy:
--- supabase/migrations/20261121210000_admin_plan_changes.sql.
+-- supabase/migrations/20261121210000_admin_plan_changes.sql. owner_id is TEXT like
+-- every other owner_id (QK-07c): the policy compares it with auth.uid()::text.
 create table if not exists public.admin_plan_changes (
   id bigint generated always as identity primary key,
-  owner_id uuid not null,
+  owner_id text not null,
   admin_id uuid not null,
   old_plan text,
   new_plan text,
@@ -2817,6 +2827,18 @@ grant select, insert, delete on public.admin_plan_changes to service_role;
 -- No grant to authenticated: the policy below reads nothing today. It is the
 -- "own rows only" rule every table carries, should a read ever be granted.
 drop policy if exists admin_plan_changes_select_own on public.admin_plan_changes;
+-- A table created by the first version of the script has a uuid column: convert it
+-- (the policy is dropped above because a column used by a policy cannot change type).
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+     where table_schema = 'public' and table_name = 'admin_plan_changes'
+       and column_name = 'owner_id' and data_type = 'uuid'
+  ) then
+    alter table public.admin_plan_changes alter column owner_id type text using owner_id::text;
+  end if;
+end $$;
 create policy admin_plan_changes_select_own on public.admin_plan_changes
   for select to authenticated
-  using (owner_id = (select auth.uid()));
+  using (owner_id = (select auth.uid())::text);

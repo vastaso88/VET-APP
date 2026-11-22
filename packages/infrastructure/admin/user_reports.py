@@ -1,7 +1,10 @@
 """Support projections. Never load conversation text to calculate usage."""
 
+import logging
 from collections.abc import Callable
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 def all_rows(query: Callable[[], Any]) -> list[dict[str, Any]]:
@@ -12,6 +15,106 @@ def all_rows(query: Callable[[], Any]) -> list[dict[str, Any]]:
         if len(batch) < 1000:
             return rows
     raise RuntimeError("Result exceeds the support listing limit")
+
+
+# TEMPORARY (QK-07): functions the database has been seen NOT to have, for the life of
+# this process, so a missing migration is not retried on every request. Remove together
+# with the `fallback` arguments below once migration 20261122100000 is applied in production.
+_MISSING_FUNCTIONS: set[str] = set()
+_MISSING_CODES = {
+    "PGRST202",
+    "42883",
+}  # PostgREST "function not in schema cache" / undefined_function
+
+
+def _function_is_missing(error: Exception) -> bool:
+    """True only for "that database function does not exist" (PostgREST PGRST202, or the
+    Postgres code 42883, or a plain HTTP 404 from the rpc endpoint): any other failure is a
+    real failure and must stay one."""
+    if str(getattr(error, "code", "") or "") in _MISSING_CODES:
+        return True
+    status = getattr(error, "status", None) or getattr(error, "status_code", None)
+    return status == 404
+
+
+def _directory_page(
+    client: Any,
+    function: str,
+    params: dict[str, Any],
+    fallback: Callable[[], dict[str, Any]],
+) -> dict[str, Any]:
+    """One database call: the function (supabase/migrations/20261122100000_admin_directories.sql)
+    filters, orders and pages inside Postgres. A reply that is not a page is an error,
+    never an empty list: an unavailable directory must not read as "no accounts".
+    TEMPORARY: while the function does not exist yet, `fallback` (the old read-everything
+    logic) answers; every other error propagates."""
+    if function not in _MISSING_FUNCTIONS:
+        try:
+            data = client.rpc(function, params).execute().data
+        except Exception as error:
+            if not _function_is_missing(error):
+                raise
+            _MISSING_FUNCTIONS.add(function)
+            # No personal data here: only the name of the missing function.
+            logger.warning(
+                "Admin directory function %s is missing in the database: using the old, slower "
+                "path. Apply supabase/migrations/20261122100000_admin_directories.sql.",
+                function,
+            )
+        else:
+            if not isinstance(data, dict) or not isinstance(data.get("rows"), list):
+                raise RuntimeError("Directory function returned an unexpected reply")
+            return data
+    return fallback()
+
+
+def users_directory(
+    client: Any,
+    *,
+    q: str,
+    country: str,
+    page: int,
+    page_size: int,
+    fallback: Callable[[], dict[str, Any]],
+) -> dict[str, Any]:
+    """{total, page, page_size, countries, rows}: one page of accounts. `countries` counts
+    the accounts matching `q` per country WITHOUT the country filter, so the portal can
+    show the other countries while one is picked; 'unknown' = no residence country."""
+    return _directory_page(
+        client,
+        "admin_users_directory",
+        {"p_q": q.strip(), "p_country": country, "p_page": page, "p_page_size": page_size},
+        fallback,
+    )
+
+
+def pets_directory(
+    client: Any,
+    *,
+    q: str,
+    species: str,
+    status: str,
+    country: str,
+    region: str,
+    page: int,
+    page_size: int,
+    fallback: Callable[[], dict[str, Any]],
+) -> dict[str, Any]:
+    """{total, page, page_size, rows}: one page of pets (directory fields only)."""
+    return _directory_page(
+        client,
+        "admin_pets_directory",
+        {
+            "p_q": q.strip(),
+            "p_species": species,
+            "p_status": status,
+            "p_country": country,
+            "p_region": region,
+            "p_page": page,
+            "p_page_size": page_size,
+        },
+        fallback,
+    )
 
 
 def countries(client: Any) -> dict[str, dict[str, Any]]:

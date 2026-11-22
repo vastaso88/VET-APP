@@ -193,6 +193,11 @@ def test_the_ads_of_an_account_waiting_to_be_erased_are_hidden() -> None:
         def list_active(self, country: str | None = None) -> list[MarketplaceListing]:
             return self._items
 
+        def list_active_in_box(
+            self, box: object, category: object = None
+        ) -> list[MarketplaceListing]:
+            return self._items
+
     here = Coordinates(latitude=45.0, longitude=9.0)
 
     def ad(listing_id: str, owner: str) -> MarketplaceListing:

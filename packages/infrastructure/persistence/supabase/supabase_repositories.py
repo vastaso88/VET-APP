@@ -46,10 +46,15 @@ from packages.core.domain.coverage.models import RadarCoverage
 from packages.core.domain.device.models import UserDevice
 from packages.core.domain.dog_walk.models import WalkSession
 from packages.core.domain.feedback.models import ChatResponseReport, ChatResponseReportCounter
+from packages.core.domain.geo.bounding_box import GeoBox
 from packages.core.domain.geo.models import Coordinates, UserLocation
 from packages.core.domain.llm_usage.models import LlmUsageEvent, ModelDailyUsage
 from packages.core.domain.local_activity.models import LocalActivity
-from packages.core.domain.marketplace.models import ListingReport, MarketplaceListing
+from packages.core.domain.marketplace.models import (
+    ListingCategory,
+    ListingReport,
+    MarketplaceListing,
+)
 from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.pet_profile.weight_measurement import WeightMeasurement
@@ -780,6 +785,10 @@ def _row_to_listing(row: dict[str, Any]) -> MarketplaceListing:
     return MarketplaceListing.model_validate({**row, "location": location})
 
 
+_PAGE = 1000  # rows per request: the provider's own window
+_MAX_BOX_ROWS = 50_000  # safety limit on the candidates of one search area
+
+
 class SupabaseMarketplaceListingRepository(MarketplaceListingRepository):
     """marketplace_listings stores latitude/longitude as flat columns (see
     scripts/setup/supabase_schema.sql), like user_locations - the domain's
@@ -807,6 +816,41 @@ class SupabaseMarketplaceListingRepository(MarketplaceListingRepository):
             query = query.eq("country", country)
         response = query.execute()
         return [_row_to_listing(cast(dict[str, Any], item)) for item in response.data or []]
+
+    def list_active_in_box(
+        self, box: GeoBox, category: ListingCategory | None = None
+    ) -> list[MarketplaceListing]:
+        """Category and the geographic box are filtered by the database (QK-08), and
+        every page is read: the provider returns at most _PAGE rows per request, and a
+        list cut at that window would silently drop ads inside the radius."""
+        found: dict[str, MarketplaceListing] = {}
+        for low, high in box.longitude_ranges:
+            for offset in range(0, _MAX_BOX_ROWS, _PAGE):
+                query = (
+                    self._client.table(self._table)
+                    .select("*")
+                    .eq("status", "active")
+                    .gte("latitude", box.min_latitude)
+                    .lte("latitude", box.max_latitude)
+                    .gte("longitude", low)
+                    .lte("longitude", high)
+                )
+                if category is not None:
+                    query = query.eq("category", category)
+                rows = cast(
+                    list[dict[str, Any]],
+                    query.order("id").range(offset, offset + _PAGE - 1).execute().data or [],
+                )
+                for row in rows:
+                    listing = _row_to_listing(row)
+                    found[listing.id] = listing
+                if len(rows) < _PAGE:
+                    break
+            else:
+                # More candidates than the safety limit: an incomplete list must not
+                # read as a complete one.
+                raise RuntimeError("Too many ads inside the search area")
+        return list(found.values())
 
     def statuses(self, listing_ids: list[str]) -> dict[str, str]:
         if not listing_ids:

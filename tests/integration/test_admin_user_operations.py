@@ -126,14 +126,33 @@ def body(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-def test_country_filter_is_global_not_page_local(portal: tuple[TestClient, Database]) -> None:
-    browser, _ = portal
+def test_country_filter_goes_to_the_database_not_to_a_page_of_results(
+    portal: tuple[TestClient, Database],
+) -> None:
+    """QK-07: the filter, the total and the per-country counts are computed by
+    admin_users_directory (checked in tests/integration/test_admin_directories.py and
+    tests/sql/admin_directories.mjs); here the API must pass them through unchanged."""
+    browser, database = portal
+    row = {"id": "b", "email": "b@example.com", "created_at": "2026-01-01T00:00:00+00:00"}
+    database.rpc = Mock(
+        return_value=SimpleNamespace(
+            execute=lambda: SimpleNamespace(
+                data={
+                    "total": 1,
+                    "page": 1,
+                    "page_size": 1,
+                    "countries": {"FR": 1, "IT": 1, "unknown": 1},
+                    "rows": [{**row, "home_country_code": "FR"}],
+                }
+            )
+        )
+    )
     result = browser.get("/admin/users", params={"country": "FR", "page_size": 1}).json()
+    database.rpc.assert_called_once_with(
+        "admin_users_directory", {"p_q": "", "p_country": "FR", "p_page": 1, "p_page_size": 1}
+    )
     assert result["total"] == 1 and result["users"][0]["id"] == "b"
     assert result["countries"] == {"FR": 1, "IT": 1, "unknown": 1}
-    result = browser.get("/admin/users", params={"country": "unknown"}).json()
-    assert [row["id"] for row in result["users"]] == ["c"]
-    assert browser.get("/admin/users", params={"q": "a@example"}).json()["countries"] == {"IT": 1}
 
 
 @pytest.mark.parametrize(
@@ -424,6 +443,30 @@ def test_plan_change_calls_atomic_audited_rpc_only_after_totp(
     assert database.rpc.call_args.args[1] == {
         "p_owner_id": "a", "p_admin_id": "admin", "p_plan": "pro", "p_code_digest": proof
     }
+
+
+def test_the_owner_id_reaches_the_plan_rpc_as_a_string_not_a_uuid_object(
+    portal: tuple[TestClient, Database],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """QK-07c: admin_change_user_plan takes p_owner_id as text, so the API sends the id
+    exactly as the text it got in the URL, also when it has the shape of a uuid."""
+    browser, database = portal
+    owner = "33333333-3333-4333-8333-333333333333"
+    database.users.append(account(owner))
+    monkeypatch.setattr("apps.api.routes.admin_users._verify_plan_totp", lambda *_: "b" * 64)
+    database.rpc.side_effect = lambda method, _: SimpleNamespace(
+        execute=lambda: SimpleNamespace(
+            data=True if method == "admin_plan_totp_register_attempt" else None
+        )
+    )
+    response = browser.post(
+        f"/admin/users/{owner}/plan", json={"plan": "ultra", "totp_code": "123456"}
+    )
+    assert response.status_code == 200
+    sent = database.rpc.call_args.args[1]
+    assert database.rpc.call_args.args[0] == "admin_change_user_plan_totp"
+    assert sent["p_owner_id"] == owner and type(sent["p_owner_id"]) is str
 
 
 def test_rate_limit_fails_closed_before_totp_verification(

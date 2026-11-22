@@ -480,6 +480,7 @@ class ChatDemoStore extends ChangeNotifier {
       return Result.success(await _sendDemoReply(conversationId, text));
     }
 
+    final generation = _generation;
     final result = await _remote.editMessage(
       conversationId: backendConversationId,
       messageId: messageId,
@@ -489,6 +490,9 @@ class ChatDemoStore extends ChangeNotifier {
     return result.fold(
       onFailure: (error) => Result.failure(error),
       onSuccess: (reply) {
+        // Signed out while the answer was on its way: it must not put the old
+        // account's chat back in the store.
+        if (generation != _generation) return Result.success(thread);
         final updatedThread = conversationById(conversationId) ?? thread;
         final assistantMessage = ChatMessage(
           id: _messageId('assistant'),
@@ -524,8 +528,10 @@ class ChatDemoStore extends ChangeNotifier {
     if (thread == null || backendId == null || serverId == null || !_configLoader.load().hasApiBaseUrl) {
       return false;
     }
+    final generation = _generation;
     final result = await _remote.markNotHelpful(conversationId: backendId, messageId: serverId);
     if (result.isFailure) return false;
+    if (generation != _generation) return true; // signed out meanwhile: nothing to update
     final current = conversationById(conversationId) ?? thread;
     _replaceThread(
       conversationId,
@@ -605,6 +611,7 @@ class ChatDemoStore extends ChangeNotifier {
     String? clientMessageId,
   }) async {
     final thread = conversationById(conversationId) ?? _threads.first;
+    final generation = _generation;
 
     final petIdResult = await _petIdForThread(conversationId, thread.petName);
     return petIdResult.fold(
@@ -620,6 +627,9 @@ class ChatDemoStore extends ChangeNotifier {
         return sendResult.fold(
           onFailure: (error) => Result.failure(error),
           onSuccess: (reply) {
+            // Signed out while the answer was on its way: it must not put the
+            // old account's chat back in the store.
+            if (generation != _generation) return Result.success(thread);
             final updatedThread = conversationById(conversationId) ?? thread;
             final assistantMessage = ChatMessage(
               id: _messageId('assistant'),

@@ -493,3 +493,21 @@ def test_any_other_database_error_still_stops_the_deletion() -> None:
     _seed(client, owner, tag="a")
     with pytest.raises(_DatabaseError):
         _eraser(client).erase_data(owner)
+
+
+def test_the_plan_changes_made_by_the_team_for_the_erased_owner_go_and_others_stay() -> None:
+    """QK-07c: admin_plan_changes.owner_id is text (not uuid) and is keyed by the owner's
+    id like every other table; the rows of owner A are found and removed, B's stay."""
+    owner_a = "11111111-1111-4111-8111-111111111111"
+    owner_b = "22222222-2222-4222-8222-222222222222"
+    client = FakeSupabase()
+    client.db["admin_plan_changes"] = [
+        {"id": 1, "owner_id": owner_a, "admin_id": "team", "old_plan": None, "new_plan": "plus"},
+        {"id": 2, "owner_id": owner_b, "admin_id": "team", "old_plan": "plus", "new_plan": "pro"},
+        {"id": 3, "owner_id": owner_a, "admin_id": "team", "old_plan": "plus", "new_plan": None},
+    ]
+
+    report = _eraser(client).erase_data(owner_a)
+
+    assert [row["id"] for row in client.db["admin_plan_changes"]] == [2]
+    assert report.rows_deleted["admin_plan_changes"] == 2

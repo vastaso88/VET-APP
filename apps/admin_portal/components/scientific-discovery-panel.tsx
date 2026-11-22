@@ -6,6 +6,7 @@ import {
   runScientificDiscovery,
   type ScientificActionState,
 } from "../app/data/scientific/actions";
+import { INTENT_VALUES, SPECIES_VALUES } from "../lib/species-intents";
 
 const initialState: ScientificActionState = { status: "idle" };
 
@@ -33,22 +34,17 @@ export function ScientificDiscoveryPanel() {
         <label>
           Species
           <select name="species" defaultValue="dog">
-            <option value="dog">dog</option>
-            <option value="cat">cat</option>
-            <option value="small_mammal">small_mammal</option>
-            <option value="bird">bird</option>
-            <option value="reptile_amphibian">reptile_amphibian</option>
-            <option value="fish">fish</option>
-            <option value="other">other</option>
+            {SPECIES_VALUES.map((value) => (
+              <option key={value} value={value}>{value}</option>
+            ))}
           </select>
         </label>
         <label>
           Intent
           <select name="intent" defaultValue="clinical_question">
-            <option value="clinical_question">clinical_question</option>
-            <option value="nutrition_question">nutrition_question</option>
-            <option value="behavior_question">behavior_question</option>
-            <option value="preventive_care">preventive_care</option>
+            {INTENT_VALUES.map((value) => (
+              <option key={value} value={value}>{value}</option>
+            ))}
           </select>
         </label>
         <label>

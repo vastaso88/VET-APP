@@ -134,16 +134,6 @@ class MedicalRecordsRepository {
     }
   }
 
-  Future<MedicalRecordEntry?> loadRecordById(String id) async {
-    final records = await loadRecords();
-    for (final record in records) {
-      if (record.id == id) {
-        return record;
-      }
-    }
-    return records.isEmpty ? null : records.first;
-  }
-
   Future<void> saveRecord(MedicalRecordEntry record) async {
     final client = _resolveClient();
     if (client == null) {
