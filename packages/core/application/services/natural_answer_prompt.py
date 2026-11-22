@@ -553,7 +553,9 @@ _SEVERITY_RULE = (
     "fact among the others: no alarm when nothing points to danger. In a serious case "
     '"now" means calling the vet or leaving now: never "today", "as soon as possible" or '
     '"if it gets worse" in its place. Never make going depend on a sign the owner has '
-    'already described (they say it is vomiting: never "if it vomits, go").'
+    'already described (they say it is vomiting: never "if it vomits, go"), nor on a sign '
+    'that may come (never "if it staggers, take it in now"): go now, whatever comes next; '
+    "the signs may follow only as reasons to hurry even more."
 )
 # Synthetic users round 4 (21/11/2026): the SEVERITY rule alone did not hold in long
 # conversations (25 of 103 serious cases put off or softened). A check reads the reply
@@ -583,7 +585,9 @@ SEVERITY_CHECK_PROMPT = (
     "seasonal fast with no other sign; water problems in a tank with no sign on the fish; "
     "an animal that has started to growl or snap (behaviour); care, food, rules, "
     "behaviour. When you are not sure either way, follow the list above; a false alarm is "
-    "also an error.\n"
+    "also an error. In a case that is NOT serious, a sentence that names the signs that "
+    "would make it urgent ('if it starts breathing with the mouth open, go now') is right "
+    "advice, not a delay: keep the reply.\n"
     "2. If SERIOUS and the reply does not say, at its start, to call the vet or go NOW: "
     "rewrite it with the smallest change. The first sentence says to call the vet or go "
     "now, with the reason in a few words; 'today', 'this evening', 'by tomorrow', "
@@ -593,13 +597,21 @@ SEVERITY_CHECK_PROMPT = (
     "everything else: the same language, the same steps, the same length or shorter, the "
     "same form of address. Never add a phone number, a medicine, a dose, a diagnosis or a "
     "fact the owner did not write. Delays also: 'if it still has fever', 'if he is still "
-    "eating less', 'before the move', 'it is reassuring that he still plays'.\n"
+    "eating less', 'before the move', 'it is reassuring that he still plays', and going now "
+    "made to depend on a sign, already described or still to come ('if she ate it and keeps "
+    "vomiting, take her now', 'if he staggers, take him to the clinic right away', 'only if "
+    "it gets worse'): in a serious case the first sentence says to go now with no "
+    "condition; the signs may follow as reasons to hurry even more.\n"
     "3. OPEN CASE: if the other recent conversations, or earlier messages of this one, "
     "describe a serious case that no vet has seen yet and that the owner has not said is "
     "resolved or handled, and the reply does not speak of it at its start, the reply "
     "delays: "
     "rewrite it by putting first one or two sentences on that case (call the vet or go now, "
-    "and why, in a few words), then the reply as it was.\n"
+    "with no condition, and why, in a few words), then the reply as it was. A first "
+    "sentence that names the case but goes only on a condition ('if it ate the leaves and "
+    "keeps vomiting') also delays. The reason uses only what was written about that case, "
+    "for that animal: no sign, time or event that was not written, nothing that happened "
+    "to another animal or person.\n"
     'Answer ONLY with JSON: {"serious": true|false, "delays": true|false (the reply does '
     'not say now at its start, softens, or leaves an open case unsaid), "rewrite": "the '
     'full rewritten reply when serious and delays are both true, else empty"}'
@@ -632,6 +644,18 @@ _LANGUAGE_COUNTRY_PROFILE = (
     "known, name no public body. Use the animal's sex as written in its profile for every "
     "word that agrees with it. When the owner says they are elderly, plain everyday words "
     "and no technical terms."
+)
+# Prova 3 (22/11/2026): "no cold water, it narrows the vessels of the skin" came from the
+# model, not from a source. The green official source on heat (GOV.UK, "Keeping pets healthy
+# during hot weather", Cercafonti id gov-uk-keeping-pets-healthy-during-hot-weather) says
+# only: a cool shaded place, water to drink, sprayed with cool water, a fan, a vet at once
+# if the dog does not respond promptly. It says nothing on cold water or blood vessels.
+_FIRST_AID_AS_GIVEN = (
+    "FIRST AID AS GIVEN. In first aid give the steps, not your own explanation of how the "
+    "body works, and no 'never do X because Y' that the first-aid steps or the official "
+    "sources given here do not state. For an animal too hot: shade, cool water on the body, "
+    "air, small sips of water, the vet now; never say that cold water is dangerous or "
+    "explain blood vessels."
 )
 _CHECK_BEFORE_ALARM = (
     "NO FALSE ALARM. An animal the owner describes as well, eating and active, or getting "
@@ -683,7 +707,9 @@ _OTHER_CHATS_V2 = (
     "case, nothing says a vet has seen it and the owner has not said it is resolved or "
     "handled, the case is still open: never call the animal "
     "well or a sign good because the owner now writes about something else, and if it still "
-    "needs a vet now, say so first, in one sentence, then answer the new question."
+    "needs a vet now, say so first, in one sentence and with no condition (never 'if it "
+    "keeps vomiting', 'if it ate it'), naming only signs written there for this animal, "
+    "then answer the new question."
 )
 
 # Normativa doc 20 §20.13 (20/11/2026), for every v2 answer (not a lane).
@@ -758,6 +784,7 @@ def build_emergency_prompt(
     ]
     if v2:
         parts.append(_SEVERITY_RULE)
+        parts.append(_FIRST_AID_AS_GIVEN)
         parts.append(_MINOR_AND_NUMBERS_RULE)
         parts.append(_LAST_CHECK_PROFILE)
     if official_sources:
@@ -876,6 +903,7 @@ def build_system_prompt(
         parts.append(_ONLY_WHAT_WAS_SAID)
         parts.append(_SUPPLEMENTS_V2)
         parts.append(_LANGUAGE_COUNTRY_PROFILE)
+        parts.append(_FIRST_AID_AS_GIVEN)
         parts.append(_CHECK_BEFORE_ALARM)
         if dose_only:
             parts.append(_DOSE_ONLY_V2)
