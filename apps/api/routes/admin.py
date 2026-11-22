@@ -14,6 +14,7 @@ from postgrest.types import CountMethod
 from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
+from packages.core.domain.pet_profile.directory_traits import pet_overview
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -151,27 +152,6 @@ def _parse_datetime(value: Any) -> datetime | None:
         return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
     except ValueError:
         return None
-
-
-def _species_bucket(row: dict[str, Any]) -> str:
-    raw = str(row.get("species_group") or row.get("species") or "unknown").strip().lower()
-    aliases = {
-        "cane": "dog",
-        "dog": "dog",
-        "gatto": "cat",
-        "cat": "cat",
-        "uccello": "bird",
-        "bird": "bird",
-        "roditore": "small_mammal",
-        "rodent": "small_mammal",
-        "small_mammal": "small_mammal",
-        "rettile": "reptile_amphibian",
-        "reptile": "reptile_amphibian",
-        "reptile_amphibian": "reptile_amphibian",
-        "pesce": "fish",
-        "fish": "fish",
-    }
-    return aliases.get(raw, raw or "unknown")
 
 
 def _geographic_input(request: GeographicIngestionRequest) -> tuple[Any, float, float]:
@@ -382,9 +362,7 @@ def _cached_admin_overview(_bucket: int) -> dict[str, object]:
     ]
 
     pet_profiles_response = (
-        client.table("pet_profiles")
-        .select("id,owner_id,species,species_group,is_active,is_exotic,is_memorial")
-        .execute()
+        client.table("pet_profiles").select("id,owner_id,species,is_memorial").execute()
     )
     pet_rows = list(getattr(pet_profiles_response, "data", None) or [])
     pet_owner_ids = {str(row.get("owner_id")) for row in pet_rows if row.get("owner_id")}
@@ -399,8 +377,6 @@ def _cached_admin_overview(_bucket: int) -> dict[str, object]:
             new_7d += 1
         if created_at >= now - timedelta(days=30):
             new_30d += 1
-
-    species_counts: Counter[str] = Counter(_species_bucket(row) for row in pet_rows)
 
     # Independent aggregate reads run concurrently instead of serial network round trips.
     def count_table(
@@ -498,13 +474,9 @@ def _cached_admin_overview(_bucket: int) -> dict[str, object]:
             "new_7d": new_7d,
             "new_30d": new_30d,
         },
-        "pet_details": {
-            "total": len(pet_rows),
-            "active": sum(1 for row in pet_rows if row.get("is_active") is True),
-            "exotic": sum(1 for row in pet_rows if row.get("is_exotic") is True),
-            "memorial": sum(1 for row in pet_rows if row.get("is_memorial") is True),
-            "species": dict(species_counts.most_common()),
-        },
+        # QK-07d: derived from the species and is_memorial (the three columns the panel
+        # used to read are never written), see directory_traits.py.
+        "pet_details": pet_overview(pet_rows),
         "moderation": {
             "radar_reports": radar_reports,
             "chat_reports": chat_reports,

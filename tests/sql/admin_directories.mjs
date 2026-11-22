@@ -46,7 +46,7 @@ await db.exec(`
   select 'p' || lpad(i::text, 5, '0'),
          '00000000-0000-4000-8000-' || lpad((i % 2500)::text, 12, '0'),
          'Pet' || lpad(((i * 7) % 1500)::text, 5, '0'),
-         (array['dog','cat','cane','rodent','pesce'])[1 + i % 5],
+         (array['Cane','Gatto','Piccoli mammiferi','Uccello','Rettili e anfibi','Pesce','Altro'])[1 + i % 7],
          'Breed' || (i % 11), 'PRIVATE MEDICAL NOTE', i % 10 = 0
   from generate_series(0, 1499) i;
 `);
@@ -96,7 +96,10 @@ for (let i = 1; i < ordered.length; i++) {
   assert.ok(a.created_at > b.created_at || (a.created_at === b.created_at && a.id > b.id));
 }
 
-// -- pets: columns species_group / is_active / is_exotic do not exist yet (read as null)
+// -- pets (QK-07d): group / exotic / active are DERIVED from species and is_memorial; the
+// table has none of the columns is_active / is_exotic / species_group here, and the
+// functions must not need them. 1,500 pets: species i % 7 (Cane for i % 7 = 0 ...), in
+// Ricordi when i % 10 = 0.
 r = await pets("pet01499", "", "", "", "", 1, 50);
 assert.equal(r.total, 1);
 assert.equal(r.rows[0].name, "Pet01499");
@@ -112,27 +115,59 @@ for (let page = 1; page <= 15; page++) {
 }
 assert.equal(new Set(ids).size, 1500);
 assert.deepEqual(names, [...names].sort());
-assert.equal((await pets("", "dog", "", "", "", 1, 100)).total, 600); // dog + cane
-assert.equal((await pets("", "small_mammal", "", "", "", 1, 100)).total, 300);
-assert.equal((await pets("", "", "memorial", "", "", 1, 100)).total, 150);
-assert.equal((await pets("", "", "inactive", "", "", 1, 100)).total, 0); // is_active unknown (null)
+const filters = async () => ({
+  dog: (await pets("", "dog", "", "", "", 1, 100)).total,
+  smallMammal: (await pets("", "small_mammal", "", "", "", 1, 100)).total,
+  other: (await pets("", "other", "", "", "", 1, 100)).total,
+  memorial: (await pets("", "", "memorial", "", "", 1, 100)).total,
+  inactive: (await pets("", "", "inactive", "", "", 1, 100)).total,
+  active: (await pets("", "", "active", "", "", 1, 100)).total,
+  exotic: (await pets("", "", "exotic", "", "", 1, 100)).total,
+});
+const expected = { dog: 215, smallMammal: 214, other: 214, memorial: 150, inactive: 150, active: 1350, exotic: 1070 };
+assert.deepEqual(await filters(), expected);
+const row = (await pets("", "", "", "", "", 1, 100)).rows[0];
+assert.ok("species_group" in row && "is_exotic" in row && "is_active" in row); // same names as before
+assert.equal(row.is_active, !row.is_memorial);
+assert.equal(row.is_exotic, row.species_group !== "dog" && row.species_group !== "cat");
 assert.equal((await pets("", "", "", "es", "", 1, 100)).total > 0, true);
 assert.equal((await pets("", "", "", "", "city 3", 1, 100)).total > 0, true);
 
-// -- helpers: the same bucket names as the Python `_species_bucket`; scope = unpaged filter
-assert.equal((await db.query("select public.admin_species_bucket('cane', null) as b")).rows[0].b, "dog");
-assert.equal((await db.query("select public.admin_species_bucket(null, '  ') as b")).rows[0].b, "unknown");
-assert.equal((await db.query("select public.admin_species_bucket('Rodent', null) as b")).rows[0].b, "small_mammal");
+// The three production columns exist there (is_active defaults to FALSE, nothing writes
+// them): adding them must change nothing.
+await db.exec("reset role");
+await db.exec(`
+  alter table public.pet_profiles add column is_active boolean not null default false;
+  alter table public.pet_profiles add column is_exotic boolean;
+  alter table public.pet_profiles add column species_group text;
+  set role service_role;
+`);
+assert.deepEqual(await filters(), expected);
+
+// -- helpers: the same species groups as `normalize_species` (Python); scope = unpaged filter
+const bucket = async (value) =>
+  (await db.query("select public.admin_species_bucket($1) as b", [value])).rows[0].b;
+assert.equal(await bucket("Cane"), "dog");
+assert.equal(await bucket("  gatto "), "cat");
+assert.equal(await bucket("Piccoli mammiferi"), "small_mammal");
+assert.equal(await bucket("rabbit"), "small_mammal");
+assert.equal(await bucket("Uccello"), "bird");
+assert.equal(await bucket("Rettili e anfibi"), "reptile_amphibian");
+assert.equal(await bucket("Pesce"), "fish");
+assert.equal(await bucket("Altro"), "other");
+assert.equal(await bucket("Drago"), "other");
+assert.equal(await bucket("  "), "unknown");
+assert.equal(await bucket(null), "unknown");
 assert.equal(
   (await db.query("select count(*)::int as n from public.admin_pets_scope('', 'dog', '', '', '')")).rows[0].n,
-  600,
+  215,
 );
 
 // -- only the API's role may call them: every function, anon and authenticated alike
 const calls = [
   "select public.admin_users_directory('', '', 1, 10)",
   "select public.admin_pets_directory('', '', '', '', '', 1, 10)",
-  "select public.admin_species_bucket('dog', null)",
+  "select public.admin_species_bucket('dog')",
   "select * from public.admin_pets_scope('', '', '', '', '')",
 ];
 for (const role of ["anon", "authenticated"]) {

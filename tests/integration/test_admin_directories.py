@@ -29,8 +29,26 @@ N_PETS = 1500
 BASE = datetime(2026, 1, 1, tzinfo=UTC)
 COUNTRIES = ["IT", "ES", "FR", None]  # None: no residence country -> "unknown"
 
-SPECIES = ["dog", "cat", "cane", "rodent", "pesce"]
-BUCKET = {"dog": "dog", "cat": "cat", "cane": "dog", "rodent": "small_mammal", "pesce": "fish"}
+# What the app stores in `species` (its Italian labels) and, written out here on purpose and
+# not computed with the code under test, the group and "exotic" the panel must show (QK-07d).
+SPECIES = [
+    "Cane",
+    "Gatto",
+    "Piccoli mammiferi",
+    "Uccello",
+    "Rettili e anfibi",
+    "Pesce",
+    "Altro",
+]
+GROUP = {
+    "Cane": ("dog", False),
+    "Gatto": ("cat", False),
+    "Piccoli mammiferi": ("small_mammal", True),
+    "Uccello": ("bird", True),
+    "Rettili e anfibi": ("reptile_amphibian", True),
+    "Pesce": ("fish", True),
+    "Altro": ("other", True),
+}
 
 
 def _user(index: int) -> dict[str, Any]:
@@ -54,16 +72,14 @@ def _location(index: int) -> dict[str, Any]:
 
 
 def _pet(index: int) -> dict[str, Any]:
-    species = SPECIES[index % 5]
+    species = SPECIES[index % 7]
+    # Only the columns the app writes: the panel's three look-alike columns are not here.
     return {
         "id": f"p{index:05d}",
         "owner_id": f"u{index % N_USERS:05d}",
         "name": f"Pet{(index * 7) % N_PETS:05d}",  # not in id order, unique names
         "species": species,
-        "species_group": None,
         "breed": f"Breed{index % 11}",
-        "is_active": index % 3 != 0,
-        "is_exotic": species in {"rodent", "pesce"},
         "is_memorial": index % 10 == 0,
     }
 
@@ -195,12 +211,20 @@ class Directories:
     ) -> dict[str, Any]:
         size = min(max(p_page_size, 1), 100)
         needle = p_q.strip().lower()
-        flag = {"active": "is_active", "exotic": "is_exotic", "memorial": "is_memorial"}
         rows = []
         for pet in self.pets:
             place = self.locations[pet["owner_id"]]
             country, city = place["home_country_code"], place["home_city"]
-            row = {**pet, "country": country, "city": city, "region": None}
+            group, exotic = GROUP[pet["species"]]
+            row = {
+                **pet,
+                "species_group": group,
+                "is_exotic": exotic,
+                "is_active": not pet["is_memorial"],
+                "country": country,
+                "city": city,
+                "region": None,
+            }
             haystack = (pet["name"], pet["id"], pet["owner_id"], pet["breed"])
             if needle and not any(needle in str(value).lower() for value in haystack):
                 continue
@@ -208,11 +232,15 @@ class Directories:
                 continue
             if p_region and p_region.lower() not in (city or "").lower():
                 continue
-            if p_species and BUCKET[pet["species"]] != p_species:
+            if p_species and group != p_species:
                 continue
-            if p_status == "inactive" and pet["is_active"] is not False:
-                continue
-            if p_status in flag and pet[flag[p_status]] is not True:
+            wanted = {
+                "active": row["is_active"],
+                "inactive": not row["is_active"],
+                "exotic": exotic,
+                "memorial": pet["is_memorial"],
+            }
+            if p_status and not wanted[p_status]:
                 continue
             rows.append(row)
         rows.sort(key=lambda r: (r["name"].lower(), r["id"]))
@@ -398,11 +426,13 @@ def test_pet_pages_have_no_repeats_and_are_ordered_by_name_then_id(
 @pytest.mark.parametrize(
     ("params", "check"),
     [
-        ({"species": "dog"}, lambda p: p["species"] in {"dog", "cane"}),
-        ({"species": "small_mammal"}, lambda p: p["species"] == "rodent"),
+        ({"species": "dog"}, lambda p: p["species"] == "Cane" and p["species_group"] == "dog"),
+        ({"species": "small_mammal"}, lambda p: p["species"] == "Piccoli mammiferi"),
+        ({"species": "other"}, lambda p: p["species"] == "Altro"),
+        ({"status": "active"}, lambda p: p["is_active"] is True and p["is_memorial"] is False),
         ({"status": "memorial"}, lambda p: p["is_memorial"] is True),
-        ({"status": "inactive"}, lambda p: p["is_active"] is False),
-        ({"status": "exotic"}, lambda p: p["is_exotic"] is True),
+        ({"status": "inactive"}, lambda p: p["is_active"] is False and p["is_memorial"] is True),
+        ({"status": "exotic"}, lambda p: p["is_exotic"] is True and p["species"] != "Cane"),
         ({"country": "es"}, lambda p: p["country"] == "ES"),
         ({"region": "city 3"}, lambda p: "city 3" in p["city"].lower()),
     ],
@@ -597,11 +627,14 @@ MIGRATION = Path("supabase/migrations/20261122100000_admin_directories.sql")
 
 def test_the_migration_is_read_only_idempotent_and_closed_to_everyone_but_the_api() -> None:
     sql = " ".join(MIGRATION.read_text(encoding="utf-8").lower().split())
-    assert "create table" not in sql and "drop " not in sql
+    assert "create table" not in sql
+    # the only drop is the earlier draft of admin_species_bucket (two arguments)
+    assert sql.count("drop ") == 1
+    assert "drop function if exists public.admin_species_bucket(text, text);" in sql
     assert "insert " not in sql and "update " not in sql and "delete " not in sql
     functions = [
         "admin_users_directory(text, text, integer, integer)",
-        "admin_species_bucket(text, text)",
+        "admin_species_bucket(text)",
         "admin_pets_scope(text, text, text, text, text)",
         "admin_pets_directory(text, text, text, text, text, integer, integer)",
     ]

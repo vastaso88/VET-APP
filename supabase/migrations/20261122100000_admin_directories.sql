@@ -82,30 +82,40 @@ grant execute on function public.admin_users_directory(text, text, integer, inte
     to service_role;
 
 -- ----------------------------------------------------------------- pets
--- Same bucket names as `_species_bucket` in apps/api/routes/admin.py (keep in sync).
-create or replace function public.admin_species_bucket(p_group text, p_species text)
+-- QK-07d: the pet directory no longer reads pet_profiles.is_active / is_exotic /
+-- species_group (they exist in production but nothing ever writes them). What it shows is
+-- derived from what IS stored, with the same rules as the API's directory_traits.py (a test
+-- keeps them in step):
+--   group   the species family of `normalize_species` (packages/core/domain/pet_profile/
+--           species.py); 'unknown' when the pet has no species at all
+--   exotic  a family the radar calls an exotic group: everything that is not dog or cat
+--   active  not in Ricordi (is_memorial false)
+
+-- An earlier draft of this function took (group, species); it is removed, nothing used it.
+drop function if exists public.admin_species_bucket(text, text);
+
+create or replace function public.admin_species_bucket(p_species text)
 returns text language sql immutable set search_path = '' as $$
-    select case raw
+    select case when label = '' then 'unknown' else case label
         when 'cane' then 'dog' when 'dog' then 'dog'
         when 'gatto' then 'cat' when 'cat' then 'cat'
-        when 'uccello' then 'bird' when 'bird' then 'bird'
-        when 'roditore' then 'small_mammal' when 'rodent' then 'small_mammal'
+        when 'piccoli mammiferi' then 'small_mammal' when 'rabbit' then 'small_mammal'
         when 'small_mammal' then 'small_mammal'
-        when 'rettile' then 'reptile_amphibian' when 'reptile' then 'reptile_amphibian'
+        when 'uccello' then 'bird' when 'bird' then 'bird'
+        when 'rettili e anfibi' then 'reptile_amphibian' when 'reptile' then 'reptile_amphibian'
         when 'reptile_amphibian' then 'reptile_amphibian'
-        when 'pesce' then 'fish' when 'fish' then 'fish'
-        else coalesce(nullif(raw, ''), 'unknown')
-    end
-    from (select lower(btrim(coalesce(nullif(p_group, ''), nullif(p_species, ''), 'unknown')))
-          as raw) s;
+        when 'pesce' then 'fish' when 'pesci' then 'fish' when 'fish' then 'fish'
+        else 'other'
+    end end
+    from (select lower(btrim(coalesce(p_species, ''))) as label) s;
 $$;
-revoke all on function public.admin_species_bucket(text, text) from public, anon, authenticated;
-grant execute on function public.admin_species_bucket(text, text) to service_role;
+revoke all on function public.admin_species_bucket(text) from public, anon, authenticated;
+grant execute on function public.admin_species_bucket(text) to service_role;
 
 -- The pets that match the directory filters. p_status: '' | active | inactive | exotic |
--- memorial. p_region matches the city (users have no region). species_group, is_active
--- and is_exotic are read from the row as JSON so the function also works where those
--- columns do not exist (they read as null). Only directory fields: never medical notes.
+-- memorial ('inactive' and 'memorial' are the same pets: the ones in Ricordi). p_region
+-- matches the city (users have no region). Only directory fields: never medical notes.
+-- The returned columns keep the names the admin panel reads, with derived values.
 create or replace function public.admin_pets_scope(
     p_q text, p_species text, p_status text, p_country text, p_region text
 ) returns table (
@@ -113,13 +123,15 @@ create or replace function public.admin_pets_scope(
     is_active boolean, is_exotic boolean, is_memorial boolean, country text, city text
 ) language sql stable security invoker set search_path = '' as $$
     select b.id, b.owner_id, b.name, b.species, b.species_group, b.breed,
-           b.is_active, b.is_exotic, b.is_memorial, b.country, b.city
+           not b.is_memorial as is_active,
+           b.species_group in ('small_mammal', 'bird', 'reptile_amphibian', 'fish', 'other')
+               as is_exotic,
+           b.is_memorial, b.country, b.city
       from (
           select p.id, p.owner_id, p.name, p.species, p.breed,
-                 to_jsonb(p) ->> 'species_group' as species_group,
-                 (to_jsonb(p) ->> 'is_active')::boolean as is_active,
-                 (to_jsonb(p) ->> 'is_exotic')::boolean as is_exotic,
-                 p.is_memorial, l.home_country_code as country, l.home_city as city
+                 public.admin_species_bucket(p.species) as species_group,
+                 coalesce(p.is_memorial, false) as is_memorial,
+                 l.home_country_code as country, l.home_city as city
             from public.pet_profiles p
             left join public.user_locations l on l.owner_id = p.owner_id
       ) b
@@ -131,13 +143,13 @@ create or replace function public.admin_pets_scope(
        and (coalesce(p_country, '') = '' or upper(coalesce(b.country, '')) = upper(p_country))
        and (coalesce(p_region, '') = ''
             or position(lower(p_region) in lower(coalesce(b.city, ''))) > 0)
-       and (coalesce(p_species, '') = ''
-            or public.admin_species_bucket(b.species_group, b.species) = p_species)
+       and (coalesce(p_species, '') = '' or b.species_group = p_species)
        and (coalesce(p_status, '') = ''
-            or (p_status = 'active' and b.is_active is true)
-            or (p_status = 'inactive' and b.is_active is false)
-            or (p_status = 'exotic' and b.is_exotic is true)
-            or (p_status = 'memorial' and b.is_memorial is true));
+            or (p_status = 'active' and not b.is_memorial)
+            or (p_status = 'inactive' and b.is_memorial)
+            or (p_status = 'exotic'
+                and b.species_group in ('small_mammal', 'bird', 'reptile_amphibian', 'fish', 'other'))
+            or (p_status = 'memorial' and b.is_memorial));
 $$;
 revoke all on function public.admin_pets_scope(text, text, text, text, text)
     from public, anon, authenticated;

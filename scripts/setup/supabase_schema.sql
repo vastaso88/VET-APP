@@ -62,10 +62,11 @@ alter table public.pet_profiles add column if not exists body_condition text;
 alter table public.pet_profiles add column if not exists activity_level text;
 
 -- QK-07b (2026-11-22): three columns that already exist in production (read from the
--- real database) but were defined in no script. The admin pet directory and overview
--- read them (apps/api/routes/admin.py, admin_pets.py, supabase/migrations/
--- 20261122100000_admin_directories.sql). NOTE the real default of is_active is FALSE
--- and neither the app nor the backend ever writes it, so existing pets read as inactive.
+-- real database) but were defined in no script. The real default of is_active is FALSE
+-- and neither the app nor the backend ever writes any of the three.
+-- non usate dal codice, vedi QK-07d: the admin panel derives "active" (not in Ricordi),
+-- "exotic" and the species group from `species` and `is_memorial` instead
+-- (packages/core/domain/pet_profile/directory_traits.py). They stay in the database.
 alter table public.pet_profiles add column if not exists is_active boolean not null default false;
 alter table public.pet_profiles add column if not exists is_exotic boolean;
 alter table public.pet_profiles add column if not exists species_group text;

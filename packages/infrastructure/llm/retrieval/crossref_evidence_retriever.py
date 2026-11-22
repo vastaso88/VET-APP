@@ -9,6 +9,7 @@ from packages.core.application.ports.evidence_retriever import (
 )
 from packages.core.application.services.evidence_query_planner import EvidenceQueryPlanner
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.infrastructure.llm.retrieval.intent_domain import domain_from_intent
 
 BASE_URL = "https://api.crossref.org/works"
 
@@ -40,15 +41,6 @@ def _tier_from_title(title: str) -> str:
     if any(marker in lowered for marker in MID_TIER_TITLE_MARKERS):
         return "B"
     return "C"
-
-
-def _domain_from_intent(intent: str) -> str:
-    return {
-        "clinical_question": "clinical",
-        "nutrition_question": "nutrition",
-        "behavior_question": "behavior",
-        "preventive_care": "preventive",
-    }.get(intent, "general")
 
 
 def _default_fetcher(url: str, *, timeout_seconds: int) -> bytes:
@@ -147,7 +139,7 @@ class CrossrefEvidenceRetriever(EvidenceRetriever):
             pmid=None,
             tier=tier,
             access_depth="A" if has_open_license else ("B" if tier in ("A", "B") else "C"),
-            clinical_domain=_domain_from_intent(request_data.intent),
+            clinical_domain=domain_from_intent(request_data.intent),
             species=request_data.species,
             snippet=None,
             source_url=item.get("URL"),

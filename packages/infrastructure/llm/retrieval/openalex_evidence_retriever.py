@@ -9,6 +9,7 @@ from packages.core.application.ports.evidence_retriever import (
 )
 from packages.core.application.services.evidence_query_planner import EvidenceQueryPlanner
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.infrastructure.llm.retrieval.intent_domain import domain_from_intent
 
 BASE_URL = "https://api.openalex.org/works"
 
@@ -41,15 +42,6 @@ def _tier_from_title_and_type(title: str, work_type: str) -> str:
     if work_type == "review":
         return "B"
     return "C"
-
-
-def _domain_from_intent(intent: str) -> str:
-    return {
-        "clinical_question": "clinical",
-        "nutrition_question": "nutrition",
-        "behavior_question": "behavior",
-        "preventive_care": "preventive",
-    }.get(intent, "general")
 
 
 def _reconstruct_abstract(inverted_index: dict[str, list[int]] | None) -> str | None:
@@ -158,7 +150,7 @@ class OpenAlexEvidenceRetriever(EvidenceRetriever):
             pmid=None,
             tier=tier,
             access_depth="A" if is_open_access else ("B" if tier in ("A", "B") else "C"),
-            clinical_domain=_domain_from_intent(request_data.intent),
+            clinical_domain=domain_from_intent(request_data.intent),
             species=request_data.species,
             snippet=_reconstruct_abstract(item.get("abstract_inverted_index")),
             source_url=item.get("id"),

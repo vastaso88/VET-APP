@@ -9,6 +9,7 @@ from packages.core.application.ports.evidence_retriever import (
 )
 from packages.core.application.services.evidence_query_planner import EvidenceQueryPlanner
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.infrastructure.llm.retrieval.intent_domain import domain_from_intent
 
 BASE_URL = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 
@@ -49,15 +50,6 @@ def _access_depth_from_item(item: dict, tier: str) -> str:
     if item.get("isOpenAccess") == "Y" or item.get("inEPMC") == "Y":
         return "A"  # full text legally accessible
     return "C"  # metadata/abstract only — the common case for paywalled work
-
-
-def _domain_from_intent(intent: str) -> str:
-    return {
-        "clinical_question": "clinical",
-        "nutrition_question": "nutrition",
-        "behavior_question": "behavior",
-        "preventive_care": "preventive",
-    }.get(intent, "general")
 
 
 def _default_fetcher(url: str, *, timeout_seconds: int) -> bytes:
@@ -157,7 +149,7 @@ class EuropePmcEvidenceRetriever(EvidenceRetriever):
             pmid=item.get("pmid"),
             tier=tier,
             access_depth=access_depth,
-            clinical_domain=_domain_from_intent(request_data.intent),
+            clinical_domain=domain_from_intent(request_data.intent),
             species=request_data.species,
             snippet=(item.get("abstractText") or "")[:400] or None,
             source_url=source_url,

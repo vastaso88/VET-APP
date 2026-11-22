@@ -15,7 +15,8 @@ from collections import Counter
 from datetime import UTC, datetime
 from typing import Any
 
-from apps.api.routes.admin import _list_auth_users, _parse_datetime, _species_bucket
+from apps.api.routes.admin import _list_auth_users, _parse_datetime
+from packages.core.domain.pet_profile.directory_traits import with_directory_fields
 from packages.infrastructure.admin.user_reports import countries
 
 
@@ -86,11 +87,11 @@ def legacy_pets_directory(
 ) -> dict[str, Any]:
     # Fetch only administrative directory fields, never medical notes or records.
     response = (
-        client.table("pet_profiles")
-        .select("id,owner_id,name,species,species_group,breed,is_active,is_exotic,is_memorial")
-        .execute()
+        client.table("pet_profiles").select("id,owner_id,name,species,breed,is_memorial").execute()
     )
-    rows = list(getattr(response, "data", None) or [])
+    # QK-07d: group, exotic and active are derived from species / is_memorial (the
+    # columns of the same names are never written).
+    rows = [with_directory_fields(row) for row in (getattr(response, "data", None) or [])]
     # UserLocation stores country and city, but has no region field.
     owner_ids = sorted({str(row["owner_id"]) for row in rows if row.get("owner_id")})
     locations: dict[str, dict[str, Any]] = {}
@@ -123,7 +124,7 @@ def legacy_pets_directory(
     if region:
         rows = [row for row in rows if region.casefold() in (row.get("city") or "").casefold()]
     if species:
-        rows = [row for row in rows if _species_bucket(row) == species]
+        rows = [row for row in rows if row["species_group"] == species]
     if status:
         flag = {
             "active": "is_active",
