@@ -18,6 +18,18 @@ class MarketplaceUnreadStore {
   // An answer that was on its way when the owner signed out is not theirs to show.
   int _session = 0;
 
+  /// Changes at every sign-out. A screen that reads the number itself (the list of
+  /// conversations) notes it before asking and passes it to [applyTotal] after.
+  int get session => _session;
+
+  /// Shows [total] on the envelope unless the owner signed out since [session]
+  /// was read. Returns whether it was applied.
+  bool applyTotal(int total, {required int session}) {
+    if (session != _session) return false;
+    count.value = total;
+    return true;
+  }
+
   /// Never throws: a wrong number on the envelope must not disturb the page.
   Future<void> refresh(MarketplaceMessagesRepository repository) async {
     final session = _session;

@@ -6,10 +6,13 @@ import '../../../../l10n/l10n.dart';
 import '../../data/marketplace_messages_repository.dart';
 import '../../data/marketplace_unread_store.dart';
 import '../pages/marketplace_conversations_page.dart';
+import 'visibility_poller.dart';
 
 /// The envelope in the Mercatino's bar, with the number of unread messages. It
-/// asks at opening and then every minute while it is on screen and the app is in
-/// the foreground. Push notifications do not exist in the app yet.
+/// asks at opening and then every minute, but only while its page is the one on
+/// screen and the app is in the foreground (a covered page stays mounted: it must
+/// not keep asking); it asks again at once when the owner is back. Push
+/// notifications do not exist in the app yet.
 class MarketplaceMessagesButton extends StatefulWidget {
   const MarketplaceMessagesButton({super.key, this.repository});
 
@@ -22,33 +25,30 @@ class MarketplaceMessagesButton extends StatefulWidget {
 class _MarketplaceMessagesButtonState extends State<MarketplaceMessagesButton> {
   late final MarketplaceMessagesRepository _repository =
       widget.repository ?? MarketplaceMessagesRepository();
-  Timer? _timer;
+  late final VisibilityPoller _poller = VisibilityPoller(
+    interval: MarketplaceUnreadStore.pollInterval,
+    onPoll: () => unawaited(MarketplaceUnreadStore.instance.refresh(_repository)),
+  );
 
   @override
-  void initState() {
-    super.initState();
-    unawaited(MarketplaceUnreadStore.instance.refresh(_repository));
-    _timer = Timer.periodic(MarketplaceUnreadStore.pollInterval, (_) {
-      if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
-        unawaited(MarketplaceUnreadStore.instance.refresh(_repository));
-      }
-    });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _poller.attach(ModalRoute.of(context));
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _poller.dispose();
     super.dispose();
   }
 
-  Future<void> _open() async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => MarketplaceConversationsPage(repository: _repository),
-      ),
-    );
-    if (mounted) unawaited(MarketplaceUnreadStore.instance.refresh(_repository));
-  }
+  /// The conversations page covers this one; when it is closed the poller reads
+  /// the number again at once, so the envelope matches what was just read.
+  Future<void> _open() => Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => MarketplaceConversationsPage(repository: _repository),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {

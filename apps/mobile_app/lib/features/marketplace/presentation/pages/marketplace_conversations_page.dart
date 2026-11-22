@@ -11,6 +11,7 @@ import '../../../../shared/widgets/pet_loader.dart';
 import '../../data/marketplace_messages_repository.dart';
 import '../../data/marketplace_unread_store.dart';
 import '../../domain/marketplace_conversation.dart';
+import '../widgets/visibility_poller.dart';
 import 'marketplace_conversation_page.dart';
 
 /// The owner's conversations on the Mercatino, as buyer and as seller.
@@ -28,51 +29,68 @@ class _MarketplaceConversationsPageState extends State<MarketplaceConversationsP
       widget.repository ?? MarketplaceMessagesRepository();
   List<MarketplaceConversation>? _conversations;
   bool _failed = false;
-  Timer? _timer;
+
+  /// Reads the list at opening and every minute, only while this page is the one
+  /// on screen and the app is in the foreground; and again at once when the
+  /// conversation page above it is closed or the app comes back.
+  late final VisibilityPoller _poller = VisibilityPoller(
+    interval: MarketplaceUnreadStore.pollInterval,
+    onPoll: () => unawaited(_load()),
+  );
 
   @override
-  void initState() {
-    super.initState();
-    unawaited(_load());
-    _timer = Timer.periodic(MarketplaceUnreadStore.pollInterval, (_) {
-      if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) unawaited(_load());
-    });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _poller.attach(ModalRoute.of(context));
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _poller.dispose();
     super.dispose();
   }
 
-  Future<void> _load() async {
+  /// The read in progress, if any: a tick, a pull-to-refresh or a retry that
+  /// arrives meanwhile shares it instead of starting another.
+  Future<void>? _loading;
+
+  Future<void> _load() => _loading ??= _read().whenComplete(() => _loading = null);
+
+  Future<void> _read() async {
+    final session = MarketplaceUnreadStore.instance.session;
     try {
       final conversations = await _repository.listConversations();
-      if (!mounted) return;
+      // Signed out while the answer was on its way: nothing of it is the next
+      // owner's to see, on the page or on the envelope.
+      if (!mounted || session != MarketplaceUnreadStore.instance.session) return;
       setState(() {
         _conversations = conversations;
         _failed = false;
       });
-      MarketplaceUnreadStore.instance.count.value =
-          conversations.fold(0, (total, item) => total + item.unreadCount);
+      MarketplaceUnreadStore.instance.applyTotal(
+        conversations.fold(0, (total, item) => total + item.unreadCount),
+        session: session,
+      );
     } on Exception {
       // A list already on screen stays there; only a first load shows the error.
-      if (mounted) setState(() => _failed = _conversations == null);
+      if (mounted && session == MarketplaceUnreadStore.instance.session) {
+        setState(() => _failed = _conversations == null);
+      }
     }
   }
 
-  Future<void> _open(MarketplaceConversation conversation) async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => MarketplaceConversationPage(
-          conversationId: conversation.id,
-          listingTitle: conversation.listingTitle,
-          repository: _repository,
+  /// The conversation page covers this one; when it is closed the poller reads
+  /// the list again at once, so the unread numbers match what was just read.
+  Future<void> _open(MarketplaceConversation conversation) =>
+      Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => MarketplaceConversationPage(
+            conversationId: conversation.id,
+            listingTitle: conversation.listingTitle,
+            repository: _repository,
+          ),
         ),
-      ),
-    );
-    if (mounted) await _load();
-  }
+      );
 
   @override
   Widget build(BuildContext context) {
