@@ -16,6 +16,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../pets/data/pet_demo_store.dart';
+import '../../../pets/domain/pet_models.dart';
 import '../../data/chat_demo_store.dart';
 import '../../data/chat_seed_data.dart';
 import '../../domain/chat_models.dart';
@@ -161,7 +162,7 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
                             ),
                             // The clinical-record switch of this pet, where the owner is
                             // about to ask: same decision as on the pet's page.
-                            if (PetDemoStore.instance.byName(conversation.petName) case final pet?)
+                            if (_petOfConversation(conversation) case final pet?)
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(
                                     AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.md),
@@ -477,7 +478,7 @@ class _SuccessConversationView extends StatelessWidget {
         // A pet in Ricordi: its past chats stay to reread, nothing new is
         // written (the backend refuses it too: pet_in_memories).
         final inMemories =
-            PetDemoStore.instance.byName(conversation.petName)?.isMemorial ?? false;
+            _petOfConversation(conversation)?.isMemorial ?? false;
         final state = context
             .findAncestorStateOfType<_ChatConversationDetailPageState>();
         state?._scheduleScrollIfNeeded(totalItems);
@@ -562,6 +563,7 @@ class _SuccessConversationView extends StatelessWidget {
                   : ChatComposer(
                       hintText: context.l10n.chatComposerHint(conversation.petName),
                       petName: conversation.petName,
+                      petId: conversation.petId,
                       onSend: onSendMessage,
                       draftKey: conversation.backendConversationId ?? conversation.id,
                       editingText: editingMessage?.text,
@@ -755,4 +757,13 @@ class _ConversationNotFound extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The pet a chat is about: by its id when it has one (two pets can share a name),
+/// by name only for a chat without one.
+PetProfile? _petOfConversation(ChatConversationDetail conversation) {
+  final petId = conversation.petId;
+  return petId != null
+      ? PetDemoStore.instance.byId(petId)
+      : PetDemoStore.instance.byName(conversation.petName);
 }

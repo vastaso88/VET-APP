@@ -41,6 +41,7 @@ from packages.core.application.ports.marketplace_messaging_repository import (
     MarketplaceMessagingRepository,
 )
 from packages.core.application.ports.media_storage import MediaStorage
+from packages.core.application.ports.message_key_repository import MessageKeyRepository
 from packages.core.application.ports.owner_contact_lookup import OwnerContactLookup
 from packages.core.application.ports.pet_condition_repository import PetConditionRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
@@ -117,6 +118,7 @@ class ContainerState:
     local_activity_repository: LocalActivityRepository
     chat_response_report_repository: ChatResponseReportRepository
     chat_attachment_repository: ChatAttachmentRepository
+    chat_message_key_repository: MessageKeyRepository
     media_storage: MediaStorage
     image_analyzer: ImageAnalyzer
     chat_orchestrator: ChatOrchestrator

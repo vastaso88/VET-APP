@@ -17,6 +17,7 @@ from packages.core.application.services.chat_orchestrator import (
     ChatOrchestrator,
     ChatOrchestratorInput,
 )
+from packages.core.application.services.message_claims import MessageClaims
 from packages.core.application.services.reminder_context_retriever import (
     ReminderContextRetriever,
 )
@@ -193,6 +194,8 @@ class SendChatMessageService:
         account_age_repository: AccountAgeRepository | None = None,
         photo_reading_enabled: bool = True,
         recent_other_chats: bool = False,
+        message_claims: MessageClaims | None = None,
+        in_flight: _InFlightMessages | None = None,
     ) -> None:
         self._repository = repository
         # Plan 08, v2 only (CHAT_ANSWER_V2): the last lines of the pet's other recent
@@ -219,6 +222,10 @@ class SendChatMessageService:
         # False: photos are saved but never read (VISION_PROVIDER=off, or no
         # Groq production vision model: docs/compliance/19).
         self._photo_reading_enabled = photo_reading_enabled
+        # QK-03b: the reservation shared by every instance (None: only the lock below).
+        self._message_claims = message_claims
+        # The lock inside this process; a test gives each simulated instance its own.
+        self._in_flight = in_flight or _IN_FLIGHT
 
     _MAX_OTHER_PETS = 12
 
@@ -368,7 +375,7 @@ class SendChatMessageService:
             return self._answer_new_message(data, pet_profile)
         # The same message twice at once waits for the first to be answered (see
         # _InFlightMessages); then the retry below finds it stored.
-        with _IN_FLIGHT.hold(data.owner_id, data.client_message_id, DUPLICATE_WAIT_SECONDS):
+        with self._in_flight.hold(data.owner_id, data.client_message_id, DUPLICATE_WAIT_SECONDS):
             return self._answer_new_message(data, pet_profile)
 
     def _answer_new_message(
@@ -387,7 +394,32 @@ class SendChatMessageService:
             return replay
 
         conversation = self._load_or_create_conversation(data, pet_profile, candidates)
-        return self.respond_in(conversation, data, pet_profile)
+        claims = self._message_claims
+        if claims is None or not data.client_message_id:
+            return self.respond_in(conversation, data, pet_profile)
+
+        # QK-03b: the same message may be in flight on ANOTHER instance. Reserved before the
+        # model is called; a duplicate waits and gets the stored answer. The reservation is a
+        # lock only: the replay is always read from the stored conversation.
+        replay, claim = claims.acquire(
+            data.owner_id,
+            data.client_message_id,
+            conversation.id,
+            lambda: self.already_answered(data),
+            wait_seconds=DUPLICATE_WAIT_SECONDS,
+        )
+        if replay is not None:
+            return replay
+        try:
+            output = self.respond_in(conversation, data, pet_profile)
+        except BaseException:
+            # A failed request must not leave the retry waiting on its reservation.
+            if claim is not None:
+                claims.release(claim)
+            raise
+        if claim is not None:
+            claims.answered(claim, output.reply.id)
+        return output
 
     def _load_candidates(self, data: SendChatMessageInput) -> list[Conversation]:
         """The stored conversations that could hold this message: the one it names, or the

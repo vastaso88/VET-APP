@@ -31,6 +31,7 @@ class ChatComposer extends StatefulWidget {
     super.key,
     required this.hintText,
     required this.petName,
+    this.petId,
     this.onSend,
     this.speechToText,
     this.recorder,
@@ -43,6 +44,10 @@ class ChatComposer extends StatefulWidget {
 
   final String hintText;
   final String petName;
+
+  /// The pet's profile id, when the chat has one: the photo goes to that pet, not
+  /// to whichever pet the name points to.
+  final String? petId;
 
   /// [attachmentId] is only set once the photo finished uploading and being
   /// analyzed server-side — see [ChatDemoStore.uploadAttachment].
@@ -377,6 +382,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
     });
 
     final result = await ChatDemoStore.instance.uploadAttachment(
+      petId: widget.petId,
       petName: widget.petName,
       imageBytes: bytes,
       fileName: file.name,

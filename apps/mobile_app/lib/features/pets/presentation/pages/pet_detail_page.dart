@@ -723,7 +723,7 @@ class _ChatTabState extends State<_ChatTab> {
       animation: _store,
       builder: (context, _) {
         final conversations = _store.conversations
-            .where((c) => c.activePetName == widget.pet.name)
+            .where((c) => c.petId == widget.pet.id)
             .toList(growable: false);
 
         return Column(
@@ -809,12 +809,15 @@ class _ChatTabState extends State<_ChatTab> {
   }
 
   void _startConversation(BuildContext context) {
-    if (!_store.canStartConversation(widget.pet.name)) {
+    if (!_store.canStartConversation(widget.pet.id)) {
       _showLimitDialog(context);
       return;
     }
 
-    final conversation = _store.startConversation(petName: widget.pet.name);
+    final conversation = _store.startConversation(
+      petId: widget.pet.id,
+      petName: widget.pet.name,
+    );
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => ChatConversationDetailPage(

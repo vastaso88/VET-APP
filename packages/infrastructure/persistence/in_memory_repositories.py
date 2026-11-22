@@ -1,3 +1,4 @@
+import threading
 from datetime import date, datetime
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
@@ -17,6 +18,10 @@ from packages.core.application.ports.llm_usage_repository import LlmUsageReposit
 from packages.core.application.ports.local_activity_repository import LocalActivityRepository
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
+)
+from packages.core.application.ports.message_key_repository import (
+    MessageKey,
+    MessageKeyRepository,
 )
 from packages.core.application.ports.owner_contact_lookup import OwnerContact, OwnerContactLookup
 from packages.core.application.ports.pet_condition_repository import PetConditionRepository
@@ -649,3 +654,81 @@ class InMemoryAnswerCacheRepository(AnswerCacheRepository):
         for key in expired:
             del self._items[key]
         return len(expired)
+
+
+class InMemoryMessageKeyRepository(MessageKeyRepository):
+    """The reservation of a message (QK-03b), in one process: tests, local use, and what two
+    simulated instances share when they are given the same object."""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._items: dict[tuple[str, str], MessageKey] = {}
+
+    def claim(
+        self, owner_id: str, client_message_id: str, conversation_id: str, now: datetime
+    ) -> MessageKey | None:
+        with self._lock:
+            existing = self._items.get((owner_id, client_message_id))
+            if existing is not None:
+                return existing.model_copy()
+            self._items[(owner_id, client_message_id)] = MessageKey(
+                owner_id=owner_id,
+                client_message_id=client_message_id,
+                conversation_id=conversation_id,
+                claimed_at=now,
+                claimed_at_raw=now.isoformat(),
+            )
+            return None
+
+    def retake(
+        self,
+        key: MessageKey,
+        conversation_id: str,
+        now: datetime,
+        *,
+        require_unanswered: bool,
+    ) -> bool:
+        with self._lock:
+            current = self._items.get((key.owner_id, key.client_message_id))
+            if current is None or current.claimed_at != key.claimed_at:
+                return False
+            if require_unanswered and current.answered_reply_id is not None:
+                return False
+            self._items[(key.owner_id, key.client_message_id)] = MessageKey(
+                owner_id=key.owner_id,
+                client_message_id=key.client_message_id,
+                conversation_id=conversation_id,
+                claimed_at=now,
+                claimed_at_raw=now.isoformat(),
+            )
+            return True
+
+    def mark_answered(
+        self, owner_id: str, client_message_id: str, reply_id: str, claimed_at: datetime
+    ) -> None:
+        with self._lock:
+            current = self._items.get((owner_id, client_message_id))
+            if current is not None and current.claimed_at == claimed_at:
+                current.answered_reply_id = reply_id
+
+    def release(self, owner_id: str, client_message_id: str, claimed_at: datetime) -> None:
+        with self._lock:
+            current = self._items.get((owner_id, client_message_id))
+            if (
+                current is not None
+                and current.claimed_at == claimed_at
+                and current.answered_reply_id is None
+            ):
+                del self._items[(owner_id, client_message_id)]
+
+    def purge_before(self, cutoff: datetime) -> int:
+        with self._lock:
+            old = [key for key, item in self._items.items() if item.claimed_at < cutoff]
+            for key in old:
+                del self._items[key]
+            return len(old)
+
+    def keys_of(self, owner_id: str) -> list[MessageKey]:
+        """For tests: the keys of one owner."""
+        with self._lock:
+            return [item.model_copy() for item in self._items.values() if item.owner_id == owner_id]

@@ -11,6 +11,7 @@ from packages.core.application.ports.conversation_repository import Conversation
 from packages.core.application.ports.dog_walk_repository import DogWalkRepository
 from packages.core.application.ports.local_activity_repository import LocalActivityRepository
 from packages.core.application.ports.media_storage import MediaStorage
+from packages.core.application.ports.message_key_repository import MessageKeyRepository
 from packages.core.application.ports.owner_contact_lookup import OwnerContactLookup
 from packages.core.application.ports.pet_condition_repository import PetConditionRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
@@ -29,6 +30,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryConversationRepository,
     InMemoryDogWalkRepository,
     InMemoryLocalActivityRepository,
+    InMemoryMessageKeyRepository,
     InMemoryOwnerContactLookup,
     InMemoryPetConditionRepository,
     InMemoryPetProfileRepository,
@@ -262,6 +264,25 @@ class PersistenceWiring(ContainerState):
                     return InMemoryChatAttachmentRepository()
                 raise
         return InMemoryChatAttachmentRepository()
+
+    def _build_chat_message_key_repository(self) -> MessageKeyRepository:
+        # QK-03b: the reservation of a message shared by every instance. One object per
+        # process: it remembers that the table is not there yet instead of asking each time.
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_message_key_repository import (  # noqa: E501
+                    SupabaseMessageKeyRepository,
+                )
+
+                return SupabaseMessageKeyRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryMessageKeyRepository()
+                raise
+        return InMemoryMessageKeyRepository()
 
     def _build_media_storage(self) -> MediaStorage:
         if self.settings.persistence_backend == "supabase":

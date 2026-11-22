@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ["main", "MULTILANG"]
+    branches: ["main", "MULTILANG", "Francesco"]
   pull_request:
   workflow_dispatch:
     inputs:
@@ -96,12 +96,40 @@ jobs:
       - name: Admin build
         run: npm run build
 
+  sql_pglite:
+    name: SQL (PGlite)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Install PGlite (embedded PostgreSQL, same version as the admin portal)
+        # Not saved anywhere: the scripts find it in the repository root node_modules.
+        run: npm install --no-save --no-audit --no-fund @electric-sql/pglite@0.5.17
+      - name: Run every SQL test in tests/sql
+        # Synthetic data in a throwaway in-memory database; never contacts Supabase.
+        run: |
+          set -e
+          shopt -s nullglob
+          files=(tests/sql/*.mjs)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No SQL tests found in tests/sql" >&2
+            exit 1
+          fi
+          for file in "${files[@]}"; do
+            echo "::group::$file"
+            node "$file"
+            echo "::endgroup::"
+          done
+
   firebase_distribution:
     name: MULTILANG APK to Firebase testers
     if: >-
       github.event_name == 'workflow_dispatch' &&
       inputs.distribute_firebase && github.ref == 'refs/heads/MULTILANG'
-    needs: [flutter, quality, admin_portal]
+    needs: [flutter, quality, admin_portal, sql_pglite]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: firebase-testing

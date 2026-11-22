@@ -2,6 +2,9 @@ from fastapi import APIRouter, Header
 
 from apps.api.dependencies.container import get_container
 from apps.api.routes.admin_common import _require_scheduler_token
+from packages.core.application.services.prune_chat_message_keys import (
+    PruneChatMessageKeysService,
+)
 
 router = APIRouter(prefix="/admin/lifecycle", tags=["admin"])
 
@@ -44,6 +47,18 @@ def prune_deletion_log(
     and the proof period. Counts only; scheduler token, no user session."""
     _require_scheduler_token(x_vetapp_scheduler)
     return get_container().deletion_log_service.prune().model_dump()
+
+
+@router.post("/prune-chat-message-keys")
+def prune_chat_message_keys(
+    x_vetapp_scheduler: str | None = Header(default=None, alias="X-VetApp-Scheduler"),
+) -> dict[str, object]:
+    """Removes the reservations of chat messages older than 30 days (QK-03b). Counts only;
+    scheduler token, no user session. Answers 200 with `table_available: false` while the
+    table does not exist yet, so the hourly job does not go red before the SQL is applied."""
+    _require_scheduler_token(x_vetapp_scheduler)
+    keys = get_container().chat_message_key_repository
+    return PruneChatMessageKeysService(keys).run().model_dump(mode="json")
 
 
 @router.post("/underage-dry-run")

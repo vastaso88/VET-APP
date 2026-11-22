@@ -10,6 +10,7 @@ import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/types/result.dart';
 import '../../pets/data/pet_demo_store.dart';
+import '../../pets/domain/pet_models.dart';
 import '../domain/chat_models.dart';
 import 'chat_attachment_remote_data_source.dart';
 import 'chat_remote_data_source.dart';
@@ -76,11 +77,10 @@ class ChatDemoStore extends ChangeNotifier {
   /// here: a name cannot tell them apart.
   final Map<String, String> _petIdByName = {};
 
-  /// The backend pet of each conversation, by the conversation's id here: a
-  /// restored conversation knows its pet from the server, and a new one keeps
-  /// the pet its first message went to. Looked up before any name, so two pets
-  /// with the same name each keep their own chats.
-  final Map<String, String> _petIdByThread = {};
+  /// Names that two or more pets of the account share. A name in this set cannot
+  /// stand for a pet: a chat is attached to its pet by id (see
+  /// [ChatConversationDetail.petId]), and one that has none is not guessed.
+  final Set<String> _ambiguousNames = <String>{};
 
   /// Bumped by [reset]: an answer that started before a sign-out is dropped
   /// when it lands instead of filling the next account's chats.
@@ -202,6 +202,12 @@ class ChatDemoStore extends ChangeNotifier {
     for (final name in petNames.values) {
       nameCounts[name] = (nameCounts[name] ?? 0) + 1;
     }
+    _ambiguousNames
+      ..clear()
+      ..addAll([
+        for (final entry in nameCounts.entries)
+          if (entry.value > 1) entry.key
+      ]);
     petNames.forEach((petId, name) {
       if (name.isNotEmpty && nameCounts[name] == 1) {
         _petIdByName[name] = petId;
@@ -220,9 +226,6 @@ class ChatDemoStore extends ChangeNotifier {
           known.contains(conversation.id)) {
         continue;
       }
-      if (conversation.petId.isNotEmpty) {
-        _petIdByThread[conversation.id] = conversation.petId;
-      }
       final loaded = conversation.messages;
       restored.add(
         MapEntry(
@@ -233,6 +236,7 @@ class ChatDemoStore extends ChangeNotifier {
                 ? appL10n.chatSavedConversationTitle(petName)
                 : conversation.title,
             petName: petName,
+            petId: conversation.petId.isEmpty ? null : conversation.petId,
             statusLabel: appL10n.chatStatusSaved,
             messages: loaded == null ? const [] : _messagesFrom(loaded),
             backendConversationId: conversation.id,
@@ -403,11 +407,44 @@ class ChatDemoStore extends ChangeNotifier {
     return UnmodifiableListView<ChatConversationSummary>(summaries);
   }
 
-  int countForPet(String petName) =>
-      _threads.where((thread) => thread.petName == petName).length;
+  /// How many chats [petId] has. Chats are counted by the pet's id, so two pets
+  /// with the same name are counted apart; a chat without an id counts for the
+  /// pet its name points to, but only when that name belongs to a single pet.
+  int countForPet(String petId) =>
+      _threads.where((thread) => _petIdOf(thread) == petId).length;
 
-  bool canStartConversation(String petName) =>
-      countForPet(petName) < maxConversationsPerPet;
+  bool canStartConversation(String petId) =>
+      countForPet(petId) < maxConversationsPerPet;
+
+  /// The pet a chat is about: its own id, else the pet its name points to when
+  /// no other pet of the account has that name, else null (not guessed).
+  String? _petIdOf(ChatConversationDetail thread) =>
+      thread.petId ?? _uniquePetIdForName(thread.petName);
+
+  /// True when two or more pets of the account have this name.
+  bool _isAmbiguousName(String petName) {
+    if (_ambiguousNames.contains(petName)) return true;
+    return _sharePets && _localPetsNamed(petName).length > 1;
+  }
+
+  List<PetProfile> _localPetsNamed(String petName) {
+    final key = petName.trim().toLowerCase();
+    return [
+      for (final pet in PetDemoStore.instance.list(includeMemorial: true))
+        if (pet.name.trim().toLowerCase() == key) pet,
+    ];
+  }
+
+  String? _uniquePetIdForName(String petName) {
+    if (_isAmbiguousName(petName)) return null;
+    final cached = _petIdByName[petName];
+    if (cached != null) return cached;
+    if (_sharePets) {
+      final matches = _localPetsNamed(petName);
+      if (matches.length == 1) return matches.single.id;
+    }
+    return null;
+  }
 
   /// Removes the conversation locally right away — required by
   /// [Dismissible], which expects the backing list to shrink synchronously
@@ -421,7 +458,6 @@ class ChatDemoStore extends ChangeNotifier {
     final thread = conversationById(id);
     _threads.removeWhere((thread) => thread.id == id);
     _openedConversationIds.remove(id);
-    _petIdByThread.remove(id);
     _loadingMessages.remove(id);
     _messagesLoadFailed.remove(id);
     notifyListeners();
@@ -521,8 +557,16 @@ class ChatDemoStore extends ChangeNotifier {
     return created;
   }
 
-  ChatConversationDetail startConversation({required String petName}) {
+  /// Starts a chat about the pet [petId] (its profile id); [petName] is only
+  /// what the screens show. The chat is tied to the pet by id from the start, so
+  /// two pets with the same name keep apart, and its first message goes to that
+  /// pet without looking the name up.
+  ChatConversationDetail startConversation({
+    required String petId,
+    required String petName,
+  }) {
     final conversation = _createConversation(
+      petId: petId,
       petName: petName,
       title: appL10n.chatNewConversationTitle(petName),
     );
@@ -740,11 +784,12 @@ class ChatDemoStore extends ChangeNotifier {
   /// user is about to send. See `POST /chat-attachments` (contract from
   /// "Chat LLM interna VETAPP").
   Future<Result<ChatAttachmentUploadResult>> uploadAttachment({
+    String? petId,
     required String petName,
     required Uint8List imageBytes,
     required String fileName,
   }) async {
-    final petIdResult = await _resolveDefaultPetId(petName);
+    final petIdResult = await _backendPetId(petId: petId, petName: petName);
     return petIdResult.fold(
       onFailure: (error) async => Result.failure(error),
       onSuccess: (petId) => _attachments.upload(
@@ -792,10 +837,18 @@ class ChatDemoStore extends ChangeNotifier {
     final thread = conversationById(conversationId) ?? _threads.first;
     final generation = _generation;
 
-    final petIdResult = await _petIdForThread(conversationId, thread.petName);
+    final petIdResult =
+        await _backendPetId(petId: thread.petId, petName: thread.petName);
     return petIdResult.fold(
       onFailure: (error) async => Result.failure(error),
       onSuccess: (petId) async {
+        // A chat that had no pet id takes the one its name resolved to.
+        if (thread.petId == null && generation == _generation) {
+          final current = conversationById(conversationId);
+          if (current != null && current.petId == null) {
+            _replaceThread(conversationId, current.copyWith(petId: petId));
+          }
+        }
         final sendResult = await _remote.sendMessage(
           petId: petId,
           conversationId: thread.backendConversationId,
@@ -837,22 +890,39 @@ class ChatDemoStore extends ChangeNotifier {
     );
   }
 
-  /// The backend pet a message of [threadId] goes to: the one the conversation
-  /// already has, otherwise the one resolved from [petName] (kept for the
-  /// conversation's next messages).
-  Future<Result<String>> _petIdForThread(
-      String threadId, String petName) async {
-    final known = _petIdByThread[threadId];
-    if (known != null) return Result.success(known);
-    final result = await _resolveDefaultPetId(petName);
-    result.fold<void>(
-      onSuccess: (petId) => _petIdByThread[threadId] = petId,
-      onFailure: (_) {},
-    );
-    return result;
+  /// The backend pet a message goes to: [petId] when the chat has one and the
+  /// server knows that pet; otherwise the pet [petName] points to (see
+  /// [_resolveDefaultPetId]).
+  Future<Result<String>> _backendPetId({
+    String? petId,
+    required String petName,
+  }) async {
+    if (petId != null && petId.isNotEmpty && _serverKnows(petId)) {
+      return Result.success(petId);
+    }
+    return _resolveDefaultPetId(petName);
+  }
+
+  /// False only when the profiles read says this pet is not on the server (one
+  /// saved on this phone that never reached it): then it is created by name.
+  /// Unknown (still loading, offline) counts as known.
+  bool _serverKnows(String petId) {
+    if (!_sharePets) return true;
+    final synced = PetDemoStore.instance.syncedPetNamesById();
+    return synced == null || synced.containsKey(petId);
   }
 
   Future<Result<String>> _resolveDefaultPetId(String petName) async {
+    // Two pets with the same name: the name cannot say which one is meant, and a
+    // wrong guess would send the message to the other animal.
+    if (_isAmbiguousName(petName)) {
+      return Result.failure<String>(
+        AppNetworkError(
+          code: 'pet_name_ambiguous',
+          message: appL10n.chatErrorPetBootstrap,
+        ),
+      );
+    }
     final cachedPetId = _petIdByName[petName];
     if (cachedPetId != null) {
       return Result.success(cachedPetId);
@@ -894,7 +964,7 @@ class ChatDemoStore extends ChangeNotifier {
     _openedConversationIds.clear();
     _freshAssistantIds.clear();
     _petIdByName.clear();
-    _petIdByThread.clear();
+    _ambiguousNames.clear();
     _loadingMessages.clear();
     _messagesLoadFailed.clear();
     _hydratedOwnerId = null;
@@ -948,6 +1018,7 @@ class ChatDemoStore extends ChangeNotifier {
       updatedAtLabel: lastMessage.timeLabel,
       unreadCount: unreadCount,
       activePetName: conversation.petName,
+      petId: _petIdOf(conversation),
       previewMessage: lastMessage.text,
       lastSender: lastMessage.author == ChatMessageAuthor.assistant
           ? appL10n.chatSenderAssistant
@@ -959,6 +1030,7 @@ class ChatDemoStore extends ChangeNotifier {
   // canned "conversation starter" here used to show the same two fake
   // messages on every new chat regardless of what the user actually asked.
   ChatConversationDetail _createConversation({
+    String? petId,
     required String petName,
     required String title,
   }) {
@@ -966,6 +1038,7 @@ class ChatDemoStore extends ChangeNotifier {
       id: _conversationId(petName),
       title: title,
       petName: petName,
+      petId: petId,
       statusLabel: appL10n.chatNewConversation,
       messages: const [],
     );

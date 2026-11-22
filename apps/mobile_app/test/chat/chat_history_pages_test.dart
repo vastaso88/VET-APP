@@ -236,7 +236,7 @@ void main() {
     expect(thread.messages, isEmpty);
     expect(thread.messagesLoaded, isFalse);
     // The per-pet limit still counts every chat, loaded or not.
-    expect(store.countForPet('Rex'), 3);
+    expect(store.countForPet('p1'), 3);
   });
 
   test('every page of the list is followed, one request each', () async {

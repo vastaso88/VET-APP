@@ -68,6 +68,7 @@ from packages.core.application.services.mark_not_helpful import MarkNotHelpfulSe
 from packages.core.application.services.medical_record_context_retriever import (
     MedicalRecordContextRetriever,
 )
+from packages.core.application.services.message_claims import MessageClaims
 from packages.core.application.services.plan_access_sync import PlanAccessSync
 from packages.core.application.services.register_device import RegisterDeviceService
 from packages.core.application.services.reminder_context_retriever import (
@@ -200,6 +201,7 @@ class ApplicationContainer(
         self.local_activity_repository = self._build_local_activity_repository()
         self.chat_response_report_repository = self._build_chat_response_report_repository()
         self.chat_attachment_repository = self._build_chat_attachment_repository()
+        self.chat_message_key_repository = self._build_chat_message_key_repository()
         self.media_storage: MediaStorage = self._build_media_storage()
         self.image_analyzer = self._build_image_analyzer()
         self.chat_orchestrator = ChatOrchestrator(
@@ -464,6 +466,8 @@ class ApplicationContainer(
             account_age_repository=self.account_age_repository,
             photo_reading_enabled=self.photo_reading_enabled,
             recent_other_chats=self.settings.chat_answer_v2,
+            # QK-03b: the same message in flight on another instance is answered once.
+            message_claims=MessageClaims(self.chat_message_key_repository),
         )
 
     def chat_usage_maintenance_service(self) -> ChatUsageMaintenanceService:

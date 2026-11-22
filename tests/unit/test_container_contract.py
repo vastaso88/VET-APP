@@ -37,6 +37,7 @@ IN_MEMORY = {
     "answer_cache_repository": "InMemoryAnswerCacheRepository",
     "auth_provider": "AgeGuardedAuthProvider",
     "chat_attachment_repository": "InMemoryChatAttachmentRepository",
+    "chat_message_key_repository": "InMemoryMessageKeyRepository",
     "chat_orchestrator": "ChatOrchestrator",
     "chat_response_report_repository": "InMemoryChatResponseReportRepository",
     "clinical_event_repository": "InMemoryClinicalEventRepository",
@@ -80,6 +81,7 @@ SUPABASE = {
     "answer_cache_repository": "SupabaseAnswerCacheRepository",
     "auth_provider": "AgeGuardedAuthProvider",
     "chat_attachment_repository": "SupabaseChatAttachmentRepository",
+    "chat_message_key_repository": "SupabaseMessageKeyRepository",
     "chat_orchestrator": "ChatOrchestrator",
     "chat_response_report_repository": "SupabaseChatResponseReportRepository",
     "clinical_event_repository": "SupabaseClinicalEventRepository",
@@ -206,6 +208,7 @@ BUILD_HOOKS = [
     "_build_answer_cache_repository",
     "_build_auth_provider",
     "_build_chat_attachment_repository",
+    "_build_chat_message_key_repository",
     "_build_chat_response_report_repository",
     "_build_clinical_event_repository",
     "_build_deletion_log_service",
@@ -514,7 +517,7 @@ def test_supabase_configuration_wires_supabase_collaborators_with_fake_clients(
     assert type(inner).__name__ == "SupabaseAuthProvider"
     # Construction asks for the service-role client once per collaborator and for the
     # anon client once (the auth provider); `client.py` turns the former into one per process.
-    assert (fake_supabase.service, fake_supabase.public) == (30, 1)
+    assert (fake_supabase.service, fake_supabase.public) == (31, 1)
 
 
 def test_calling_every_factory_builds_only_the_lazy_collaborators_and_no_public_client(
@@ -524,7 +527,7 @@ def test_calling_every_factory_builds_only_the_lazy_collaborators_and_no_public_
     for name in _factories():
         getattr(container, name)()
 
-    assert (fake_supabase.service, fake_supabase.public) == (39, 1)
+    assert (fake_supabase.service, fake_supabase.public) == (40, 1)
     assert type(container._event_catalog_repository).__name__ == "SupabaseEventCatalogRepository"
     submissions = type(container._event_submission_repository).__name__
     assert submissions == "SupabaseEventSubmissionRepository"

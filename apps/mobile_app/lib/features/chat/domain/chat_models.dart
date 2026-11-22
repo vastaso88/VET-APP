@@ -22,6 +22,7 @@ class ChatConversationSummary {
     required this.activePetName,
     required this.previewMessage,
     required this.lastSender,
+    this.petId,
   });
 
   final String id;
@@ -30,6 +31,11 @@ class ChatConversationSummary {
   final String updatedAtLabel;
   final int unreadCount;
   final String activePetName;
+
+  /// The pet this chat belongs to (its profile id); null for a chat whose pet
+  /// cannot be told apart by name. Use it, not [activePetName], to tell which
+  /// pet a chat is about: two pets can share a name.
+  final String? petId;
   final String previewMessage;
   final String lastSender;
 }
@@ -105,11 +111,20 @@ class ChatConversationDetail {
     this.previewText = '',
     this.previewFromAssistant = true,
     this.lastActivityAt,
+    this.petId,
   });
 
   final String id;
   final String title;
+
+  /// The pet's name, for display only: it does not identify the pet (see [petId]).
   final String petName;
+
+  /// The pet this chat is about (its profile id, the same as `pet_profiles.id` on
+  /// the server). Set when the chat is started from a pet's page and when it is
+  /// restored from the server; null only for the demo conversations and for chats
+  /// created without a pet, which are matched by name when the name is unique.
+  final String? petId;
   final String statusLabel;
   final List<ChatMessage> messages;
 
@@ -135,11 +150,13 @@ class ChatConversationDetail {
     List<ChatMessage>? messages,
     String? backendConversationId,
     bool? messagesLoaded,
+    String? petId,
   }) {
     return ChatConversationDetail(
       id: id ?? this.id,
       title: title ?? this.title,
       petName: petName ?? this.petName,
+      petId: petId ?? this.petId,
       statusLabel: statusLabel ?? this.statusLabel,
       messages: messages ?? this.messages,
       backendConversationId: backendConversationId ?? this.backendConversationId,

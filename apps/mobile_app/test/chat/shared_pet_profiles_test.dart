@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vet_app_mobile/features/chat/data/chat_attachment_remote_data_source.dart';
 import 'package:vet_app_mobile/features/chat/data/chat_demo_store.dart';
 import 'package:vet_app_mobile/features/chat/data/chat_remote_data_source.dart';
+import 'package:vet_app_mobile/features/chat/domain/chat_models.dart';
 import 'package:vet_app_mobile/features/pets/data/pet_demo_store.dart';
 import 'package:vet_app_mobile/shared/config/app_runtime_config.dart';
 import 'package:vet_app_mobile/shared/config/app_runtime_config_loader.dart';
@@ -288,6 +289,94 @@ void main() {
       await chat.ensureHydrated();
 
       expect(chat.conversations, isEmpty);
+    });
+  });
+
+  group('chats are tied to the pet by id, not by name (QK-02b)', () {
+    ChatConversationDetail legacyChat(String petName) => ChatConversationDetail(
+          id: 'old-$petName',
+          title: 'Vecchia chat',
+          petName: petName,
+          statusLabel: 'Salvata',
+          messages: const [],
+        );
+
+    test('two pets with the same name and no history: the first message goes to the one chosen',
+        () async {
+      answer = (_) async => [_pet('pet-a', 'Luna'), _pet('pet-b', 'Luna')];
+      await Future.wait([pets.ensureHydrated(), chat.ensureHydrated()]);
+
+      final forB = chat.startConversation(petId: 'pet-b', petName: 'Luna');
+      await chat.sendMessage(forB.id, 'ciao');
+      final forA = chat.startConversation(petId: 'pet-a', petName: 'Luna');
+      await chat.sendMessage(forA.id, 'ciao');
+
+      expect(remote.sentToPets, ['pet-b', 'pet-a']);
+      expect(profileReads, 1);
+    });
+
+    test('the per-pet chat limit is counted apart for pets with the same name', () async {
+      answer = (_) async => [_pet('pet-a', 'Luna'), _pet('pet-b', 'Luna')];
+      await Future.wait([pets.ensureHydrated(), chat.ensureHydrated()]);
+
+      for (var i = 0; i < ChatDemoStore.maxConversationsPerPet; i++) {
+        chat.startConversation(petId: 'pet-b', petName: 'Luna');
+      }
+
+      expect(chat.countForPet('pet-b'), ChatDemoStore.maxConversationsPerPet);
+      expect(chat.canStartConversation('pet-b'), isFalse);
+      expect(chat.countForPet('pet-a'), 0);
+      expect(chat.canStartConversation('pet-a'), isTrue);
+      expect(
+        chat.conversations.every((c) => c.petId == 'pet-b'),
+        isTrue,
+        reason: 'the list says which pet each chat is about',
+      );
+    });
+
+    test('an old chat without a pet id is not guessed when the name is shared', () async {
+      answer = (_) async => [_pet('pet-a', 'Luna'), _pet('pet-b', 'Luna')];
+      await Future.wait([pets.ensureHydrated(), chat.ensureHydrated()]);
+      final old = chat.openConversation('old-Luna', fallback: legacyChat('Luna'));
+
+      final result = await chat.sendMessage(old.id, 'ciao');
+
+      expect(result.isFailure, isTrue);
+      expect(remote.sentToPets, isEmpty); // nothing went to either pet
+      expect(chat.countForPet('pet-a'), 0);
+      expect(chat.countForPet('pet-b'), 0);
+    });
+
+    test('an old chat without a pet id uses the name when it belongs to one pet only', () async {
+      answer = (_) async => [_pet('pet-1', 'Rex'), _pet('pet-2', 'Luna')];
+      await Future.wait([pets.ensureHydrated(), chat.ensureHydrated()]);
+      final old = chat.openConversation('old-Rex', fallback: legacyChat('Rex'));
+      expect(chat.countForPet('pet-1'), 1);
+
+      await chat.sendMessage(old.id, 'ciao');
+
+      expect(remote.sentToPets, ['pet-1']);
+      expect(chat.conversationById(old.id)!.petId, 'pet-1'); // it has an id from now on
+    });
+
+    test('a second account never counts or sends with the pets of the first account', () async {
+      answer = (_) async => [_pet('pet-a', 'Luna')];
+      remote.conversations = [_conversation('c-a', 'pet-a')];
+      await Future.wait([pets.ensureHydrated(), chat.ensureHydrated()]);
+      expect(chat.countForPet('pet-a'), 1);
+
+      owner = 'owner-b';
+      pets.reset();
+      answer = (_) async => [_pet('pet-z', 'Luna')];
+      remote.conversations = const [];
+      await Future.wait([pets.ensureHydrated(), chat.ensureHydrated()]);
+
+      expect(chat.countForPet('pet-a'), 0);
+      expect(chat.conversations, isEmpty);
+      final fresh = chat.startConversation(petId: 'pet-z', petName: 'Luna');
+      await chat.sendMessage(fresh.id, 'ciao');
+      expect(remote.sentToPets, ['pet-z']);
+      expect(chat.countForPet('pet-z'), 1);
     });
   });
 }
