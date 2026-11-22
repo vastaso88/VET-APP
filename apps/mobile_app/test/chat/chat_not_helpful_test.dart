@@ -122,6 +122,19 @@ class _RecordingRemote implements ChatRemoteDataSource {
       ]);
 
   @override
+  Future<Result<RemoteConversationPage>> fetchConversationSummaries({
+    int limit = 50,
+    String? cursor,
+  }) async =>
+      Result.failure(
+        const AppNetworkError(code: conversationSummariesUnsupportedCode, message: 'old'),
+      );
+
+  @override
+  Future<Result<RemoteConversation>> fetchConversation(String conversationId) async =>
+      Result.failure(const AppNetworkError(code: 'x', message: 'unused'));
+
+  @override
   Future<Result<Map<String, String>>> fetchPetNamesById() async => Result.success({'p1': 'Rex'});
 
   @override

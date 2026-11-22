@@ -55,6 +55,7 @@ class RemoteChatMessage {
     required this.createdAt,
     this.healthAnswer = false,
     this.notHelpful = false,
+    this.clientMessageId,
   });
 
   final String id;
@@ -63,6 +64,10 @@ class RemoteChatMessage {
   final DateTime? createdAt;
   final bool healthAnswer;
   final bool notHelpful;
+
+  /// The app's own id of a message the owner sent (stored by the server), to recognise it
+  /// in the history fetched while the same message was being sent.
+  final String? clientMessageId;
 }
 
 /// A stored backend conversation as returned by `GET /conversations` (which
@@ -80,6 +85,62 @@ class RemoteConversation {
   final String title;
   final List<RemoteChatMessage> messages;
 }
+
+/// One row of the chat list (`GET /conversations/summaries`): everything but the
+/// messages. [messages] is null while they are not loaded (they come with
+/// [ChatRemoteDataSource.fetchConversation] when the owner opens the chat); a
+/// server too old for the light list answers `GET /conversations` instead, and
+/// then each row already carries its messages.
+class RemoteConversationSummary {
+  const RemoteConversationSummary({
+    required this.id,
+    required this.petId,
+    required this.title,
+    this.lastActivityAt,
+    this.lastMessageRole,
+    this.lastMessagePreview = '',
+    this.messageCount = 0,
+    this.messages,
+  });
+
+  /// A row made from a whole conversation (the old server's answer).
+  factory RemoteConversationSummary.fromFull(RemoteConversation conversation) {
+    final last = conversation.messages.lastOrNull;
+    return RemoteConversationSummary(
+      id: conversation.id,
+      petId: conversation.petId,
+      title: conversation.title,
+      lastActivityAt: last?.createdAt,
+      lastMessageRole: last?.role,
+      lastMessagePreview: last?.content ?? '',
+      messageCount: conversation.messages.length,
+      messages: conversation.messages,
+    );
+  }
+
+  final String id;
+  final String petId;
+  final String title;
+  final DateTime? lastActivityAt;
+  final String? lastMessageRole;
+  final String lastMessagePreview;
+  final int messageCount;
+  final List<RemoteChatMessage>? messages;
+}
+
+/// A page of the chat list; [nextCursor] is null on the last page.
+class RemoteConversationPage {
+  const RemoteConversationPage({required this.items, this.nextCursor});
+
+  final List<RemoteConversationSummary> items;
+  final String? nextCursor;
+}
+
+/// The failure code of [ChatRemoteDataSource.fetchConversationSummaries] when the
+/// server does not have the light list yet (an older deployment): the caller
+/// falls back to [ChatRemoteDataSource.fetchConversations].
+const String conversationSummariesUnsupportedCode =
+    'conversation_summaries_unsupported';
 
 abstract class ChatRemoteDataSource {
   /// [clientMessageId] identifies this message across retries: sending it
@@ -131,7 +192,8 @@ abstract class ChatRemoteDataSource {
   Future<Result<void>> deleteConversation(String conversationId);
 
   /// PATCH /conversations/{id} with the new title.
-  Future<Result<String>> renameConversation(String conversationId, String title);
+  Future<Result<String>> renameConversation(
+      String conversationId, String title);
 
   /// GET /conversations/{id}/summary: the veterinary summary, not a diagnosis.
   Future<Result<String>> conversationSummary(String conversationId);
@@ -139,6 +201,17 @@ abstract class ChatRemoteDataSource {
   /// The signed-in owner's stored conversations with their messages
   /// (`GET /conversations`), so chat history survives an app restart.
   Future<Result<List<RemoteConversation>>> fetchConversations();
+
+  /// A page of the chat list without the messages (`GET /conversations/summaries`).
+  /// Fails with [conversationSummariesUnsupportedCode] on a server that lacks it.
+  Future<Result<RemoteConversationPage>> fetchConversationSummaries({
+    int limit = 50,
+    String? cursor,
+  });
+
+  /// One conversation with its messages (`GET /conversations/{id}`), when the owner
+  /// opens it.
+  Future<Result<RemoteConversation>> fetchConversation(String conversationId);
 
   /// Backend pet id -> pet name for the signed-in owner (`GET /pets`), used
   /// to attach restored conversations to the right local pet.
@@ -224,7 +297,9 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
             AppNetworkError(
               code: 'chat_conversation_limit_reached',
               message: localizedBackendMessage(
-                colonIndex == -1 ? detail : detail.substring(colonIndex + 1).trim(),
+                colonIndex == -1
+                    ? detail
+                    : detail.substring(colonIndex + 1).trim(),
                 detail: detail,
               ),
             ),
@@ -267,7 +342,9 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       backendConversationId: conversation['id'] as String,
       title: conversation['title'] as String?,
       messageId: reply['id'] as String?,
-      healthAnswer: json['health_answer'] as bool? ?? reply['health_answer'] as bool? ?? false,
+      healthAnswer: json['health_answer'] as bool? ??
+          reply['health_answer'] as bool? ??
+          false,
     );
   }
 
@@ -297,7 +374,9 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       return Result.success(null);
     } on TimeoutException {
       return Result.failure(
-        AppNetworkError(code: 'chat_not_helpful_timeout', message: appL10n.chatNotHelpfulFailed),
+        AppNetworkError(
+            code: 'chat_not_helpful_timeout',
+            message: appL10n.chatNotHelpfulFailed),
       );
     } catch (error) {
       return Result.failure(
@@ -424,12 +503,15 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
           ),
         );
       }
-      final createdJson = jsonDecode(createResponse.body) as Map<String, dynamic>;
+      final createdJson =
+          jsonDecode(createResponse.body) as Map<String, dynamic>;
       final petProfile = createdJson['pet_profile'] as Map<String, dynamic>;
       return Result.success(petProfile['id'] as String);
     } on TimeoutException {
       return Result.failure<String>(
-        AppNetworkError(code: 'pet_bootstrap_timeout', message: appL10n.chatErrorRequestTimeout),
+        AppNetworkError(
+            code: 'pet_bootstrap_timeout',
+            message: appL10n.chatErrorRequestTimeout),
       );
     } catch (e) {
       return Result.failure<String>(
@@ -444,7 +526,8 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
 
   @override
   @override
-  Future<Result<String>> renameConversation(String conversationId, String title) async {
+  Future<Result<String>> renameConversation(
+      String conversationId, String title) async {
     try {
       final response = await _client
           .patch(
@@ -482,7 +565,8 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
   Future<Result<String>> conversationSummary(String conversationId) async {
     try {
       final response = await _client
-          .get(Uri.parse('$_baseUrl/conversations/$conversationId/summary'), headers: _headers)
+          .get(Uri.parse('$_baseUrl/conversations/$conversationId/summary'),
+              headers: _headers)
           .timeout(_timeout);
       if (response.statusCode < 200 || response.statusCode >= 300) {
         final quota = quotaExceededMessage(response.body);
@@ -527,7 +611,8 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
   Future<Result<void>> deleteConversation(String conversationId) async {
     try {
       final response = await _client
-          .delete(Uri.parse('$_baseUrl/conversations/$conversationId'), headers: _headers)
+          .delete(Uri.parse('$_baseUrl/conversations/$conversationId'),
+              headers: _headers)
           .timeout(_timeout);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -574,29 +659,10 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
 
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       final items = json['conversations'] as List<dynamic>? ?? const [];
-      final conversations = <RemoteConversation>[];
-      for (final entry in items) {
-        final item = entry as Map<String, dynamic>;
-        final rawMessages = item['messages'] as List<dynamic>? ?? const [];
-        conversations.add(
-          RemoteConversation(
-            id: item['id'] as String,
-            petId: item['pet_id'] as String? ?? '',
-            title: item['title'] as String? ?? '',
-            messages: [
-              for (final raw in rawMessages)
-                RemoteChatMessage(
-                  id: (raw as Map<String, dynamic>)['id'] as String? ?? '',
-                  role: raw['role'] as String? ?? 'assistant',
-                  content: raw['content'] as String? ?? '',
-                  createdAt: DateTime.tryParse(raw['created_at'] as String? ?? ''),
-                  healthAnswer: raw['health_answer'] as bool? ?? false,
-                  notHelpful: raw['not_helpful'] as bool? ?? false,
-                ),
-            ],
-          ),
-        );
-      }
+      final conversations = <RemoteConversation>[
+        for (final entry in items)
+          _conversationFromJson(entry as Map<String, dynamic>),
+      ];
       return Result.success(conversations);
     } on TimeoutException {
       return Result.failure<List<RemoteConversation>>(
@@ -609,6 +675,141 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       return Result.failure<List<RemoteConversation>>(
         AppNetworkError(
           code: 'conversation_list_unexpected_error',
+          message: appL10n.chatErrorGeneric,
+          details: e,
+        ),
+      );
+    }
+  }
+
+  static RemoteConversation _conversationFromJson(Map<String, dynamic> item) {
+    final rawMessages = item['messages'] as List<dynamic>? ?? const [];
+    return RemoteConversation(
+      id: item['id'] as String,
+      petId: item['pet_id'] as String? ?? '',
+      title: item['title'] as String? ?? '',
+      messages: [
+        for (final raw in rawMessages)
+          RemoteChatMessage(
+            id: (raw as Map<String, dynamic>)['id'] as String? ?? '',
+            role: raw['role'] as String? ?? 'assistant',
+            content: raw['content'] as String? ?? '',
+            createdAt: DateTime.tryParse(raw['created_at'] as String? ?? ''),
+            healthAnswer: raw['health_answer'] as bool? ?? false,
+            notHelpful: raw['not_helpful'] as bool? ?? false,
+            clientMessageId: raw['client_message_id'] as String?,
+          ),
+      ],
+    );
+  }
+
+  static RemoteConversationSummary _summaryFromJson(Map<String, dynamic> item) {
+    return RemoteConversationSummary(
+      id: item['id'] as String,
+      petId: item['pet_id'] as String? ?? '',
+      title: item['title'] as String? ?? '',
+      lastActivityAt:
+          DateTime.tryParse(item['last_activity_at'] as String? ?? ''),
+      lastMessageRole: item['last_message_role'] as String?,
+      lastMessagePreview: item['last_message_preview'] as String? ?? '',
+      messageCount: (item['message_count'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  @override
+  Future<Result<RemoteConversationPage>> fetchConversationSummaries({
+    int limit = 50,
+    String? cursor,
+  }) async {
+    try {
+      final uri = Uri.parse('$_baseUrl/conversations/summaries').replace(
+        queryParameters: {
+          'limit': '$limit',
+          if (cursor != null) 'cursor': cursor
+        },
+      );
+      final response =
+          await _client.get(uri, headers: _headers).timeout(_timeout);
+      if (response.statusCode == 404 || response.statusCode == 405) {
+        // An older server reads "summaries" as a conversation id (405: no GET there).
+        return Result.failure(
+          AppNetworkError(
+            code: conversationSummariesUnsupportedCode,
+            message: appL10n.chatErrorListChats,
+          ),
+        );
+      }
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return Result.failure(
+          AppNetworkError(
+            code: 'conversation_list_http_${response.statusCode}',
+            message: appL10n.chatErrorListChats,
+          ),
+        );
+      }
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final items = json['conversations'] as List<dynamic>? ?? const [];
+      return Result.success(
+        RemoteConversationPage(
+          items: [
+            for (final entry in items)
+              _summaryFromJson(entry as Map<String, dynamic>),
+          ],
+          nextCursor: json['next_cursor'] as String?,
+        ),
+      );
+    } on TimeoutException {
+      return Result.failure(
+        AppNetworkError(
+          code: 'conversation_list_timeout',
+          message: appL10n.chatErrorRequestTimeout,
+        ),
+      );
+    } catch (e) {
+      return Result.failure(
+        AppNetworkError(
+          code: 'conversation_list_unexpected_error',
+          message: appL10n.chatErrorGeneric,
+          details: e,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Result<RemoteConversation>> fetchConversation(
+      String conversationId) async {
+    try {
+      final response = await _client
+          .get(
+            Uri.parse(
+                '$_baseUrl/conversations/${Uri.encodeComponent(conversationId)}'),
+            headers: _headers,
+          )
+          .timeout(_timeout);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return Result.failure(
+          AppNetworkError(
+            code: 'conversation_get_http_${response.statusCode}',
+            message: appL10n.chatErrorListChats,
+          ),
+        );
+      }
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Result.success(
+        _conversationFromJson(json['conversation'] as Map<String, dynamic>),
+      );
+    } on TimeoutException {
+      return Result.failure(
+        AppNetworkError(
+          code: 'conversation_get_timeout',
+          message: appL10n.chatErrorRequestTimeout,
+        ),
+      );
+    } catch (e) {
+      return Result.failure(
+        AppNetworkError(
+          code: 'conversation_get_unexpected_error',
           message: appL10n.chatErrorGeneric,
           details: e,
         ),
@@ -634,11 +835,13 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       final pets = json['pet_profiles'] as List<dynamic>? ?? const [];
       return Result.success({
         for (final entry in pets)
-          (entry as Map<String, dynamic>)['id'] as String: (entry['name'] as String?) ?? '',
+          (entry as Map<String, dynamic>)['id'] as String:
+              (entry['name'] as String?) ?? '',
       });
     } on TimeoutException {
       return Result.failure<Map<String, String>>(
-        AppNetworkError(code: 'pet_list_timeout', message: appL10n.chatErrorRequestTimeout),
+        AppNetworkError(
+            code: 'pet_list_timeout', message: appL10n.chatErrorRequestTimeout),
       );
     } catch (e) {
       return Result.failure<Map<String, String>>(

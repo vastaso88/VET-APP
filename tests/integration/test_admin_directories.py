@@ -271,7 +271,7 @@ def _forget_missing_functions() -> None:
 @pytest.fixture
 def portal(monkeypatch: pytest.MonkeyPatch) -> tuple[TestClient, Directories]:
     monkeypatch.setattr(
-        "apps.api.routes.admin._configured_admin_emails",
+        "apps.api.routes.admin_common._configured_admin_emails",
         lambda: frozenset({"admin@example.com"}),
     )
     monkeypatch.setattr(

@@ -12,7 +12,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, model_validator
 
 from apps.api.dependencies.container import get_container
-from apps.api.routes.admin import (
+from apps.api.routes.admin_common import (
     _admin_client,
     _configured_admin_emails,
     _list_auth_users,

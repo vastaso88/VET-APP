@@ -4,7 +4,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
-from apps.api.routes.admin import _admin_client, _require_admin
+from apps.api.routes.admin_common import _admin_client, _require_admin
 from apps.api.routes.admin_directories_legacy import legacy_pets_directory
 from packages.infrastructure.admin.user_reports import pets_directory
 

@@ -168,6 +168,63 @@ class SupabaseConversationRepository(ConversationRepository):
         )
         return [Conversation.model_validate(item) for item in response.data or []]
 
+    # QK-11: what the "other chats" context needs, not the chat's working state.
+    _CONTEXT_COLUMNS = "id,owner_id,pet_id,title,messages,medical_record_consent,last_message_at"
+    # Rows saved before `last_message_at` existed and not yet backfilled: judged by their
+    # messages, a bounded few (the retention backfill empties them).
+    _CONTEXT_UNDATED_MAX = 20
+
+    def list_recent_for_context(
+        self,
+        owner_id: str,
+        pet_id: str,
+        *,
+        exclude_conversation_id: str | None,
+        active_since: datetime,
+        limit: int,
+    ) -> list[Conversation]:
+        def scoped() -> Any:
+            query = (
+                self._client.table(self._table)
+                .select(self._CONTEXT_COLUMNS)
+                .eq("owner_id", owner_id)
+                .eq("pet_id", pet_id)
+            )
+            if exclude_conversation_id is not None:
+                query = query.neq("id", exclude_conversation_id)
+            return query
+
+        try:
+            dated = (
+                scoped()
+                .gte("last_message_at", active_since.isoformat())
+                .order("last_message_at", desc=True)
+                .limit(limit)
+                .execute()
+            )
+            undated = (
+                scoped().is_("last_message_at", "null").limit(self._CONTEXT_UNDATED_MAX).execute()
+            )
+            rows = list(dated.data or []) + list(undated.data or [])
+        except Exception:  # noqa: BLE001 - a column of the live table is missing, or the read failed
+            # The answer never fails on this context, and must not lose it either: all of the
+            # pet's conversations as before QK-11, narrowed below. No text in the log.
+            _logger.warning("conversations context read degraded to the whole pet, see schema")
+            response = self._client.table(self._table).select("*").eq("pet_id", pet_id).execute()
+            rows = list(response.data or [])
+        recent = [Conversation.model_validate(row) for row in rows]
+        recent = [
+            item
+            for item in recent
+            if item.owner_id == owner_id
+            and item.pet_id == pet_id
+            and item.id != exclude_conversation_id
+            and item.messages
+            and item.messages[-1].created_at >= active_since
+        ]
+        recent.sort(key=lambda item: item.messages[-1].created_at, reverse=True)
+        return recent[:limit]
+
     def get(self, conversation_id: str) -> Conversation | None:
         response = (
             self._client.table(self._table).select("*").eq("id", conversation_id).limit(1).execute()

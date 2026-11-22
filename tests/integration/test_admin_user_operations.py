@@ -99,7 +99,8 @@ def portal(monkeypatch: pytest.MonkeyPatch) -> tuple[TestClient, Database]:
         lambda: frozenset({"admin@example.com"}),
     )
     monkeypatch.setattr(
-        "apps.api.routes.admin._configured_admin_emails", lambda: frozenset({"admin@example.com"})
+        "apps.api.routes.admin_common._configured_admin_emails",
+        lambda: frozenset({"admin@example.com"}),
     )
     monkeypatch.setattr(
         get_container().auth_provider,
@@ -438,10 +439,14 @@ def test_plan_change_calls_atomic_audited_rpc_only_after_totp(
     assert response.status_code == 200
     assert response.json() == {"owner_id": "a", "plan": "pro"}
     assert [call.args[0] for call in database.rpc.call_args_list] == [
-        "admin_plan_totp_register_attempt", "admin_change_user_plan_totp"
+        "admin_plan_totp_register_attempt",
+        "admin_change_user_plan_totp",
     ]
     assert database.rpc.call_args.args[1] == {
-        "p_owner_id": "a", "p_admin_id": "admin", "p_plan": "pro", "p_code_digest": proof
+        "p_owner_id": "a",
+        "p_admin_id": "admin",
+        "p_plan": "pro",
+        "p_code_digest": proof,
     }
 
 
@@ -477,8 +482,10 @@ def test_rate_limit_fails_closed_before_totp_verification(
     database.rpc.side_effect = lambda *_: SimpleNamespace(
         execute=lambda: SimpleNamespace(data=False)
     )
+
     def must_not_run(*_: Any) -> str:
         raise AssertionError("TOTP should not be checked after rate limit")
+
     monkeypatch.setattr("apps.api.routes.admin_users._verify_plan_totp", must_not_run)
     response = browser.post("/admin/users/a/plan", json={"plan": "plus", "totp_code": "123456"})
     assert response.status_code == 429
@@ -493,8 +500,10 @@ def test_missing_or_invalid_totp_cannot_reach_plan_rpc(
     database.rpc.side_effect = lambda *_: SimpleNamespace(
         execute=lambda: SimpleNamespace(data=True)
     )
+
     def invalid_factor(*_: Any) -> str:
         raise HTTPException(status_code=428, detail="TOTP required")
+
     monkeypatch.setattr("apps.api.routes.admin_users._verify_plan_totp", invalid_factor)
     response = browser.post("/admin/users/a/plan", json={"plan": "plus", "totp_code": "123456"})
     assert response.status_code == 428
@@ -509,10 +518,12 @@ def test_plan_rpc_failure_never_leaks_internal_error(
 ) -> None:
     browser, database = portal
     monkeypatch.setattr("apps.api.routes.admin_users._verify_plan_totp", lambda *_: "b" * 64)
+
     def execute_rpc(method: str, _: dict[str, Any]) -> Any:
         if method == "admin_plan_totp_register_attempt":
             return SimpleNamespace(execute=lambda: SimpleNamespace(data=True))
         raise RuntimeError("internal secret from Postgres")
+
     database.rpc.side_effect = execute_rpc
     response = browser.post("/admin/users/a/plan", json={"plan": "plus", "totp_code": "123456"})
     assert response.status_code == 409

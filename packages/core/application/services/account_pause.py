@@ -28,6 +28,7 @@ from packages.core.domain.account_deletion.log import DeletionReason
 from packages.core.domain.account_pause import notices
 from packages.core.domain.account_pause.models import AccountPause
 from packages.core.domain.common.entity import utc_now
+from packages.shared.auth_context import forget_request_subscription
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +73,7 @@ class AccountPauseService:
         self._repository.create(AccountPause(owner_id=owner_id, paused_at=now))
         # Same operation, never skipped: see the module docstring.
         self._subscriptions.set_access_lost_at(owner_id, None)
+        forget_request_subscription(owner_id)
         pause = self._repository.get(owner_id)
         assert pause is not None
         return pause

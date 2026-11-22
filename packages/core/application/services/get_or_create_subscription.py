@@ -18,6 +18,7 @@ from packages.core.domain.subscription.limits import (
 from packages.core.domain.subscription.models import Subscription, SubscriptionPlan
 from packages.core.domain.subscription.retention import data_kept_until
 from packages.core.domain.subscription.store import best_plan
+from packages.shared.auth_context import get_access_token, get_identity_memo
 
 PLAN_KEYS = SubscriptionPlan.ALL
 
@@ -119,6 +120,32 @@ class GetOrCreateSubscriptionService:
         self._max_memorial_pets = max_memorial_pets
 
     def execute(self, data: GetOrCreateSubscriptionInput) -> GetOrCreateSubscriptionOutput:
+        """The owner's access and limits. Within one HTTP request the outcome is computed once
+        and reused (the access gate, the plan limits and the status route all ask): it is kept
+        in the request's own memo (packages/shared/auth_context.py), tied to the caller's
+        token, the owner and the address, never shared with another request, and dropped when
+        a plan or state of this owner changes in the request (`forget_request_subscription`).
+        Outside a request (jobs, tests that call the service directly) nothing is remembered.
+        A copy is handed out each time, so no caller can alter what the next one reads."""
+        memo = get_identity_memo()
+        token = get_access_token()
+        if memo is None or not token:
+            return self._compute(data)
+        email = data.email.strip().lower()
+        remembered = memo.get_subscription(token, data.owner_id, email, data.email_verified)
+        if isinstance(remembered, GetOrCreateSubscriptionOutput):
+            return remembered.model_copy(deep=True)
+        outcome = self._compute(data)
+        # The computation may have saved something (the trial, an override plan, the
+        # retention clock): what was remembered earlier for this owner, under another
+        # address or confirmation, may no longer be true.
+        memo.forget_subscriptions(data.owner_id)
+        memo.put_subscription(
+            token, data.owner_id, email, data.email_verified, outcome.model_copy(deep=True)
+        )
+        return outcome
+
+    def _compute(self, data: GetOrCreateSubscriptionInput) -> GetOrCreateSubscriptionOutput:
         subscription = self._repository.get(data.owner_id)
         if subscription is None:
             subscription = self._repository.create_trial(

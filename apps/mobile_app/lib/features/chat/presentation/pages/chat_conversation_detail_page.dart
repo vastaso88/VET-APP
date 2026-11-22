@@ -485,7 +485,19 @@ class _SuccessConversationView extends StatelessWidget {
         return Column(
           children: [
             Expanded(
-              child: totalItems == 0
+              child: !conversation.messagesLoaded && conversation.messages.isEmpty
+                  // A chat known only from the list: its messages are being fetched (QK-12).
+                  ? (ChatDemoStore.instance.messagesLoadFailed(conversation.id)
+                      ? ChatErrorState(
+                          title: context.l10n.chatErrorListChats,
+                          subtitle: context.l10n.chatErrorGeneric,
+                          actionLabel: context.l10n.commonRetry,
+                          onAction: () => unawaited(
+                            ChatDemoStore.instance.ensureMessagesLoaded(conversation.id),
+                          ),
+                        )
+                      : const Center(child: PetLoader()))
+                  : totalItems == 0
                   ? _NewConversationPlaceholder(petName: conversation.petName)
                   : ListView.separated(
                       controller: scrollController,

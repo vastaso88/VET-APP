@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Header
 
 from apps.api.dependencies.container import get_container
-from apps.api.routes.admin import _require_scheduler_token
+from apps.api.routes.admin_common import _require_scheduler_token
 
 router = APIRouter(prefix="/admin/lifecycle", tags=["admin"])
 

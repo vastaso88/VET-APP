@@ -38,7 +38,7 @@ App (in_app_purchase)            Backend FastAPI                       Store
 | Google | `packages/infrastructure/billing/google_play.py` (OAuth service account RS256, subscriptionsv2, acknowledge, OIDC Pub/Sub) |
 | Persistenza | `packages/infrastructure/persistence/supabase/supabase_store_billing.py`, doppio in memoria |
 | Rotte | `apps/api/routes/billing.py`, admin in `apps/api/routes/admin.py` (`/admin/billing/*`) |
-| Migrazione | `supabase/migrations/20261121180000_store_billing.sql` (copia in `scripts/setup/store_billing.sql`) |
+| Migrazione | `supabase/migrations/20261121180000_store_billing.sql` (fonte; la copia richiesta dal setup è `scripts/setup/store_billing.sql`, deve restare identica: lo verifica `tests/unit/test_billing_migration_copy.py`, che indica quale file copiare sull'altro) |
 | Flutter | `lib/features/billing/data/store_billing_controller.dart`, `presentation/widgets/store_subscription_section.dart` |
 | Admin portal | `apps/admin_portal/app/billing/page.tsx` |
 

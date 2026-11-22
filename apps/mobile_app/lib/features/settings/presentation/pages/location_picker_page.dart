@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart' as latlong;
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
@@ -8,6 +6,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../../../location/data/address_geocoder.dart';
 import '../../../location/domain/coordinates.dart';
+import '../../../location/presentation/center_pin_map_picker.dart';
 import '../../../nearby_places/data/reverse_geocoder.dart';
 
 /// Pick a point by panning the map under a fixed pin — same interaction as
@@ -31,15 +30,8 @@ class LocationPickerPage extends StatefulWidget {
 }
 
 class _LocationPickerPageState extends State<LocationPickerPage> {
-  final _mapController = MapController();
   late Coordinates _position = widget.initialPosition;
   bool _confirming = false;
-
-  @override
-  void dispose() {
-    _mapController.dispose();
-    super.dispose();
-  }
 
   Future<void> _confirm() async {
     setState(() => _confirming = true);
@@ -78,41 +70,9 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
                   ),
                 ),
                 Expanded(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      FlutterMap(
-                        mapController: _mapController,
-                        options: MapOptions(
-                          initialCenter: latlong.LatLng(
-                            widget.initialPosition.latitude,
-                            widget.initialPosition.longitude,
-                          ),
-                          initialZoom: 16,
-                          onPositionChanged: (camera, _) => _position = Coordinates(
-                            latitude: camera.center.latitude,
-                            longitude: camera.center.longitude,
-                          ),
-                        ),
-                        children: [
-                          TileLayer(
-                            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            userAgentPackageName: 'com.vetapp.mobile_app',
-                          ),
-                          const RichAttributionWidget(
-                            attributions: [TextSourceAttribution('OpenStreetMap contributors')],
-                          ),
-                        ],
-                      ),
-                      // Fixed pin at the center: the map moves under it, same
-                      // as report_missing_place_page.dart.
-                      const IgnorePointer(
-                        child: Padding(
-                          padding: EdgeInsets.only(bottom: 36),
-                          child: Icon(Icons.location_on, size: 44, color: AppColors.danger),
-                        ),
-                      ),
-                    ],
+                  child: CenterPinMapPicker(
+                    initialPosition: widget.initialPosition,
+                    onCenterChanged: (center) => _position = center,
                   ),
                 ),
                 Padding(

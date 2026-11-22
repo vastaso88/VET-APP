@@ -1,11 +1,17 @@
-from fastapi import APIRouter, Depends, Header, Response
+from fastapi import APIRouter, Depends, Header, Query, Response
 
 from apps.api.dependencies.container import get_container
 from apps.api.dependencies.subscription import allowlist_email, require_active_subscription
 from apps.api.schemas.conversations import EditChatMessageRequest, RenameConversationRequest
 from packages.core.application.services.delete_conversation import DeleteConversationInput
 from packages.core.application.services.edit_chat_message import EditChatMessageInput
-from packages.core.application.services.list_conversations import ListConversationsInput
+from packages.core.application.services.list_conversations import (
+    DEFAULT_PAGE_SIZE,
+    MAX_PAGE_SIZE,
+    GetConversationInput,
+    ListConversationPageInput,
+    ListConversationsInput,
+)
 from packages.core.application.services.mark_not_helpful import MarkNotHelpfulInput
 from packages.core.application.services.rename_conversation import RenameConversationInput
 from packages.core.application.services.vet_summary import VetSummaryInput
@@ -23,6 +29,37 @@ def list_conversations() -> dict[str, object]:
         ListConversationsInput(owner_id=user.id)
     )
     return {"conversations": [c.public_dump() for c in result.conversations]}
+
+
+@router.get("/summaries")
+def list_conversation_summaries(
+    limit: int = Query(default=DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    cursor: str | None = Query(default=None, max_length=300),
+) -> dict[str, object]:
+    """The owner's chat list without the messages (QK-12): id, pet, title, last activity,
+    a short preview of the last message. Newest activity first; `next_cursor` is
+    opaque and null on the last page. The full history stays on GET /conversations
+    for the apps already installed; the messages of one chat are on GET /conversations/{id}."""
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    page = container.list_conversations_service().list_page(
+        ListConversationPageInput(owner_id=user.id, limit=limit, cursor=cursor)
+    )
+    return {
+        "conversations": [item.model_dump(mode="json") for item in page.items],
+        "next_cursor": page.next_cursor,
+    }
+
+
+@router.get("/{conversation_id}")
+def get_conversation(conversation_id: str) -> dict[str, object]:
+    """One of the owner's conversations with its messages (the app opening a chat)."""
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    result = container.list_conversations_service().get_detail(
+        GetConversationInput(owner_id=user.id, conversation_id=conversation_id)
+    )
+    return {"conversation": result.conversation.public_dump()}
 
 
 @router.patch("/{conversation_id}")

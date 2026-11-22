@@ -49,7 +49,7 @@ def team(monkeypatch: pytest.MonkeyPatch) -> tuple[TestClient, _SpyEraser, Calla
     spy = _SpyEraser()
     monkeypatch.setattr(container, "_build_account_eraser", lambda: spy)
     monkeypatch.setattr(
-        "apps.api.routes.admin._configured_admin_emails",
+        "apps.api.routes.admin_common._configured_admin_emails",
         lambda: frozenset({f"{ADMIN}@example.com"}),
     )
     repository = container.account_age_repository

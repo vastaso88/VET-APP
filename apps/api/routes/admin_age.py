@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
-from apps.api.routes.admin import _require_admin
+from apps.api.routes.admin_common import _require_admin
 from packages.infrastructure.auth.age_guarded_auth_provider import AgeGuardedAuthProvider
 
 router = APIRouter(prefix="/admin/age", tags=["admin"])

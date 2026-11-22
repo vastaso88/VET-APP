@@ -69,6 +69,8 @@ jobs:
         run: uv sync --all-extras
       - name: Lint
         run: uv run ruff check .
+      - name: Format check
+        run: uv run ruff format --check .
       - name: Typecheck
         run: uv run mypy apps packages tests
       - name: Test

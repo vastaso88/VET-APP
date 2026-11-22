@@ -39,6 +39,7 @@ from packages.core.domain.subscription.store import (
     VerifiedStorePurchase,
     best_plan,
 )
+from packages.shared.auth_context import forget_request_subscription
 
 logger = logging.getLogger(__name__)
 
@@ -241,6 +242,8 @@ class StoreBillingService:
         subscription = self._subscriptions.get(owner_id)
         if subscription is not None and subscription.plan != plan:
             self._subscriptions.save(subscription.model_copy(update={"plan": plan}))
+        # The plan (or the entitlements behind it) may have changed during this request.
+        forget_request_subscription(owner_id)
         return plan
 
     def entitlements_for(self, owner_id: str) -> list[StoreEntitlement]:
@@ -262,6 +265,7 @@ class StoreBillingService:
             anomaly="admin_test_grant",
         )
         self._entitlements.save(entitlement)
+        forget_request_subscription(owner_id)
         self.sync_plan(owner_id)
         return entitlement
 
@@ -337,11 +341,14 @@ class StoreBillingService:
                 "verification_error_at": None,
             }
         )
-        return self._entitlements.save(updated)
+        saved = self._entitlements.save(updated)
+        forget_request_subscription(owner_id)
+        return saved
 
     def _flag(self, entitlement: StoreEntitlement, anomaly: str) -> None:
         logger.warning("billing anomaly: %s", anomaly)
         self._entitlements.save(entitlement.model_copy(update={"anomaly": anomaly}))
+        forget_request_subscription(entitlement.owner_id)
 
     def _record(
         self,

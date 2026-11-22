@@ -31,7 +31,7 @@ def _act_as(monkeypatch: pytest.MonkeyPatch, user_id: str, *, verified: bool = T
 @pytest.fixture
 def portal(monkeypatch: pytest.MonkeyPatch) -> TestClient:
     monkeypatch.setattr(
-        "apps.api.routes.admin._configured_admin_emails",
+        "apps.api.routes.admin_common._configured_admin_emails",
         lambda: frozenset({f"{ADMIN}@example.com"}),
     )
     # The region the costs are counted in is a setting (US by default in
@@ -77,7 +77,9 @@ def test_an_admin_with_an_unverified_address_gets_403(
 def test_without_any_admin_configured_the_route_is_closed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr("apps.api.routes.admin._configured_admin_emails", lambda: frozenset())
+    monkeypatch.setattr(
+        "apps.api.routes.admin_common._configured_admin_emails", lambda: frozenset()
+    )
     _act_as(monkeypatch, ADMIN)
 
     assert TestClient(app).get(PATH).status_code == 503

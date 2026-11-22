@@ -112,6 +112,27 @@ class InMemoryConversationRepository(ConversationRepository):
         ]
         return stale[:limit]
 
+    def list_recent_for_context(
+        self,
+        owner_id: str,
+        pet_id: str,
+        *,
+        exclude_conversation_id: str | None,
+        active_since: datetime,
+        limit: int,
+    ) -> list[Conversation]:
+        recent = [
+            item
+            for item in self._items.values()
+            if item.owner_id == owner_id
+            and item.pet_id == pet_id
+            and item.id != exclude_conversation_id
+            and item.messages
+            and item.messages[-1].created_at >= active_since
+        ]
+        recent.sort(key=lambda item: item.messages[-1].created_at, reverse=True)
+        return recent[:limit]
+
 
 class InMemoryReminderRepository(ReminderRepository):
     def __init__(self) -> None:

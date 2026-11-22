@@ -32,7 +32,7 @@ lib/features/reminders/data/reminders_repository.dart :: 'Verifica intensità
 # Developer-only page, not linked from the app.
 lib/app/preview/maps_demo_page.dart
 # Technical id.
-lib/features/reminders/presentation/pages/reminders_pages.dart :: 'promemoria-$
+lib/features/reminders/presentation/widgets/reminder_form.dart :: 'promemoria-$
 # Backend Italian texts used as lookup keys (the user sees the localized key, not these).
 lib/features/nearby_places/data/radar_contributions_repository.dart
 # Proper name of a municipality (data source).

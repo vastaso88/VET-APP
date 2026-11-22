@@ -15,7 +15,7 @@ from collections import Counter
 from datetime import UTC, datetime
 from typing import Any
 
-from apps.api.routes.admin import _list_auth_users, _parse_datetime
+from apps.api.routes.admin_common import _list_auth_users, _parse_datetime
 from packages.core.domain.pet_profile.directory_traits import with_directory_fields
 from packages.infrastructure.admin.user_reports import countries
 

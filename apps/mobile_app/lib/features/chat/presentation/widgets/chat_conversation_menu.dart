@@ -79,11 +79,19 @@ class ChatConversationMenuButton extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 
   Future<void> _export(BuildContext context) async {
-    final detail = ChatDemoStore.instance.conversationById(conversationId);
-    if (detail == null) {
+    final store = ChatDemoStore.instance;
+    if (store.conversationById(conversationId) == null) {
       _message(context, context.l10n.chatExportOpenFirst);
       return;
     }
+    // A chat known only from the list has no messages here yet (QK-12): they are fetched
+    // first, and when that fails nothing is exported rather than an empty file.
+    if (!await store.ensureMessagesAvailable(conversationId)) {
+      if (context.mounted) _message(context, context.l10n.chatErrorGeneric);
+      return;
+    }
+    final detail = store.conversationById(conversationId);
+    if (detail == null || !context.mounted) return;
     final you = context.l10n.chatSenderYou;
     final assistant = context.l10n.chatSenderAssistant;
     final displayTitle = _displayTitle(context);

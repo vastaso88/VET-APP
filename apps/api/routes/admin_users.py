@@ -13,7 +13,7 @@ from fastapi import APIRouter, HTTPException, Path, Query
 from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
-from apps.api.routes.admin import _admin_client, _parse_datetime, _require_admin
+from apps.api.routes.admin_common import _admin_client, _parse_datetime, _require_admin
 from apps.api.routes.admin_directories_legacy import legacy_users_directory
 from packages.core.domain.subscription.models import Subscription
 from packages.infrastructure.admin.user_reports import moderation, users_directory
@@ -285,7 +285,8 @@ def _verify_plan_totp(admin_id: str, code: str) -> str:
             factors = factors_response.json().get("factors", [])
             verified = next(
                 (
-                    item for item in factors
+                    item
+                    for item in factors
                     if (item.get("factor_type") or item.get("type")) == "totp"
                     and item.get("status") == "verified"
                 ),
@@ -326,9 +327,7 @@ def _verify_plan_totp(admin_id: str, code: str) -> str:
                 raise HTTPException(status_code=503, detail="MFA verification unavailable")
             # Check that Supabase issued an AAL2 token for the *same* admin.
             segment = upgraded_token.split(".")[1]
-            claims = json.loads(
-                base64.urlsafe_b64decode(segment + "=" * (-len(segment) % 4))
-            )
+            claims = json.loads(base64.urlsafe_b64decode(segment + "=" * (-len(segment) % 4)))
             if claims.get("sub") != admin_id or claims.get("aal") != "aal2":
                 raise HTTPException(status_code=403, detail="MFA identity mismatch")
     except httpx.RequestError:
@@ -357,9 +356,9 @@ def change_user_plan(
         raise HTTPException(status_code=403, detail="Protected team account")
     # Shared per-admin throttle: effective across multiple serverless instances.
     try:
-        allowed = client.rpc(
-            "admin_plan_totp_register_attempt", {"p_admin_id": admin.id}
-        ).execute().data
+        allowed = (
+            client.rpc("admin_plan_totp_register_attempt", {"p_admin_id": admin.id}).execute().data
+        )
     except Exception:
         raise HTTPException(status_code=503, detail="MFA rate limit unavailable") from None
     if allowed is not True:

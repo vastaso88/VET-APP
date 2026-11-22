@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -164,6 +165,17 @@ class _FakeConsents implements AccountConsentsRemoteDataSource {
 class _FakeReverseGeocoder extends ReverseGeocoder {
   @override
   Future<String?> addressOf(Coordinates position) async => 'Via Esempio 10, Milano';
+}
+
+/// Remembers the point the report was sent for.
+class _RecordingReverseGeocoder extends ReverseGeocoder {
+  Coordinates? asked;
+
+  @override
+  Future<String?> addressOf(Coordinates position) async {
+    asked = position;
+    return 'Via Esempio 10, Milano';
+  }
 }
 
 const _noGps = _NoGps();
@@ -674,5 +686,41 @@ void main() {
 
     expect(repository.calls, ['missing:grooming:Toelettatura Bau:Via Esempio 10, Milano']);
     expect(reloaded, 1);
+  });
+
+  testWidgets('the report map shows its credit and sends the point under the pin (QK-24)',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(420, 1600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final repository = _FakeContributions();
+    final geocoder = _RecordingReverseGeocoder();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ReportMissingPlacePage(
+          contributions: RadarContributions(
+            repository: repository,
+            consents: _FakeConsents(repository),
+            onChanged: () {},
+          ),
+          initialPosition: _milan,
+          reverseGeocoder: geocoder,
+        ),
+      ),
+    );
+    await _settle(tester);
+
+    expect(find.byType(RichAttributionWidget), findsOneWidget);
+    expect(find.byIcon(Icons.location_on), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(RadarChip, 'Toelettatura'));
+    await tester.enterText(find.byType(TextField), 'Toelettatura Bau');
+    await tester.pump();
+    await tester.drag(find.byType(FlutterMap), const Offset(-120, 80));
+    await _settle(tester);
+    await tester.tap(find.widgetWithText(FilledButton, 'Invia segnalazione'));
+    await _settle(tester);
+
+    final sent = geocoder.asked!;
+    expect(sent.latitude != _milan.latitude || sent.longitude != _milan.longitude, isTrue);
   });
 }

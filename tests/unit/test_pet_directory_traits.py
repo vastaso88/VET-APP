@@ -19,7 +19,7 @@ from packages.core.domain.pet_profile.species import _LABEL_TO_CANONICAL, normal
 from packages.core.domain.radar_places.competences import EXOTIC_GROUPS
 
 MIGRATION = Path("supabase/migrations/20261122100000_admin_directories.sql")
-ADMIN = Path("apps/api/routes/admin.py")
+ADMIN = Path("apps/api/routes/admin_dashboard.py")
 
 
 @pytest.mark.parametrize(

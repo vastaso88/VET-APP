@@ -202,7 +202,7 @@ def reconcile(
     x_vetapp_scheduler: str | None = Header(default=None, alias="X-VetApp-Scheduler"),
 ) -> dict[str, int]:
     """Periodic re-check with the stores (same scheduler secret as /admin)."""
-    from apps.api.routes.admin import _require_scheduler_token
+    from apps.api.routes.admin_common import _require_scheduler_token
 
     _require_scheduler_token(x_vetapp_scheduler)
     return _service().reconcile()

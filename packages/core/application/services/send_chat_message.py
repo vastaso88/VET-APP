@@ -1,3 +1,6 @@
+import threading
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import UTC, date, datetime, timedelta
 
 from pydantic import BaseModel
@@ -126,6 +129,47 @@ class SendChatMessageOutput(BaseModel):
     safety_clarification_category: str | None = None
 
 
+class _InFlightMessages:
+    """One lock per (owner, client_message_id) while a message is being answered (QK-03).
+
+    A duplicate of a message still being answered (the app's retry after its timeout, a
+    double tap) used to find nothing stored, call the model again and, for a new chat, open
+    a second conversation. It now waits for the first request to finish and then finds the
+    saved answer: the same reply id, no second model call.
+
+    Limits, on purpose: the registry lives in this process, so two duplicates served by
+    different serverless instances at the very same moment are not caught (a durable guard
+    needs a unique key in the database); and a duplicate that waits longer than
+    [wait_seconds] goes on and answers, as before, rather than hang the app.
+    """
+
+    def __init__(self) -> None:
+        self._guard = threading.Lock()
+        self._entries: dict[tuple[str, str], tuple[threading.Lock, list[int]]] = {}
+
+    @contextmanager
+    def hold(self, owner_id: str, client_message_id: str, wait_seconds: float) -> Iterator[bool]:
+        key = (owner_id, client_message_id)
+        with self._guard:
+            lock, users = self._entries.setdefault(key, (threading.Lock(), [0]))
+            users[0] += 1
+        acquired = lock.acquire(timeout=wait_seconds)
+        try:
+            yield acquired
+        finally:
+            if acquired:
+                lock.release()
+            with self._guard:
+                users[0] -= 1
+                if users[0] == 0:
+                    self._entries.pop(key, None)
+
+
+_IN_FLIGHT = _InFlightMessages()
+# How long a duplicate waits for the first copy of its message to be answered.
+DUPLICATE_WAIT_SECONDS = 45.0
+
+
 def _last_activity(conversation: Conversation) -> datetime:
     """When the chat was last written in (its last message), for "the chat used last"."""
     if conversation.messages:
@@ -192,11 +236,21 @@ class SendChatMessageService:
         if not self._recent_other_chats:
             return []
         try:
+            # QK-11: a bounded read (this owner, this pet, not this chat, active in the window)
+            # instead of every conversation of the pet; two spare rows in case the stored
+            # last-message date is stale. The same checks as before still apply below.
             others = [
                 c
-                for c in self._repository.list_by_pet(conversation.pet_id)
+                for c in self._repository.list_recent_for_context(
+                    conversation.owner_id,
+                    conversation.pet_id,
+                    exclude_conversation_id=conversation.id,
+                    active_since=now - self._OTHER_CHATS_WINDOW,
+                    limit=self._OTHER_CHATS_MAX + 2,
+                )
                 if c.id != conversation.id
                 and c.owner_id == conversation.owner_id
+                and c.pet_id == conversation.pet_id
                 and c.messages
                 and now - _last_activity(c) <= self._OTHER_CHATS_WINDOW
             ]
@@ -310,16 +364,39 @@ class SendChatMessageService:
         # Past chats of a pet in Ricordi stay readable; no new messages.
         ensure_not_in_memories(pet_profile)
 
+        if not data.client_message_id:
+            return self._answer_new_message(data, pet_profile)
+        # The same message twice at once waits for the first to be answered (see
+        # _InFlightMessages); then the retry below finds it stored.
+        with _IN_FLIGHT.hold(data.owner_id, data.client_message_id, DUPLICATE_WAIT_SECONDS):
+            return self._answer_new_message(data, pet_profile)
+
+    def _answer_new_message(
+        self, data: SendChatMessageInput, pet_profile: PetProfile
+    ) -> SendChatMessageOutput:
+        # The conversations that can hold this message are read ONCE and serve both the
+        # retry check and the loading of the chat (QK-03: they used to be read twice).
+        candidates = self._load_candidates(data)
+
         # A retry of a message this server already answered (the app gave up
         # waiting, the answer was stored anyway — 2026-10-07): hand back that
         # answer. No second model call, no duplicate turn, and for a new chat
         # no second conversation.
-        replay = self.already_answered(data)
+        replay = self.already_answered(data, candidates)
         if replay is not None:
             return replay
 
-        conversation = self._load_or_create_conversation(data, pet_profile)
+        conversation = self._load_or_create_conversation(data, pet_profile, candidates)
         return self.respond_in(conversation, data, pet_profile)
+
+    def _load_candidates(self, data: SendChatMessageInput) -> list[Conversation]:
+        """The stored conversations that could hold this message: the one it names, or the
+        pet's conversations for a new chat. Not filtered by owner here: each user of the
+        list does it."""
+        if data.conversation_id:
+            stored = self._repository.get(data.conversation_id)
+            return [stored] if stored is not None else []
+        return self._repository.list_by_pet(data.pet_id)
 
     def respond_in(
         self,
@@ -497,14 +574,18 @@ class SendChatMessageService:
             safety_clarification_category=orchestrator_result.safety_clarification_category,
         )
 
-    def already_answered(self, data: SendChatMessageInput) -> SendChatMessageOutput | None:
+    def already_answered(
+        self,
+        data: SendChatMessageInput,
+        candidates: list[Conversation] | None = None,
+    ) -> SendChatMessageOutput | None:
+        """The stored answer to a message this server already answered (same
+        client_message_id, same owner), or None. [candidates] are the conversations already
+        read by the caller; without them they are read here."""
         if not data.client_message_id:
             return None
-        if data.conversation_id:
-            stored = self._repository.get(data.conversation_id)
-            candidates = [stored] if stored is not None else []
-        else:
-            candidates = self._repository.list_by_pet(data.pet_id)
+        if candidates is None:
+            candidates = self._load_candidates(data)
         for conversation in candidates:
             if conversation.owner_id != data.owner_id:
                 continue
@@ -564,18 +645,21 @@ class SendChatMessageService:
         return attachment.analysis
 
     def _load_or_create_conversation(
-        self, data: SendChatMessageInput, pet_profile: PetProfile | None = None
+        self,
+        data: SendChatMessageInput,
+        pet_profile: PetProfile | None = None,
+        candidates: list[Conversation] | None = None,
     ) -> Conversation:
+        if candidates is None:
+            candidates = self._load_candidates(data)
         if data.conversation_id:
-            stored = self._repository.get(data.conversation_id)
+            stored = candidates[0] if candidates else None
             if stored and stored.owner_id == data.owner_id and stored.pet_id == data.pet_id:
                 return migrate_legacy_title(stored)
             raise ValidationError("conversation not found")
 
         existing_for_pet = [
-            conversation
-            for conversation in self._repository.list_by_pet(data.pet_id)
-            if conversation.owner_id == data.owner_id
+            conversation for conversation in candidates if conversation.owner_id == data.owner_id
         ]
         # With a plan the plan decides (Plus 2, Pro 4, Ultra 6): the setting is only the
         # fallback where no plan is wired. Taking the smaller of the two kept Ultra at 4

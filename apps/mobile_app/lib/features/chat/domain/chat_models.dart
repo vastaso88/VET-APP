@@ -101,6 +101,10 @@ class ChatConversationDetail {
     required this.statusLabel,
     required this.messages,
     this.backendConversationId,
+    this.messagesLoaded = true,
+    this.previewText = '',
+    this.previewFromAssistant = true,
+    this.lastActivityAt,
   });
 
   final String id;
@@ -114,6 +118,15 @@ class ChatConversationDetail {
   /// Null means this thread has never talked to the backend yet.
   final String? backendConversationId;
 
+  /// False for a chat known only from the light list: [messages] is empty until the
+  /// owner opens it (QK-12), and the list row shows [previewText] instead.
+  final bool messagesLoaded;
+
+  /// The start of the last message, for the list row while [messages] is not loaded.
+  final String previewText;
+  final bool previewFromAssistant;
+  final DateTime? lastActivityAt;
+
   ChatConversationDetail copyWith({
     String? id,
     String? title,
@@ -121,6 +134,7 @@ class ChatConversationDetail {
     String? statusLabel,
     List<ChatMessage>? messages,
     String? backendConversationId,
+    bool? messagesLoaded,
   }) {
     return ChatConversationDetail(
       id: id ?? this.id,
@@ -129,6 +143,10 @@ class ChatConversationDetail {
       statusLabel: statusLabel ?? this.statusLabel,
       messages: messages ?? this.messages,
       backendConversationId: backendConversationId ?? this.backendConversationId,
+      messagesLoaded: messagesLoaded ?? this.messagesLoaded,
+      previewText: previewText,
+      previewFromAssistant: previewFromAssistant,
+      lastActivityAt: lastActivityAt,
     );
   }
 }

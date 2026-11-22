@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
@@ -23,7 +24,8 @@ class ChatDemoStore extends ChangeNotifier {
     Future<Map<String, String>?> Function()? petNamesProvider,
     bool sharePetsWithPetStore = false,
   })  : _remote = remoteDataSource ?? HttpChatRemoteDataSource(),
-        _attachments = attachmentRemoteDataSource ?? HttpChatAttachmentRemoteDataSource(),
+        _attachments =
+            attachmentRemoteDataSource ?? HttpChatAttachmentRemoteDataSource(),
         _configLoader = configLoader ?? const AppRuntimeConfigLoader(),
         _ownerIdProvider = ownerIdProvider ?? _currentOwnerId,
         _petNamesProvider = petNamesProvider,
@@ -33,7 +35,8 @@ class ChatDemoStore extends ChangeNotifier {
 
   /// The app's store: it takes the pet profiles from [PetDemoStore], which
   /// already reads them from Supabase, instead of asking `GET /pets` again.
-  static final ChatDemoStore instance = ChatDemoStore._(sharePetsWithPetStore: true);
+  static final ChatDemoStore instance =
+      ChatDemoStore._(sharePetsWithPetStore: true);
 
   /// [petNamesProvider] stands in for the pet profiles (id -> name, null when
   /// they cannot be read); without it the store reads them through
@@ -145,22 +148,52 @@ class ChatDemoStore extends ChangeNotifier {
     }
   }
 
+  /// The chat list as rows without messages (QK-12): the pages of
+  /// `GET /conversations/summaries` one after the other (a page holds 50 rows, so
+  /// one request in practice; every chat is needed here for the per-pet limit).
+  /// A server without the light list answers the whole history instead, as before.
+  /// Null when it cannot be read now (the next call retries).
+  Future<List<RemoteConversationSummary>?> _loadConversationRows() async {
+    final rows = <RemoteConversationSummary>[];
+    String? cursor;
+    for (var page = 0; page < _maxSummaryPages; page++) {
+      final result =
+          await _remote.fetchConversationSummaries(limit: 50, cursor: cursor);
+      switch (result) {
+        case Success(:final value):
+          rows.addAll(value.items);
+          cursor = value.nextCursor;
+          if (cursor == null) return rows;
+        case Failure(:final error):
+          if (page == 0 && error.code == conversationSummariesUnsupportedCode) {
+            final legacy = await _remote.fetchConversations();
+            return legacy.fold<List<RemoteConversationSummary>?>(
+              onSuccess: (all) =>
+                  [for (final c in all) RemoteConversationSummary.fromFull(c)],
+              onFailure: (_) => null,
+            );
+          }
+          return null;
+      }
+    }
+    return rows;
+  }
+
+  static const int _maxSummaryPages = 20;
+
   Future<void> _hydrate(String ownerId, int generation) async {
-    bool outdated() => generation != _generation || _ownerIdProvider() != ownerId;
+    bool outdated() =>
+        generation != _generation || _ownerIdProvider() != ownerId;
 
     // Independent reads: run them together (was sequential, which doubled the
     // wait and stacked on top of a Vercel cold start).
     final results = await Future.wait<Object?>([
       _loadPetNames(),
-      _remote.fetchConversations(),
+      _loadConversationRows(),
     ]);
     if (outdated()) return; // signed out, or another account, meanwhile
     final petNames = results[0] as Map<String, String>?;
-    final conversationsResult = results[1] as Result<List<RemoteConversation>>;
-    final conversations = conversationsResult.fold<List<RemoteConversation>?>(
-      onSuccess: (value) => value,
-      onFailure: (_) => null,
-    );
+    final conversations = results[1] as List<RemoteConversationSummary>?;
     if (petNames == null || conversations == null) {
       return;
     }
@@ -182,16 +215,18 @@ class ChatDemoStore extends ChangeNotifier {
     final restored = <MapEntry<DateTime, ChatConversationDetail>>[];
     for (final conversation in conversations) {
       final petName = petNames[conversation.petId];
-      if (petName == null || petName.isEmpty || known.contains(conversation.id)) {
+      if (petName == null ||
+          petName.isEmpty ||
+          known.contains(conversation.id)) {
         continue;
       }
       if (conversation.petId.isNotEmpty) {
         _petIdByThread[conversation.id] = conversation.petId;
       }
+      final loaded = conversation.messages;
       restored.add(
         MapEntry(
-          conversation.messages.lastOrNull?.createdAt ??
-              DateTime.fromMillisecondsSinceEpoch(0),
+          conversation.lastActivityAt ?? DateTime.fromMillisecondsSinceEpoch(0),
           ChatConversationDetail(
             id: conversation.id,
             title: conversation.title.isEmpty
@@ -199,21 +234,13 @@ class ChatDemoStore extends ChangeNotifier {
                 : conversation.title,
             petName: petName,
             statusLabel: appL10n.chatStatusSaved,
-            messages: [
-              for (final message in conversation.messages)
-                ChatMessage(
-                  id: message.id.isEmpty ? _messageId('remote') : message.id,
-                  author: message.role == 'user'
-                      ? ChatMessageAuthor.user
-                      : ChatMessageAuthor.assistant,
-                  text: message.content,
-                  timeLabel: _timeLabelFor(message.createdAt),
-                  serverId: message.id.isEmpty ? null : message.id,
-                  healthAnswer: message.healthAnswer,
-                  notHelpful: message.notHelpful,
-                ),
-            ],
+            messages: loaded == null ? const [] : _messagesFrom(loaded),
             backendConversationId: conversation.id,
+            // A chat with nothing in it has nothing to fetch when opened.
+            messagesLoaded: loaded != null || conversation.messageCount == 0,
+            previewText: conversation.lastMessagePreview,
+            previewFromAssistant: conversation.lastMessageRole != 'user',
+            lastActivityAt: conversation.lastActivityAt,
           ),
         ),
       );
@@ -226,6 +253,131 @@ class ChatDemoStore extends ChangeNotifier {
 
     _hydratedOwnerId = ownerId;
     notifyListeners();
+  }
+
+  List<ChatMessage> _messagesFrom(List<RemoteChatMessage> remote) => [
+        for (final message in remote)
+          ChatMessage(
+            id: message.id.isEmpty ? _messageId('remote') : message.id,
+            author: message.role == 'user'
+                ? ChatMessageAuthor.user
+                : ChatMessageAuthor.assistant,
+            text: message.content,
+            timeLabel: _timeLabelFor(message.createdAt),
+            serverId: message.id.isEmpty ? null : message.id,
+            healthAnswer: message.healthAnswer,
+            notHelpful: message.notHelpful,
+          ),
+      ];
+
+  final Map<String, Future<void>> _loadingMessages = <String, Future<void>>{};
+  final Set<String> _messagesLoadFailed = <String>{};
+
+  /// True while the messages of [id] are being fetched.
+  bool isLoadingMessages(String id) => _loadingMessages.containsKey(id);
+
+  /// True when the last fetch of the messages of [id] failed (the page offers a retry).
+  bool messagesLoadFailed(String id) => _messagesLoadFailed.contains(id);
+
+  /// True when every message of [id] is here, fetching them first when the chat is known
+  /// only from the list. False when the fetch fails (or the chat is gone): whoever needs the
+  /// whole history (the export, an edit) must then say so instead of using a partial one.
+  /// A chat that is not on the server's list (a new one, the demo) is complete as it is.
+  Future<bool> ensureMessagesAvailable(String id) async {
+    await ensureMessagesLoaded(id);
+    final thread = conversationById(id);
+    return thread != null && thread.messagesLoaded;
+  }
+
+  /// Fetches the messages of a chat known only from the light list, when the owner opens
+  /// it (QK-12). One request per chat, however many times it is asked; a no-op for a chat
+  /// whose messages are already here. Anything sent meanwhile stays after the fetched
+  /// history. A fetch that finishes after a sign-out is dropped.
+  Future<void> ensureMessagesLoaded(String id) {
+    final thread = conversationById(id);
+    final backendId = thread?.backendConversationId;
+    if (thread == null || thread.messagesLoaded || backendId == null) {
+      return Future<void>.value();
+    }
+    final running = _loadingMessages[id];
+    if (running != null) return running;
+    _messagesLoadFailed.remove(id);
+    final generation = _generation;
+    late final Future<void> started;
+    started = _loadMessages(id, backendId, generation).whenComplete(() {
+      if (generation == _generation &&
+          identical(_loadingMessages[id], started)) {
+        _loadingMessages.remove(id);
+        notifyListeners();
+      }
+    });
+    _loadingMessages[id] = started;
+    Future.microtask(notifyListeners);
+    return started;
+  }
+
+  /// The history fetched from the server plus what was sent from this phone while it was
+  /// on its way ([local]). A local message that the server list already holds is kept once:
+  /// the owner's message is matched by the app's own id (the `client_message_id` the server
+  /// stored), a reply by its server id. What the server list lacks stays after it, in order.
+  /// Same result whichever of the fetch and the send lands first.
+  List<ChatMessage> _mergeFetched(
+      List<RemoteChatMessage> fetched, List<ChatMessage> local) {
+    final used = <ChatMessage>{};
+    ChatMessage? localCounterpart(RemoteChatMessage remote) {
+      for (final message in local) {
+        if (used.contains(message)) continue;
+        final sameClientId = remote.clientMessageId != null &&
+            remote.clientMessageId == message.id;
+        final sameServerId =
+            remote.id.isNotEmpty && remote.id == message.serverId;
+        if (sameClientId || sameServerId) return message;
+      }
+      return null;
+    }
+
+    final merged = <ChatMessage>[];
+    final converted = _messagesFrom(fetched);
+    for (var i = 0; i < fetched.length; i++) {
+      final mine = localCounterpart(fetched[i]);
+      if (mine != null) used.add(mine);
+      // Mine keeps what only this phone has (the photo shown with the message).
+      merged.add(mine ?? converted[i]);
+    }
+    return [
+      ...merged,
+      for (final message in local)
+        if (!used.contains(message)) message
+    ];
+  }
+
+  /// [messages] with [reply] at the end, unless a message with the same server id is
+  /// already there (the history fetched while the answer was on its way holds it).
+  List<ChatMessage> _withReply(List<ChatMessage> messages, ChatMessage reply) {
+    final serverId = reply.serverId;
+    if (serverId != null &&
+        messages.any((message) => message.serverId == serverId)) {
+      return messages;
+    }
+    return [...messages, reply];
+  }
+
+  Future<void> _loadMessages(
+      String id, String backendId, int generation) async {
+    final result = await _remote.fetchConversation(backendId);
+    if (generation != _generation) return; // signed out meanwhile
+    final index = _threads.indexWhere((thread) => thread.id == id);
+    if (index == -1) return; // deleted meanwhile
+    switch (result) {
+      case Success(:final value):
+        final current = _threads[index];
+        _threads[index] = current.copyWith(
+          messages: _mergeFetched(value.messages, current.messages),
+          messagesLoaded: true,
+        );
+      case Failure():
+        _messagesLoadFailed.add(id);
+    }
   }
 
   String _timeLabelFor(DateTime? value) {
@@ -270,6 +422,8 @@ class ChatDemoStore extends ChangeNotifier {
     _threads.removeWhere((thread) => thread.id == id);
     _openedConversationIds.remove(id);
     _petIdByThread.remove(id);
+    _loadingMessages.remove(id);
+    _messagesLoadFailed.remove(id);
     notifyListeners();
 
     final backendConversationId = thread?.backendConversationId;
@@ -290,7 +444,8 @@ class ChatDemoStore extends ChangeNotifier {
 
     final backendConversationId = previous.backendConversationId;
     if (backendConversationId == null) return Result.success<void>(null);
-    final result = await _remote.renameConversation(backendConversationId, title);
+    final result =
+        await _remote.renameConversation(backendConversationId, title);
     return result.fold(
       onSuccess: (storedTitle) {
         final current = _threads.indexWhere((thread) => thread.id == id);
@@ -344,10 +499,13 @@ class ChatDemoStore extends ChangeNotifier {
   /// normal case — every navigation path creates the thread before opening
   /// it) supply it directly if the store doesn't have it for some reason,
   /// instead of guessing which pet it was about.
-  ChatConversationDetail openConversation(String id, {ChatConversationDetail? fallback}) {
+  ChatConversationDetail openConversation(String id,
+      {ChatConversationDetail? fallback}) {
     _openedConversationIds.add(id);
     final conversation = conversationById(id);
     if (conversation != null) {
+      // A chat known only from the light list gets its messages now.
+      unawaited(ensureMessagesLoaded(id));
       notifyListeners();
       return conversation;
     }
@@ -393,7 +551,8 @@ class ChatDemoStore extends ChangeNotifier {
     final thread = conversationById(conversationId) ?? _threads.first;
     final alreadyInThread = retryOfMessageId != null &&
         thread.messages.any((message) => message.id == retryOfMessageId);
-    final userMessageId = alreadyInThread ? retryOfMessageId : _messageId('user');
+    final userMessageId =
+        alreadyInThread ? retryOfMessageId : _messageId('user');
 
     if (!alreadyInThread) {
       final userMessage = ChatMessage(
@@ -440,10 +599,23 @@ class ChatDemoStore extends ChangeNotifier {
     String? retryOfMessageId,
   }) async {
     final text = newText.trim();
+    // The edit cuts the thread at the message: it needs the whole history, not the part
+    // that happens to be here while the rest is still being fetched.
+    final known = conversationById(conversationId);
+    if (known != null &&
+        !known.messagesLoaded &&
+        !await ensureMessagesAvailable(conversationId)) {
+      return Result.failure(
+        AppNetworkError(
+            code: 'chat_messages_not_loaded',
+            message: appL10n.chatErrorGeneric),
+      );
+    }
     final thread = conversationById(conversationId) ?? _threads.first;
     final alreadyEdited = retryOfMessageId != null &&
         thread.messages.any((message) => message.id == retryOfMessageId);
-    final index = thread.messages.indexWhere((message) => message.id == messageId);
+    final index =
+        thread.messages.indexWhere((message) => message.id == messageId);
     if (!alreadyEdited && index < 0) {
       return Result.failure(
         AppNetworkError(
@@ -506,9 +678,10 @@ class ChatDemoStore extends ChangeNotifier {
         _freshAssistantIds.add(assistantMessage.id);
         final serverTitle = reply.title?.trim();
         final resultThread = updatedThread.copyWith(
-          title: serverTitle == null || serverTitle.isEmpty ? null : serverTitle,
+          title:
+              serverTitle == null || serverTitle.isEmpty ? null : serverTitle,
           statusLabel: appL10n.chatStatusReplyReady,
-          messages: [...updatedThread.messages, assistantMessage],
+          messages: _withReply(updatedThread.messages, assistantMessage),
         );
         _replaceThread(conversationId, resultThread);
         notifyListeners();
@@ -521,15 +694,20 @@ class ChatDemoStore extends ChangeNotifier {
   /// has the next health answer of this conversation written with more care)
   /// and remembers it, so the button gives way to the note. True when the
   /// signal was recorded. It is not a question: nothing is added to the thread.
-  Future<bool> reportNotHelpful(String conversationId, ChatMessage message) async {
+  Future<bool> reportNotHelpful(
+      String conversationId, ChatMessage message) async {
     final thread = conversationById(conversationId);
     final backendId = thread?.backendConversationId;
     final serverId = message.serverId;
-    if (thread == null || backendId == null || serverId == null || !_configLoader.load().hasApiBaseUrl) {
+    if (thread == null ||
+        backendId == null ||
+        serverId == null ||
+        !_configLoader.load().hasApiBaseUrl) {
       return false;
     }
     final generation = _generation;
-    final result = await _remote.markNotHelpful(conversationId: backendId, messageId: serverId);
+    final result = await _remote.markNotHelpful(
+        conversationId: backendId, messageId: serverId);
     if (result.isFailure) return false;
     if (generation != _generation) return true; // signed out meanwhile: nothing to update
     final current = conversationById(conversationId) ?? thread;
@@ -549,7 +727,8 @@ class ChatDemoStore extends ChangeNotifier {
   /// The most recent message the owner sent in [conversationId]: after a
   /// failed send, the one a retry should reuse.
   ChatMessage? lastUserMessage(String conversationId) {
-    final messages = conversationById(conversationId)?.messages ?? const <ChatMessage>[];
+    final messages =
+        conversationById(conversationId)?.messages ?? const <ChatMessage>[];
     for (final message in messages.reversed) {
       if (message.author == ChatMessageAuthor.user) return message;
     }
@@ -644,7 +823,7 @@ class ChatDemoStore extends ChangeNotifier {
 
             final resultThread = updatedThread.copyWith(
               statusLabel: appL10n.chatStatusReplyReady,
-              messages: [...updatedThread.messages, assistantMessage],
+              messages: _withReply(updatedThread.messages, assistantMessage),
               backendConversationId: reply.backendConversationId,
             );
             _replaceThread(conversationId, resultThread);
@@ -661,7 +840,8 @@ class ChatDemoStore extends ChangeNotifier {
   /// The backend pet a message of [threadId] goes to: the one the conversation
   /// already has, otherwise the one resolved from [petName] (kept for the
   /// conversation's next messages).
-  Future<Result<String>> _petIdForThread(String threadId, String petName) async {
+  Future<Result<String>> _petIdForThread(
+      String threadId, String petName) async {
     final known = _petIdByThread[threadId];
     if (known != null) return Result.success(known);
     final result = await _resolveDefaultPetId(petName);
@@ -693,7 +873,8 @@ class ChatDemoStore extends ChangeNotifier {
     // normalize_species() already maps these labels to canonical families.
     // A hardcoded 'dog' here used to bootstrap every never-before-chatted
     // pet on the backend as a dog, regardless of its real species.
-    final fallbackSpecies = PetDemoStore.instance.byName(petName)?.species ?? 'Altro';
+    final fallbackSpecies =
+        PetDemoStore.instance.byName(petName)?.species ?? 'Altro';
     final result = await _remote.ensureDefaultPetId(
       fallbackName: petName,
       fallbackSpecies: fallbackSpecies,
@@ -714,6 +895,8 @@ class ChatDemoStore extends ChangeNotifier {
     _freshAssistantIds.clear();
     _petIdByName.clear();
     _petIdByThread.clear();
+    _loadingMessages.clear();
+    _messagesLoadFailed.clear();
     _hydratedOwnerId = null;
   }
 
@@ -726,7 +909,8 @@ class ChatDemoStore extends ChangeNotifier {
     // one configured the store starts empty and [ensureHydrated] fills it
     // with the signed-in owner's real history.
     if (!_configLoader.load().hasApiBaseUrl) {
-      _threads.addAll(ChatSeedData.conversations.map(ChatSeedData.detailForSummary));
+      _threads.addAll(
+          ChatSeedData.conversations.map(ChatSeedData.detailForSummary));
     }
     _openedConversationIds.clear();
     _hydratedOwnerId = null;
@@ -736,12 +920,22 @@ class ChatDemoStore extends ChangeNotifier {
   ChatConversationSummary _summaryFor(ChatConversationDetail conversation) {
     final lastMessage = conversation.messages.isNotEmpty
         ? conversation.messages.last
-        : ChatMessage(
-            id: _messageId('summary'),
-            author: ChatMessageAuthor.assistant,
-            text: appL10n.chatEmptyThreadPreview,
-            timeLabel: appL10n.chatTimeNow,
-          );
+        : !conversation.messagesLoaded && conversation.previewText.isNotEmpty
+            // Known only from the light list: its preview stands for the last message.
+            ? ChatMessage(
+                id: _messageId('preview'),
+                author: conversation.previewFromAssistant
+                    ? ChatMessageAuthor.assistant
+                    : ChatMessageAuthor.user,
+                text: conversation.previewText,
+                timeLabel: _timeLabelFor(conversation.lastActivityAt),
+              )
+            : ChatMessage(
+                id: _messageId('summary'),
+                author: ChatMessageAuthor.assistant,
+                text: appL10n.chatEmptyThreadPreview,
+                timeLabel: appL10n.chatTimeNow,
+              );
 
     final unreadCount = _openedConversationIds.contains(conversation.id)
         ? 0
@@ -789,7 +983,8 @@ class ChatDemoStore extends ChangeNotifier {
 
   String _conversationId(String petName) {
     final seed = DateTime.now().microsecondsSinceEpoch.toRadixString(16);
-    final normalizedPet = petName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-');
+    final normalizedPet =
+        petName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-');
     return 'conv-$normalizedPet-$seed';
   }
 
@@ -811,7 +1006,9 @@ class ChatDemoStore extends ChangeNotifier {
     // Italian marker; the current language's own marker is checked too.
     if (lowerTitle.contains('nuova conversazione') ||
         lowerTitle.contains(appL10n.chatNewConversation.toLowerCase())) {
-      final subject = message.length > 34 ? '${message.substring(0, 34).trim()}...' : message;
+      final subject = message.length > 34
+          ? '${message.substring(0, 34).trim()}...'
+          : message;
       return appL10n.chatRetitled(subject);
     }
     return title;
@@ -821,7 +1018,9 @@ class ChatDemoStore extends ChangeNotifier {
   String _generateReply(String message, String petName) {
     final normalized = message.toLowerCase();
 
-    if (normalized.contains('appetito') || normalized.contains('mang') || normalized.contains('cibo')) {
+    if (normalized.contains('appetito') ||
+        normalized.contains('mang') ||
+        normalized.contains('cibo')) {
       return appL10n.chatDemoReplyAppetite(petName);
     }
 

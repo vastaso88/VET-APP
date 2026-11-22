@@ -423,7 +423,7 @@ def test_moderation_in_the_portal_needs_an_admin_and_can_close_the_conversation(
 
     # Not an admin: nothing, whoever they are.
     monkeypatch.setattr(
-        "apps.api.routes.admin._configured_admin_emails",
+        "apps.api.routes.admin_common._configured_admin_emails",
         lambda: frozenset({"admin-1@example.com"}),
     )
     assert client.get(queue_url).status_code == 403
@@ -489,7 +489,7 @@ LISTING_PAYLOAD = {
 
 def _as_admin(act_as: SwitchUser, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        "apps.api.routes.admin._configured_admin_emails",
+        "apps.api.routes.admin_common._configured_admin_emails",
         lambda: frozenset({"admin-1@example.com"}),
     )
     act_as("admin-1")
@@ -566,7 +566,7 @@ def test_nobody_but_the_team_handles_restrictions(
 ) -> None:
     buyer, _, stranger = _people()
     monkeypatch.setattr(
-        "apps.api.routes.admin._configured_admin_emails",
+        "apps.api.routes.admin_common._configured_admin_emails",
         lambda: frozenset({"admin-1@example.com"}),
     )
     restrictions = "/admin/moderation/marketplace_restrictions"

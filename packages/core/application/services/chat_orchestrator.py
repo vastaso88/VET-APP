@@ -42,6 +42,13 @@ from packages.core.application.services.medical_record_context_retriever import 
     MedicalRecordContextRetriever,
     RecordDocument,
 )
+from packages.core.application.services.natural_answer_preparation import (
+    NaturalPromptInputs,
+    assemble_natural_prompts,
+    attachment_note,
+    decide_natural_answer,
+    select_prompt_sources,
+)
 from packages.core.application.services.natural_answer_prompt import (
     ANSWER_NOW_REMINDER,
     GUARD_FOLLOW_UP_PROMPT,
@@ -49,7 +56,6 @@ from packages.core.application.services.natural_answer_prompt import (
     SEVERITY_CHECK_PROMPT,
     SHORTEN_PROMPT,
     build_emergency_prompt,
-    build_system_prompt,
     stable_prefix,
 )
 from packages.core.application.services.response_generator import ResponseGenerator
@@ -73,7 +79,6 @@ from packages.core.domain.conversation.request_kind import (
     asks_to_stop_questions,
     classify_request,
     consecutive_question_turns,
-    is_behavioural_or_duty,
     is_question,
     is_question_only,
     looks_like_document,
@@ -87,7 +92,6 @@ from packages.core.domain.knowledge.answer_validation import (
     without_phone_numbers,
 )
 from packages.core.domain.knowledge.dose_in_answer import find_dosage, without_dose_sentences
-from packages.core.domain.knowledge.duty_notes import DUTY_CATALOG, pinned_duty_notes
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.knowledge.relevance import relevant_sources, topic_terms
@@ -121,7 +125,6 @@ from packages.core.domain.safety.delay_in_answer import delays_or_reassures
 from packages.core.domain.safety.dosage_request import (
     asks_an_amount,
     is_dosage_request,
-    is_prevention_schedule_question,
     names_a_medicine,
 )
 from packages.core.domain.safety.emergency_patterns import normalize_for_matching
@@ -139,10 +142,7 @@ from packages.core.domain.safety.first_aid import (
     describes_fume_distress,
     describes_heat_distress,
     has_a_question_besides_the_dose,
-    medical_cause_first,
     mentions_heat,
-    named_foreign_country,
-    travel_to_sand_fly_area,
 )
 from packages.core.domain.safety.harmful_requests import (
     ADULT_FIRST,
@@ -150,7 +150,6 @@ from packages.core.domain.safety.harmful_requests import (
     CHILD_NEVER_ALONE,
     DOSE_CHANGE_TEXTS,
     EUTHANASIA_REFUSAL,
-    HARMFUL_NOTES,
     HOPELESSNESS_OPENING,
     HUMAN_HEALTH_TEXTS,
     IDENTITY_TEXTS,
@@ -165,18 +164,14 @@ from packages.core.domain.safety.harmful_requests import (
     SELF_HARM_TEXTS,
     UNDER_18_HELP_LINE,
     YES_NO_REPLACEMENT,
-    aggression_toward_animals,
     aggression_toward_people,
     answer_certifies,
     answer_is_bare_yes_no,
     asks_care_costs,
-    asks_for_a_bare_yes_or_no,
     behaviour_needs_questions,
-    describes_a_vague_picture,
     detect_harmful_request,
     expresses_hopelessness,
     expresses_self_harm,
-    is_about_a_future_animal,
     is_dose_change_request,
     is_euthanasia_follow_up,
     is_human_health_question,
@@ -184,17 +179,13 @@ from packages.core.domain.safety.harmful_requests import (
     is_long_message,
     is_minor_hurt,
     is_minor_writing,
-    is_plant_diet_for_a_carnivore,
     is_prompt_leak_request,
-    mentions_a_child_at_risk,
-    mentions_a_death,
     mentions_a_warning_signal,
     mentions_child_handling,
     mentions_play,
     person_is_hurt,
     strip_invented_prices,
     strip_proceed_anyway,
-    vomiting_and_not_eating_for_a_day,
 )
 from packages.core.domain.safety.human_drug_toxicity import human_drug_toxicity_note
 from packages.core.domain.safety.triage_clarification import (
@@ -339,10 +330,6 @@ _SHORTEN_PREFACE = re.compile(
     r"gekurzte|gekürzte)[^\n.:!]{0,40}|voici (?:la |une )?(?:version|reponse|réponse)"
     r"[^\n.:!]{0,40})[.:!]?\s*\n*",
     re.IGNORECASE,
-)
-# "Ti allego la foto", "here is a photo": the owner believes a photo was sent.
-_PHOTO_MENTION = re.compile(
-    r"\b(?:foto|fotografia|immagine|photo|picture|pic|image|imagen|fotograf\w*|bild|bilder)\b"
 )
 # Laws and rules on keeping an animal: an owner's duty, never off topic.
 _OWNER_DUTY_WORDS = re.compile(
@@ -3741,67 +3728,22 @@ class ChatOrchestrator:
         same way it already does for any species/topic with no
         literature coverage at all.
         """
-        # A general curiosity (no history, no document, nothing about this
-        # animal in particular) may share its answer with every owner of the
-        # same species for a day (build 32). Personal cases never do.
-        kind = request_kind or self._request_kind(data)
-        # Plan "fratello maggiore": the owner was not helped by a health answer
-        # (the same question again, or "non hai capito"): that complaint
-        # continues the health topic even without a health word in it.
-        not_helped = self._owner_not_helped(data)
-        health_question = self._is_health_question(kind, intent, prefetch, message) or not_helped
-        # A growl, a snap or a bite in a behaviour question (owner's test
-        # 2026-11-16): the first time in the conversation the reply asks the
-        # facts that decide the advice before explaining anything; later
-        # turns build on the answers, without invented motives.
-        # Round 2 of the synthetic users: also a vague picture toward the animal
-        # or the owner ("ringhia ogni tanto", "fa i dispetti"), even when the
-        # message reads as a symptom rather than a behaviour question.
-        behavioural = kind is RequestKind.DIRECT and is_behavioural_or_duty(message)
-        earlier_warning = self._earlier_behaviour_warning(data)
-        # Plan 08 (CHAT_ANSWER_V2): an animal that has bitten or attacked people or other
-        # animals gets safety first and the specialist with a criterion; that rule wins
-        # over "ask first" (an attack is not a picture to explore before acting).
-        dangerous_behaviour = self._answer_v2 and (
-            aggression_toward_people(message) or aggression_toward_animals(message)
+        # The turn's decisions (QK-19: natural_answer_preparation.py).
+        decisions = decide_natural_answer(
+            self,
+            data,
+            message,
+            intent,
+            answer_v2=self._answer_v2,
+            request_kind=request_kind,
+            prefetch=prefetch,
         )
-        behaviour_anamnesis = (
-            kind in (RequestKind.DIRECT, RequestKind.SYMPTOM)
-            and behaviour_needs_questions(message)
-            and not earlier_warning
-            and not asks_to_stop_questions(data.user_message)
-            and not dangerous_behaviour
-        )
-        # The turn right after a behaviour case, or a warning in a behaviour
-        # question: no invented motive, consistency, the behaviour vet.
-        warning_signal = (
-            not behaviour_anamnesis
-            and not dangerous_behaviour
-            and (
-                self._continues_a_behaviour_case(data)
-                or (
-                    behavioural
-                    and mentions_a_warning_signal(message)
-                    and not mentions_play(message)
-                )
-            )
-        )
-        # ... or the button pressed on the last health answer.
-        second_try = health_question and (data.escalate_health or not_helped)
-        escalated = second_try and self._strong_allowed(data)
-        # "È strano, non so spiegarlo" (synthetic users round 3): questions first,
-        # once, as long as questions are allowed in this turn.
-        vague_picture = (
-            not behaviour_anamnesis
-            and not second_try
-            and kind in (RequestKind.DIRECT, RequestKind.SYMPTOM)
-            and describes_a_vague_picture(message)
-            and self._may_ask(data, kind)
-            and not any(
-                m.role == "user" and describes_a_vague_picture(m.content)
-                for m in data.conversation_history
-            )
-        )
+        kind = decisions.kind
+        health_question = decisions.health_question
+        behaviour_anamnesis = decisions.behaviour_anamnesis
+        vague_picture = decisions.vague_picture
+        second_try = decisions.second_try
+        escalated = decisions.escalated
         cache_id: str | None = None
         if (
             self._answer_cache is not None
@@ -3858,21 +3800,10 @@ class ChatOrchestrator:
                     query, intent, effective_species, data.owner_names
                 )
             )
-        # Two sources at most go into the prompt (build 32): the model uses
-        # one or two at best, and each one costs a few hundred tokens.
-        # Fifth round: a duty the owner names (dangerous breeds, abandonment,
-        # a hedgehog found) gets its note by rule, ahead of what the
-        # keyword search returned.
-        foreign = named_foreign_country(message)
-        if foreign:
-            # "Do I need to microchip my dog by law in the UK?": the Italian
-            # duty notes stay out (wide eval 2026-11-06).
-            sources = [source for source in sources if source not in DUTY_CATALOG]
-        else:
-            pinned = pinned_duty_notes(message)
-            if pinned:
-                sources = pinned + [source for source in sources if source not in pinned]
-        sources = list(sources)[: self._prompt_max_sources]
+        # Two sources at most go into the prompt, the duty notes of the country named
+        # (natural_answer_preparation.select_prompt_sources).
+        selected = select_prompt_sources(message, sources, max_sources=self._prompt_max_sources)
+        sources = selected.sources
         evidence_block = self._format_sources_for_prompt(sources) if sources else ""
         # The owner's words and the text read from their file go to the
         # model apart: the file as delimited data (security audit LLM-6).
@@ -3921,106 +3852,10 @@ class ChatOrchestrator:
                     "reminders", self._anonymize_for_provider(data.reminders_context, data)
                 )
             )
-        attachment_note = ""
-        if data.attachment_unreadable:
-            attachment_note = (
-                "\n\nThe owner attached a file to this message, but its reading failed: "
-                "you know nothing of what it shows. Say so and suggest sending it again."
-            )
-        elif data.photo_reading_off:
-            attachment_note = (
-                "\n\nThe owner attached a photo, but photo reading is switched off: you "
-                "know nothing of what it shows. Never describe it or guess its content; a "
-                "sentence saying you cannot see photos is already written before your "
-                "text, do not repeat it. Answer only from what the owner wrote."
-            )
-        elif _PHOTO_MENTION.search(normalize_for_matching(data.user_message)) and not (
-            data.photo_context
-        ):
-            # Synthetic users round 3 (f#199): "ti allego la foto" with nothing
-            # attached was answered as if the photo had been seen.
-            attachment_note = (
-                "\n\nThe owner mentions a photo, but no photo reached you and you cannot "
-                "see images: if they say they are sending or showing one, start with one "
-                "short sentence saying you cannot see it and asking them to describe what "
-                "they see; never describe or guess what a photo shows. Then answer from "
-                "what they wrote."
-            )
         today = data.today or datetime.now(UTC).date()
         # Variant 2 of the verification (plan 08): official passages read before writing.
         official = self._official_sources_block(data)
 
-        # Tone, structure and how many questions are allowed live in
-        # natural_answer_prompt.py, per kind of request. validate_answer
-        # below still enforces the citation rule mechanically.
-        may_ask = self._may_ask(data, kind)
-        # Which notes travel with this request (repositioning): a toxin
-        # asked about, not met; a preventive treatment's schedule; a
-        # behaviour or duty question (one context question allowed).
-        toxin_flags = self._safety_gate.evaluate(message.lower(), species=effective_species)
-        # "Il CBD funziona per l'artrosi? quante gocce?": the amount is
-        # refused in a fixed sentence, the rest is answered.
-        dose_part = self._is_dosage_request(message.lower()) and has_a_question_besides_the_dose(
-            data.user_message
-        )
-        user_history = [m.content for m in data.conversation_history if m.role == "user"]
-        dose_only = (
-            self._answer_v2
-            and not dose_part
-            and (
-                self._is_dosage_request(message.lower())
-                or self._asks_an_amount_of_a_recent_medicine(message.lower(), user_history)
-            )
-        )
-        dose_part = dose_part or dose_only
-        owner_health = self._answer_v2 and is_human_health_question(
-            data.user_message.strip().lower()
-        )
-        system_prompt = build_system_prompt(
-            kind,
-            may_ask=may_ask,
-            has_reference_material=bool(evidence_block),
-            species_facts=(
-                species_facts(effective_species, ethology=kind is RequestKind.DIRECT)
-                if other_animal
-                else species_facts(
-                    data.species, data.breed, data.notes, ethology=kind is RequestKind.DIRECT
-                )
-            ),
-            language=data.language,
-            behavioural=behavioural,
-            behaviour_anamnesis=behaviour_anamnesis,
-            warning_signal=warning_signal,
-            vague_picture=vague_picture,
-            safety_question=bool(toxin_flags)
-            and self._is_educational_toxin_question(toxin_flags, message),
-            prevention_schedule=is_prevention_schedule_question(message),
-            harmful_note=HARMFUL_NOTES.get(detect_harmful_request(message) or "", ""),
-            minor=is_minor_writing(message),
-            minor_account=data.owner_is_minor,
-            child_at_risk=mentions_a_child_at_risk(message, data.pet_name),
-            long_message=is_long_message(message),
-            forced_yes_no=asks_for_a_bare_yes_or_no(message),
-            future_animal=is_about_a_future_animal(message),
-            visit_today=vomiting_and_not_eating_for_a_day(message),
-            plant_diet=is_plant_diet_for_a_carnivore(message, normalize_species(effective_species)),
-            grief=mentions_a_death(message),
-            hopelessness=expresses_hopelessness(message),
-            dose_part=dose_part,
-            dose_only=dose_only,
-            owner_health=owner_health,
-            other_chats=bool(self._answer_v2 and data.recent_other_chats),
-            foreign_country=foreign,
-            medical_first=medical_cause_first(message, data.age_years),
-            travel_south=travel_to_sand_fly_area(message, normalize_species(effective_species)),
-            emergency_follow_up=self._follows_a_triage_reply(data),
-            other_animal=other_animal,
-            second_try=second_try,
-            v2=self._answer_v2,
-            urgency_doubt=data.urgency_doubt if self._answer_v2 else None,
-            dangerous_behaviour=dangerous_behaviour,
-            official_sources=bool(official),
-        )
         if other_animal and self._answer_v2:
             # Plan 08: the profile stays; the rule says when the question is about the
             # other animal alone (the FIV case: a dog living with two cats is the dog's).
@@ -4032,31 +3867,36 @@ class ChatOrchestrator:
             pet_block = self._other_animal_block(data, effective_species)
         else:
             pet_block = self._pet_context_block(data, generic=generic_context)
-        user_prompt = (
-            f"{pet_block}\n"
-            f"{history_block}"
-            f"User message: {anonymized_message}"
-            f"{attachment_block}"
-            f"{medical_context}"
-            f"{reminders_context}"
-            f"{attachment_note}"
-            f"\n\nToday's date: {today.isoformat()}"
-            + official
-            + (
-                f"\n\nReference material (optional, use only if genuinely "
-                f"relevant):\n{evidence_block}"
-                if evidence_block
-                else ""
-            )
+        prompts = assemble_natural_prompts(
+            self,
+            NaturalPromptInputs(
+                data=data,
+                message=message,
+                decisions=decisions,
+                effective_species=effective_species,
+                other_animal=other_animal,
+                generic_context=generic_context,
+                foreign_country=selected.foreign_country,
+                evidence_block=evidence_block,
+                official=official,
+                anonymized_message=anonymized_message,
+                attachment_block=attachment_block,
+                medical_context=medical_context,
+                reminders_context=reminders_context,
+                attachment_note=attachment_note(data),
+                history_block=history_block,
+                pet_block=pet_block,
+                today=today,
+            ),
+            answer_v2=self._answer_v2,
+            safety_gate=self._safety_gate,
+            answer_max_tokens=self._answer_max_tokens,
         )
-
-        # A report is explained in four or five paragraphs; anything else
-        # fits the prompt's own ceiling of about 1000 characters (build 32:
-        # 2000 tokens of budget were never needed). The provider adds the
-        # reasoning headroom for the models that think before writing.
-        max_tokens = self._answer_max_tokens + (
-            150 if kind is RequestKind.REPORT or is_long_message(message) else 0
-        )
+        system_prompt = prompts.system_prompt
+        user_prompt = prompts.user_prompt
+        max_tokens = prompts.max_tokens
+        may_ask = prompts.may_ask
+        dose_part = prompts.dose_part
 
         def generate(prompt: str, purpose: str = "answer") -> LLMResponse:
             return self._llm_client.generate(
@@ -4066,7 +3906,7 @@ class ChatOrchestrator:
                     max_tokens=max_tokens,
                     purpose=purpose,
                     model_class="strong" if escalated else "main",
-                    cacheable_system_chars=len(stable_prefix(kind, may_ask=may_ask)),
+                    cacheable_system_chars=prompts.cacheable_system_chars,
                 )
             )
 
