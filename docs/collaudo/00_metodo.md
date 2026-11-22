@@ -43,7 +43,7 @@ documento descrive come si prova; le regole operative per i tester sono nelle sk
   da robots, termini e pausa di 10 secondi. Restano il nome «Quokka…» in ogni richiesta e un
   registro per giro (`tempi.jsonl`). Gli host esterni veri (Overpass, Nominatim, fonti RSS),
   chiamati dal server del gemello, seguono la regola normale.
-- Tetto di spesa del modello sul gemello: **3 € al giorno**. Se un giro lo raggiunge, le ondate
+- Tetto di spesa del modello sul gemello: **1,5 € al giorno** (decisione del proprietario: 3 € al giorno in tutto, 1,5 alla produzione e 1,5 al gemello). Se un giro lo raggiunge, le ondate
   rimaste passano al giorno dopo: non è un difetto dell'app.
 - Avvertenze su ogni risultato: avvio a freddo più lento che in produzione; database quasi vuoto
   (ricerche più veloci); conferma e-mail spenta (l'iscrizione non si giudica).

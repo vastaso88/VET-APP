@@ -69,12 +69,31 @@ def file_schema(root: Path = ROOT) -> list[Path]:
     return files
 
 
+# Shared helpers that a file uses before the file that defines them (2026-11-22, first run
+# on an empty twin: supabase_schema.sql creates a trigger on public.set_updated_at(), which
+# only supabase_llm_sources_schema.sql defines). Same body as there; `create or replace`, so
+# the later definition is harmless. Found by the collaudo: an install from zero of
+# supabase_schema.sql alone fails the same way.
+PREAMBOLO = """-- ===== preambolo: funzioni condivise usate prima della loro definizione =====
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+    new.updated_at = now();
+    return new;
+end;
+$$;
+"""
+
+
 def componi_schema(root: Path = ROOT, commit: str = "") -> str:
     parts = [
         "-- Schema del GEMELLO di collaudo (mai la produzione). Generato da",
         "-- scripts/collaudo/gemello.py" + (f" al commit {commit}" if commit else "") + ".",
         "-- Ogni blocco è idempotente; l'ordine è quello di ORDINE_SCHEMA + migrazioni.",
         "",
+        PREAMBOLO,
     ]
     for path in file_schema(root):
         relative = path.relative_to(root).as_posix()

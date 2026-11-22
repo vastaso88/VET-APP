@@ -345,3 +345,26 @@ def test_a_real_build_naming_forbidden_refs_in_its_guards_is_accepted(tmp_path: 
         encoding="utf-8",
     )
     assert gemello.controlla_build(web, REF) == []
+
+
+def test_every_trigger_function_is_created_before_its_first_use() -> None:
+    """On an empty project the bundle runs top to bottom: a trigger may only call a function
+    already created above it (2026-11-22: set_updated_at was defined 1,300 lines too late)."""
+    import re
+
+    text = "\n".join(
+        re.sub(r"--.*", "", line).lower() for line in gemello.componi_schema().splitlines()
+    )
+    first_definition: dict[str, int] = {}
+    for match in re.finditer(r"create (?:or replace )?function (?:public\.)?(\w+)\s*\(", text):
+        first_definition.setdefault(match.group(1), match.start())
+    late = sorted(
+        {
+            match.group(1)
+            for match in re.finditer(
+                r"execute (?:function|procedure) (?:public\.)?(\w+)\s*\(", text
+            )
+            if first_definition.get(match.group(1), len(text)) > match.start()
+        }
+    )
+    assert late == []
