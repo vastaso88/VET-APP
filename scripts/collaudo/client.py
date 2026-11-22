@@ -243,12 +243,13 @@ class Sessione:
         return result
 
     def prepara(self) -> list[str]:
-        """What the sign-up screen records in the app: Terms and Privacy accepted, then the
-        declared age. Testers who test consents and age themselves are left alone."""
+        """What the sign-up screen records in the app: Terms, Privacy and the emergency
+        notice ("Quokka non gestisce le urgenze") accepted, then the declared age. Testers who
+        test consents and age themselves are left alone."""
         if "consensi_eta" in self.persona.get("funzioni", []):
             return ["consensi ed età: li fa la persona durante il giro"]
         done: list[str] = []
-        for key in ("terms_of_service", "privacy_policy"):
+        for key in ("terms_of_service", "privacy_policy", "emergency_notice"):
             answer = self.api(
                 "POST", "/account/consents", {"consent_key": key, "granted": True}, "consensi_eta"
             )

@@ -6798,7 +6798,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noticeChatAi =>
-      'Responde una inteligencia artificial y puede equivocarse. Tus preguntas, limpiadas de los datos personales que reconocemos, van a nuestros proveedores de IA (Anthropic y, cuando Anthropic no puede responder, Groq), con servidores en Estados Unidos.';
+      'Responde una inteligencia artificial y puede equivocarse. Tus preguntas, limpiadas de los datos personales que reconocemos, van a nuestros proveedores de IA (Anthropic y, cuando Anthropic no puede responder, Groq), con servidores en Estados Unidos. Quokka no gestiona urgencias: ante una emergencia, acude de inmediato a un veterinario, a los servicios de emergencia o a una línea de ayuda de tu país. No esperes la respuesta de la aplicación.';
 
   @override
   String get noticeChatMedia =>
@@ -8036,4 +8036,38 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get storeBillingPricesFromStore =>
       'Los precios, la moneda y los impuestos son los que indica la tienda para tu país. La suscripción se renueva automáticamente hasta que la canceles en la tienda.';
+
+  @override
+  String get emergencyNoticeShort =>
+      'Quokka no gestiona urgencias: ante una emergencia, acude de inmediato a un veterinario, a los servicios de emergencia o a una línea de ayuda de tu país. No esperes la respuesta de la aplicación.';
+
+  @override
+  String get emergencyNoticeTitle => 'Quokka no gestiona urgencias';
+
+  @override
+  String get emergencyNoticeCheckbox =>
+      'He entendido que Quokka no gestiona urgencias y no lo uso en caso de emergencia.';
+
+  @override
+  String get emergencyNoticeFullLink =>
+      'Lee el texto completo en los Términos del servicio';
+
+  @override
+  String get emergencyNoticeDecline => 'No acepto';
+
+  @override
+  String get emergencyNoticeDeclineTitle =>
+      'Sin esta confirmación no puedes usar Quokka';
+
+  @override
+  String get emergencyNoticeDeclineBody =>
+      'Puedes descargar tus datos, eliminar la cuenta o cerrar sesión. Si cambias de opinión, se te volverá a pedir la confirmación en tu próximo acceso.';
+
+  @override
+  String get emergencyNoticeRequired =>
+      'Para registrarte, confirma que has entendido que Quokka no gestiona urgencias.';
+
+  @override
+  String get chatFixedLine =>
+      'Responde una IA y puede equivocarse. No gestiona urgencias: ante la duda, llama al veterinario.';
 }

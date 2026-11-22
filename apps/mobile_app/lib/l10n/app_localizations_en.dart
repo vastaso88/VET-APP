@@ -6751,7 +6751,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noticeChatAi =>
-      'An artificial intelligence answers and can be wrong. Your questions, cleaned of the personal data we recognize, go to our AI providers (Anthropic and, when Anthropic cannot answer, Groq), with servers in the United States.';
+      'An artificial intelligence answers and can be wrong. Your questions, cleaned of the personal data we recognize, go to our AI providers (Anthropic and, when Anthropic cannot answer, Groq), with servers in the United States. Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a helpline in your country right away. Do not wait for the app\'s reply.';
 
   @override
   String get noticeChatMedia =>
@@ -7984,4 +7984,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get storeBillingPricesFromStore =>
       'Prices, currency and taxes are those shown by the store for your country. The subscription renews automatically until you cancel it in the store.';
+
+  @override
+  String get emergencyNoticeShort =>
+      'Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a helpline in your country right away. Do not wait for the app\'s reply.';
+
+  @override
+  String get emergencyNoticeTitle => 'Quokka does not handle emergencies';
+
+  @override
+  String get emergencyNoticeCheckbox =>
+      'I understand that Quokka does not handle emergencies and I will not use it in an emergency.';
+
+  @override
+  String get emergencyNoticeFullLink =>
+      'Read the full text in the Terms of service';
+
+  @override
+  String get emergencyNoticeDecline => 'I do not accept';
+
+  @override
+  String get emergencyNoticeDeclineTitle =>
+      'Without this confirmation you cannot use Quokka';
+
+  @override
+  String get emergencyNoticeDeclineBody =>
+      'You can download your data, delete the account or sign out. If you change your mind, you will be asked to confirm again at your next sign-in.';
+
+  @override
+  String get emergencyNoticeRequired =>
+      'To sign up, confirm that you understand that Quokka does not handle emergencies.';
+
+  @override
+  String get chatFixedLine =>
+      'Answers come from an AI, which can make mistakes. It does not handle emergencies: if in doubt, call the vet.';
 }

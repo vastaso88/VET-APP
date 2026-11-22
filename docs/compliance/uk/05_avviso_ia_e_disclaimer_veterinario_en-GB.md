@@ -88,7 +88,7 @@ Mistakes
 AI can be wrong, out of date, or miss something important. Check what it tells you with your vet, especially about symptoms, food, medicines or behaviour that is getting worse.
 
 Emergencies
-Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a listening service in your country straight away. Do not wait for the app's reply.
+Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a helpline in your country straight away. Do not wait for the app's reply.
 
 Decisions about you
 We do not use the assistant to make decisions that have legal or similarly significant effects on you.

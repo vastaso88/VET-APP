@@ -22,7 +22,7 @@ Testi per gli utenti in inglese australiano. Base: `docs/compliance/01_ai_disclo
 >
 > It can make mistakes, and its replies are always labelled as AI-generated. Use them as a starting point and check anything important with a registered veterinarian, especially if your pet seems unwell.
 >
-> **Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a listening service in your country straight away. Do not wait for the app's reply.**
+> **Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a helpline in your country straight away. Do not wait for the app's reply.**
 
 ## 3. Nota sotto il campo chat (sempre visibile)
 

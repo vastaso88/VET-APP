@@ -3929,7 +3929,7 @@
   "noticeRules": "Reglas",
   "noticeUnderstood": "Entendido",
   "noticePolicy": "Política de privacidad",
-  "noticeChatAi": "Responde una inteligencia artificial y puede equivocarse. Tus preguntas, limpiadas de los datos personales que reconocemos, van a nuestros proveedores de IA (Anthropic y, cuando Anthropic no puede responder, Groq), con servidores en Estados Unidos.",
+  "noticeChatAi": "Responde una inteligencia artificial y puede equivocarse. Tus preguntas, limpiadas de los datos personales que reconocemos, van a nuestros proveedores de IA (Anthropic y, cuando Anthropic no puede responder, Groq), con servidores en Estados Unidos. Quokka no gestiona urgencias: ante una emergencia, acude de inmediato a un veterinario, a los servicios de emergencia o a una línea de ayuda de tu país. No esperes la respuesta de la aplicación.",
   "noticeChatMedia": "Tu voz va a un servicio externo (hoy Groq, en Estados Unidos) que la transcribe. El filtro que quita los datos personales trabaja sobre el texto, no sobre la voz: evita decir tu nombre, tu dirección y el número de microchip.",
   "noticeRecordDocument": "El documento se queda en tu cuenta. El asistente solo lo lee si has activado la lectura del historial clínico de este animal.",
   "noticeFirstWalk": "El recorrido se queda en tu cuenta. Guardamos el trazado GPS solo de los últimos 3 paseos de cada animal, de los que marques como favoritos (como máximo 5) y del más largo; de los demás quedan la distancia, la duración y los pasos.",
@@ -4496,5 +4496,14 @@
   "storeBillingPaymentIssue": "Problema de pago: actualiza el método de pago en la tienda",
   "storeBillingTrialDaysLeft": "Prueba gratuita: quedan {days} días",
   "storeBillingRestoreDone": "Restauración completada.",
-  "storeBillingPricesFromStore": "Los precios, la moneda y los impuestos son los que indica la tienda para tu país. La suscripción se renueva automáticamente hasta que la canceles en la tienda."
+  "storeBillingPricesFromStore": "Los precios, la moneda y los impuestos son los que indica la tienda para tu país. La suscripción se renueva automáticamente hasta que la canceles en la tienda.",
+  "emergencyNoticeShort": "Quokka no gestiona urgencias: ante una emergencia, acude de inmediato a un veterinario, a los servicios de emergencia o a una línea de ayuda de tu país. No esperes la respuesta de la aplicación.",
+  "emergencyNoticeTitle": "Quokka no gestiona urgencias",
+  "emergencyNoticeCheckbox": "He entendido que Quokka no gestiona urgencias y no lo uso en caso de emergencia.",
+  "emergencyNoticeFullLink": "Lee el texto completo en los Términos del servicio",
+  "emergencyNoticeDecline": "No acepto",
+  "emergencyNoticeDeclineTitle": "Sin esta confirmación no puedes usar Quokka",
+  "emergencyNoticeDeclineBody": "Puedes descargar tus datos, eliminar la cuenta o cerrar sesión. Si cambias de opinión, se te volverá a pedir la confirmación en tu próximo acceso.",
+  "emergencyNoticeRequired": "Para registrarte, confirma que has entendido que Quokka no gestiona urgencias.",
+  "chatFixedLine": "Responde una IA y puede equivocarse. No gestiona urgencias: ante la duda, llama al veterinario."
 }

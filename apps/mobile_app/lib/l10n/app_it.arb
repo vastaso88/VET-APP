@@ -3929,7 +3929,7 @@
   "noticeRules": "Regole",
   "noticeUnderstood": "Ho capito",
   "noticePolicy": "Informativa",
-  "noticeChatAi": "Risponde un'intelligenza artificiale e può sbagliare. Le tue domande, ripulite dai dati personali che riconosciamo, vanno ai nostri fornitori di IA (Anthropic e, quando Anthropic non può rispondere, Groq), con server negli Stati Uniti.",
+  "noticeChatAi": "Risponde un'intelligenza artificiale e può sbagliare. Le tue domande, ripulite dai dati personali che riconosciamo, vanno ai nostri fornitori di IA (Anthropic e, quando Anthropic non può rispondere, Groq), con server negli Stati Uniti. Quokka non gestisce le urgenze: in emergenza rivolgiti subito a un veterinario, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Non aspettare la risposta dell'app.",
   "noticeChatMedia": "La voce va a un servizio esterno (oggi Groq, negli Stati Uniti) che la trascrive. Il filtro che toglie i dati personali lavora sul testo, non sulla voce: evita di dire nome, indirizzo e numero di microchip.",
   "noticeRecordDocument": "Il documento resta nel tuo account. L'assistente lo legge solo se hai acceso la lettura della cartella clinica di questo animale.",
   "noticeFirstWalk": "Il percorso resta nel tuo account. Teniamo il tracciato GPS solo delle ultime 3 passeggiate di ogni animale, di quelle che segni come preferite (al massimo 5) e della più lunga; delle altre restano distanza, durata e passi.",
@@ -4590,5 +4590,14 @@
     }
   },
   "storeBillingRestoreDone": "Ripristino completato.",
-  "storeBillingPricesFromStore": "Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L’abbonamento si rinnova automaticamente finché non lo disdici nello store."
+  "storeBillingPricesFromStore": "Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L’abbonamento si rinnova automaticamente finché non lo disdici nello store.",
+  "emergencyNoticeShort": "Quokka non gestisce le urgenze: in emergenza rivolgiti subito a un veterinario, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Non aspettare la risposta dell'app.",
+  "emergencyNoticeTitle": "Quokka non gestisce le urgenze",
+  "emergencyNoticeCheckbox": "Ho capito che Quokka non gestisce le urgenze e non lo uso in caso di emergenza.",
+  "emergencyNoticeFullLink": "Leggi il testo completo nei Termini di Servizio",
+  "emergencyNoticeDecline": "Non accetto",
+  "emergencyNoticeDeclineTitle": "Senza questa conferma non puoi usare Quokka",
+  "emergencyNoticeDeclineBody": "Puoi scaricare i tuoi dati, eliminare l'account oppure uscire. Se cambi idea, la conferma ti viene chiesta di nuovo al prossimo accesso.",
+  "emergencyNoticeRequired": "Per iscriverti conferma di aver capito che Quokka non gestisce le urgenze.",
+  "chatFixedLine": "Risponde un'IA e può sbagliare. Non gestisce le urgenze: nel dubbio, chiama il veterinario."
 }

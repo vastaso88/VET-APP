@@ -22,6 +22,9 @@ def sign_up(
     # (docs/compliance/04): an API client must say so, the app ticks the box.
     if not request.accept_terms:
         raise ValidationError("accept_terms_required")
+    # ... and, separately, that Quokka does not handle emergencies.
+    if not request.accept_emergency_notice:
+        raise ValidationError("accept_emergency_notice_required")
     container = get_container()
     try:
         result = container.auth_provider.sign_up(request.email, request.password)
@@ -44,12 +47,16 @@ def sign_up(
 
 
 def _record_acceptance(owner_id: str, language: str) -> bool:
-    """Terms and Privacy, with the current version and the date. The account
+    """Terms, Privacy and the emergency notice, with the current version and the date. The account
     exists already, so a failure is logged (no personal data) and reported in the
     answer; the client then records them itself."""
     try:
         service = get_container().set_account_consent_service()
-        for key in (AccountConsentType.TERMS_OF_SERVICE, AccountConsentType.PRIVACY_POLICY):
+        for key in (
+            AccountConsentType.TERMS_OF_SERVICE,
+            AccountConsentType.PRIVACY_POLICY,
+            AccountConsentType.EMERGENCY_NOTICE,
+        ):
             service.execute(
                 SetAccountConsentInput(
                     owner_id=owner_id, consent_key=key, granted=True, language=language

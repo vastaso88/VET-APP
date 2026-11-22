@@ -36,8 +36,13 @@ class AccountConsentType:
     # Acceptance of the Mercatino rules (docs/compliance/24): a condition of using
     # the Mercatino, not a GDPR consent; never a gate on the app itself.
     MARKETPLACE_RULES = "marketplace_rules"
+    # Acknowledgement that Quokka does not handle emergencies (docs/compliance/22):
+    # a separate box, never pre-ticked, asked at registration and again to every
+    # existing account when its version rises. Not a GDPR consent: it is a
+    # disclosure acceptance, so it gates the app like the Terms do.
+    EMERGENCY_NOTICE = "emergency_notice"
 
-    MANDATORY = frozenset({TERMS_OF_SERVICE, PRIVACY_POLICY})
+    MANDATORY = frozenset({TERMS_OF_SERVICE, PRIVACY_POLICY, EMERGENCY_NOTICE})
     OPTIONAL = frozenset(
         {MARKETING_EMAIL, ANALYTICS, DIAGNOSTICS, CONTRIBUTION_RULES, MARKETPLACE_RULES}
     )

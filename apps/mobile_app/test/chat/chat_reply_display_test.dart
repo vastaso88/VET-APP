@@ -75,6 +75,9 @@ void main() {
     await tester.pump();
     await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
     await tester.pump();
+    // The list scrolls to the bubble over a few frames; the fixed line under the
+    // writing field made the viewport a little shorter, so give it time.
+    await tester.pump(const Duration(milliseconds: 100));
     expect(find.text(ChatTypingBubble.typingText), findsOneWidget);
     // The demo backend answers after 650 ms.
     await tester.pump(const Duration(milliseconds: 700));

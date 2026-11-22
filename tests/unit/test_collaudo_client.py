@@ -229,7 +229,7 @@ def test_prepare_records_consents_and_age_unless_the_persona_tests_them(
     _signed_in(out, "col-sarah-esotici")
     client.Sessione("col-sarah-esotici", TWIN).prepara()
     keys = [body.get("consent_key") for _, body in calls if body and "consent_key" in body]
-    assert keys == ["terms_of_service", "privacy_policy"]
+    assert keys == ["terms_of_service", "privacy_policy", "emergency_notice"]
     assert any(path == "account/age" for path, _ in calls)
 
     calls.clear()

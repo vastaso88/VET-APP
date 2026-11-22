@@ -20,7 +20,7 @@ Quokka helps you look after your pets: pet profiles, reminders, documents, walks
 
 **Quokka is not a veterinary practice and does not provide veterinary services.** The assistant gives general information. It does not examine your animal, diagnose, prescribe or replace a registered veterinarian. See our *AI and vet advice notice* in the app. In an emergency, contact a veterinarian straight away.
 
-**Quokka does not handle emergencies.** The app and the chat are not an emergency, first-aid, listening or rescue service, whether for animals or for people: they are not designed to judge whether a situation is urgent, they may fail to recognise an emergency, and they do not promise a reply within any set time. If you think your animal is seriously unwell, or if you or someone else is in danger, do not use the app and do not wait for a reply: contact a vet or veterinary clinic, the emergency services or a listening service in your country straight away. If the chat does not flag an emergency, that does not mean there is none.
+**Quokka does not handle emergencies.** The app and the chat are not an emergency, first-aid, helpline or rescue service, whether for animals or for people: they are not designed to judge whether a situation is urgent, they may fail to recognise an emergency, and they do not promise a reply within any set time. If you think your animal is seriously unwell, or if you or someone else is in danger, do not use the app and do not wait for a reply: contact a vet or veterinary clinic, the emergency services or a helpline in your country straight away. If the chat does not flag an emergency, that does not mean there is none.
 
 ## 3. Your account
 

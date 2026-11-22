@@ -14,6 +14,8 @@ import 'package:vet_app_mobile/features/account/presentation/pages/profile_edit_
 import 'package:vet_app_mobile/features/account/data/account_deletion_remote_data_source.dart';
 import 'package:vet_app_mobile/features/account/presentation/pages/delete_account_page.dart';
 import 'package:vet_app_mobile/features/account/presentation/pages/restore_account_page.dart';
+import 'package:vet_app_mobile/features/account_consents/presentation/pages/consent_gate_page.dart';
+import 'package:vet_app_mobile/features/account_consents/presentation/pages/emergency_notice_gate_page.dart';
 import 'package:vet_app_mobile/features/auth/presentation/pages/auth_placeholder_page.dart';
 import 'package:vet_app_mobile/features/auth/presentation/pages/recover_account_page.dart';
 import 'package:vet_app_mobile/features/age/presentation/pages/birth_date_prompt_page.dart';
@@ -63,6 +65,8 @@ final _pages = <String, Widget Function()>{
         status: DeletionStatus(pending: true, graceDays: 30, purgeAfter: DateTime(2026, 12, 16)),
       ),
   'delete account': () => const DeleteAccountPage(),
+  'consent gate': () => const ConsentGatePage(),
+  'emergency notice gate': () => const EmergencyNoticeGatePage(),
   'register': () => const RegisterPage(),
   'register form': () => RegisterPage(initialBirthDate: DateTime(1990, 1, 1)),
   'age prompt': () => const BirthDatePromptPage(reason: 'Per continuare ci serve la tua data.'),

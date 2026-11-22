@@ -8,6 +8,14 @@ class AccountConsentKeys {
   static const marketingEmail = 'marketing_email';
   static const analytics = 'analytics';
 
+  /// "Quokka does not handle emergencies" (docs/compliance/22): its own box, mandatory.
+  static const emergencyNotice = 'emergency_notice';
+
+  /// The mandatory keys, equal to `AccountConsentType.MANDATORY` on the server (a test
+  /// checks it): while one is missing or at an old version the server answers
+  /// `consent_required`.
+  static const mandatory = [termsOfService, privacyPolicy, emergencyNotice];
+
   /// "Invia rapporti sugli errori": crash reports to Sentry (EU), opt-in.
   static const diagnostics = 'diagnostics';
 }

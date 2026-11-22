@@ -33,7 +33,7 @@ Quokka's assistant is powered by artificial intelligence (AI). Here is what that
 |---|---|
 | Badge sulle risposte `ai_generated = true` | `AI-generated` |
 | Sotto il campo di scrittura della chat (sempre visibile) | `AI can make mistakes. Not veterinary advice. In an emergency, call a vet.` |
-| Prima apertura della chat (schermata singola) | `Meet your AI assistant. It gives general pet information and helps you decide what to do next. It's not a veterinarian and can't diagnose or prescribe. Quokka does not handle emergencies: in an emergency, contact a vet or the emergency services in your country straight away.` — pulsante: `Got it` |
+| Prima apertura della chat (schermata singola) | `Meet your AI assistant. It gives general pet information and helps you decide what to do next. It's not a veterinarian and can't diagnose or prescribe. Quokka does not handle emergencies: in an emergency, contact a vet or the emergency services in your country right away.` — pulsante: `Got it` |
 | Quando l'utente chiede una diagnosi | `I can't diagnose your pet. I can share general information and help you prepare questions for your vet. Would you like to describe what you've noticed?` |
 | Quando l'utente chiede un dosaggio | `I can't give you a dose for your pet. Please ask your veterinarian or pharmacist.` (verificare che il *dosage safety gate* esistente usi una frase coerente) |
 | Spiegazione di un referto | `This is general information about what this kind of test usually measures. It is not an interpretation of your pet's results. Please go over them with your vet.` |

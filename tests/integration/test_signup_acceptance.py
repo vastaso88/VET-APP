@@ -9,7 +9,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from apps.api.dependencies.container import get_container
-from apps.api.main import app
+from apps.api.main import app, rate_limiter
 from packages.core.application.ports.auth_provider import AuthenticatedUser
 from packages.core.domain.consent.account_consent_text import CURRENT_VERSIONS
 from packages.core.domain.consent.models import AccountConsentType
@@ -18,6 +18,15 @@ from packages.infrastructure.persistence.in_memory_repositories import (
 )
 
 BODY = {"email": "new.owner@example.com", "password": "synthetic"}
+BOTH = {"accept_terms": True, "accept_emergency_notice": True}
+
+
+@pytest.fixture(autouse=True)
+def _fresh_rate_limit() -> Iterator[None]:
+    """Registration is limited to a few calls a minute per caller: each test starts clean."""
+    rate_limiter._hits.clear()
+    yield
+    rate_limiter._hits.clear()
 
 
 @pytest.fixture
@@ -41,17 +50,38 @@ def test_signup_without_the_acceptance_is_refused_and_creates_nothing(
     assert refused.status_code in (400, 422)
 
 
+def test_the_terms_alone_do_not_imply_the_emergency_notice(
+    consents: InMemoryAccountConsentsRepository,
+) -> None:
+    """Its own box: accepting the Terms never records, or stands in for, the clause."""
+    response = TestClient(app).post("/auth/signup", json={**BODY, "accept_terms": True})
+
+    assert response.status_code in (400, 422)
+    assert "accept_emergency_notice_required" in response.text
+    assert consents.get(get_container().settings.bootstrap_user_id) is None
+
+    only_notice = TestClient(app).post(
+        "/auth/signup", json={**BODY, "accept_emergency_notice": True}
+    )
+    assert only_notice.status_code in (400, 422)
+    assert "accept_terms_required" in only_notice.text
+
+
 def test_signup_with_the_acceptance_records_terms_and_privacy_with_version_and_date(
     consents: InMemoryAccountConsentsRepository,
 ) -> None:
-    response = TestClient(app).post("/auth/signup", json={**BODY, "accept_terms": True})
+    response = TestClient(app).post("/auth/signup", json={**BODY, **BOTH})
 
     assert response.status_code == 200
     assert response.json()["consents_recorded"] is True
     owner_id = response.json()["user"]["id"]
     recorded = consents.get(owner_id)
     assert recorded is not None
-    for key in (AccountConsentType.TERMS_OF_SERVICE, AccountConsentType.PRIVACY_POLICY):
+    for key in (
+        AccountConsentType.TERMS_OF_SERVICE,
+        AccountConsentType.PRIVACY_POLICY,
+        AccountConsentType.EMERGENCY_NOTICE,
+    ):
         record = recorded.consents[key]
         assert record.granted is True
         assert record.version == CURRENT_VERSIONS[key]
@@ -60,7 +90,9 @@ def test_signup_with_the_acceptance_records_terms_and_privacy_with_version_and_d
     assert set(recorded.consents) == {
         AccountConsentType.TERMS_OF_SERVICE,
         AccountConsentType.PRIVACY_POLICY,
+        AccountConsentType.EMERGENCY_NOTICE,
     }
+    assert recorded.consents[AccountConsentType.TERMS_OF_SERVICE].version == "v2"
 
 
 def test_a_failure_to_record_does_not_lose_the_new_session(
@@ -73,7 +105,7 @@ def test_a_failure_to_record_does_not_lose_the_new_session(
 
     monkeypatch.setattr(container, "set_account_consent_service", boom)
 
-    response = TestClient(app).post("/auth/signup", json={**BODY, "accept_terms": True})
+    response = TestClient(app).post("/auth/signup", json={**BODY, **BOTH})
 
     assert response.status_code == 200
     assert response.json()["consents_recorded"] is False

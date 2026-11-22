@@ -24,7 +24,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
 
 USER_A = "11111111-1111-4111-8111-111111111111"
 USER_B = "22222222-2222-4222-8222-222222222222"
-MANDATORY = (AccountConsentType.TERMS_OF_SERVICE, AccountConsentType.PRIVACY_POLICY)
+MANDATORY = tuple(sorted(AccountConsentType.MANDATORY))
 
 
 class _World:
@@ -61,9 +61,15 @@ def world(monkeypatch: pytest.MonkeyPatch) -> Iterator[_World]:
     _clear_guard_caches()
 
 
-def _accept(owner_id: str, *, version_of: dict[str, str] | None = None) -> None:
+def _accept(
+    owner_id: str,
+    *,
+    version_of: dict[str, str] | None = None,
+    without: tuple[str, ...] = (),
+) -> None:
     repository = get_container().account_consents_repository
-    versions = {key: CURRENT_VERSIONS[key] for key in MANDATORY} | (version_of or {})
+    versions = {key: CURRENT_VERSIONS[key] for key in MANDATORY if key not in without}
+    versions |= version_of or {}
     repository.save(  # type: ignore[attr-defined]
         AccountConsents(
             owner_id=owner_id,
@@ -106,10 +112,45 @@ def test_accepting_through_the_consent_route_opens_everything_at_once(world: _Wo
     assert client.get("/pets").status_code == 200
 
 
-def test_only_one_of_the_two_is_not_enough(world: _World) -> None:
+def test_only_some_of_the_mandatory_consents_is_not_enough(world: _World) -> None:
     client = TestClient(app)
     _consent(client, AccountConsentType.TERMS_OF_SERVICE)
+    _consent(client, AccountConsentType.PRIVACY_POLICY)
+    assert client.get("/pets").status_code == 403  # the emergency notice is still missing
+    _consent(client, AccountConsentType.EMERGENCY_NOTICE)
+    assert client.get("/pets").status_code == 200
+
+
+def test_an_account_that_accepted_terms_v1_before_the_clause_is_asked_again(
+    world: _World,
+) -> None:
+    """Existing accounts: Terms at the old version and no emergency notice. Everyone
+    must accept the new Terms and the dedicated box before going on."""
+    _accept(
+        USER_A,
+        version_of={AccountConsentType.TERMS_OF_SERVICE: "v1"},
+        without=(AccountConsentType.EMERGENCY_NOTICE,),
+    )
+    client = TestClient(app)
     assert client.get("/pets").status_code == 403
+
+    for key in (AccountConsentType.TERMS_OF_SERVICE, AccountConsentType.EMERGENCY_NOTICE):
+        _consent(client, key)
+    assert client.get("/pets").status_code == 200
+
+
+def test_an_older_version_of_the_emergency_notice_asks_again(world: _World) -> None:
+    _accept(USER_A, version_of={AccountConsentType.EMERGENCY_NOTICE: "an-older-version"})
+    assert TestClient(app).get("/pets").status_code == 403
+
+
+def test_the_emergency_notice_cannot_be_declined_or_revoked(world: _World) -> None:
+    client = TestClient(app)
+    response = client.post(
+        "/account/consents",
+        json={"consent_key": AccountConsentType.EMERGENCY_NOTICE, "granted": False},
+    )
+    assert response.status_code in (400, 422)
 
 
 def test_an_acceptance_of_an_older_version_asks_again(world: _World) -> None:

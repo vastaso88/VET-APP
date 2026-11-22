@@ -1252,7 +1252,7 @@
   "monitoringSheetTitleNew": "Nuova misurazione",
   "monitoringTitle": "Monitoraggio",
   "monitoringTooltipAge": "{months, plural, =1{1 mese} other{{months} mesi}}",
-  "noticeChatAi": "Risponde un'intelligenza artificiale e può sbagliare. Le tue domande, ripulite dai dati personali che riconosciamo, vanno ai nostri fornitori di IA (Anthropic e, quando Anthropic non può rispondere, Groq), con server negli Stati Uniti.",
+  "noticeChatAi": "Risponde un'intelligenza artificiale e può sbagliare. Le tue domande, ripulite dai dati personali che riconosciamo, vanno ai nostri fornitori di IA (Anthropic e, quando Anthropic non può rispondere, Groq), con server negli Stati Uniti. Quokka non gestisce le urgenze: in emergenza rivolgiti subito a un veterinario, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Non aspettare la risposta dell'app.",
   "noticeChatMedia": "La voce va a un servizio esterno (oggi Groq, negli Stati Uniti) che la trascrive. Il filtro che toglie i dati personali lavora sul testo, non sulla voce: evita di dire nome, indirizzo e numero di microchip.",
   "noticeFirstWalk": "Il percorso resta nel tuo account. Teniamo il tracciato GPS solo delle ultime 3 passeggiate di ogni animale, di quelle che segni come preferite (al massimo 5) e della più lunga; delle altre restano distanza, durata e passi.",
   "noticeMarketplace": "Il Mercatino è solo per maggiorenni e mette in contatto due privati: Quokka non è parte della compravendita, non verifica annunci né persone e non ne risponde. Le conversazioni sono private: il nostro team le legge solo se una delle due persone le segnala.",

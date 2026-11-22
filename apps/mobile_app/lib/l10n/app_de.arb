@@ -3929,7 +3929,7 @@
   "noticeRules": "Regeln",
   "noticeUnderstood": "Verstanden",
   "noticePolicy": "Datenschutzerklärung",
-  "noticeChatAi": "Eine künstliche Intelligenz antwortet und kann sich irren. Ihre Fragen, bereinigt um die persönlichen Daten, die wir erkennen, gehen an unsere KI-Anbieter (Anthropic und, wenn Anthropic nicht antworten kann, Groq), mit Servern in den USA.",
+  "noticeChatAi": "Eine künstliche Intelligenz antwortet und kann sich irren. Ihre Fragen, bereinigt um die persönlichen Daten, die wir erkennen, gehen an unsere KI-Anbieter (Anthropic und, wenn Anthropic nicht antworten kann, Groq), mit Servern in den USA. Quokka ist nicht für Notfälle zuständig: Wenden Sie sich in einem Notfall sofort an eine Tierärztin oder einen Tierarzt, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Warten Sie nicht auf die Antwort der App.",
   "noticeChatMedia": "Ihre Sprachaufnahme geht an einen externen Dienst (heute Groq, in den USA), der sie transkribiert. Der Filter, der persönliche Daten entfernt, arbeitet mit Text, nicht mit Audio: Nennen Sie Ihren Namen, Ihre Adresse und Ihre Mikrochipnummer lieber nicht.",
   "noticeRecordDocument": "Das Dokument bleibt in Ihrem Konto. Der Assistent liest es nur, wenn Sie das Lesen der Krankenakte dieses Tieres eingeschaltet haben.",
   "noticeFirstWalk": "Die Strecke bleibt in Ihrem Konto. Den GPS-Verlauf behalten wir nur von den letzten 3 Spaziergängen jedes Tieres, von denen, die Sie als Favoriten markieren (höchstens 5), und vom längsten; von den anderen bleiben Distanz, Dauer und Schritte.",
@@ -4496,5 +4496,14 @@
   "storeBillingPaymentIssue": "Zahlungsproblem: Aktualisiere die Zahlungsmethode im Store",
   "storeBillingTrialDaysLeft": "Kostenlose Testphase: noch {days} Tage",
   "storeBillingRestoreDone": "Wiederherstellung abgeschlossen.",
-  "storeBillingPricesFromStore": "Preise, Währung und Steuern sind die vom Store für dein Land angezeigten. Das Abo verlängert sich automatisch, bis du es im Store kündigst."
+  "storeBillingPricesFromStore": "Preise, Währung und Steuern sind die vom Store für dein Land angezeigten. Das Abo verlängert sich automatisch, bis du es im Store kündigst.",
+  "emergencyNoticeShort": "Quokka ist nicht für Notfälle zuständig: Wenden Sie sich in einem Notfall sofort an eine Tierärztin oder einen Tierarzt, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Warten Sie nicht auf die Antwort der App.",
+  "emergencyNoticeTitle": "Quokka ist nicht für Notfälle zuständig",
+  "emergencyNoticeCheckbox": "Ich habe verstanden, dass Quokka nicht für Notfälle zuständig ist, und nutze es im Notfall nicht.",
+  "emergencyNoticeFullLink": "Den vollständigen Text in den Nutzungsbedingungen lesen",
+  "emergencyNoticeDecline": "Ich stimme nicht zu",
+  "emergencyNoticeDeclineTitle": "Ohne diese Bestätigung können Sie Quokka nicht nutzen",
+  "emergencyNoticeDeclineBody": "Sie können Ihre Daten herunterladen, das Konto löschen oder sich abmelden. Wenn Sie es sich anders überlegen, werden Sie bei der nächsten Anmeldung erneut um die Bestätigung gebeten.",
+  "emergencyNoticeRequired": "Bestätigen Sie für die Registrierung, dass Sie verstanden haben, dass Quokka nicht für Notfälle zuständig ist.",
+  "chatFixedLine": "Eine KI antwortet und kann sich irren. Sie ist nicht für Notfälle zuständig: Rufen Sie im Zweifel die Tierärztin oder den Tierarzt an."
 }

@@ -3929,7 +3929,7 @@
   "noticeRules": "Rules",
   "noticeUnderstood": "Got it",
   "noticePolicy": "Privacy policy",
-  "noticeChatAi": "An artificial intelligence answers and can be wrong. Your questions, cleaned of the personal data we recognize, go to our AI providers (Anthropic and, when Anthropic cannot answer, Groq), with servers in the United States.",
+  "noticeChatAi": "An artificial intelligence answers and can be wrong. Your questions, cleaned of the personal data we recognize, go to our AI providers (Anthropic and, when Anthropic cannot answer, Groq), with servers in the United States. Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a helpline in your country right away. Do not wait for the app's reply.",
   "noticeChatMedia": "Your voice goes to an external service (today Groq, in the United States) that transcribes it. The filter that removes personal data works on text, not on voice: avoid saying your name, address and microchip number.",
   "noticeRecordDocument": "The document stays in your account. The assistant reads it only if you have turned on reading of this pet's medical record.",
   "noticeFirstWalk": "The route stays in your account. We keep the GPS track only of the last 3 walks of each pet, of those you mark as favorites (at most 5) and of the longest; for the others, distance, duration and steps remain.",
@@ -4496,5 +4496,14 @@
   "storeBillingPaymentIssue": "Payment problem: update your payment method in the store",
   "storeBillingTrialDaysLeft": "Free trial: {days} days left",
   "storeBillingRestoreDone": "Restore completed.",
-  "storeBillingPricesFromStore": "Prices, currency and taxes are those shown by the store for your country. The subscription renews automatically until you cancel it in the store."
+  "storeBillingPricesFromStore": "Prices, currency and taxes are those shown by the store for your country. The subscription renews automatically until you cancel it in the store.",
+  "emergencyNoticeShort": "Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a helpline in your country right away. Do not wait for the app's reply.",
+  "emergencyNoticeTitle": "Quokka does not handle emergencies",
+  "emergencyNoticeCheckbox": "I understand that Quokka does not handle emergencies and I will not use it in an emergency.",
+  "emergencyNoticeFullLink": "Read the full text in the Terms of service",
+  "emergencyNoticeDecline": "I do not accept",
+  "emergencyNoticeDeclineTitle": "Without this confirmation you cannot use Quokka",
+  "emergencyNoticeDeclineBody": "You can download your data, delete the account or sign out. If you change your mind, you will be asked to confirm again at your next sign-in.",
+  "emergencyNoticeRequired": "To sign up, confirm that you understand that Quokka does not handle emergencies.",
+  "chatFixedLine": "Answers come from an AI, which can make mistakes. It does not handle emergencies: if in doubt, call the vet."
 }

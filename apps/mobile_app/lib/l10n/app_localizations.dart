@@ -11285,7 +11285,7 @@ abstract class AppLocalizations {
   /// No description provided for @noticeChatAi.
   ///
   /// In it, this message translates to:
-  /// **'Risponde un\'intelligenza artificiale e può sbagliare. Le tue domande, ripulite dai dati personali che riconosciamo, vanno ai nostri fornitori di IA (Anthropic e, quando Anthropic non può rispondere, Groq), con server negli Stati Uniti.'**
+  /// **'Risponde un\'intelligenza artificiale e può sbagliare. Le tue domande, ripulite dai dati personali che riconosciamo, vanno ai nostri fornitori di IA (Anthropic e, quando Anthropic non può rispondere, Groq), con server negli Stati Uniti. Quokka non gestisce le urgenze: in emergenza rivolgiti subito a un veterinario, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Non aspettare la risposta dell\'app.'**
   String get noticeChatAi;
 
   /// No description provided for @noticeChatMedia.
@@ -13321,6 +13321,60 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L’abbonamento si rinnova automaticamente finché non lo disdici nello store.'**
   String get storeBillingPricesFromStore;
+
+  /// No description provided for @emergencyNoticeShort.
+  ///
+  /// In it, this message translates to:
+  /// **'Quokka non gestisce le urgenze: in emergenza rivolgiti subito a un veterinario, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Non aspettare la risposta dell\'app.'**
+  String get emergencyNoticeShort;
+
+  /// No description provided for @emergencyNoticeTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Quokka non gestisce le urgenze'**
+  String get emergencyNoticeTitle;
+
+  /// No description provided for @emergencyNoticeCheckbox.
+  ///
+  /// In it, this message translates to:
+  /// **'Ho capito che Quokka non gestisce le urgenze e non lo uso in caso di emergenza.'**
+  String get emergencyNoticeCheckbox;
+
+  /// No description provided for @emergencyNoticeFullLink.
+  ///
+  /// In it, this message translates to:
+  /// **'Leggi il testo completo nei Termini di Servizio'**
+  String get emergencyNoticeFullLink;
+
+  /// No description provided for @emergencyNoticeDecline.
+  ///
+  /// In it, this message translates to:
+  /// **'Non accetto'**
+  String get emergencyNoticeDecline;
+
+  /// No description provided for @emergencyNoticeDeclineTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza questa conferma non puoi usare Quokka'**
+  String get emergencyNoticeDeclineTitle;
+
+  /// No description provided for @emergencyNoticeDeclineBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Puoi scaricare i tuoi dati, eliminare l\'account oppure uscire. Se cambi idea, la conferma ti viene chiesta di nuovo al prossimo accesso.'**
+  String get emergencyNoticeDeclineBody;
+
+  /// No description provided for @emergencyNoticeRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Per iscriverti conferma di aver capito che Quokka non gestisce le urgenze.'**
+  String get emergencyNoticeRequired;
+
+  /// No description provided for @chatFixedLine.
+  ///
+  /// In it, this message translates to:
+  /// **'Risponde un\'IA e può sbagliare. Non gestisce le urgenze: nel dubbio, chiama il veterinario.'**
+  String get chatFixedLine;
 }
 
 class _AppLocalizationsDelegate

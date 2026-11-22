@@ -13,3 +13,6 @@ class SignUpRequest(AuthCredentialsRequest):
     state it, and the server records it with the version and the date."""
 
     accept_terms: bool = False
+    # "Quokka does not handle emergencies" (docs/compliance/22): a box of its own,
+    # never implied by `accept_terms`.
+    accept_emergency_notice: bool = False

@@ -90,7 +90,7 @@ Errores
 La IA puede equivocarse, estar desactualizada u omitir algo importante. Contraste lo que le diga con su clínica veterinaria, sobre todo si hay síntomas, alimentación, medicamentos o comportamientos que empeoran.
 
 Urgencias
-Quokka no gestiona urgencias: ante una emergencia, acuda de inmediato a un veterinario, a los servicios de emergencia o a un servicio de escucha de su país. No espere la respuesta de la aplicación.
+Quokka no gestiona urgencias: ante una emergencia, acuda de inmediato a un veterinario, a los servicios de emergencia o a una línea de ayuda de su país. No espere la respuesta de la aplicación.
 
 Decisiones sobre usted
 No usamos el asistente para tomar decisiones que produzcan efectos jurídicos sobre usted o le afecten significativamente de modo similar.

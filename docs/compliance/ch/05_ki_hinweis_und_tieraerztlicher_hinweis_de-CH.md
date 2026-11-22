@@ -86,7 +86,7 @@ Fehler
 KI kann sich irren, veraltet sein oder etwas Wichtiges übersehen. Klären Sie das, was sie Ihnen sagt, mit Ihrer Tierarztpraxis, besonders bei Symptomen, Futter, Arzneimitteln oder Verhalten, das schlimmer wird.
 
 Notfälle
-Quokka bearbeitet keine Notfälle: Wenden Sie sich in einem Notfall sofort an eine Tierärztin oder einen Tierarzt, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Warten Sie nicht auf die Antwort der App.
+Quokka ist nicht für Notfälle zuständig: Wenden Sie sich in einem Notfall sofort an eine Tierärztin oder einen Tierarzt, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Warten Sie nicht auf die Antwort der App.
 
 Entscheide über Sie
 Wir nutzen den Assistenten nicht, um Entscheide zu treffen, die Ihnen gegenüber eine Rechtsfolge haben oder Sie erheblich beeinträchtigen.

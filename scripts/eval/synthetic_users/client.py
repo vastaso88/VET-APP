@@ -90,7 +90,12 @@ def call(user_id: str, method: str, path: str, body: Any = None, language: str =
 
 def setup(user_id: str) -> None:
     me = persona(user_id)
-    body = {"email": me["email"], "password": "synthetic", "accept_terms": True}
+    body = {
+        "email": me["email"],
+        "password": "synthetic",
+        "accept_terms": True,
+        "accept_emergency_notice": True,
+    }
     session = call(user_id, "POST", "/auth/signup", body)
     for _ in range(3):
         # the API allows 5 sign-ups a minute (apps/api/rate_limit.py): wait and retry

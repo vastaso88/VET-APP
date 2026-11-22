@@ -21,6 +21,7 @@ import '../../data/chat_demo_store.dart';
 import '../../data/chat_seed_data.dart';
 import '../../domain/chat_models.dart';
 import '../widgets/chat_ai_notice.dart';
+import '../widgets/chat_fixed_line.dart';
 import '../widgets/chat_composer.dart';
 import '../widgets/chat_conversation_menu.dart';
 import '../widgets/chat_empty_state.dart';
@@ -547,11 +548,13 @@ class _SuccessConversationView extends StatelessWidget {
                     ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(
+              // The line under the field closes the block: a small bottom margin keeps
+              // the whole thing in view on short screens and large text.
+              padding: EdgeInsets.fromLTRB(
                 AppSpacing.lg,
                 0,
                 AppSpacing.lg,
-                AppSpacing.lg,
+                inMemories ? AppSpacing.lg : AppSpacing.xs,
               ),
               child: inMemories
                   ? Text(
@@ -560,16 +563,23 @@ class _SuccessConversationView extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
                     )
-                  : ChatComposer(
-                      hintText: context.l10n.chatComposerHint(conversation.petName),
-                      petName: conversation.petName,
-                      petId: conversation.petId,
-                      onSend: onSendMessage,
-                      draftKey: conversation.backendConversationId ?? conversation.id,
-                      editingText: editingMessage?.text,
-                      onCancelEditing: onCancelEditing,
-                      // An edited message keeps its photo; the text may go.
-                      allowEmptySend: editingMessage?.attachmentImageBytes != null,
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ChatComposer(
+                          hintText: context.l10n.chatComposerHint(conversation.petName),
+                          petName: conversation.petName,
+                          petId: conversation.petId,
+                          onSend: onSendMessage,
+                          draftKey: conversation.backendConversationId ?? conversation.id,
+                          editingText: editingMessage?.text,
+                          onCancelEditing: onCancelEditing,
+                          // An edited message keeps its photo; the text may go.
+                          allowEmptySend: editingMessage?.attachmentImageBytes != null,
+                        ),
+                        // Under the writing field, always (docs/compliance/22 §2).
+                        const ChatFixedLine(),
+                      ],
                     ),
             ),
           ],

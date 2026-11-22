@@ -6822,7 +6822,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get noticeChatAi =>
-      'Eine künstliche Intelligenz antwortet und kann sich irren. Ihre Fragen, bereinigt um die persönlichen Daten, die wir erkennen, gehen an unsere KI-Anbieter (Anthropic und, wenn Anthropic nicht antworten kann, Groq), mit Servern in den USA.';
+      'Eine künstliche Intelligenz antwortet und kann sich irren. Ihre Fragen, bereinigt um die persönlichen Daten, die wir erkennen, gehen an unsere KI-Anbieter (Anthropic und, wenn Anthropic nicht antworten kann, Groq), mit Servern in den USA. Quokka ist nicht für Notfälle zuständig: Wenden Sie sich in einem Notfall sofort an eine Tierärztin oder einen Tierarzt, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Warten Sie nicht auf die Antwort der App.';
 
   @override
   String get noticeChatMedia =>
@@ -8062,4 +8062,38 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get storeBillingPricesFromStore =>
       'Preise, Währung und Steuern sind die vom Store für dein Land angezeigten. Das Abo verlängert sich automatisch, bis du es im Store kündigst.';
+
+  @override
+  String get emergencyNoticeShort =>
+      'Quokka ist nicht für Notfälle zuständig: Wenden Sie sich in einem Notfall sofort an eine Tierärztin oder einen Tierarzt, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Warten Sie nicht auf die Antwort der App.';
+
+  @override
+  String get emergencyNoticeTitle => 'Quokka ist nicht für Notfälle zuständig';
+
+  @override
+  String get emergencyNoticeCheckbox =>
+      'Ich habe verstanden, dass Quokka nicht für Notfälle zuständig ist, und nutze es im Notfall nicht.';
+
+  @override
+  String get emergencyNoticeFullLink =>
+      'Den vollständigen Text in den Nutzungsbedingungen lesen';
+
+  @override
+  String get emergencyNoticeDecline => 'Ich stimme nicht zu';
+
+  @override
+  String get emergencyNoticeDeclineTitle =>
+      'Ohne diese Bestätigung können Sie Quokka nicht nutzen';
+
+  @override
+  String get emergencyNoticeDeclineBody =>
+      'Sie können Ihre Daten herunterladen, das Konto löschen oder sich abmelden. Wenn Sie es sich anders überlegen, werden Sie bei der nächsten Anmeldung erneut um die Bestätigung gebeten.';
+
+  @override
+  String get emergencyNoticeRequired =>
+      'Bestätigen Sie für die Registrierung, dass Sie verstanden haben, dass Quokka nicht für Notfälle zuständig ist.';
+
+  @override
+  String get chatFixedLine =>
+      'Eine KI antwortet und kann sich irren. Sie ist nicht für Notfälle zuständig: Rufen Sie im Zweifel die Tierärztin oder den Tierarzt an.';
 }
