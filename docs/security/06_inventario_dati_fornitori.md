@@ -53,6 +53,7 @@ Gli importi restano sconosciuti finché non è disponibile un registro transazio
 | Esportazione dati (art. 15/20) | file JSON generato su richiesta con tutte le righe delle tabelle sopra + link firmati ai file validi 15 minuti; telefono e foto profilo inclusi se presenti | generato al volo da `GET /account/export`, **non conservato** lato server; resta sul dispositivo dell'utente | obbligo legale (art. 15, 20) | nessuna (non salvato) | **alta**: il file riunisce tutto; l'app deve avvisare l'utente di conservarlo con cura |
 | Log tecnici | log applicativi Vercel (richieste, errori), log Supabase (API, Auth, Postgres) | Vercel (IE/USA), Supabase (IE) | legittimo interesse (sicurezza) | Vercel: 1 ora runtime logs su piano hobby, Supabase: 1 giorno su piano free, 7 su Pro (da verificare col piano attivo) | media (IP, user id) |
 | Dati su dispositivo | sessione Supabase, preferenze, cache foto/video, bozze, notifiche programmate | storage privato dell'app Android / localStorage web | — | fino a logout/disinstallazione | vedi audit app |
+| Collaudo (gemello di prova, dal 2026-11-22) | solo account sintetici `@example.com` creati da script, con dati inventati (animali, messaggi, annunci); nessun dato di persone reali, nessuna copia dalla produzione; password generate tenute fuori dal repository (`.local/collaudo/`) | progetto Supabase di prova separato «quokka-collaudo» (IE, stessa organizzazione), ramo Vercel `collaudo` (dub1) con variabili limitate a quel ramo; risposte della chat ad Anthropic (chiave «prove») e Groq (chiave di prova) con lo stesso anonimizzatore | non applicabile (nessun interessato reale) | si azzera a ogni giro (`gemello.py azzera`); il progetto si mette in pausa da solo dopo ~7 giorni senza uso | bassa: dati sintetici; rischio residuo = un tester che scrive dati veri (vietato dalle skill) o un'app di collaudo costruita sulla produzione (controllo in `gemello.py build`) |
 
 Non trattiamo: dati sanitari **umani**, dati di minori in modo consapevole (età
 minima da far rispettare: vedi quadro normativo), dati di pagamento (Stripe li
@@ -81,6 +82,9 @@ tiene lui, noi solo id e stato).
 | **Editori RSS (news)** | notizie nell'app (dal backend) | nessun dato personale (richieste del backend) | vari | — | — | in uso |
 | **Presidio (Microsoft, libreria locale)** | anonimizzazione testi | gira nel backend, nessun invio esterno | — | — | — | opzionale (`PII_ANONYMIZER_BACKEND`) |
 | **Sentry (Functional Software Inc.)** — adottato il 2026-10-28 (commit cc648c6), **spento finché il proprietario non crea l'organizzazione in regione EU e firma il DPA** (build con `CRASH_REPORTING=true` + `SENTRY_DSN`, più consenso `diagnostics` dell'utente) | segnalazione crash ed errori dell'app Android | come da filtro `scrubCrashEvent`: tipo dell'eccezione, stack trace (file e funzioni del nostro codice), contesti device/os/app/runtime/culture, environment = package name, release = versione+build. **Esclusi**: testo dell'eccezione, messaggi, utente/IP/e-mail, URL/richieste, breadcrumb, extra, tag, contesti dei widget | sede USA; organizzazione nella **regione EU (Francoforte)** | dati in UE; DPA con SCC; DPF dichiarata (verificare) | DPA dalle impostazioni legali dell'organizzazione | consenso opt-in `diagnostics` (art. 6.1.a); conservazione 90 giorni |
+
+Il gemello di collaudo usa gli stessi fornitori (Supabase, Vercel, Anthropic, Groq) con progetti e
+chiavi separati e solo dati sintetici: nessun fornitore nuovo.
 
 ## 3. Cosa deve fare il proprietario con questa tabella
 

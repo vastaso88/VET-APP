@@ -16,6 +16,10 @@ const _localStepsBeforeFirstFrame = {
   'SystemChrome.setPreferredOrientations',
   'Supabase.initialize', // restores the session from disk
   'RememberMeStore.read',
+  // Test network only (docs/collaudo): null in every normal build, so nothing
+  // waits; only lib/main_collaudo.dart passes it (automatic sign-in of a
+  // synthetic account on the test twin).
+  'afterSupabaseReady',
 };
 
 void main() {

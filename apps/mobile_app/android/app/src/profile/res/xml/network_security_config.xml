@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PROFILE builds only (never the release builds given to testers or stores): plain http is
+     allowed to 10.0.2.2, the address at which the Android emulator reaches the computer it
+     runs on, and nowhere else. A measurement build on the emulator can then reach the local
+     bridge of the test network (docs/collaudo/00_metodo.md). Everything else keeps Android's
+     default: https only. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

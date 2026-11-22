@@ -1,0 +1,602 @@
+{
+ "_nota": "Rete di collaudo (piano 22/11/2026). Persone sintetiche, nessun dato reale. Le specie ruotano a ogni giro: qui il giro 1. Le specie segnate aggiunta_proposta=true chiudono i buchi di copertura della tabella del piano (proposta di Collaudo app, in attesa del sì). Le funzioni con emulatore usano l'unico telefono virtuale, in fila. I copioni dei villain NON stanno qui: solo in .local/collaudo/villain/.",
+ "gruppi_specie": [
+  "cani",
+  "gatti",
+  "conigli",
+  "cavie_cincilla",
+  "piccoli_roditori",
+  "furetti",
+  "uccelli",
+  "rettili",
+  "tartarughe",
+  "anfibi",
+  "pesci_acqua_dolce",
+  "acquario_marino",
+  "altro"
+ ],
+ "funzioni": [
+  "chat",
+  "profilo_animale",
+  "peso_monitoraggio",
+  "referti_cartella",
+  "promemoria_medicine",
+  "notifiche",
+  "sottofondo_riapertura",
+  "passeggiate",
+  "foto_galleria",
+  "dettatura",
+  "ricordi",
+  "pausa_account",
+  "esporta_dati",
+  "cancella_account",
+  "dispositivi",
+  "mercatino",
+  "messaggi_mercatino",
+  "radar_luoghi",
+  "segnala_luogo",
+  "eventi",
+  "notizie",
+  "doveri_viaggi",
+  "consensi_eta",
+  "lingua_unita",
+  "limiti_piano"
+ ],
+ "persone": [
+  {
+   "chat": "col-giulia-cucciolo",
+   "tipo": "funzionale",
+   "eta": 29,
+   "lingua": "it",
+   "profilo": "primo cucciolo, ansiosa",
+   "funzioni": [
+    "chat",
+    "promemoria_medicine",
+    "notifiche",
+    "sottofondo_riapertura",
+    "profilo_animale",
+    "consensi_eta",
+    "limiti_piano"
+   ],
+   "emulatore": "breve (notifiche dei promemoria)",
+   "animali": [
+    {
+     "nome": "Briciola",
+     "specie_app": "Cane",
+     "razza": "meticcio cucciolo",
+     "gruppo": "cani"
+    },
+    {
+     "nome": "Ombra",
+     "specie_app": "Gatto",
+     "razza": "europeo",
+     "gruppo": "gatti"
+    }
+   ],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-marco-cronometro",
+   "tipo": "funzionale",
+   "eta": 41,
+   "lingua": "it",
+   "profilo": "ingegnere impaziente: tempi, percorso fisso di 20 passi, avvio a freddo",
+   "funzioni": [
+    "chat",
+    "profilo_animale",
+    "peso_monitoraggio",
+    "promemoria_medicine",
+    "passeggiate",
+    "radar_luoghi",
+    "notizie",
+    "mercatino",
+    "messaggi_mercatino",
+    "limiti_piano"
+   ],
+   "animali": [
+    {
+     "nome": "Rex",
+     "specie_app": "Cane",
+     "razza": "labrador",
+     "gruppo": "cani"
+    },
+    {
+     "nome": "Fiocco",
+     "specie_app": "Piccoli mammiferi",
+     "razza": "coniglio nano",
+     "gruppo": "conigli"
+    },
+    {
+     "nome": "Pepe",
+     "specie_app": "Piccoli mammiferi",
+     "razza": "cavia",
+     "gruppo": "cavie_cincilla"
+    },
+    {
+     "nome": "Vasca1",
+     "specie_app": "Pesci",
+     "razza": "pesci rossi",
+     "gruppo": "pesci_acqua_dolce"
+    }
+   ],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-sarah-esotici",
+   "tipo": "funzionale",
+   "eta": 35,
+   "lingua": "en-GB",
+   "profilo": "hobbista meticolosa: esattezza per specie, ambiente, temperature",
+   "funzioni": [
+    "chat",
+    "profilo_animale",
+    "peso_monitoraggio",
+    "referti_cartella",
+    "lingua_unita"
+   ],
+   "animali": [
+    {
+     "nome": "Mango",
+     "specie_app": "Rettili e anfibi",
+     "razza": "geco leopardino",
+     "gruppo": "rettili"
+    },
+    {
+     "nome": "Pinky",
+     "specie_app": "Rettili e anfibi",
+     "razza": "axolotl",
+     "gruppo": "anfibi"
+    },
+    {
+     "nome": "Shelly",
+     "specie_app": "Rettili e anfibi",
+     "razza": "testuggine di Hermann",
+     "gruppo": "tartarughe"
+    },
+    {
+     "nome": "Nemo",
+     "specie_app": "Pesci",
+     "razza": "pesce pagliaccio (acquario marino)",
+     "gruppo": "acquario_marino",
+     "aggiunta_proposta": true
+    }
+   ],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-nonna-pina",
+   "tipo": "funzionale",
+   "eta": 74,
+   "lingua": "it",
+   "profilo": "poco digitale, frasi corte, dettatura; chiarezza e fine vita",
+   "funzioni": [
+    "chat",
+    "dettatura",
+    "ricordi",
+    "promemoria_medicine",
+    "profilo_animale"
+   ],
+   "animali": [
+    {
+     "nome": "Cip",
+     "specie_app": "Uccello",
+     "razza": "canarino",
+     "gruppo": "uccelli"
+    },
+    {
+     "nome": "Blu",
+     "specie_app": "Uccello",
+     "razza": "pappagallino ondulato",
+     "gruppo": "uccelli"
+    },
+    {
+     "nome": "Micio",
+     "specie_app": "Gatto",
+     "razza": "europeo, 16 anni",
+     "gruppo": "gatti"
+    }
+   ],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-luca-connettore",
+   "tipo": "funzionale",
+   "eta": 33,
+   "lingua": "it",
+   "profilo": "esperto: collegamenti tra funzioni",
+   "funzioni": [
+    "profilo_animale",
+    "chat",
+    "peso_monitoraggio",
+    "referti_cartella",
+    "ricordi",
+    "pausa_account",
+    "esporta_dati",
+    "cancella_account",
+    "dispositivi",
+    "foto_galleria"
+   ],
+   "animali": [
+    {
+     "nome": "Zorro",
+     "specie_app": "Piccoli mammiferi",
+     "razza": "furetto",
+     "gruppo": "furetti"
+    },
+    {
+     "nome": "Nocciola",
+     "specie_app": "Piccoli mammiferi",
+     "razza": "criceto dorato",
+     "gruppo": "piccoli_roditori"
+    },
+    {
+     "nome": "Grigio",
+     "specie_app": "Piccoli mammiferi",
+     "razza": "cincillà",
+     "gruppo": "cavie_cincilla"
+    },
+    {
+     "nome": "Spago",
+     "specie_app": "Rettili e anfibi",
+     "razza": "serpente del grano",
+     "gruppo": "rettili",
+     "aggiunta_proposta": true
+    }
+   ],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-elena-doveri",
+   "tipo": "funzionale",
+   "eta": 45,
+   "lingua": "es",
+   "profilo": "si trasferisce e viaggia: doveri e leggi per Paese, consensi, età, avviso «non gestisce urgenze»",
+   "funzioni": [
+    "doveri_viaggi",
+    "consensi_eta",
+    "lingua_unita",
+    "chat",
+    "esporta_dati",
+    "pausa_account",
+    "cancella_account"
+   ],
+   "animali": [
+    {
+     "nome": "Luna",
+     "specie_app": "Cane",
+     "razza": "border collie",
+     "gruppo": "cani"
+    },
+    {
+     "nome": "Sol",
+     "specie_app": "Gatto",
+     "razza": "siamese",
+     "gruppo": "gatti"
+    },
+    {
+     "nome": "Copo",
+     "specie_app": "Piccoli mammiferi",
+     "razza": "coniglio ariete",
+     "gruppo": "conigli"
+    },
+    {
+     "nome": "Bandido",
+     "specie_app": "Piccoli mammiferi",
+     "razza": "furetto",
+     "gruppo": "furetti",
+     "aggiunta_proposta": true
+    }
+   ],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-thomas-mercatino",
+   "tipo": "funzionale",
+   "eta": 38,
+   "lingua": "de",
+   "profilo": "venditore onesto: Mercatino, messaggi, blocca/segnala, Radar, Segnala luogo, eventi, notizie",
+   "funzioni": [
+    "mercatino",
+    "messaggi_mercatino",
+    "radar_luoghi",
+    "segnala_luogo",
+    "eventi",
+    "notizie",
+    "lingua_unita"
+   ],
+   "animali": [
+    {
+     "nome": "Riff",
+     "specie_app": "Pesci",
+     "razza": "acquario marino di barriera",
+     "gruppo": "acquario_marino"
+    },
+    {
+     "nome": "Guppys",
+     "specie_app": "Pesci",
+     "razza": "guppy (acqua dolce)",
+     "gruppo": "pesci_acqua_dolce"
+    },
+    {
+     "nome": "Kurt",
+     "specie_app": "Rettili e anfibi",
+     "razza": "tartaruga acquatica",
+     "gruppo": "tartarughe"
+    }
+   ],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-chloe-lingue",
+   "tipo": "funzionale",
+   "eta": 26,
+   "lingua": "fr",
+   "lingue_extra": [
+    "en-US",
+    "en-AU"
+   ],
+   "profilo": "cambia lingua spesso: testi FR/EN-US/EN-AU, lingua delle risposte, unità (lb, °F)",
+   "funzioni": [
+    "lingua_unita",
+    "chat",
+    "peso_monitoraggio",
+    "dettatura",
+    "segnala_luogo",
+    "eventi",
+    "doveri_viaggi"
+   ],
+   "animali": [
+    {
+     "nome": "Éclair",
+     "specie_app": "Altro",
+     "razza": "cavallo",
+     "gruppo": "altro"
+    },
+    {
+     "nome": "Poule",
+     "specie_app": "Uccello",
+     "razza": "galline ovaiole",
+     "gruppo": "uccelli"
+    },
+    {
+     "nome": "Noisette",
+     "specie_app": "Piccoli mammiferi",
+     "razza": "criceto russo",
+     "gruppo": "piccoli_roditori"
+    },
+    {
+     "nome": "Grenouille",
+     "specie_app": "Rettili e anfibi",
+     "razza": "rana cornuta",
+     "gruppo": "anfibi",
+     "aggiunta_proposta": true
+    }
+   ],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-telefono",
+   "tipo": "funzionale",
+   "eta": 52,
+   "lingua": "it",
+   "profilo": "usa solo il telefono, distratto: sull'emulatore Android",
+   "funzioni": [
+    "notifiche",
+    "promemoria_medicine",
+    "sottofondo_riapertura",
+    "passeggiate",
+    "foto_galleria",
+    "referti_cartella",
+    "dispositivi"
+   ],
+   "emulatore": "sempre",
+   "animali": [
+    {
+     "nome": "Birba",
+     "specie_app": "Cane",
+     "razza": "jack russell",
+     "gruppo": "cani"
+    },
+    {
+     "nome": "Tigre",
+     "specie_app": "Gatto",
+     "razza": "soriano",
+     "gruppo": "gatti"
+    },
+    {
+     "nome": "Batuffolo",
+     "specie_app": "Piccoli mammiferi",
+     "razza": "coniglio testa di leone",
+     "gruppo": "conigli"
+    },
+    {
+     "nome": "Bianca",
+     "specie_app": "Altro",
+     "razza": "capra nana",
+     "gruppo": "altro",
+     "aggiunta_proposta": true
+    }
+   ],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-villain-traffico",
+   "tipo": "villain",
+   "lingua": "it",
+   "profilo": "«il trafficante»: abusa di Mercatino e comunità (dettagli solo in .local/collaudo/villain/)",
+   "funzioni": [
+    "mercatino",
+    "messaggi_mercatino",
+    "segnala_luogo"
+   ],
+   "account_extra": 1,
+   "animali": [],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-villain-chat",
+   "tipo": "villain",
+   "lingua": "it",
+   "profilo": "«il manipolatore»: abusa di chat, dati e limiti (dettagli solo in .local/collaudo/villain/)",
+   "funzioni": [
+    "chat",
+    "limiti_piano"
+   ],
+   "account_extra": 1,
+   "animali": [],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-est-artdirector",
+   "tipo": "estetica",
+   "lingua": "it",
+   "profilo": "direttore artistico: identità visiva, colori, caratteri, mascotte; unisce le proposte degli altri 5",
+   "funzioni": [],
+   "animali": [
+    {
+     "nome": "Dante",
+     "specie_app": "Cane",
+     "razza": "barboncino"
+    },
+    {
+     "nome": "Lilla",
+     "specie_app": "Gatto",
+     "razza": "certosino"
+    }
+   ],
+   "modello": "opus",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-est-home",
+   "tipo": "estetica",
+   "lingua": "it",
+   "profilo": "prima impressione: Home, primo avvio, pagine vuote, illustrazioni per specie",
+   "funzioni": [],
+   "animali": [
+    {
+     "nome": "Ciuffo",
+     "specie_app": "Piccoli mammiferi",
+     "razza": "coniglio nano"
+    },
+    {
+     "nome": "Kiwi",
+     "specie_app": "Uccello",
+     "razza": "pappagallo cenerino"
+    }
+   ],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-est-chat",
+   "tipo": "estetica",
+   "lingua": "it",
+   "profilo": "esperienza della chat: bolle, lunghezza e forma delle risposte, attesa, allegati, dettatura",
+   "funzioni": [],
+   "animali": [
+    {
+     "nome": "Draco",
+     "specie_app": "Rettili e anfibi",
+     "razza": "pogona"
+    },
+    {
+     "nome": "Corallo",
+     "specie_app": "Pesci",
+     "razza": "acquario marino"
+    }
+   ],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-est-accessibile",
+   "tipo": "estetica",
+   "lingua": "it",
+   "profilo": "anziani e ipovedenti: contrasto, testo grande, aree da toccare, tema scuro, lettore di schermo, daltonismo",
+   "funzioni": [],
+   "animali": [
+    {
+     "nome": "Nonno Gigi",
+     "specie_app": "Gatto",
+     "razza": "europeo, 15 anni"
+    },
+    {
+     "nome": "Giallo",
+     "specie_app": "Uccello",
+     "razza": "canarino"
+    }
+   ],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-est-navigazione",
+   "tipo": "estetica",
+   "lingua": "it",
+   "profilo": "architettura: 4 schede, tocchi per compito, coerenza tra pagine, mappe",
+   "funzioni": [],
+   "animali": [
+    {
+     "nome": "Furia",
+     "specie_app": "Piccoli mammiferi",
+     "razza": "furetto"
+    },
+    {
+     "nome": "Ciccio",
+     "specie_app": "Piccoli mammiferi",
+     "razza": "cavia"
+    },
+    {
+     "nome": "Axel",
+     "specie_app": "Rettili e anfibi",
+     "razza": "axolotl"
+    }
+   ],
+   "modello": "sonnet",
+   "sforzo": "high"
+  },
+  {
+   "chat": "col-est-tendenze",
+   "tipo": "estetica",
+   "lingua": "it",
+   "profilo": "22 anni, gusto giovane: regole del settore (senza copiare), foto degli animali, piccole animazioni",
+   "funzioni": [],
+   "animali": [
+    {
+     "nome": "Milo",
+     "specie_app": "Cane",
+     "razza": "shiba"
+    },
+    {
+     "nome": "Neve",
+     "specie_app": "Gatto",
+     "razza": "ragdoll"
+    },
+    {
+     "nome": "Ciko",
+     "specie_app": "Piccoli mammiferi",
+     "razza": "criceto"
+    },
+    {
+     "nome": "Stella",
+     "specie_app": "Altro",
+     "razza": "cavallo"
+    }
+   ],
+   "modello": "sonnet",
+   "sforzo": "high"
+  }
+ ]
+}

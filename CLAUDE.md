@@ -56,8 +56,15 @@ Riferimento: `docs/security/` (audit, checklist, registro rischi, procedura viol
   permesso Android nuovo senza motivazione in `docs/compliance/05_permessi_dispositivo_os.md`;
   ai tester solo build `--release` firmate.
 - Mai credenziali o account reali per i test, mai test attivi contro la
-  produzione: controlli passivi con la sola chiave publishable, account di test
-  sintetici in locale (`SUPABASE_URL` vuoto).
+  produzione: controlli passivi con la sola chiave publishable; account di test
+  sintetici (`@example.com`) in locale (`SUPABASE_URL` vuoto) o nel gemello di
+  collaudo (progetto Supabase di prova separato, nomi `COLLAUDO_*`, attrezzi in
+  `scripts/collaudo/` che rifiutano la produzione, metodo in
+  `docs/collaudo/00_metodo.md`). Le chiavi del gemello non sono mai quelle di
+  produzione; nessun dato copiato dalla produzione nel gemello (schema solo dagli
+  script del repository); l'app di collaudo (web o emulatore) si costruisce
+  sempre passando indirizzo e chiave del gemello, mai con i valori predefiniti,
+  che sono la produzione.
 - Prima di ogni rilascio: `docs/security/05_checklist.md` sezione A; per ogni
   funzione che tratta dati personali: sezione B.
 - Vulnerabilità scoperta o sospetta violazione di dati: seguire subito

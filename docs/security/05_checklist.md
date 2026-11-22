@@ -31,6 +31,9 @@ messaggio di rilascio o nel PR.
       crash all'avvio: vedi incidente ADMIN_EMAILS del 2026-10-06).
 - [ ] `ENVIRONMENT=production` su Vercel, `LLM_PROVIDER` e chiavi corrette,
       `PII_ANONYMIZER_BACKEND` nel valore previsto.
+- [ ] Il ramo `collaudo` non entra in main con le sue variabili; nessuna chiave di
+      produzione nelle variabili Vercel «Preview (tutti i rami)»; l'ultimo
+      `gemello.py controllo` è verde.
 
 ### Database (Supabase)
 - [ ] Ogni tabella nuova in `scripts/setup/*.sql` ha `enable row level

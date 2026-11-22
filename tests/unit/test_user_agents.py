@@ -46,6 +46,7 @@ def user_agents(text: str) -> list[str]:
 # covers every borrowed name (Googlebot, Chrome, Safari, other companies), not only two.
 QUOKKA_FOLDERS = (
     "scripts/eval",
+    "scripts/collaudo",
     "scripts/security",
     "scripts/sources",
     ".local/chat_eval",

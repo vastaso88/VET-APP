@@ -35,7 +35,9 @@ import '../shared/config/app_runtime_config_loader.dart';
 import 'launch/route_restoration.dart';
 import 'launch/restorable_pages.dart';
 
-Future<void> bootstrap() async {
+/// [afterSupabaseReady] runs once Supabase is initialised and before the first frame; only
+/// the test-network entry point passes it (docs/collaudo). It can never stop the start.
+Future<void> bootstrap({Future<void> Function()? afterSupabaseReady}) async {
   WidgetsFlutterBinding.ensureInitialized();
   // Crash reports: nothing happens unless the build was made with
   // --dart-define=CRASH_REPORTING=true (see docs/runbooks/crash_reporting.md).
@@ -136,6 +138,14 @@ Future<void> bootstrap() async {
       });
     } catch (_) {
       supabaseEnabled = false;
+    }
+  }
+
+  if (supabaseEnabled && afterSupabaseReady != null) {
+    try {
+      await afterSupabaseReady();
+    } catch (_) {
+      // Collaudo only: a failed automatic sign-in leaves the normal start.
     }
   }
 
