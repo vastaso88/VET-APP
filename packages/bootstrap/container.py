@@ -68,7 +68,6 @@ from packages.core.application.services.age_review_admin import AgeReviewAdminSe
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
 from packages.core.application.services.create_listing import CreateListingService
-from packages.core.application.services.create_local_activity import CreateLocalActivityService
 from packages.core.application.services.create_pet_profile import CreatePetProfileService
 from packages.core.application.services.create_reminder import CreateReminderService
 from packages.core.application.services.delete_account import DeleteAccountService
@@ -76,7 +75,6 @@ from packages.core.application.services.delete_conversation import DeleteConvers
 from packages.core.application.services.deletion_log import DeletionLogService
 from packages.core.application.services.document_summarizer import DocumentSummarizer
 from packages.core.application.services.edit_chat_message import EditChatMessageService
-from packages.core.application.services.end_walk import EndWalkService
 from packages.core.application.services.evidence_query_normalizer import (
     EvidenceQueryNormalizer,
 )
@@ -91,16 +89,12 @@ from packages.core.application.services.get_or_create_subscription import (
 )
 from packages.core.application.services.get_pet_news import GetPetNewsService
 from packages.core.application.services.get_pet_profile import GetPetProfileService
-from packages.core.application.services.get_user_location import GetUserLocationService
 from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.application.services.list_chat_response_reports import (
     ListChatResponseReportsService,
 )
 from packages.core.application.services.list_conversations import ListConversationsService
 from packages.core.application.services.list_events import ListEventsService
-from packages.core.application.services.list_nearby_activities import (
-    ListNearbyActivitiesService,
-)
 from packages.core.application.services.list_nearby_listings import ListNearbyListingsService
 from packages.core.application.services.list_nearby_radar_places import (
     ListNearbyRadarPlacesService,
@@ -108,7 +102,6 @@ from packages.core.application.services.list_nearby_radar_places import (
 from packages.core.application.services.list_pet_profiles import ListPetProfilesService
 from packages.core.application.services.list_reminders import ListRemindersService
 from packages.core.application.services.list_travel_cards import ListTravelCardsService
-from packages.core.application.services.list_walks import ListWalksService
 from packages.core.application.services.llm_budget import LlmBudget, parse_budgets
 from packages.core.application.services.llm_usage_recorder import InstrumentedLLMClient
 from packages.core.application.services.llm_usage_report import LlmUsageReportService
@@ -137,7 +130,6 @@ from packages.core.application.services.radar_reports import (
     VoteRadarReportService,
     WithdrawRadarReportService,
 )
-from packages.core.application.services.record_route_point import RecordRoutePointService
 from packages.core.application.services.register_device import RegisterDeviceService
 from packages.core.application.services.reminder_context_retriever import (
     ReminderContextRetriever,
@@ -161,9 +153,7 @@ from packages.core.application.services.set_account_consent import SetAccountCon
 from packages.core.application.services.set_medical_record_consent import (
     SetMedicalRecordConsentService,
 )
-from packages.core.application.services.set_user_location import SetUserLocationService
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
-from packages.core.application.services.start_walk import StartWalkService
 from packages.core.application.services.submit_event import SubmitEventService
 from packages.core.application.services.transcribe_audio import TranscribeAudioService
 from packages.core.application.services.underage_review_dry_run import (
@@ -1013,24 +1003,6 @@ class ApplicationContainer:
             exotic_name_matching=self.settings.radar_exotic_name_matching,
         )
 
-    def get_user_location_service(self) -> GetUserLocationService:
-        return GetUserLocationService(self.user_location_repository)
-
-    def set_user_location_service(self) -> SetUserLocationService:
-        return SetUserLocationService(self.user_location_repository)
-
-    def start_walk_service(self) -> StartWalkService:
-        return StartWalkService(self.dog_walk_repository, self.pet_profile_repository)
-
-    def record_route_point_service(self) -> RecordRoutePointService:
-        return RecordRoutePointService(self.dog_walk_repository)
-
-    def end_walk_service(self) -> EndWalkService:
-        return EndWalkService(self.dog_walk_repository)
-
-    def list_walks_service(self) -> ListWalksService:
-        return ListWalksService(self.dog_walk_repository)
-
     def create_listing_service(self) -> CreateListingService:
         return CreateListingService(self.marketplace_listing_repository)
 
@@ -1067,12 +1039,6 @@ class ApplicationContainer:
         return ReportListingService(
             self.marketplace_listing_repository, self.listing_report_repository
         )
-
-    def create_local_activity_service(self) -> CreateLocalActivityService:
-        return CreateLocalActivityService(self.local_activity_repository)
-
-    def list_nearby_activities_service(self) -> ListNearbyActivitiesService:
-        return ListNearbyActivitiesService(self.local_activity_repository)
 
     def send_chat_message_service(self) -> SendChatMessageService:
         return SendChatMessageService(

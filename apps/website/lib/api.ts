@@ -40,31 +40,10 @@ export async function api(
   return response;
 }
 
+// Only the fields app/account/page.tsx reads from GET /subscription/status
+// (GetOrCreateSubscriptionOutput). The response also carries store_subscription,
+// plan_source, limits, plan_limits, test_period, ...: the site does not show them.
 export type BillingStatus = {
-  plan_limits?: Record<
-    string,
-    {
-      max_pets: number;
-      max_chats_per_pet: number;
-      daily_questions: number;
-      max_devices: number;
-    }
-  >;
   has_access: boolean;
-  test_period: boolean;
-  billing_enabled: boolean;
   subscription: { plan: string | null; trial_ends_at: string };
-  payment?: {
-    status: string;
-    current_period_end: string | null;
-    cancel_at_period_end: boolean;
-    risk_hold: boolean;
-  };
-  prices: {
-    plan: string;
-    amount: number | null;
-    currency: string;
-    interval: string;
-    interval_count: number;
-  }[];
 };

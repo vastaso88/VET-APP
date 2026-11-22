@@ -287,29 +287,6 @@ dt {
 dd {
   margin: 4px 0;
 }
-.prices {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin: 30px 0;
-}
-.prices article {
-  padding: 25px;
-  background: #fff;
-  border: 1px solid #eaeaea;
-  border-radius: 8px;
-}
-.prices h3 {
-  text-transform: capitalize;
-}
-.price {
-  font-family: Georgia, serif;
-  font-size: 36px;
-  margin: 16px 0;
-}
-.prices button {
-  width: 100%;
-}
 details {
   border-top: 1px solid #dedfd5;
   border-bottom: 1px solid #dedfd5;
@@ -370,9 +347,6 @@ summary {
   .features article {
     padding-right: 20px;
   }
-  .prices {
-    grid-template-columns: 1fr;
-  }
   .account-heading {
     align-items: flex-start;
   }
@@ -418,60 +392,10 @@ summary {
 .account-services h2 {
   font-size: 34px;
 }
-.plan-features {
-  padding-left: 18px;
-  font-size: 14px;
-  min-height: 135px;
-}
-.plan-features li {
-  margin-bottom: 9px;
-}
-.payment-management {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 35px;
-  border-top: 1px solid #dedfd5;
-  border-bottom: 1px solid #dedfd5;
-  padding: 36px 0;
-  margin: 35px 0;
-}
-.payment-management h2,
-.billing-help h2 {
-  font-size: 32px;
-}
-.payment-management p {
-  max-width: 560px;
-}
-.payment-management button {
-  white-space: nowrap;
-}
-.billing-help {
-  margin-top: 60px;
-}
-.billing-help details {
-  margin-top: 0;
-  border-top: 0;
-}
-.billing-help summary {
-  font-weight: 600;
-}
-.billing-unavailable {
-  margin-bottom: 40px;
-}
 @media (max-width: 760px) {
   .account-services {
     grid-template-columns: 1fr;
     gap: 20px;
-  }
-  .payment-management {
-    display: block;
-  }
-  .payment-management button {
-    white-space: normal;
-  }
-  .plan-features {
-    min-height: 0;
   }
 }
 

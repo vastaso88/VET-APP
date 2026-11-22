@@ -20,27 +20,38 @@ class ChatDemoStore extends ChangeNotifier {
     ChatAttachmentRemoteDataSource? attachmentRemoteDataSource,
     AppRuntimeConfigLoader? configLoader,
     String? Function()? ownerIdProvider,
+    Future<Map<String, String>?> Function()? petNamesProvider,
+    bool sharePetsWithPetStore = false,
   })  : _remote = remoteDataSource ?? HttpChatRemoteDataSource(),
         _attachments = attachmentRemoteDataSource ?? HttpChatAttachmentRemoteDataSource(),
         _configLoader = configLoader ?? const AppRuntimeConfigLoader(),
-        _ownerIdProvider = ownerIdProvider ?? _currentOwnerId {
+        _ownerIdProvider = ownerIdProvider ?? _currentOwnerId,
+        _petNamesProvider = petNamesProvider,
+        _sharePets = sharePetsWithPetStore {
     reset();
   }
 
-  static final ChatDemoStore instance = ChatDemoStore._();
+  /// The app's store: it takes the pet profiles from [PetDemoStore], which
+  /// already reads them from Supabase, instead of asking `GET /pets` again.
+  static final ChatDemoStore instance = ChatDemoStore._(sharePetsWithPetStore: true);
 
+  /// [petNamesProvider] stands in for the pet profiles (id -> name, null when
+  /// they cannot be read); without it the store reads them through
+  /// [remoteDataSource], as before the profiles were shared.
   @visibleForTesting
   factory ChatDemoStore.forTesting({
     required ChatRemoteDataSource remoteDataSource,
     required AppRuntimeConfigLoader configLoader,
     required String? Function() ownerIdProvider,
     ChatAttachmentRemoteDataSource? attachmentRemoteDataSource,
+    Future<Map<String, String>?> Function()? petNamesProvider,
   }) =>
       ChatDemoStore._(
         remoteDataSource: remoteDataSource,
         attachmentRemoteDataSource: attachmentRemoteDataSource,
         configLoader: configLoader,
         ownerIdProvider: ownerIdProvider,
+        petNamesProvider: petNamesProvider,
       );
 
   static String? _currentOwnerId() => CurrentUser.get()?.id;
@@ -53,11 +64,25 @@ class ChatDemoStore extends ChangeNotifier {
   final ChatAttachmentRemoteDataSource _attachments;
   final AppRuntimeConfigLoader _configLoader;
   final String? Function() _ownerIdProvider;
+  final Future<Map<String, String>?> Function()? _petNamesProvider;
+  final bool _sharePets;
 
   /// Backend pet id resolved for each local pet name — keyed by name so
   /// resolving one pet's id doesn't get reused for every other pet's chat
-  /// (see [_resolveDefaultPetId]).
+  /// (see [_resolveDefaultPetId]). Names shared by two pets are not stored
+  /// here: a name cannot tell them apart.
   final Map<String, String> _petIdByName = {};
+
+  /// The backend pet of each conversation, by the conversation's id here: a
+  /// restored conversation knows its pet from the server, and a new one keeps
+  /// the pet its first message went to. Looked up before any name, so two pets
+  /// with the same name each keep their own chats.
+  final Map<String, String> _petIdByThread = {};
+
+  /// Bumped by [reset]: an answer that started before a sign-out is dropped
+  /// when it lands instead of filling the next account's chats.
+  int _generation = 0;
+  String? _hydratingOwnerId;
 
   final List<ChatConversationDetail> _threads = <ChatConversationDetail>[];
   final Set<String> _openedConversationIds = <String>{};
@@ -82,22 +107,56 @@ class ChatDemoStore extends ChangeNotifier {
     if (ownerId == null || ownerId == _hydratedOwnerId) {
       return Future<void>.value();
     }
-    return _hydrating ??= _hydrate(ownerId).whenComplete(() => _hydrating = null);
+    final running = _hydrating;
+    if (running != null && _hydratingOwnerId == ownerId) return running;
+    if (_hydratedOwnerId != null && _hydratedOwnerId != ownerId) {
+      // A different account signed in: the previous one's chats go now, not
+      // only once the new account's own history has been read (it may fail).
+      _dropAccountData();
+      Future.microtask(notifyListeners);
+    }
+    final generation = _generation;
+    late final Future<void> started;
+    started = _hydrate(ownerId, generation).whenComplete(() {
+      if (identical(_hydrating, started)) _hydrating = null;
+    });
+    _hydrating = started;
+    _hydratingOwnerId = ownerId;
+    return started;
   }
 
-  Future<void> _hydrate(String ownerId) async {
-    // Independent backend calls: run them together (was sequential, which
-    // doubled the wait and stacked on top of a Vercel cold start).
-    final results = await Future.wait<Object>([
-      _remote.fetchPetNamesById(),
+  /// The pet profiles (id -> name), or null when they cannot be read now.
+  /// With Supabase configured they come from [PetDemoStore]'s own read, which
+  /// the start shares (one read of the profiles); otherwise from the backend.
+  Future<Map<String, String>?> _loadPetNames() async {
+    try {
+      final provider = _petNamesProvider;
+      if (provider != null) return await provider();
+      if (_sharePets && _configLoader.load().hasSupabaseCredentials) {
+        return await PetDemoStore.instance.loadSyncedPetNames();
+      }
+      final result = await _remote.fetchPetNamesById();
+      return result.fold<Map<String, String>?>(
+        onSuccess: (value) => value,
+        onFailure: (_) => null,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _hydrate(String ownerId, int generation) async {
+    bool outdated() => generation != _generation || _ownerIdProvider() != ownerId;
+
+    // Independent reads: run them together (was sequential, which doubled the
+    // wait and stacked on top of a Vercel cold start).
+    final results = await Future.wait<Object?>([
+      _loadPetNames(),
       _remote.fetchConversations(),
     ]);
-    final petsResult = results[0] as Result<Map<String, String>>;
+    if (outdated()) return; // signed out, or another account, meanwhile
+    final petNames = results[0] as Map<String, String>?;
     final conversationsResult = results[1] as Result<List<RemoteConversation>>;
-    final petNames = petsResult.fold<Map<String, String>?>(
-      onSuccess: (value) => value,
-      onFailure: (_) => null,
-    );
     final conversations = conversationsResult.fold<List<RemoteConversation>?>(
       onSuccess: (value) => value,
       onFailure: (_) => null,
@@ -106,15 +165,12 @@ class ChatDemoStore extends ChangeNotifier {
       return;
     }
 
-    if (_hydratedOwnerId != null && _hydratedOwnerId != ownerId) {
-      // A different account signed in: drop the previous owner's threads.
-      _threads.clear();
-      _openedConversationIds.clear();
-      _petIdByName.clear();
+    final nameCounts = <String, int>{};
+    for (final name in petNames.values) {
+      nameCounts[name] = (nameCounts[name] ?? 0) + 1;
     }
-
     petNames.forEach((petId, name) {
-      if (name.isNotEmpty) {
+      if (name.isNotEmpty && nameCounts[name] == 1) {
         _petIdByName[name] = petId;
       }
     });
@@ -128,6 +184,9 @@ class ChatDemoStore extends ChangeNotifier {
       final petName = petNames[conversation.petId];
       if (petName == null || petName.isEmpty || known.contains(conversation.id)) {
         continue;
+      }
+      if (conversation.petId.isNotEmpty) {
+        _petIdByThread[conversation.id] = conversation.petId;
       }
       restored.add(
         MapEntry(
@@ -210,6 +269,7 @@ class ChatDemoStore extends ChangeNotifier {
     final thread = conversationById(id);
     _threads.removeWhere((thread) => thread.id == id);
     _openedConversationIds.remove(id);
+    _petIdByThread.remove(id);
     notifyListeners();
 
     final backendConversationId = thread?.backendConversationId;
@@ -546,7 +606,7 @@ class ChatDemoStore extends ChangeNotifier {
   }) async {
     final thread = conversationById(conversationId) ?? _threads.first;
 
-    final petIdResult = await _resolveDefaultPetId(thread.petName);
+    final petIdResult = await _petIdForThread(conversationId, thread.petName);
     return petIdResult.fold(
       onFailure: (error) async => Result.failure(error),
       onSuccess: (petId) async {
@@ -588,10 +648,35 @@ class ChatDemoStore extends ChangeNotifier {
     );
   }
 
+  /// The backend pet a message of [threadId] goes to: the one the conversation
+  /// already has, otherwise the one resolved from [petName] (kept for the
+  /// conversation's next messages).
+  Future<Result<String>> _petIdForThread(String threadId, String petName) async {
+    final known = _petIdByThread[threadId];
+    if (known != null) return Result.success(known);
+    final result = await _resolveDefaultPetId(petName);
+    result.fold<void>(
+      onSuccess: (petId) => _petIdByThread[threadId] = petId,
+      onFailure: (_) {},
+    );
+    return result;
+  }
+
   Future<Result<String>> _resolveDefaultPetId(String petName) async {
     final cachedPetId = _petIdByName[petName];
     if (cachedPetId != null) {
       return Result.success(cachedPetId);
+    }
+
+    // A pet the profiles read already confirmed on the server: no need to ask
+    // the backend for the list again just to find its id.
+    if (_sharePets) {
+      final synced = PetDemoStore.instance.syncedPetNamesById();
+      final local = PetDemoStore.instance.byName(petName);
+      if (synced != null && local != null && synced.containsKey(local.id)) {
+        _petIdByName[petName] = local.id;
+        return Result.success(local.id);
+      }
     }
 
     // The pet's real species (Italian label, e.g. "Uccello") — the backend's
@@ -612,8 +697,21 @@ class ChatDemoStore extends ChangeNotifier {
     );
   }
 
-  void reset() {
+  /// Forgets everything that belongs to the account whose chats were loaded.
+  void _dropAccountData() {
     _threads.clear();
+    _openedConversationIds.clear();
+    _freshAssistantIds.clear();
+    _petIdByName.clear();
+    _petIdByThread.clear();
+    _hydratedOwnerId = null;
+  }
+
+  void reset() {
+    _generation++;
+    _hydrating = null;
+    _hydratingOwnerId = null;
+    _dropAccountData();
     // The fake demo conversations only make sense without a backend; with
     // one configured the store starts empty and [ensureHydrated] fills it
     // with the signed-in owner's real history.

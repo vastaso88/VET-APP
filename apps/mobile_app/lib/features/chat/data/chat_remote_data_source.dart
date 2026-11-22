@@ -142,6 +142,11 @@ abstract class ChatRemoteDataSource {
 
   /// Backend pet id -> pet name for the signed-in owner (`GET /pets`), used
   /// to attach restored conversations to the right local pet.
+  ///
+  /// Since QK-02 the app's chat store no longer calls this when Supabase is
+  /// configured: it shares the profiles `PetDemoStore` already reads (one read
+  /// at start). It remains the way to read them without Supabase, and what the
+  /// chat store's tests use.
   Future<Result<Map<String, String>>> fetchPetNamesById();
 }
 

@@ -191,11 +191,19 @@ class PetDemoStore {
   /// [ensureHydrated] then refreshes them from the server. Does nothing when
   /// the store already holds pets or no owner is signed in.
   Future<void> restoreFromCache() async {
-    final ownerId = CurrentUser.get()?.id;
+    final ownerId = _ownerId();
     if (ownerId == null || _pets.isNotEmpty || _hydratedOwnerId == ownerId) return;
+    final generation = _generation;
     final rows = await _cache.read(ownerId);
-    // Re-check: the server answer may have landed while the disk was read.
-    if (rows == null || _pets.isNotEmpty || _hydratedOwnerId == ownerId) return;
+    // Re-check: the server answer may have landed while the disk was read, or
+    // the account may have signed out (a late disk read must not bring its pets back).
+    if (rows == null ||
+        generation != _generation ||
+        _ownerId() != ownerId ||
+        _pets.isNotEmpty ||
+        _hydratedOwnerId == ownerId) {
+      return;
+    }
     final cached = <PetProfile>[];
     for (final row in rows) {
       final item = _petFromRow(row);
@@ -218,30 +226,92 @@ class PetDemoStore {
   /// configured or the request fails — same best-effort-remote pattern as
   /// RemindersRepository.
   Future<void> ensureHydrated() {
-    final ownerId = CurrentUser.get()?.id;
+    final ownerId = _ownerId();
     if (ownerId == null || ownerId == _hydratedOwnerId) {
       return Future<void>.value();
     }
-    // Concurrent callers (splash preload, Home, Pets, walk widget...) share
-    // one in-flight query instead of each issuing their own.
-    return _hydrating ??= _hydrate(ownerId).whenComplete(() => _hydrating = null);
+    // Concurrent callers (splash preload, Home, Pets, walk widget, the chat...)
+    // share one in-flight query instead of each issuing their own.
+    final running = _hydrating;
+    if (running != null && _hydratingOwnerId == ownerId) return running;
+    final generation = _generation;
+    late final Future<void> started;
+    started = _hydrate(ownerId, generation).whenComplete(() {
+      // Only the newest read clears the marker: a read left over from an
+      // account that signed out must not hide the one of the next account.
+      if (identical(_hydrating, started)) _hydrating = null;
+    });
+    _hydrating = started;
+    _hydratingOwnerId = ownerId;
+    return started;
   }
 
   Future<void>? _hydrating;
+  String? _hydratingOwnerId;
 
-  Future<void> _hydrate(String ownerId) async {
+  /// Bumped by [reset]: an answer or a disk read that started before a
+  /// sign-out is dropped when it lands, so it never fills the next account.
+  int _generation = 0;
+
+  bool _lastHydrationFailed = false;
+
+  /// True when the last attempt to read this account's pets from the server
+  /// failed (offline, timeout, error). An empty list is NOT a failure: see
+  /// [syncedPetNamesById].
+  bool get lastHydrationFailed => _lastHydrationFailed;
+
+  /// Id -> name of the pets the server confirmed for the signed-in account
+  /// (Ricordi included, pets not yet saved on the server left out), shared with
+  /// the chat so the start reads the profiles once.
+  ///
+  /// `null` means "not known": still loading, the read failed, offline, nobody
+  /// signed in, or only the copy saved on the phone is on screen. An empty map
+  /// means the server really has no pet for this account.
+  Map<String, String>? syncedPetNamesById() {
+    final ownerId = _ownerId();
+    if (ownerId == null || ownerId != _hydratedOwnerId) return null;
+    return {
+      for (final pet in _pets)
+        if (!_unsynced.contains(pet.id) && pet.name.trim().isNotEmpty) pet.id: pet.name,
+    };
+  }
+
+  /// Waits for the (shared) read of the profiles, then answers like
+  /// [syncedPetNamesById]. Never throws.
+  Future<Map<String, String>?> loadSyncedPetNames() async {
+    await ensureHydrated();
+    return syncedPetNamesById();
+  }
+
+  /// Test seams: who is signed in, and what the server answers for the pets.
+  @visibleForTesting
+  String? Function()? debugOwnerId;
+
+  @visibleForTesting
+  Future<List<dynamic>> Function(String ownerId)? debugFetchRows;
+
+  String? _ownerId() => debugOwnerId != null ? debugOwnerId!() : CurrentUser.get()?.id;
+
+  Future<List<dynamic>?> _fetchRows(String ownerId) async {
+    final testRead = debugFetchRows;
+    if (testRead != null) return testRead(ownerId);
     final client = _resolveClient();
-    if (client == null) {
-      return;
-    }
+    if (client == null) return null;
+    final response = await client
+        .from('pet_profiles')
+        .select('*')
+        .eq('owner_id', ownerId)
+        .timeout(const Duration(seconds: 12));
+    return response as List<dynamic>;
+  }
+
+  Future<void> _hydrate(String ownerId, int generation) async {
+    bool outdated() => generation != _generation || _ownerId() != ownerId;
 
     try {
-      final response = await client
-          .from('pet_profiles')
-          .select('*')
-          .eq('owner_id', ownerId)
-          .timeout(const Duration(seconds: 12));
-      final rows = response as List<dynamic>;
+      final rows = await _fetchRows(ownerId);
+      if (rows == null) return; // no Supabase here: nothing to read
+      if (outdated()) return; // signed out (or another account) meanwhile
       final loaded = <PetProfile>[];
       for (final row in rows) {
         final pet = _petFromRow(row as Map<String, dynamic>);
@@ -256,6 +326,7 @@ class PetDemoStore {
       }
       _pets = loaded;
       _hydratedOwnerId = ownerId;
+      _lastHydrationFailed = false;
       changes.value++;
       unawaited(_cache.write(ownerId, [
         for (final row in rows) Map<String, dynamic>.from(row as Map),
@@ -263,6 +334,7 @@ class PetDemoStore {
     } catch (_) {
       // Leave the local/demo contents in place; retried next call since
       // _hydratedOwnerId wasn't set.
+      if (!outdated()) _lastHydrationFailed = true;
     }
   }
 
@@ -274,6 +346,9 @@ class PetDemoStore {
     _unsynced.clear();
     _hydratedOwnerId = null;
     _hydrating = null;
+    _hydratingOwnerId = null;
+    _generation++;
+    _lastHydrationFailed = false;
     changes.value++;
   }
 
