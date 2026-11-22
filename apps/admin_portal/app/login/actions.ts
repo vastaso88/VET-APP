@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 
 import {
   ADMIN_COOKIE,
+  ADMIN_REFRESH_COOKIE,
+  ADMIN_REFRESH_MAX_AGE,
   apiBaseUrl,
   supabasePublishableKey,
   supabaseUrl,
@@ -12,6 +14,8 @@ import {
 
 type SupabaseLoginPayload = {
   access_token?: string;
+  refresh_token?: string;
+  expires_in?: number;
   error?: string;
   error_description?: string;
   msg?: string;
@@ -54,7 +58,7 @@ export async function login(formData: FormData): Promise<void> {
   }
 
   const payload = (await authResponse.json()) as SupabaseLoginPayload;
-  if (!payload.access_token) loginError("auth-service");
+  if (!payload.access_token || !payload.refresh_token) loginError("auth-service");
 
   let adminCheck: Response;
   try {
@@ -80,14 +84,21 @@ export async function login(formData: FormData): Promise<void> {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60,
+    maxAge: Math.max(60, payload.expires_in ?? 3600),
   });
-
+  cookieStore.set(ADMIN_REFRESH_COOKIE, payload.refresh_token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: ADMIN_REFRESH_MAX_AGE,
+  });
   redirect("/");
 }
 
 export async function logout(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete(ADMIN_COOKIE);
+  cookieStore.delete(ADMIN_REFRESH_COOKIE);
   redirect("/login");
 }
