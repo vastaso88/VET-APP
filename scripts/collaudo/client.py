@@ -15,6 +15,8 @@
     python -m scripts.collaudo.client <chat> segnala --tipo funzioni --gravita grave \
         --funzione chat --titolo "..." --cosa "..." [--riproduci "passo 1" --riproduci "passo 2"]
         [--proposta "..."] [--perche "..."] [--specie ...] [--sbagliata --fonte "..."]
+    python -m scripts.collaudo.client <chat> --lingua en-US --utc-offset 60 chat …  # opzioni
+    python -m scripts.collaudo.client <chat> chat <animale> "…" --id-messaggio m-001
     python -m scripts.collaudo.client <chat> tempi                   # short summary of my timings
 
 `api` goes to the server (Vercel, branch `collaudo`); `db` goes straight to the twin's
@@ -104,11 +106,19 @@ def registra_tempo(chat: str, metodo: str, path: str, risposta: Risposta, funzio
 class Sessione:
     """A signed-in tester. Tokens live in `.local/collaudo/stato/<chat>.json`."""
 
-    def __init__(self, chat: str, gemello: Gemello) -> None:
+    def __init__(
+        self, chat: str, gemello: Gemello, *, lingua: str = "", utc_offset: int | None = None
+    ) -> None:
+        # `chat` may name an extra account (`col-villain-chat-b`): own tokens and folder,
+        # the tester's persona, the extra account's e-mail.
         self.chat = chat
         self.gemello = gemello
-        self.persona = persone.persona(chat)
-        self.lingua = str(self.persona.get("lingua", "it"))
+        self.base, self.indice = persone.risolvi_account(chat)
+        self.persona = persone.persona(self.base)
+        # `--lingua` (col-chloe-lingue switches language) wins over the persona's language;
+        # `--utc-offset` sends X-UTC-Offset-Minutes as the app does from the phone's time zone.
+        self.lingua = lingua or str(self.persona.get("lingua", "it"))
+        self.utc_offset = utc_offset
 
     # -- auth ---------------------------------------------------------------------------
     def _token_request(self, grant: str, body: dict[str, str]) -> dict[str, Any]:
@@ -135,7 +145,7 @@ class Sessione:
     def accedi(self) -> dict[str, Any]:
         from scripts.collaudo.gemello import carica_utenti
 
-        email = persone.email_account(self.chat)
+        email = persone.email_account(self.base, self.indice)
         account = carica_utenti().get(email)
         if not account:
             raise RuntimeError(f"nessun account per {self.chat}: va creato con `gemello utenti`")
@@ -165,6 +175,12 @@ class Sessione:
                 return answer
         return answer
 
+    def _api_headers(self) -> dict[str, str]:
+        headers = {"Accept-Language": self.lingua}
+        if self.utc_offset is not None:
+            headers["X-UTC-Offset-Minutes"] = str(self.utc_offset)
+        return headers
+
     def api(
         self,
         method: str,
@@ -179,7 +195,7 @@ class Sessione:
             self.gemello.api_url + path,
             path,
             funzione or path.strip("/").split("/")[0],
-            headers={"Accept-Language": self.lingua},
+            headers=self._api_headers(),
             body=body,
             raw=raw,
             bypass=self.gemello.bypass,
@@ -280,7 +296,9 @@ class Sessione:
         _save(stato_path(self.chat), state)
         return pets
 
-    def chat_message(self, animale: str, messaggio: str, nuova: bool) -> dict[str, Any]:
+    def chat_message(
+        self, animale: str, messaggio: str, nuova: bool, id_messaggio: str = ""
+    ) -> dict[str, Any]:
         state = _load(stato_path(self.chat))
         pet_id = state.get("animali", {}).get(animale)
         if not pet_id:
@@ -294,6 +312,9 @@ class Sessione:
             "user_message": messaggio,
             "language": self.lingua,
         }
+        if id_messaggio:
+            # the app's own id of the message: the same id twice must not answer twice
+            body["client_message_id"] = id_messaggio
         answer = self.api("POST", "/chat", body, funzione="chat")
         result = answer.body if isinstance(answer.body, dict) else {}
         reply = result.get("reply") or {}
@@ -358,6 +379,10 @@ def main(argv: list[str] | None = None) -> int:
             stream.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(prog="client")
     parser.add_argument("chat")
+    parser.add_argument(
+        "--lingua", default="", help="es. en-US, en-AU: sostituisce quella della persona"
+    )
+    parser.add_argument("--utc-offset", type=int, default=None, help="minuti, es. 60 per UTC+1")
     sub = parser.add_subparsers(dest="comando", required=True)
     sub.add_parser("accedi")
     sub.add_parser("prepara")
@@ -375,6 +400,7 @@ def main(argv: list[str] | None = None) -> int:
     chat.add_argument("animale")
     chat.add_argument("messaggio")
     chat.add_argument("--nuova", action="store_true")
+    chat.add_argument("--id-messaggio", default="", help="client_message_id, come l'app")
     api = sub.add_parser("api")
     api.add_argument("metodo")
     api.add_argument("percorso")
@@ -432,7 +458,9 @@ def main(argv: list[str] | None = None) -> int:
         _print(riassunto_tempi(args.chat))
         return 0
     try:
-        session = Sessione(args.chat, load_gemello())
+        session = Sessione(
+            args.chat, load_gemello(), lingua=args.lingua, utc_offset=args.utc_offset
+        )
     except (GemelloNonSicuro, KeyError) as error:
         print(f"FERMO: {error}")
         return 2
@@ -452,7 +480,7 @@ def main(argv: list[str] | None = None) -> int:
     elif args.comando == "animali":
         _print(session.crea_animali())
     elif args.comando == "chat":
-        _print(session.chat_message(args.animale, args.messaggio, args.nuova))
+        _print(session.chat_message(args.animale, args.messaggio, args.nuova, args.id_messaggio))
     elif args.comando == "api":
         body = json.loads(args.json) if args.json else None
         answer = session.api(args.metodo, args.percorso, body)

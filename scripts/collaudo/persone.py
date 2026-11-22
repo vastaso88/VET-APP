@@ -27,6 +27,18 @@ def persona(chat: str, data: dict[str, Any] | None = None) -> dict[str, Any]:
     raise KeyError(f"persona sconosciuta: {chat}")
 
 
+def risolvi_account(nome: str, data: dict[str, Any] | None = None) -> tuple[str, int]:
+    """`col-villain-chat-b` -> (`col-villain-chat`, 1): the extra accounts (the villains'
+    «victim» for the user-B checks) are named after their tester. Anything else -> (nome, 0)."""
+    base, _, suffix = nome.rpartition("-")
+    if base and len(suffix) == 1 and suffix in "bcdefghij":
+        index = "abcdefghij".index(suffix)
+        for item in (data or carica())["persone"]:
+            if item["chat"] == base and int(item.get("account_extra", 0)) >= index:
+                return base, index
+    return nome, 0
+
+
 def email_account(chat: str, indice: int = 0) -> str:
     """Synthetic address: `col-x@example.com`, the extra ones `col-x-b@example.com`, ..."""
     suffix = "" if indice == 0 else "-" + "abcdefghij"[indice]

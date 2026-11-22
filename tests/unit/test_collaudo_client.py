@@ -236,3 +236,57 @@ def test_prepare_records_consents_and_age_unless_the_persona_tests_them(
     _signed_in(out, "col-elena-doveri")
     client.Sessione("col-elena-doveri", TWIN).prepara()
     assert calls == []
+
+
+def test_a_villain_signs_in_with_the_victim_account_under_its_own_name(
+    out: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (out / "utenti.json").write_text(
+        json.dumps({"col-villain-chat-b@example.com": {"password": "pw-b", "id": "u-b"}}),
+        encoding="utf-8",
+    )
+    sent: dict[str, Any] = {}
+
+    def fake(method: str, url: str, **kwargs: Any) -> Risposta:
+        sent.update(kwargs["body"])
+        return Risposta(
+            200, {"access_token": "t", "refresh_token": "r", "user": {"id": "u-b"}}, 1, 1
+        )
+
+    monkeypatch.setattr(client, "chiama", fake)
+    session = client.Sessione("col-villain-chat-b", TWIN)
+    session.accedi()
+    assert sent["email"] == "col-villain-chat-b@example.com"
+    assert session.persona["chat"] == "col-villain-chat"
+    assert (out / "stato" / "col-villain-chat-b.json").is_file()
+
+
+def test_only_declared_extra_accounts_are_resolved() -> None:
+    from scripts.collaudo import persone
+
+    assert persone.risolvi_account("col-villain-traffico-b") == ("col-villain-traffico", 1)
+    assert persone.risolvi_account("col-giulia-cucciolo-b") == ("col-giulia-cucciolo-b", 0)
+    assert persone.risolvi_account("col-giulia-cucciolo") == ("col-giulia-cucciolo", 0)
+
+
+def test_language_offset_and_message_id_options_reach_the_server(
+    out: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _signed_in(out, "col-chloe-lingue", animali={"Poule": "pet-3"})
+    seen: dict[str, Any] = {}
+
+    def fake(method: str, url: str, **kwargs: Any) -> Risposta:
+        seen.update(headers=kwargs["headers"], body=kwargs["body"])
+        return Risposta(200, {"reply": {"content": "Hi"}, "conversation": {"id": "c"}}, 1, 1)
+
+    monkeypatch.setattr(client, "chiama", fake)
+    session = client.Sessione("col-chloe-lingue", TWIN, lingua="en-AU", utc_offset=600)
+    session.chat_message("Poule", "Hello", False, "m-001")
+    assert seen["headers"]["Accept-Language"] == "en-AU"
+    assert seen["headers"]["X-UTC-Offset-Minutes"] == "600"
+    assert seen["body"]["language"] == "en-AU" and seen["body"]["client_message_id"] == "m-001"
+
+    session = client.Sessione("col-chloe-lingue", TWIN)
+    session.chat_message("Poule", "Bonjour", False)
+    assert seen["headers"] == {"Accept-Language": "fr", "Authorization": "Bearer t"}
+    assert "client_message_id" not in seen["body"]
