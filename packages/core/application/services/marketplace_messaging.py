@@ -418,8 +418,18 @@ class MarketplaceMessagingModerationService:
 
     def queue(self, limit: int = 100) -> list[dict[str, object]]:
         rows: list[dict[str, object]] = []
-        for report in self._repository.list_reports(limit):
-            conversation = self._repository.get_conversation(report.conversation_id)
+        reports = self._repository.list_reports(limit)
+        # Two reads however many reports: the list, then every distinct
+        # conversation at once (none at all for an empty queue).
+        conversations = (
+            self._repository.get_reported_conversations(
+                list({report.conversation_id for report in reports})
+            )
+            if reports
+            else {}
+        )
+        for report in reports:
+            conversation = conversations.get(report.conversation_id)
             rows.append(
                 {
                     **report.model_dump(mode="json"),

@@ -4,11 +4,9 @@ import { revalidatePath } from "next/cache";
 
 import {
   resolveChatModeration,
-  liftMarketplaceRestrictionRequest,
   resolveMarketplaceMessageModeration,
   resolveMarketplaceModeration,
   resolveRadarModeration,
-  restrictMarketplaceUserRequest,
 } from "../../lib/admin-api";
 
 function refreshModeration(): void {
@@ -90,30 +88,4 @@ export async function resolveMarketplaceMessageReport(formData: FormData): Promi
   );
   refreshModeration();
   revalidatePath(`/moderation/marketplace_messages/${reportId}`);
-}
-
-const RESTRICTION_REASONS = ["spam", "scam", "harassment", "prohibited_items", "other"];
-
-export async function restrictMarketplaceUser(formData: FormData): Promise<void> {
-  const ownerId = String(formData.get("owner_id") ?? "").trim();
-  const reason = String(formData.get("reason") ?? "");
-  const note = String(formData.get("note") ?? "");
-
-  if (!ownerId || ownerId.length > 100) throw new Error("Missing or invalid user id");
-  if (!RESTRICTION_REASONS.includes(reason)) throw new Error("Invalid restriction reason");
-
-  await restrictMarketplaceUserRequest(
-    ownerId,
-    reason as "spam" | "scam" | "harassment" | "prohibited_items" | "other",
-    note,
-  );
-  refreshModeration();
-}
-
-export async function liftMarketplaceRestriction(formData: FormData): Promise<void> {
-  const ownerId = String(formData.get("owner_id") ?? "").trim();
-  if (!ownerId) throw new Error("Missing user id");
-
-  await liftMarketplaceRestrictionRequest(ownerId);
-  refreshModeration();
 }

@@ -30,7 +30,6 @@ import '../../features/account/application/account_session_guard.dart';
 import '../../features/account_consents/application/consent_gate.dart';
 import '../router/app_router.dart';
 import '../launch/route_restoration.dart';
-import '../launch/warm_start_store.dart';
 
 class HomeShellPage extends StatefulWidget {
   const HomeShellPage({super.key, this.initialIndex = 0});
@@ -446,8 +445,6 @@ class _HomeShellPageState extends State<HomeShellPage> {
     setState(() {
       _currentIndex = value;
     });
-    // So the next launch can reopen this tab (see WarmStartStore).
-    unawaited(const WarmStartStore().saveTab(value));
   }
 
   List<NavigationRailDestination> get _destinations => [

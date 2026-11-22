@@ -56,7 +56,7 @@ class SplashPage extends StatefulWidget {
   /// and the last subscription check (same owner, a few days at most) gave
   /// access - or null for the normal flow. The preload and the real gate then
   /// run in the background; a refusal still lands on the paywall. Defaults to
-  /// [WarmStartStore.warmTab] for the signed-in owner.
+  /// [WarmStartStore.hasRecentAccess] for the signed-in owner (always tab 0).
   final Future<int?> Function()? warmTab;
 
   final Duration minDisplay;
@@ -144,9 +144,9 @@ class _SplashPageState extends State<SplashPage> {
     final ownerId = CurrentUser.get()?.id;
     if (ownerId == null) return null;
     // A launch is a new process (the old one was killed): always Home. The
-    // saved tab is not used any more; only "access confirmed recently" counts.
-    final saved = await const WarmStartStore().warmTab(ownerId);
-    return saved == null ? null : 0;
+    // tab is not saved any more; only "access confirmed recently" counts.
+    final recent = await const WarmStartStore().hasRecentAccess(ownerId);
+    return recent ? 0 : null;
   }
 
   Future<void> _rememberAccess(String destination) async {

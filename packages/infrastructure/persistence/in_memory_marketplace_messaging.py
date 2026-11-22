@@ -1,5 +1,8 @@
 from datetime import datetime
 
+from packages.core.application.ports.marketplace_messaging_repository import (
+    ReportedConversation,
+)
 from packages.core.domain.marketplace.messaging import (
     MarketplaceConversation,
     MarketplaceConversationReport,
@@ -28,6 +31,21 @@ class InMemoryMarketplaceMessagingRepository:
 
     def get_conversation(self, conversation_id: str) -> MarketplaceConversation | None:
         return self.conversations.get(conversation_id)
+
+    def get_reported_conversations(
+        self, conversation_ids: list[str]
+    ) -> dict[str, ReportedConversation]:
+        found: dict[str, ReportedConversation] = {}
+        for conversation_id in set(conversation_ids):
+            item = self.conversations.get(conversation_id)
+            if item is not None:
+                found[item.id] = ReportedConversation(
+                    id=item.id,
+                    listing_title=item.listing_title,
+                    buyer_id=item.buyer_id,
+                    seller_id=item.seller_id,
+                )
+        return found
 
     def create_conversation(self, conversation: MarketplaceConversation) -> MarketplaceConversation:
         if conversation.listing_id is not None:

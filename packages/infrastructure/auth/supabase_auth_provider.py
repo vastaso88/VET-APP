@@ -11,7 +11,7 @@ from packages.core.application.ports.auth_provider import (
     AuthSession,
 )
 from packages.core.domain.localization import SupportedLocale, normalize_locale
-from packages.shared.auth_context import get_access_token
+from packages.shared.auth_context import get_access_token, get_identity_memo
 from packages.shared.errors.base import AuthenticationError
 
 if TYPE_CHECKING:
@@ -86,6 +86,16 @@ class SupabaseAuthProvider(AuthProvider):
         if not access_token:
             raise AuthenticationError("Missing access token")
 
+        # One verification per request: the first call asks Supabase, the later ones of
+        # the same request (dependencies, then the handler) reuse the answer. The memo is
+        # tied to this request and to this exact token (see RequestIdentityMemo).
+        memo = get_identity_memo()
+        if memo is not None:
+            remembered = memo.get(access_token)
+            if isinstance(remembered, AuthenticatedUser):
+                # A copy, so a caller that edits its user cannot alter the next one's.
+                return remembered.model_copy()
+
         try:
             response = self._admin_client.auth.get_user(access_token)
         except AuthApiError as exc:
@@ -103,13 +113,17 @@ class SupabaseAuthProvider(AuthProvider):
         if not isinstance(metadata, dict):
             metadata = {}
         display_name = metadata.get("display_name") if isinstance(metadata, dict) else None
-        return AuthenticatedUser(
+        verified = AuthenticatedUser(
             id=user.id,
             email=user.email or "",
             display_name=display_name if isinstance(display_name, str) else None,
             preferred_locale=normalize_locale(metadata.get("preferred_locale")),
             email_verified=bool(getattr(user, "email_confirmed_at", None)),
         )
+        if memo is None:
+            return verified
+        memo.put(access_token, verified)
+        return verified.model_copy()
 
     def last_sign_in_at(self) -> datetime | None:
         token = get_access_token()
@@ -127,6 +141,10 @@ class SupabaseAuthProvider(AuthProvider):
         # A stale regional variant must not override the new generic preference.
         metadata.pop("preferred_locale_variant", None)
         self._admin_client.auth.admin.update_user_by_id(current.id, {"user_metadata": metadata})
+        # What was remembered for this request still says the old language.
+        memo = get_identity_memo()
+        if memo is not None:
+            memo.clear()
         return current.model_copy(update={"preferred_locale": locale})
 
     def sign_in_with_password(self, email: str, password: str) -> AuthSession:

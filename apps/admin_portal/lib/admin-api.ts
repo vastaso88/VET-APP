@@ -896,18 +896,6 @@ export async function getMarketplaceRestrictions(): Promise<MarketplaceRestricti
   }
 }
 
-export async function restrictMarketplaceUserRequest(
-  ownerId: string,
-  reason: "spam" | "scam" | "harassment" | "prohibited_items" | "other",
-  note?: string,
-): Promise<void> {
-  await requireAdminSession();
-  await authenticatedAdminRequest("/admin/moderation/marketplace_restrictions", {
-    method: "POST",
-    body: JSON.stringify({ owner_id: ownerId, reason, note: note?.trim() || null }),
-  });
-}
-
 export type ClosedByAgeAccount = {
   /** Keyed reference: the only name of the account the portal ever sees. */
   ref: string;
@@ -1050,14 +1038,6 @@ export async function setClosedByAgeCorrectionRequestedRequest(
   await authenticatedAdminRequest(
     `/admin/age/closed/${encodeURIComponent(ref)}/correction-requested`,
     { method: "POST", body: JSON.stringify({ requested }) },
-  );
-}
-
-export async function liftMarketplaceRestrictionRequest(ownerId: string): Promise<void> {
-  await requireAdminSession();
-  await authenticatedAdminRequest(
-    `/admin/moderation/marketplace_restrictions/${encodeURIComponent(ownerId)}/lift`,
-    { method: "POST" },
   );
 }
 

@@ -7,7 +7,6 @@ import '../../features/account_consents/domain/account_consent_models.dart';
 import '../../features/chat/data/chat_demo_store.dart';
 import '../../features/location/data/location_preference_store.dart';
 import '../../features/location/data/location_repository.dart';
-import '../../features/medical_records/data/medical_records_repository.dart';
 import '../../features/pet_news/data/pet_news_repository.dart';
 import '../../features/pets/data/pet_demo_store.dart';
 import '../../features/reminders/data/reminders_repository.dart';
@@ -62,7 +61,6 @@ class AppPreloader {
         PetDemoStore.instance.ensureHydrated,
         ChatDemoStore.instance.ensureHydrated,
         RemindersRepository().ensureHydrated,
-        () => MedicalRecordsRepository().loadRecords(),
         _loadLocation,
         _warmPetNewsCache,
         _syncDiagnosticsConsent,

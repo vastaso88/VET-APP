@@ -21,6 +21,7 @@ from packages.core.application.ports.pet_profile_repository import PetProfileRep
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizationRequest, PiiAnonymizer
 from packages.core.application.services.llm_budget import LlmBudget, require_feature_allowance
 from packages.core.application.services.medical_record_context_retriever import italian_date
+from packages.core.application.services.send_chat_message import owner_names_for_anonymization
 from packages.core.domain.conversation.models import (
     ChatMessage,
     Conversation,
@@ -51,7 +52,11 @@ _DOCUMENT_LABEL = re.compile(r"«[^»]+» (?:del|of|de) [^«»]+?(?= (?:e|and|y)
 class VetSummaryInput(BaseModel):
     owner_id: str
     conversation_id: str
+    # Names to redact from the prompt. When empty they are derived here from
+    # [owner_display_name] and the pet's name (QK-04: the route no longer reads the
+    # conversation and the pet a second time just to build this list).
     owner_names: list[str] = []
+    owner_display_name: str | None = None
     language: str = "it"
     quota_exempt: bool = False
 
@@ -97,6 +102,9 @@ class VetSummaryService:
             language=data.language,
         )
         pet = self._pet_profile_repository.get(conversation.pet_id)
+        owner_names = data.owner_names or owner_names_for_anonymization(
+            data.owner_display_name, pet_name=pet.name if pet else ""
+        )
         now = datetime.now(UTC)
 
         response = self._llm_client.generate(
@@ -105,7 +113,7 @@ class VetSummaryService:
                 user_prompt=self._user_prompt(
                     conversation,
                     pet,
-                    data.owner_names,
+                    owner_names,
                     notes_allowed=self._record_allowed(conversation, pet),
                 ),
                 temperature=0.1,

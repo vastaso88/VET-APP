@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Protocol
 
@@ -12,12 +13,30 @@ from packages.core.domain.marketplace.messaging import (
 )
 
 
+@dataclass(frozen=True)
+class ReportedConversation:
+    """Only what the moderation queue shows of a conversation: no messages, no
+    counters, no timestamps."""
+
+    id: str
+    listing_title: str
+    buyer_id: str
+    seller_id: str
+
+
 class MarketplaceMessagingRepository(Protocol):
     def find_conversation(
         self, listing_id: str, buyer_id: str
     ) -> MarketplaceConversation | None: ...
 
     def get_conversation(self, conversation_id: str) -> MarketplaceConversation | None: ...
+
+    def get_reported_conversations(
+        self, conversation_ids: list[str]
+    ) -> dict[str, ReportedConversation]:
+        """One read for all the distinct [conversation_ids] (repeats allowed), keyed
+        by id. A conversation that no longer exists is simply absent."""
+        ...
 
     def create_conversation(self, conversation: MarketplaceConversation) -> MarketplaceConversation:
         """Returns the stored row: when two requests race for the same ad and

@@ -9,6 +9,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, cast
 
+from packages.core.application.ports.marketplace_messaging_repository import (
+    ReportedConversation,
+)
 from packages.core.domain.marketplace.messaging import (
     MarketplaceConversation,
     MarketplaceConversationReport,
@@ -28,6 +31,8 @@ _BLOCKS = "marketplace_user_blocks"
 _REPORTS = "marketplace_conversation_reports"
 _RESTRICTIONS = "marketplace_user_restrictions"
 _ACCESS_LOG = "marketplace_moderation_access_log"
+# Ids per `in` filter: keeps the request URL well under the proxy's limit.
+_IN_CHUNK = 100
 
 
 def _rows(response: Any) -> list[dict[str, Any]]:
@@ -60,6 +65,29 @@ class SupabaseMarketplaceMessagingRepository:
         )
         rows = _rows(response)
         return MarketplaceConversation.model_validate(rows[0]) if rows else None
+
+    def get_reported_conversations(
+        self, conversation_ids: list[str]
+    ) -> dict[str, ReportedConversation]:
+        """One read per _IN_CHUNK distinct ids (a single one for a full queue), with
+        only the four columns the queue shows."""
+        distinct = sorted(set(conversation_ids))
+        found: dict[str, ReportedConversation] = {}
+        for start in range(0, len(distinct), _IN_CHUNK):
+            response = (
+                self._client.table(_CONVERSATIONS)
+                .select("id,listing_title,buyer_id,seller_id")
+                .in_("id", distinct[start : start + _IN_CHUNK])
+                .execute()
+            )
+            for row in _rows(response):
+                found[str(row["id"])] = ReportedConversation(
+                    id=str(row["id"]),
+                    listing_title=str(row["listing_title"]),
+                    buyer_id=str(row["buyer_id"]),
+                    seller_id=str(row["seller_id"]),
+                )
+        return found
 
     def create_conversation(self, conversation: MarketplaceConversation) -> MarketplaceConversation:
         # The unique index on (listing_id, buyer_id) settles a race: the second
