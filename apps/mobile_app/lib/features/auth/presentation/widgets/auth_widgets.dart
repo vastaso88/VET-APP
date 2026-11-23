@@ -82,7 +82,7 @@ class AuthScreenScaffold extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const QuokkaLogo.head(size: 56),
+                            const QuokkaHeadTile(size: 64),
                             const SizedBox(height: AppSpacing.md),
                             Text(title,
                                 style: AppTextStyles.display

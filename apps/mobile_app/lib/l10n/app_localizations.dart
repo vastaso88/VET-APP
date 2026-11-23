@@ -443,7 +443,7 @@ abstract class AppLocalizations {
   /// No description provided for @authRegisterLoadingMessage.
   ///
   /// In it, this message translates to:
-  /// **'Sto creando l account e preparando la sessione iniziale.'**
+  /// **'Sto creando l'account e preparando la sessione iniziale.'**
   String get authRegisterLoadingMessage;
 
   /// No description provided for @authRegisterSuccessTitle.
@@ -557,7 +557,7 @@ abstract class AppLocalizations {
   /// No description provided for @authResetSuccessMessage.
   ///
   /// In it, this message translates to:
-  /// **'Se l account esiste, riceverai il link per il recupero accesso.'**
+  /// **'Se l'account esiste, riceverai il link per recuperare l'accesso.'**
   String get authResetSuccessMessage;
 
   /// No description provided for @authResetFailureTitle.
@@ -569,7 +569,7 @@ abstract class AppLocalizations {
   /// No description provided for @authResetTitle.
   ///
   /// In it, this message translates to:
-  /// **'Recupera l accesso.'**
+  /// **'Recupera l'accesso.'**
   String get authResetTitle;
 
   /// No description provided for @authResetSubtitle.
@@ -587,7 +587,7 @@ abstract class AppLocalizations {
   /// No description provided for @authBackToLoginLink.
   ///
   /// In it, this message translates to:
-  /// **'Torna all accesso'**
+  /// **'Torna all'accesso'**
   String get authBackToLoginLink;
 
   /// No description provided for @authSetPasswordLoadingTitle.
@@ -1319,7 +1319,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLoadingSubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Stiamo caricando il thread e l ultimo contesto disponibile.'**
+  /// **'Stiamo caricando il thread e l'ultimo contesto disponibile.'**
   String get chatLoadingSubtitle;
 
   /// No description provided for @chatEmptyTitle.
@@ -1751,13 +1751,13 @@ abstract class AppLocalizations {
   /// No description provided for @chatDemoReplyWeight.
   ///
   /// In it, this message translates to:
-  /// **'Sul peso di {pet} possiamo fissare un controllo periodico e confrontarlo con l ultima visita per capire se il trend cambia davvero.'**
+  /// **'Sul peso di {pet} possiamo fissare un controllo periodico e confrontarlo con l'ultima visita per capire se il trend cambia davvero.'**
   String chatDemoReplyWeight(String pet);
 
   /// No description provided for @chatDemoReplyDefault.
   ///
   /// In it, this message translates to:
-  /// **'Ho preso nota: per {pet} ti preparo un riepilogo breve, cosi hai subito un piano pratico e leggibile.'**
+  /// **'Ho preso nota: per {pet} ti preparo un riepilogo breve, così hai subito un piano pratico e leggibile.'**
   String chatDemoReplyDefault(String pet);
 
   /// No description provided for @chatErrorContactAssistant.
@@ -1943,7 +1943,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatSeedConv1Subtitle.
   ///
   /// In it, this message translates to:
-  /// **'Piccolo calo dell appetito, monitoraggio e piano d azione.'**
+  /// **'Piccolo calo dell'appetito, monitoraggio e piano d'azione.'**
   String get chatSeedConv1Subtitle;
 
   /// No description provided for @chatSeedConv1Preview.
@@ -1979,7 +1979,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatSeedConv1Msg4.
   ///
   /// In it, this message translates to:
-  /// **'Per sicurezza ti lascio anche un mini piano: pasti piccoli, acqua sempre disponibile e controllo della temperatura se ti sembra piu fiacco del solito.'**
+  /// **'Per sicurezza ti lascio anche un mini piano: pasti piccoli, acqua sempre disponibile e controllo della temperatura se ti sembra più fiacco del solito.'**
   String get chatSeedConv1Msg4;
 
   /// No description provided for @chatSeedConv2Title.
@@ -2009,7 +2009,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatSeedConv2Msg1.
   ///
   /// In it, this message translates to:
-  /// **'Ho impostato il richiamo e aggiunto una nota sull antiparassitario. Se vuoi, possiamo allineare anche la prossima visita di controllo.'**
+  /// **'Ho impostato il richiamo e aggiunto una nota sull'antiparassitario. Se vuoi, possiamo allineare anche la prossima visita di controllo.'**
   String get chatSeedConv2Msg1;
 
   /// No description provided for @chatSeedConv2Msg2.
@@ -2021,7 +2021,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatSeedConv2Msg3.
   ///
   /// In it, this message translates to:
-  /// **'Certo. Ti preparo anche una nota visiva con la scadenza piu vicina, cosi la trovi subito nella home.'**
+  /// **'Certo. Ti preparo anche una nota visiva con la scadenza più vicina, così la trovi subito nella home.'**
   String get chatSeedConv2Msg3;
 
   /// No description provided for @chatSeedConv3Title.
@@ -2063,7 +2063,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatSeedConv3Msg3.
   ///
   /// In it, this message translates to:
-  /// **'In breve: quadro stabile, terapia leggera per pochi giorni e controllo di follow-up gia programmato.'**
+  /// **'In breve: quadro stabile, terapia leggera per pochi giorni e controllo di follow-up già programmato.'**
   String get chatSeedConv3Msg3;
 
   /// No description provided for @chatSeedAgo2Min.
@@ -3053,7 +3053,7 @@ abstract class AppLocalizations {
   /// No description provided for @medicalListLoadErrorTitle.
   ///
   /// In it, this message translates to:
-  /// **'Impossibile caricare l archivio'**
+  /// **'Impossibile caricare l'archivio'**
   String get medicalListLoadErrorTitle;
 
   /// No description provided for @medicalListLoadErrorBody.
@@ -3071,7 +3071,7 @@ abstract class AppLocalizations {
   /// No description provided for @medicalListEmptyBody.
   ///
   /// In it, this message translates to:
-  /// **'Carica il primo referto per costruire l archivio documenti.'**
+  /// **'Carica il primo referto per costruire l'archivio documenti.'**
   String get medicalListEmptyBody;
 
   /// No description provided for @medicalListUploadFirst.
@@ -3101,7 +3101,7 @@ abstract class AppLocalizations {
   /// No description provided for @medicalListSummaryPetBody.
   ///
   /// In it, this message translates to:
-  /// **'Filtri attivi sul profilo di {petName}. Apri i documenti piu utili senza rumore.'**
+  /// **'Filtri attivi sul profilo di {petName}. Apri i documenti più utili senza rumore.'**
   String medicalListSummaryPetBody(String petName);
 
   /// No description provided for @medicalListNextActionTitle.
@@ -3119,7 +3119,7 @@ abstract class AppLocalizations {
   /// No description provided for @medicalListNextActionPetBody.
   ///
   /// In it, this message translates to:
-  /// **'Condividi il documento piu recente di {petName} e conserva la nota nel profilo.'**
+  /// **'Condividi il documento più recente di {petName} e conserva la nota nel profilo.'**
   String medicalListNextActionPetBody(String petName);
 
   /// No description provided for @medicalListEmptyPetTitle.
@@ -7259,7 +7259,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileEveningThemeBody.
   ///
   /// In it, this message translates to:
-  /// **'Anteprima di una palette piu soft per l uso serale.'**
+  /// **'Anteprima di una palette più soft per l'uso serale.'**
   String get profileEveningThemeBody;
 
   /// No description provided for @profileAccountStatusTitle.

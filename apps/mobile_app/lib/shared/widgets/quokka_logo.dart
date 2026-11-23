@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 
-/// The Quokka logo (approved 2026-11-04). [QuokkaLogo.full] is the head with
-/// the name under it, [QuokkaLogo.head] the head alone for small places.
-/// Decorative: the app name is always written next to it where it matters.
+import '../../design_system/tokens/app_colors.dart';
+
+/// The Quokka logo (approved 2026-11-04), always in paper colour on the dark brand
+/// ground: drawn dark on a light page the face turns into a negative. On light pages
+/// use [QuokkaHeadTile]. Decorative: the app name is written next to it where it matters.
 class QuokkaLogo extends StatelessWidget {
-  const QuokkaLogo.full({super.key, this.size = 160}) : _asset = 'assets/brand/quokka_logo.png';
-
-  const QuokkaLogo.head({super.key, this.size = 40}) : _asset = 'assets/brand/quokka_head.png';
-
   /// The head with the name, in paper colour, for the dark brand ground.
   const QuokkaLogo.fullOnDark({super.key, this.size = 160})
       : _asset = 'assets/brand/quokka_logo_paper.png';
@@ -31,6 +29,29 @@ class QuokkaLogo extends StatelessWidget {
         fit: BoxFit.contain,
         filterQuality: FilterQuality.medium,
         errorBuilder: (_, __, ___) => SizedBox(width: size, height: size),
+      ),
+    );
+  }
+}
+
+/// The head as in the app icon: paper colour on a petrol tile, for light pages.
+class QuokkaHeadTile extends StatelessWidget {
+  const QuokkaHeadTile({super.key, this.size = 56});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.brandDeep,
+          borderRadius: BorderRadius.circular(size * 0.26),
+        ),
+        child: QuokkaLogo.headOnDark(size: size * 0.76),
       ),
     );
   }

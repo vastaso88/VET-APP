@@ -66,7 +66,7 @@
   "authRegisterTermsRequired": "Devi accettare privacy e disclaimer per continuare.",
   "authRegisterFieldsInvalid": "Controlla i campi: nome, email e password devono essere validi.",
   "authRegisterLoadingTitle": "Creazione account",
-  "authRegisterLoadingMessage": "Sto creando l account e preparando la sessione iniziale.",
+  "authRegisterLoadingMessage": "Sto creando l'account e preparando la sessione iniziale.",
   "authRegisterSuccessTitle": "Account pronto",
   "authRegisterSuccessMessage": "Registrazione completata. Ti porto nella home.",
   "authRegisterFailureTitle": "Account non creato",
@@ -85,12 +85,12 @@
   "authResetLoadingTitle": "Invio in corso",
   "authResetLoadingMessage": "Sto preparando la richiesta di recupero password.",
   "authResetSuccessTitle": "Email inviata",
-  "authResetSuccessMessage": "Se l account esiste, riceverai il link per il recupero accesso.",
+  "authResetSuccessMessage": "Se l'account esiste, riceverai il link per recuperare l'accesso.",
   "authResetFailureTitle": "Invio non riuscito",
-  "authResetTitle": "Recupera l accesso.",
+  "authResetTitle": "Recupera l'accesso.",
   "authResetSubtitle": "Inserisci la tua email: ti mandiamo un link per reimpostare la password.",
   "authResetSendButton": "Invia link",
-  "authBackToLoginLink": "Torna all accesso",
+  "authBackToLoginLink": "Torna all'accesso",
   "authSetPasswordLoadingTitle": "Aggiornamento in corso",
   "authSetPasswordLoadingMessage": "Sto salvando la nuova password.",
   "authSetPasswordFailureTitle": "Aggiornamento non riuscito",
@@ -337,7 +337,7 @@
   "firstRunTutorialRemindersBody": "Vaccini, farmaci e visite: imposta un promemoria e Quokka ti avvisa al momento giusto.",
   "firstRunTutorialStart": "Inizia",
   "chatLoadingTitle": "Apriamo la conversazione",
-  "chatLoadingSubtitle": "Stiamo caricando il thread e l ultimo contesto disponibile.",
+  "chatLoadingSubtitle": "Stiamo caricando il thread e l'ultimo contesto disponibile.",
   "chatEmptyTitle": "La conversazione e vuota",
   "chatEmptySubtitle": "Scrivi il primo messaggio per iniziare: puoi chiedere perché fa qualcosa, come gestirlo o quali sono i tuoi doveri.",
   "chatNotHelpfulButton": "Non mi ha aiutato",
@@ -485,7 +485,7 @@
       }
     }
   },
-  "chatDemoReplyWeight": "Sul peso di {pet} possiamo fissare un controllo periodico e confrontarlo con l ultima visita per capire se il trend cambia davvero.",
+  "chatDemoReplyWeight": "Sul peso di {pet} possiamo fissare un controllo periodico e confrontarlo con l'ultima visita per capire se il trend cambia davvero.",
   "@chatDemoReplyWeight": {
     "placeholders": {
       "pet": {
@@ -493,7 +493,7 @@
       }
     }
   },
-  "chatDemoReplyDefault": "Ho preso nota: per {pet} ti preparo un riepilogo breve, cosi hai subito un piano pratico e leggibile.",
+  "chatDemoReplyDefault": "Ho preso nota: per {pet} ti preparo un riepilogo breve, così hai subito un piano pratico e leggibile.",
   "@chatDemoReplyDefault": {
     "placeholders": {
       "pet": {
@@ -552,27 +552,27 @@
   "chatErrorAttachmentUpload": "Non sono riuscito a caricare il file. Riprova.",
   "chatErrorTranscribe": "Non sono riuscito a trascrivere il messaggio vocale.",
   "chatSeedConv1Title": "Moka - appetito e controllo",
-  "chatSeedConv1Subtitle": "Piccolo calo dell appetito, monitoraggio e piano d azione.",
+  "chatSeedConv1Subtitle": "Piccolo calo dell'appetito, monitoraggio e piano d'azione.",
   "chatSeedConv1Preview": "Se resta vivace possiamo osservare fino a domani, ma tieni nota di appetito e acqua.",
   "chatSeedConv1Status": "Contesto attivo del pet",
   "chatSeedConv1Msg1": "Raccontami pure cosa stai osservando: appetito, energia, acqua e feci ci aiutano a capire subito se serve una visita o basta monitorare.",
   "chatSeedConv1Msg2": "Da ieri mangia meno del solito ma resta vivace. Devo preoccuparmi subito?",
   "chatSeedConv1Msg3": "Se non ci sono vomito, abbattimento o dolore evidente, in genere conviene monitorare 24 ore e tenere nota di appetito, acqua e feci. Se qualcosa peggiora, contatta il veterinario.",
-  "chatSeedConv1Msg4": "Per sicurezza ti lascio anche un mini piano: pasti piccoli, acqua sempre disponibile e controllo della temperatura se ti sembra piu fiacco del solito.",
+  "chatSeedConv1Msg4": "Per sicurezza ti lascio anche un mini piano: pasti piccoli, acqua sempre disponibile e controllo della temperatura se ti sembra più fiacco del solito.",
   "chatSeedConv2Title": "Moka - promemoria vaccino",
   "chatSeedConv2Subtitle": "Richiamo annuale con nota sul richiamo antiparassitario.",
   "chatSeedConv2Preview": "Ho già messo il richiamo e il promemoria di follow-up per la prossima settimana.",
   "chatSeedConv2Status": "Promemoria attivo",
-  "chatSeedConv2Msg1": "Ho impostato il richiamo e aggiunto una nota sull antiparassitario. Se vuoi, possiamo allineare anche la prossima visita di controllo.",
+  "chatSeedConv2Msg1": "Ho impostato il richiamo e aggiunto una nota sull'antiparassitario. Se vuoi, possiamo allineare anche la prossima visita di controllo.",
   "chatSeedConv2Msg2": "Perfetto, mi avvisi anche quando manca una settimana?",
-  "chatSeedConv2Msg3": "Certo. Ti preparo anche una nota visiva con la scadenza piu vicina, cosi la trovi subito nella home.",
+  "chatSeedConv2Msg3": "Certo. Ti preparo anche una nota visiva con la scadenza più vicina, così la trovi subito nella home.",
   "chatSeedConv3Title": "Moka - referto visita",
   "chatSeedConv3Subtitle": "Sintesi del controllo, terapia leggera e prossima azione.",
   "chatSeedConv3Preview": "Posso riassumere il referto in tre punti: quadro, terapia e prossimo controllo.",
   "chatSeedConv3Status": "Referto caricato",
   "chatSeedConv3Msg1": "Posso sintetizzare il referto in tre punti: quadro clinico, terapia e prossimi controlli. Se vuoi, preparo anche una versione breve da condividere.",
   "chatSeedConv3Msg2": "Sì, dammi la versione breve.",
-  "chatSeedConv3Msg3": "In breve: quadro stabile, terapia leggera per pochi giorni e controllo di follow-up gia programmato.",
+  "chatSeedConv3Msg3": "In breve: quadro stabile, terapia leggera per pochi giorni e controllo di follow-up già programmato.",
   "chatSeedAgo2Min": "2 min fa",
   "chatSeedAgo3Days": "3 gg fa",
   "marketplacePermissionDenied": "Solo chi ha pubblicato l'annuncio può modificarlo o eliminarlo.",
@@ -878,10 +878,10 @@
   "medicalListSubtitle": "Referti, note e allegati di Moka in un archivio chiaro.",
   "medicalListSyncTitle": "Sincronizzazione referti",
   "medicalListSyncBody": "Sto recuperando documenti e metadati da Supabase o dalla sorgente demo.",
-  "medicalListLoadErrorTitle": "Impossibile caricare l archivio",
+  "medicalListLoadErrorTitle": "Impossibile caricare l'archivio",
   "medicalListLoadErrorBody": "Riprova dopo aver controllato la connessione o continua con il fallback demo.",
   "medicalListEmptyTitle": "Nessun documento ancora",
-  "medicalListEmptyBody": "Carica il primo referto per costruire l archivio documenti.",
+  "medicalListEmptyBody": "Carica il primo referto per costruire l'archivio documenti.",
   "medicalListUploadFirst": "Carica il primo file",
   "medicalListSummaryAllTitle": "{count} documenti attivi",
   "@medicalListSummaryAllTitle": {
@@ -903,7 +903,7 @@
     }
   },
   "medicalListSummaryAllBody": "1 referto pronto da condividere, 1 esame da rivedere e 1 nota archiviata.",
-  "medicalListSummaryPetBody": "Filtri attivi sul profilo di {petName}. Apri i documenti piu utili senza rumore.",
+  "medicalListSummaryPetBody": "Filtri attivi sul profilo di {petName}. Apri i documenti più utili senza rumore.",
   "@medicalListSummaryPetBody": {
     "placeholders": {
       "petName": {
@@ -913,7 +913,7 @@
   },
   "medicalListNextActionTitle": "Prossima azione",
   "medicalListNextActionAllBody": "Apri il referto vaccinale di Moka e condividilo con Francesco.",
-  "medicalListNextActionPetBody": "Condividi il documento piu recente di {petName} e conserva la nota nel profilo.",
+  "medicalListNextActionPetBody": "Condividi il documento più recente di {petName} e conserva la nota nel profilo.",
   "@medicalListNextActionPetBody": {
     "placeholders": {
       "petName": {
@@ -2560,7 +2560,7 @@
   "profileCityLabel": "Città",
   "profileCityNotSet": "Non specificata",
   "profileEveningThemeTitle": "Tema serale",
-  "profileEveningThemeBody": "Anteprima di una palette piu soft per l uso serale.",
+  "profileEveningThemeBody": "Anteprima di una palette più soft per l'uso serale.",
   "profileAccountStatusTitle": "Stato account",
   "profileSessionLabel": "Sessione",
   "profileSessionActive": "Attiva",

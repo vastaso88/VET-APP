@@ -10,6 +10,21 @@ L'app Android ha un product flavor nella dimensione `track`, così più build co
 
 `prod` mantiene l'id storico ed è quello del futuro Play Store. Il flavor non si chiama `main` perché collide con il source set `main`.
 
+> **Dalla build 40 (decisione del proprietario, 2026-11-16) si costruisce e si distribuisce solo `prod`.**
+> I flavor `francesco` e `roberto` restano nel codice e le loro app già installate non si toccano, ma non
+> vengono più costruiti né distribuiti.
+> **Eccezione (proprietario, 2026-11-23):** per vedere il lavoro in corso sul suo telefono si costruisce il
+> flavor `francesco` dal ramo Francesco, sull'app Firebase «VetApp Francesco». L'app parla con il server di
+> produzione.
+
+## Prima di installare o distribuire un APK (obbligatorio)
+
+Il 2026-11-23 un APK di collaudo è uscito con il `libapp.so` della build precedente, anche se il codice Dart nuovo era già compilato (il passo Gradle `merge…JniLibFolders` non rieseguiva). Regole:
+
+1. Ogni APK per tester o collaudo nasce da una cartella **senza `build/`**, esportata con `git archive <commit>`, con un file `COMMIT.txt` col commit intero.
+2. Prima di installare o distribuire: `python scripts/collaudo/apk_strings.py <apk> --commit <cartella>/COMMIT.txt --expect "<testo nuovo>" [--not-sha256 <libapp.so precedente>]`. Esce con errore se manca una stringa nuova nel `libapp.so` di una ABI, o se lo SHA è quello vecchio. Non si installa né si distribuisce se fallisce.
+3. `android/app/build.gradle.kts` impedisce che il passo `merge…JniLibFolders` risulti aggiornato; non rimuoverlo.
+
 ## Comandi
 
 Con i flavor definiti `flutter build` / `flutter run` per Android **richiedono `--flavor`**:

@@ -188,7 +188,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get authRegisterLoadingMessage =>
-      'Sto creando l account e preparando la sessione iniziale.';
+      'Sto creando l\'account e preparando la sessione iniziale.';
 
   @override
   String get authRegisterSuccessTitle => 'Account pronto';
@@ -250,13 +250,13 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get authResetSuccessMessage =>
-      'Se l account esiste, riceverai il link per il recupero accesso.';
+      'Se l\'account esiste, riceverai il link per recuperare l\'accesso.';
 
   @override
   String get authResetFailureTitle => 'Invio non riuscito';
 
   @override
-  String get authResetTitle => 'Recupera l accesso.';
+  String get authResetTitle => 'Recupera l\'accesso.';
 
   @override
   String get authResetSubtitle =>
@@ -266,7 +266,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get authResetSendButton => 'Invia link';
 
   @override
-  String get authBackToLoginLink => 'Torna all accesso';
+  String get authBackToLoginLink => 'Torna all\'accesso';
 
   @override
   String get authSetPasswordLoadingTitle => 'Aggiornamento in corso';
@@ -740,7 +740,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get chatLoadingSubtitle =>
-      'Stiamo caricando il thread e l ultimo contesto disponibile.';
+      'Stiamo caricando il thread e l\'ultimo contesto disponibile.';
 
   @override
   String get chatEmptyTitle => 'La conversazione e vuota';
@@ -996,12 +996,12 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String chatDemoReplyWeight(String pet) {
-    return 'Sul peso di $pet possiamo fissare un controllo periodico e confrontarlo con l ultima visita per capire se il trend cambia davvero.';
+    return 'Sul peso di $pet possiamo fissare un controllo periodico e confrontarlo con l\'ultima visita per capire se il trend cambia davvero.';
   }
 
   @override
   String chatDemoReplyDefault(String pet) {
-    return 'Ho preso nota: per $pet ti preparo un riepilogo breve, cosi hai subito un piano pratico e leggibile.';
+    return 'Ho preso nota: per $pet ti preparo un riepilogo breve, così hai subito un piano pratico e leggibile.';
   }
 
   @override
@@ -1123,7 +1123,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get chatSeedConv1Subtitle =>
-      'Piccolo calo dell appetito, monitoraggio e piano d azione.';
+      'Piccolo calo dell\'appetito, monitoraggio e piano d\'azione.';
 
   @override
   String get chatSeedConv1Preview =>
@@ -1146,7 +1146,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get chatSeedConv1Msg4 =>
-      'Per sicurezza ti lascio anche un mini piano: pasti piccoli, acqua sempre disponibile e controllo della temperatura se ti sembra piu fiacco del solito.';
+      'Per sicurezza ti lascio anche un mini piano: pasti piccoli, acqua sempre disponibile e controllo della temperatura se ti sembra più fiacco del solito.';
 
   @override
   String get chatSeedConv2Title => 'Moka - promemoria vaccino';
@@ -1164,7 +1164,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get chatSeedConv2Msg1 =>
-      'Ho impostato il richiamo e aggiunto una nota sull antiparassitario. Se vuoi, possiamo allineare anche la prossima visita di controllo.';
+      'Ho impostato il richiamo e aggiunto una nota sull\'antiparassitario. Se vuoi, possiamo allineare anche la prossima visita di controllo.';
 
   @override
   String get chatSeedConv2Msg2 =>
@@ -1172,7 +1172,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get chatSeedConv2Msg3 =>
-      'Certo. Ti preparo anche una nota visiva con la scadenza piu vicina, cosi la trovi subito nella home.';
+      'Certo. Ti preparo anche una nota visiva con la scadenza più vicina, così la trovi subito nella home.';
 
   @override
   String get chatSeedConv3Title => 'Moka - referto visita';
@@ -1197,7 +1197,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get chatSeedConv3Msg3 =>
-      'In breve: quadro stabile, terapia leggera per pochi giorni e controllo di follow-up gia programmato.';
+      'In breve: quadro stabile, terapia leggera per pochi giorni e controllo di follow-up già programmato.';
 
   @override
   String get chatSeedAgo2Min => '2 min fa';
@@ -1768,7 +1768,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'Sto recuperando documenti e metadati da Supabase o dalla sorgente demo.';
 
   @override
-  String get medicalListLoadErrorTitle => 'Impossibile caricare l archivio';
+  String get medicalListLoadErrorTitle => 'Impossibile caricare l\'archivio';
 
   @override
   String get medicalListLoadErrorBody =>
@@ -1779,7 +1779,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get medicalListEmptyBody =>
-      'Carica il primo referto per costruire l archivio documenti.';
+      'Carica il primo referto per costruire l\'archivio documenti.';
 
   @override
   String get medicalListUploadFirst => 'Carica il primo file';
@@ -1800,7 +1800,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String medicalListSummaryPetBody(String petName) {
-    return 'Filtri attivi sul profilo di $petName. Apri i documenti piu utili senza rumore.';
+    return 'Filtri attivi sul profilo di $petName. Apri i documenti più utili senza rumore.';
   }
 
   @override
@@ -1812,7 +1812,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String medicalListNextActionPetBody(String petName) {
-    return 'Condividi il documento piu recente di $petName e conserva la nota nel profilo.';
+    return 'Condividi il documento più recente di $petName e conserva la nota nel profilo.';
   }
 
   @override
@@ -4420,7 +4420,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get profileEveningThemeBody =>
-      'Anteprima di una palette piu soft per l uso serale.';
+      'Anteprima di una palette più soft per l\'uso serale.';
 
   @override
   String get profileAccountStatusTitle => 'Stato account';

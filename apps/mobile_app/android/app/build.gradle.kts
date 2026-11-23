@@ -137,6 +137,14 @@ flutter {
     source = "../.."
 }
 
+// Never treat the JNI merge step as up to date. On 2026-11-23 a collaudo APK was packaged with the
+// previous build's libapp.so (merged_jni_libs kept its old output while the freshly compiled
+// Dart code sat in intermediates/flutter/<variant>/jniLibs), so the tester app silently lacked
+// the newest strings. Re-running this step is cheap; shipping stale Dart code is not.
+tasks.matching { it.name.startsWith("merge") && it.name.endsWith("JniLibFolders") }.configureEach {
+    outputs.upToDateWhen { false }
+}
+
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
