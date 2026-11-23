@@ -340,14 +340,14 @@ void main() {
     await _pumpRadar(tester, [_reportedDogPark]);
 
     expect(
-      find.textContaining('Segnalata dagli utenti, verifica che sia un’area pubblica (1/5)'),
+      find.textContaining("Segnalata dagli utenti, verifica che sia un'area pubblica (1/5)"),
       findsOneWidget,
     );
 
     await tester.tap(find.text('Area cani'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Non è un’area pubblica? Scrivici'), findsOneWidget);
+    expect(find.text("Non è un'area pubblica? Scrivici"), findsOneWidget);
     // Not confirmed yet: it can be confirmed or denied, but not rated.
     expect(find.text('Confermo'), findsOneWidget);
     expect(find.byTooltip('Dai 5 stelle'), findsNothing);
@@ -359,7 +359,7 @@ void main() {
     await tester.tap(find.text('Negozio Mio'));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('L’hai segnalato tu'), findsOneWidget);
+    expect(find.textContaining("L'hai segnalato tu"), findsOneWidget);
     expect(find.text('Confermo'), findsNothing);
     expect(find.text('Non è così'), findsNothing);
     expect(find.text('Scade tra 5 giorni se nessuno conferma.'), findsOneWidget);

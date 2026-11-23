@@ -843,7 +843,7 @@ void main() {
 
     // First visit with no position: explanation first, never a default city.
     expect(find.text('Usare la tua posizione?'), findsOneWidget);
-    expect(find.textContaining('solo mentre usi l’app'), findsOneWidget);
+    expect(find.textContaining("solo mentre usi l'app"), findsOneWidget);
     await tester.tap(find.text('Consenti'));
     await _settle(tester);
 

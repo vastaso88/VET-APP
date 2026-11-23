@@ -535,7 +535,7 @@ void main() {
       expect(find.text('Come funziona il Mercatino'), findsOneWidget);
       expect(find.textContaining('non è parte di nessun accordo'), findsOneWidget);
       expect(find.textContaining("guarda l'oggetto prima di pagare"), findsOneWidget);
-      await tester.scrollUntilVisible(find.textContaining('Termini di servizio'), 200);
+      await tester.scrollUntilVisible(find.textContaining('Termini di Servizio'), 200);
       expect(find.textContaining('scorretto, segnalalo'), findsOneWidget);
       expect(find.textContaining('chiede conferma per cibo, integratori'), findsOneWidget);
     });

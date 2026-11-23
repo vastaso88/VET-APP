@@ -83,7 +83,7 @@ void main() {
         ),
       ));
 
-      await tester.tap(find.text("Invia di nuovo l'e-mail"));
+      await tester.tap(find.text("Invia di nuovo l'email"));
       await tester.pump();
       expect(sent, ['anna@example.com']);
       expect(find.textContaining('inviata di nuovo'), findsOneWidget);
@@ -95,7 +95,7 @@ void main() {
       expect(sent, hasLength(1));
 
       await tester.pump(const Duration(seconds: 3));
-      await tester.tap(find.text("Invia di nuovo l'e-mail"));
+      await tester.tap(find.text("Invia di nuovo l'email"));
       await tester.pump();
       expect(sent, hasLength(2));
       // Let the last countdown end so no timer is left behind.
@@ -113,7 +113,7 @@ void main() {
       ));
       expect(find.textContaining('tra 2 s'), findsOneWidget);
       await tester.pump(const Duration(seconds: 2));
-      expect(find.text("Invia di nuovo l'e-mail"), findsOneWidget);
+      expect(find.text("Invia di nuovo l'email"), findsOneWidget);
     });
 
     testWidgets('a failure shows a clear message, never the raw text of the provider',
@@ -127,7 +127,7 @@ void main() {
           wait: const Duration(seconds: 1),
         ),
       ));
-      await tester.tap(find.text("Invia di nuovo l'e-mail"));
+      await tester.tap(find.text("Invia di nuovo l'email"));
       await tester.pump();
 
       expect(find.textContaining('troppe email'), findsOneWidget);

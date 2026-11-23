@@ -88,7 +88,7 @@ void main() {
 
     Navigator.of(tester.element(find.byType(ResetPasswordPage))).pop();
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Accedi con la stessa e-mail'));
+    await tester.tap(find.text('Accedi con la stessa email'));
     await tester.pumpAndSettle();
     expect(find.byType(LoginPage), findsOneWidget);
   });

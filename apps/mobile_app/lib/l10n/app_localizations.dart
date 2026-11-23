@@ -66,7 +66,7 @@ import 'app_localizations_it.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -89,11 +89,11 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -101,7 +101,7 @@ abstract class AppLocalizations {
     Locale('en'),
     Locale('es'),
     Locale('fr'),
-    Locale('it'),
+    Locale('it')
   ];
 
   /// No description provided for @petsConsentFullText.
@@ -443,7 +443,7 @@ abstract class AppLocalizations {
   /// No description provided for @authRegisterLoadingMessage.
   ///
   /// In it, this message translates to:
-  /// **'Sto creando l'account e preparando la sessione iniziale.'**
+  /// **'Sto creando l\'account e preparando la sessione iniziale.'**
   String get authRegisterLoadingMessage;
 
   /// No description provided for @authRegisterSuccessTitle.
@@ -557,7 +557,7 @@ abstract class AppLocalizations {
   /// No description provided for @authResetSuccessMessage.
   ///
   /// In it, this message translates to:
-  /// **'Se l'account esiste, riceverai il link per recuperare l'accesso.'**
+  /// **'Se l\'account esiste, riceverai il link per recuperare l\'accesso.'**
   String get authResetSuccessMessage;
 
   /// No description provided for @authResetFailureTitle.
@@ -569,7 +569,7 @@ abstract class AppLocalizations {
   /// No description provided for @authResetTitle.
   ///
   /// In it, this message translates to:
-  /// **'Recupera l'accesso.'**
+  /// **'Recupera l\'accesso.'**
   String get authResetTitle;
 
   /// No description provided for @authResetSubtitle.
@@ -587,7 +587,7 @@ abstract class AppLocalizations {
   /// No description provided for @authBackToLoginLink.
   ///
   /// In it, this message translates to:
-  /// **'Torna all'accesso'**
+  /// **'Torna all\'accesso'**
   String get authBackToLoginLink;
 
   /// No description provided for @authSetPasswordLoadingTitle.
@@ -1319,7 +1319,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLoadingSubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Stiamo caricando il thread e l'ultimo contesto disponibile.'**
+  /// **'Stiamo caricando il thread e l\'ultimo contesto disponibile.'**
   String get chatLoadingSubtitle;
 
   /// No description provided for @chatEmptyTitle.
@@ -1751,7 +1751,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatDemoReplyWeight.
   ///
   /// In it, this message translates to:
-  /// **'Sul peso di {pet} possiamo fissare un controllo periodico e confrontarlo con l'ultima visita per capire se il trend cambia davvero.'**
+  /// **'Sul peso di {pet} possiamo fissare un controllo periodico e confrontarlo con l\'ultima visita per capire se il trend cambia davvero.'**
   String chatDemoReplyWeight(String pet);
 
   /// No description provided for @chatDemoReplyDefault.
@@ -1943,7 +1943,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatSeedConv1Subtitle.
   ///
   /// In it, this message translates to:
-  /// **'Piccolo calo dell'appetito, monitoraggio e piano d'azione.'**
+  /// **'Piccolo calo dell\'appetito, monitoraggio e piano d\'azione.'**
   String get chatSeedConv1Subtitle;
 
   /// No description provided for @chatSeedConv1Preview.
@@ -2009,7 +2009,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatSeedConv2Msg1.
   ///
   /// In it, this message translates to:
-  /// **'Ho impostato il richiamo e aggiunto una nota sull'antiparassitario. Se vuoi, possiamo allineare anche la prossima visita di controllo.'**
+  /// **'Ho impostato il richiamo e aggiunto una nota sull\'antiparassitario. Se vuoi, possiamo allineare anche la prossima visita di controllo.'**
   String get chatSeedConv2Msg1;
 
   /// No description provided for @chatSeedConv2Msg2.
@@ -3053,7 +3053,7 @@ abstract class AppLocalizations {
   /// No description provided for @medicalListLoadErrorTitle.
   ///
   /// In it, this message translates to:
-  /// **'Impossibile caricare l'archivio'**
+  /// **'Impossibile caricare l\'archivio'**
   String get medicalListLoadErrorTitle;
 
   /// No description provided for @medicalListLoadErrorBody.
@@ -3071,7 +3071,7 @@ abstract class AppLocalizations {
   /// No description provided for @medicalListEmptyBody.
   ///
   /// In it, this message translates to:
-  /// **'Carica il primo referto per costruire l'archivio documenti.'**
+  /// **'Carica il primo referto per costruire l\'archivio documenti.'**
   String get medicalListEmptyBody;
 
   /// No description provided for @medicalListUploadFirst.
@@ -5525,7 +5525,7 @@ abstract class AppLocalizations {
   /// No description provided for @placesPendingDogPark.
   ///
   /// In it, this message translates to:
-  /// **'Segnalata dagli utenti, verifica che sia un’area pubblica ({progress})'**
+  /// **'Segnalata dagli utenti, verifica che sia un\'area pubblica ({progress})'**
   String placesPendingDogPark(String progress);
 
   /// No description provided for @placesPendingPlace.
@@ -5543,7 +5543,7 @@ abstract class AppLocalizations {
   /// No description provided for @placesMailRemoveBody.
   ///
   /// In it, this message translates to:
-  /// **'Questa area segnalata dagli utenti non è un’area cani pubblica.\n\nNome: {name}\nPosizione: {position}\nIdentificativo: {id}\n\nMotivo: '**
+  /// **'Questa area segnalata dagli utenti non è un\'area cani pubblica.\n\nNome: {name}\nPosizione: {position}\nIdentificativo: {id}\n\nMotivo: '**
   String placesMailRemoveBody(String name, String position, String id);
 
   /// No description provided for @placesWithdrawTitle.
@@ -5621,7 +5621,7 @@ abstract class AppLocalizations {
   /// No description provided for @placesSheetNotPublicWrite.
   ///
   /// In it, this message translates to:
-  /// **'Non è un’area pubblica? Scrivici'**
+  /// **'Non è un\'area pubblica? Scrivici'**
   String get placesSheetNotPublicWrite;
 
   /// No description provided for @placesSheetClosedReported.
@@ -5705,7 +5705,7 @@ abstract class AppLocalizations {
   /// No description provided for @placesBannerYouReported.
   ///
   /// In it, this message translates to:
-  /// **'L’hai segnalato tu: servono le conferme di altri utenti.'**
+  /// **'L\'hai segnalato tu: servono le conferme di altri utenti.'**
   String get placesBannerYouReported;
 
   /// No description provided for @placesBannerConfirmedSaving.
@@ -5795,7 +5795,7 @@ abstract class AppLocalizations {
   /// No description provided for @placesRatingPrompt.
   ///
   /// In it, this message translates to:
-  /// **'Com’è quest’area cani? Tocca una stella per dare il tuo voto.'**
+  /// **'Com\'è quest\'area cani? Tocca una stella per dare il tuo voto.'**
   String get placesRatingPrompt;
 
   /// No description provided for @placesExpiryToday.
@@ -6131,7 +6131,7 @@ abstract class AppLocalizations {
   /// No description provided for @placesReportWhatIs.
   ///
   /// In it, this message translates to:
-  /// **'Che cos’è?'**
+  /// **'Che cos\'è?'**
   String get placesReportWhatIs;
 
   /// No description provided for @placesReportNameOptional.
@@ -6143,7 +6143,7 @@ abstract class AppLocalizations {
   /// No description provided for @placesReportNameLabel.
   ///
   /// In it, this message translates to:
-  /// **'Nome sull’insegna'**
+  /// **'Nome sull\'insegna'**
   String get placesReportNameLabel;
 
   /// No description provided for @placesReportNameHelper.
@@ -6161,7 +6161,7 @@ abstract class AppLocalizations {
   /// No description provided for @placesReportMapHint.
   ///
   /// In it, this message translates to:
-  /// **'Sposta la mappa finché il segnaposto è sul luogo. L’indirizzo viene ricavato dalla posizione.'**
+  /// **'Sposta la mappa finché il segnaposto è sul luogo. L\'indirizzo viene ricavato dalla posizione.'**
   String get placesReportMapHint;
 
   /// No description provided for @placesReportSubmit.
@@ -6203,7 +6203,7 @@ abstract class AppLocalizations {
   /// No description provided for @placesRulesFallback.
   ///
   /// In it, this message translates to:
-  /// **'Segnala solo ciò che hai verificato di persona. Per le attività scrivi solo il nome dell’insegna, senza telefoni, indirizzi privati o dati di altre persone. Le segnalazioni restano in attesa finché altri utenti non le confermano. Segnalazioni false o ripetute possono portare alla sospensione dell’account. Segnalazioni e voti sono pubblicati senza il tuo nome.'**
+  /// **'Segnala solo ciò che hai verificato di persona. Per le attività scrivi solo il nome dell\'insegna, senza telefoni, indirizzi privati o dati di altre persone. Le segnalazioni restano in attesa finché altri utenti non le confermano. Segnalazioni false o ripetute possono portare alla sospensione dell\'account. Segnalazioni e voti sono pubblicati senza il tuo nome.'**
   String get placesRulesFallback;
 
   /// No description provided for @placesErrSignedOutContribute.
@@ -6215,7 +6215,7 @@ abstract class AppLocalizations {
   /// No description provided for @placesErrOperationFailed.
   ///
   /// In it, this message translates to:
-  /// **'Non sono riuscito a completare l’operazione. Riprova.'**
+  /// **'Non sono riuscito a completare l\'operazione. Riprova.'**
   String get placesErrOperationFailed;
 
   /// No description provided for @placesErrTimeout.
@@ -6785,7 +6785,7 @@ abstract class AppLocalizations {
   /// No description provided for @localEventsSearchingAround.
   ///
   /// In it, this message translates to:
-  /// **'Cerco cosa c’è attorno a te. La prima volta in una zona può richiedere fino a un minuto.'**
+  /// **'Cerco cosa c\'è attorno a te. La prima volta in una zona può richiedere fino a un minuto.'**
   String get localEventsSearchingAround;
 
   /// No description provided for @localEventsConsentTitle.
@@ -6797,7 +6797,7 @@ abstract class AppLocalizations {
   /// No description provided for @localEventsConsentBody.
   ///
   /// In it, this message translates to:
-  /// **'Per mostrarti cosa c’è vicino a te Quokka usa la posizione del telefono solo mentre usi l’app. In alternativa puoi indicare un indirizzo.'**
+  /// **'Per mostrarti cosa c\'è vicino a te Quokka usa la posizione del telefono solo mentre usi l\'app. In alternativa puoi indicare un indirizzo.'**
   String get localEventsConsentBody;
 
   /// No description provided for @localEventsConsentChooseAddress.
@@ -6863,7 +6863,7 @@ abstract class AppLocalizations {
   /// No description provided for @localEventsNoLocationBody.
   ///
   /// In it, this message translates to:
-  /// **'Per mostrarti cosa c’è attorno a te serve la tua posizione. Consenti l’accesso alla posizione oppure indica la tua residenza in Impostazioni → Località.'**
+  /// **'Per mostrarti cosa c\'è attorno a te serve la tua posizione. Consenti l\'accesso alla posizione oppure indica la tua residenza in Impostazioni → Località.'**
   String get localEventsNoLocationBody;
 
   /// No description provided for @localEventsOpenSettings.
@@ -7259,7 +7259,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileEveningThemeBody.
   ///
   /// In it, this message translates to:
-  /// **'Anteprima di una palette più soft per l'uso serale.'**
+  /// **'Anteprima di una palette più soft per l\'uso serale.'**
   String get profileEveningThemeBody;
 
   /// No description provided for @profileAccountStatusTitle.
@@ -7583,7 +7583,7 @@ abstract class AppLocalizations {
   /// No description provided for @remindersTimePast.
   ///
   /// In it, this message translates to:
-  /// **'Quest'ora è già passata: scegli un orario più tardi.'**
+  /// **'Quest\'ora è già passata: scegli un orario più tardi.'**
   String get remindersTimePast;
 
   /// No description provided for @remindersFormKind.
@@ -8243,7 +8243,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsConsentTerms.
   ///
   /// In it, this message translates to:
-  /// **'Termini di servizio'**
+  /// **'Termini di Servizio'**
   String get settingsConsentTerms;
 
   /// No description provided for @settingsConsentPrivacy.
@@ -8321,7 +8321,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsContactUnavailable.
   ///
   /// In it, this message translates to:
-  /// **'Il contatto dell’assistenza non è disponibile in questo momento. Riprova più tardi.'**
+  /// **'Il contatto dell\'assistenza non è disponibile in questo momento. Riprova più tardi.'**
   String get settingsContactUnavailable;
 
   /// No description provided for @settingsContactWriteTo.
@@ -9227,7 +9227,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountExportZipDoneMissing.
   ///
   /// In it, this message translates to:
-  /// **'Zip salvato. {count, plural, one{1 file non si è scaricato} other{{count} file non si sono scaricati}}: l’elenco è nella pagina leggimi.html.'**
+  /// **'Zip salvato. {count, plural, one{1 file non si è scaricato} other{{count} file non si sono scaricati}}: l\'elenco è nella pagina leggimi.html.'**
   String accountExportZipDoneMissing(int count);
 
   /// No description provided for @accountExportReadmeTitle.
@@ -9401,7 +9401,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountExportFieldEmail.
   ///
   /// In it, this message translates to:
-  /// **'E-mail'**
+  /// **'Email'**
   String get accountExportFieldEmail;
 
   /// No description provided for @accountExportFieldSurname.
@@ -10223,7 +10223,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringBcsStepAbove.
   ///
   /// In it, this message translates to:
-  /// **'Guarda dall’alto'**
+  /// **'Guarda dall\'alto'**
   String get monitoringBcsStepAbove;
 
   /// No description provided for @monitoringBcsStepSide.
@@ -10235,7 +10235,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringBcsViewAbove.
   ///
   /// In it, this message translates to:
-  /// **'Dall’alto'**
+  /// **'Dall\'alto'**
   String get monitoringBcsViewAbove;
 
   /// No description provided for @monitoringBcsViewSide.
@@ -10253,7 +10253,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringBcsRowAbove.
   ///
   /// In it, this message translates to:
-  /// **'Dall’alto'**
+  /// **'Dall\'alto'**
   String get monitoringBcsRowAbove;
 
   /// No description provided for @monitoringBcsRowSide.
@@ -10283,7 +10283,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringBcsGuideDisclaimer.
   ///
   /// In it, this message translates to:
-  /// **'È un’indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di Quokka.'**
+  /// **'È un\'indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di Quokka.'**
   String get monitoringBcsGuideDisclaimer;
 
   /// No description provided for @monitoringBcsGuideSource.
@@ -10349,7 +10349,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringBcsSourceRabbit.
   ///
   /// In it, this message translates to:
-  /// **'Rabbit Size-O-Meter a 5 livelli della PFMA (Pet Food Manufacturers’ Association), riassunto con parole nostre. L’affidabilità tra chi valuta è limitata (Halck e colleghi, Veterinary Record, 2025).'**
+  /// **'Rabbit Size-O-Meter a 5 livelli della PFMA (Pet Food Manufacturers\' Association), riassunto con parole nostre. L\'affidabilità tra chi valuta è limitata (Halck e colleghi, Veterinary Record, 2025).'**
   String get monitoringBcsSourceRabbit;
 
   /// No description provided for @monitoringBcsNotAssessed.
@@ -10751,7 +10751,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringChartGrowthHintReference.
   ///
   /// In it, this message translates to:
-  /// **'Il peso di {petName} in base all’età, confrontato con l’area di riferimento.'**
+  /// **'Il peso di {petName} in base all\'età, confrontato con l\'area di riferimento.'**
   String monitoringChartGrowthHintReference(String petName);
 
   /// No description provided for @monitoringGrowthLegend.
@@ -10775,7 +10775,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringGrowthDisclaimer.
   ///
   /// In it, this message translates to:
-  /// **'È un riferimento, non una diagnosi: ogni animale cresce con il suo ritmo. Se il peso di {petName} esce spesso dall’area o cambia all’improvviso, parlane con il veterinario.'**
+  /// **'È un riferimento, non una diagnosi: ogni animale cresce con il suo ritmo. Se il peso di {petName} esce spesso dall\'area o cambia all\'improvviso, parlane con il veterinario.'**
   String monitoringGrowthDisclaimer(String petName);
 
   /// No description provided for @monitoringGrowthExpectedAdult.
@@ -10793,7 +10793,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringGrowthPromptTitle.
   ///
   /// In it, this message translates to:
-  /// **'Mostra l’area di riferimento'**
+  /// **'Mostra l\'area di riferimento'**
   String get monitoringGrowthPromptTitle;
 
   /// No description provided for @monitoringGrowthPromptBody.
@@ -11351,7 +11351,7 @@ abstract class AppLocalizations {
   /// No description provided for @medHistorySendAllDocsSubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Un solo PDF con eventi, foto e documenti, adatto a e-mail e WhatsApp'**
+  /// **'Un solo PDF con eventi, foto e documenti, adatto a email e WhatsApp'**
   String get medHistorySendAllDocsSubtitle;
 
   /// No description provided for @medHistoryDocsSeparate.
@@ -12533,7 +12533,7 @@ abstract class AppLocalizations {
   /// No description provided for @marketplacePublishDisclaimer.
   ///
   /// In it, this message translates to:
-  /// **'Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. L\'app controlla il testo dell\'annuncio con un controllo automatico, che può sbagliare, e il team può guardare l\'annuncio dopo la pubblicazione; non verifichiamo che l\'annuncio e l\'oggetto siano esatti: descrivi lo stato dell\'oggetto e i difetti in modo onesto e completo. Non si possono vendere né regalare animali, cibo, mangimi, snack, integratori, farmaci o medicinali (anche veterinari) né prodotti con principi attivi. Nel testo non scrivere telefoni o e-mail: ti si scrive con i messaggi.'**
+  /// **'Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. L\'app controlla il testo dell\'annuncio con un controllo automatico, che può sbagliare, e il team può guardare l\'annuncio dopo la pubblicazione; non verifichiamo che l\'annuncio e l\'oggetto siano esatti: descrivi lo stato dell\'oggetto e i difetti in modo onesto e completo. Non si possono vendere né regalare animali, cibo, mangimi, snack, integratori, farmaci o medicinali (anche veterinari) né prodotti con principi attivi. Nel testo non scrivere telefoni o email: ti si scrive con i messaggi.'**
   String get marketplacePublishDisclaimer;
 
   /// No description provided for @marketplaceDetailPrivateSeller.
@@ -12575,7 +12575,7 @@ abstract class AppLocalizations {
   /// No description provided for @marketplaceInfoContacts.
   ///
   /// In it, this message translates to:
-  /// **'Se scegli di scambiare telefono, e-mail o altri contatti nei messaggi, lo fai sotto la tua responsabilità: condividi solo ciò che serve e solo con chi ti sembra affidabile. Non pagare in anticipo a chi non conosci.'**
+  /// **'Se scegli di scambiare telefono, email o altri contatti nei messaggi, lo fai sotto la tua responsabilità: condividi solo ciò che serve e solo con chi ti sembra affidabile. Non pagare in anticipo a chi non conosci.'**
   String get marketplaceInfoContacts;
 
   /// No description provided for @marketplaceInfoReports.
@@ -12599,7 +12599,7 @@ abstract class AppLocalizations {
   /// No description provided for @marketplaceInfoTerms.
   ///
   /// In it, this message translates to:
-  /// **'Dettagli nei Termini di servizio, sezione Mercatino.'**
+  /// **'Dettagli nei Termini di Servizio, sezione Mercatino.'**
   String get marketplaceInfoTerms;
 
   /// No description provided for @marketplaceRestrictedAppeal.
@@ -12941,13 +12941,13 @@ abstract class AppLocalizations {
   /// No description provided for @authRecoverSteps.
   ///
   /// In it, this message translates to:
-  /// **'Se il periodo di attesa non è ancora finito, accedi con la stessa e-mail dell\'account eliminato: se non ricordi la password, reimpostala con il link che ti mandiamo per e-mail. Dopo l\'accesso potrai annullare l\'eliminazione.'**
+  /// **'Se il periodo di attesa non è ancora finito, accedi con la stessa email dell\'account eliminato: se non ricordi la password, reimpostala con il link che ti mandiamo per email. Dopo l\'accesso potrai annullare l\'eliminazione.'**
   String get authRecoverSteps;
 
   /// No description provided for @authRecoverLogin.
   ///
   /// In it, this message translates to:
-  /// **'Accedi con la stessa e-mail'**
+  /// **'Accedi con la stessa email'**
   String get authRecoverLogin;
 
   /// No description provided for @authRecoverReset.
@@ -12959,13 +12959,13 @@ abstract class AppLocalizations {
   /// No description provided for @authRecoverExpired.
   ///
   /// In it, this message translates to:
-  /// **'Se il periodo è finito, l\'account e i dati sono stati cancellati: puoi creare un nuovo account con la stessa e-mail.'**
+  /// **'Se il periodo è finito, l\'account e i dati sono stati cancellati: puoi creare un nuovo account con la stessa email.'**
   String get authRecoverExpired;
 
   /// No description provided for @accountDeletePeriodNote.
   ///
   /// In it, this message translates to:
-  /// **'L\'account verrà disattivato subito. Per {days, plural, one{# giorno} other{# giorni}} puoi cambiare idea: accedi con la stessa e-mail (se serve, reimposta la password) e annulla l\'eliminazione. Dopo il {date} cancelliamo l\'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.'**
+  /// **'L\'account verrà disattivato subito. Per {days, plural, one{# giorno} other{# giorni}} puoi cambiare idea: accedi con la stessa email (se serve, reimposta la password) e annulla l\'eliminazione. Dopo il {date} cancelliamo l\'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua email, che prova la cancellazione.'**
   String accountDeletePeriodNote(int days, String date);
 
   /// No description provided for @accountDeleteScheduledDone.
@@ -13025,7 +13025,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountRestoreDeleteNowBody.
   ///
   /// In it, this message translates to:
-  /// **'Cancelliamo subito l\'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione. Dopo potrai iscriverti di nuovo con la stessa e-mail.'**
+  /// **'Cancelliamo subito l\'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua email, che prova la cancellazione. Dopo potrai iscriverti di nuovo con la stessa email.'**
   String get accountRestoreDeleteNowBody;
 
   /// No description provided for @authRegisterEmailInUseRecoverHint.
@@ -13049,7 +13049,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountPauseOptionBody.
   ///
   /// In it, this message translates to:
-  /// **'L\'account resta inattivo, senza promemoria né notifiche, e conserviamo i tuoi dati finché non torni, fino a {months, plural, one{# mese} other{# mesi}} senza accessi: poi li cancelliamo. Per tornare basta accedere con la stessa e-mail.'**
+  /// **'L\'account resta inattivo, senza promemoria né notifiche, e conserviamo i tuoi dati finché non torni, fino a {months, plural, one{# mese} other{# mesi}} senza accessi: poi li cancelliamo. Per tornare basta accedere con la stessa email.'**
   String accountPauseOptionBody(int months);
 
   /// No description provided for @accountDeleteOptionTitle.
@@ -13061,7 +13061,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountDeleteOptionBody.
   ///
   /// In it, this message translates to:
-  /// **'Lo disattiviamo subito. Per un periodo puoi cambiare idea accedendo con la stessa e-mail; poi cancelliamo i tuoi dati. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.'**
+  /// **'Lo disattiviamo subito. Per un periodo puoi cambiare idea accedendo con la stessa email; poi cancelliamo i tuoi dati. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua email, che prova la cancellazione.'**
   String get accountDeleteOptionBody;
 
   /// No description provided for @accountPauseSubmit.
@@ -13073,7 +13073,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountPauseDone.
   ///
   /// In it, this message translates to:
-  /// **'Il tuo account è in pausa. Se non accedi entro il {date}, lo cancelliamo insieme ai tuoi dati. Per tornare basta accedere con la stessa e-mail.'**
+  /// **'Il tuo account è in pausa. Se non accedi entro il {date}, lo cancelliamo insieme ai tuoi dati. Per tornare basta accedere con la stessa email.'**
   String accountPauseDone(String date);
 
   /// No description provided for @accountPauseFailed.
@@ -13085,7 +13085,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountPausedElsewhere.
   ///
   /// In it, this message translates to:
-  /// **'Il tuo account è stato messo in pausa da un altro dispositivo. Per riprenderlo, accedi di nuovo con la stessa e-mail.'**
+  /// **'Il tuo account è stato messo in pausa da un altro dispositivo. Per riprenderlo, accedi di nuovo con la stessa email.'**
   String get accountPausedElsewhere;
 
   /// No description provided for @accountPauseEndedTitle.
@@ -13445,7 +13445,7 @@ abstract class AppLocalizations {
   /// No description provided for @storeBillingVerifying.
   ///
   /// In it, this message translates to:
-  /// **'Verifica dell’acquisto in corso…'**
+  /// **'Verifica dell\'acquisto in corso…'**
   String get storeBillingVerifying;
 
   /// No description provided for @storeBillingVerified.
@@ -13457,7 +13457,7 @@ abstract class AppLocalizations {
   /// No description provided for @storeBillingFailed.
   ///
   /// In it, this message translates to:
-  /// **'Non è stato possibile verificare l’acquisto. Riprova più tardi: non ti verrà addebitato due volte.'**
+  /// **'Non è stato possibile verificare l\'acquisto. Riprova più tardi: non ti verrà addebitato due volte.'**
   String get storeBillingFailed;
 
   /// No description provided for @storeBillingOwnedByOther.
@@ -13511,7 +13511,7 @@ abstract class AppLocalizations {
   /// No description provided for @storeBillingPricesFromStore.
   ///
   /// In it, this message translates to:
-  /// **'Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L’abbonamento si rinnova automaticamente finché non lo disdici nello store.'**
+  /// **'Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L\'abbonamento si rinnova automaticamente finché non lo disdici nello store.'**
   String get storeBillingPricesFromStore;
 
   /// No description provided for @emergencyNoticeShort.
@@ -13583,7 +13583,7 @@ abstract class AppLocalizations {
   /// No description provided for @authResendButton.
   ///
   /// In it, this message translates to:
-  /// **'Invia di nuovo l\'e-mail'**
+  /// **'Invia di nuovo l\'email'**
   String get authResendButton;
 
   /// No description provided for @authResendWait.
@@ -13595,13 +13595,13 @@ abstract class AppLocalizations {
   /// No description provided for @authResendSent.
   ///
   /// In it, this message translates to:
-  /// **'E-mail inviata di nuovo. Controlla la posta, anche lo spam.'**
+  /// **'Email inviata di nuovo. Controlla la posta, anche lo spam.'**
   String get authResendSent;
 
   /// No description provided for @authErrorEmailUndeliverable.
   ///
   /// In it, this message translates to:
-  /// **'Non riusciamo a consegnare l\'e-mail a questo indirizzo. Controlla che sia scritto bene oppure usane un altro.'**
+  /// **'Non riusciamo a consegnare l\'email a questo indirizzo. Controlla che sia scritto bene oppure usane un altro.'**
   String get authErrorEmailUndeliverable;
 
   /// No description provided for @authErrorLinkOtherDevice.
@@ -13644,9 +13644,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

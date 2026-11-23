@@ -2810,14 +2810,17 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'male':
-          'Se $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-      'female':
-          'Se $name era iscritta all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-      'other':
-          'Se il microchip di $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'male':
+            'Se $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+        'female':
+            'Se $name era iscritta all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+        'other':
+            'Se il microchip di $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+      },
+    );
     return '$_temp0';
   }
 
@@ -2843,10 +2846,13 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'female': 'Spostata per errore? Riporta tra gli animali',
-      'other': 'Spostato per errore? Riporta tra gli animali',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'female': 'Spostata per errore? Riporta tra gli animali',
+        'other': 'Spostato per errore? Riporta tra gli animali',
+      },
+    );
     return '$_temp0';
   }
 
@@ -3331,7 +3337,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String placesPendingDogPark(String progress) {
-    return 'Segnalata dagli utenti, verifica che sia un’area pubblica ($progress)';
+    return 'Segnalata dagli utenti, verifica che sia un\'area pubblica ($progress)';
   }
 
   @override
@@ -3346,7 +3352,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String placesMailRemoveBody(String name, String position, String id) {
-    return 'Questa area segnalata dagli utenti non è un’area cani pubblica.\n\nNome: $name\nPosizione: $position\nIdentificativo: $id\n\nMotivo: ';
+    return 'Questa area segnalata dagli utenti non è un\'area cani pubblica.\n\nNome: $name\nPosizione: $position\nIdentificativo: $id\n\nMotivo: ';
   }
 
   @override
@@ -3392,7 +3398,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get placesSheetPendingQuestion => 'Questo luogo esiste davvero qui?';
 
   @override
-  String get placesSheetNotPublicWrite => 'Non è un’area pubblica? Scrivici';
+  String get placesSheetNotPublicWrite => 'Non è un\'area pubblica? Scrivici';
 
   @override
   String placesSheetClosedReported(String progress) {
@@ -3446,7 +3452,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get placesBannerYouReported =>
-      'L’hai segnalato tu: servono le conferme di altri utenti.';
+      'L\'hai segnalato tu: servono le conferme di altri utenti.';
 
   @override
   String get placesBannerConfirmedSaving => 'Hai confermato. Salvataggio…';
@@ -3519,7 +3525,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get placesRatingPrompt =>
-      'Com’è quest’area cani? Tocca una stella per dare il tuo voto.';
+      'Com\'è quest\'area cani? Tocca una stella per dare il tuo voto.';
 
   @override
   String get placesExpiryToday => 'Scade oggi se nessuno conferma.';
@@ -3722,13 +3728,13 @@ class AppLocalizationsIt extends AppLocalizations {
       'Le segnalazioni non sono disponibili in questo momento. Riprova più tardi.';
 
   @override
-  String get placesReportWhatIs => 'Che cos’è?';
+  String get placesReportWhatIs => 'Che cos\'è?';
 
   @override
   String get placesReportNameOptional => 'Nome (facoltativo)';
 
   @override
-  String get placesReportNameLabel => 'Nome sull’insegna';
+  String get placesReportNameLabel => 'Nome sull\'insegna';
 
   @override
   String get placesReportNameHelper =>
@@ -3739,7 +3745,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get placesReportMapHint =>
-      'Sposta la mappa finché il segnaposto è sul luogo. L’indirizzo viene ricavato dalla posizione.';
+      'Sposta la mappa finché il segnaposto è sul luogo. L\'indirizzo viene ricavato dalla posizione.';
 
   @override
   String get placesReportSubmit => 'Invia segnalazione';
@@ -3766,14 +3772,14 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get placesRulesFallback =>
-      'Segnala solo ciò che hai verificato di persona. Per le attività scrivi solo il nome dell’insegna, senza telefoni, indirizzi privati o dati di altre persone. Le segnalazioni restano in attesa finché altri utenti non le confermano. Segnalazioni false o ripetute possono portare alla sospensione dell’account. Segnalazioni e voti sono pubblicati senza il tuo nome.';
+      'Segnala solo ciò che hai verificato di persona. Per le attività scrivi solo il nome dell\'insegna, senza telefoni, indirizzi privati o dati di altre persone. Le segnalazioni restano in attesa finché altri utenti non le confermano. Segnalazioni false o ripetute possono portare alla sospensione dell\'account. Segnalazioni e voti sono pubblicati senza il tuo nome.';
 
   @override
   String get placesErrSignedOutContribute => 'Accedi per segnalare o votare.';
 
   @override
   String get placesErrOperationFailed =>
-      'Non sono riuscito a completare l’operazione. Riprova.';
+      'Non sono riuscito a completare l\'operazione. Riprova.';
 
   @override
   String get placesErrTimeout =>
@@ -4102,14 +4108,14 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get localEventsSearchingAround =>
-      'Cerco cosa c’è attorno a te. La prima volta in una zona può richiedere fino a un minuto.';
+      'Cerco cosa c\'è attorno a te. La prima volta in una zona può richiedere fino a un minuto.';
 
   @override
   String get localEventsConsentTitle => 'Usare la tua posizione?';
 
   @override
   String get localEventsConsentBody =>
-      'Per mostrarti cosa c’è vicino a te Quokka usa la posizione del telefono solo mentre usi l’app. In alternativa puoi indicare un indirizzo.';
+      'Per mostrarti cosa c\'è vicino a te Quokka usa la posizione del telefono solo mentre usi l\'app. In alternativa puoi indicare un indirizzo.';
 
   @override
   String get localEventsConsentChooseAddress => 'Scegli un indirizzo';
@@ -4145,7 +4151,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get localEventsNoLocationBody =>
-      'Per mostrarti cosa c’è attorno a te serve la tua posizione. Consenti l’accesso alla posizione oppure indica la tua residenza in Impostazioni → Località.';
+      'Per mostrarti cosa c\'è attorno a te serve la tua posizione. Consenti l\'accesso alla posizione oppure indica la tua residenza in Impostazioni → Località.';
 
   @override
   String get localEventsOpenSettings => 'Apri Impostazioni';
@@ -4960,7 +4966,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get settingsConsentsTapToRetry => 'Tocca per riprovare';
 
   @override
-  String get settingsConsentTerms => 'Termini di servizio';
+  String get settingsConsentTerms => 'Termini di Servizio';
 
   @override
   String get settingsConsentPrivacy => 'Informativa privacy';
@@ -5005,7 +5011,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get settingsContactUnavailable =>
-      'Il contatto dell’assistenza non è disponibile in questo momento. Riprova più tardi.';
+      'Il contatto dell\'assistenza non è disponibile in questo momento. Riprova più tardi.';
 
   @override
   String settingsContactWriteTo(String email) {
@@ -5586,7 +5592,7 @@ class AppLocalizationsIt extends AppLocalizations {
       other: '$count file non si sono scaricati',
       one: '1 file non si è scaricato',
     );
-    return 'Zip salvato. $_temp0: l’elenco è nella pagina leggimi.html.';
+    return 'Zip salvato. $_temp0: l\'elenco è nella pagina leggimi.html.';
   }
 
   @override
@@ -5680,7 +5686,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get accountExportFieldName => 'Nome';
 
   @override
-  String get accountExportFieldEmail => 'E-mail';
+  String get accountExportFieldEmail => 'Email';
 
   @override
   String get accountExportFieldSurname => 'Cognome';
@@ -6115,13 +6121,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String get monitoringBcsStepTouch => 'Tocca le costole';
 
   @override
-  String get monitoringBcsStepAbove => 'Guarda dall’alto';
+  String get monitoringBcsStepAbove => 'Guarda dall\'alto';
 
   @override
   String get monitoringBcsStepSide => 'Guarda di lato';
 
   @override
-  String get monitoringBcsViewAbove => 'Dall’alto';
+  String get monitoringBcsViewAbove => 'Dall\'alto';
 
   @override
   String get monitoringBcsViewSide => 'Di lato';
@@ -6130,7 +6136,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get monitoringBcsRowTouch => 'Al tatto';
 
   @override
-  String get monitoringBcsRowAbove => 'Dall’alto';
+  String get monitoringBcsRowAbove => 'Dall\'alto';
 
   @override
   String get monitoringBcsRowSide => 'Di lato';
@@ -6150,7 +6156,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get monitoringBcsGuideDisclaimer =>
-      'È un’indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di Quokka.';
+      'È un\'indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di Quokka.';
 
   @override
   String monitoringBcsGuideSource(String source) {
@@ -6195,7 +6201,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get monitoringBcsSourceRabbit =>
-      'Rabbit Size-O-Meter a 5 livelli della PFMA (Pet Food Manufacturers’ Association), riassunto con parole nostre. L’affidabilità tra chi valuta è limitata (Halck e colleghi, Veterinary Record, 2025).';
+      'Rabbit Size-O-Meter a 5 livelli della PFMA (Pet Food Manufacturers\' Association), riassunto con parole nostre. L\'affidabilità tra chi valuta è limitata (Halck e colleghi, Veterinary Record, 2025).';
 
   @override
   String get monitoringBcsNotAssessed => 'Non valutata';
@@ -6454,7 +6460,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String monitoringChartGrowthHintReference(String petName) {
-    return 'Il peso di $petName in base all’età, confrontato con l’area di riferimento.';
+    return 'Il peso di $petName in base all\'età, confrontato con l\'area di riferimento.';
   }
 
   @override
@@ -6472,7 +6478,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String monitoringGrowthDisclaimer(String petName) {
-    return 'È un riferimento, non una diagnosi: ogni animale cresce con il suo ritmo. Se il peso di $petName esce spesso dall’area o cambia all’improvviso, parlane con il veterinario.';
+    return 'È un riferimento, non una diagnosi: ogni animale cresce con il suo ritmo. Se il peso di $petName esce spesso dall\'area o cambia all\'improvviso, parlane con il veterinario.';
   }
 
   @override
@@ -6484,7 +6490,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get monitoringGrowthChange => 'Cambia';
 
   @override
-  String get monitoringGrowthPromptTitle => 'Mostra l’area di riferimento';
+  String get monitoringGrowthPromptTitle => 'Mostra l\'area di riferimento';
 
   @override
   String monitoringGrowthPromptBody(String petName) {
@@ -6837,7 +6843,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get medHistorySendAllDocsSubtitle =>
-      'Un solo PDF con eventi, foto e documenti, adatto a e-mail e WhatsApp';
+      'Un solo PDF con eventi, foto e documenti, adatto a email e WhatsApp';
 
   @override
   String medHistoryDocsSeparate(int count) {
@@ -7539,7 +7545,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get marketplacePublishDisclaimer =>
-      'Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. L\'app controlla il testo dell\'annuncio con un controllo automatico, che può sbagliare, e il team può guardare l\'annuncio dopo la pubblicazione; non verifichiamo che l\'annuncio e l\'oggetto siano esatti: descrivi lo stato dell\'oggetto e i difetti in modo onesto e completo. Non si possono vendere né regalare animali, cibo, mangimi, snack, integratori, farmaci o medicinali (anche veterinari) né prodotti con principi attivi. Nel testo non scrivere telefoni o e-mail: ti si scrive con i messaggi.';
+      'Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. L\'app controlla il testo dell\'annuncio con un controllo automatico, che può sbagliare, e il team può guardare l\'annuncio dopo la pubblicazione; non verifichiamo che l\'annuncio e l\'oggetto siano esatti: descrivi lo stato dell\'oggetto e i difetti in modo onesto e completo. Non si possono vendere né regalare animali, cibo, mangimi, snack, integratori, farmaci o medicinali (anche veterinari) né prodotti con principi attivi. Nel testo non scrivere telefoni o email: ti si scrive con i messaggi.';
 
   @override
   String get marketplaceDetailPrivateSeller =>
@@ -7566,7 +7572,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get marketplaceInfoContacts =>
-      'Se scegli di scambiare telefono, e-mail o altri contatti nei messaggi, lo fai sotto la tua responsabilità: condividi solo ciò che serve e solo con chi ti sembra affidabile. Non pagare in anticipo a chi non conosci.';
+      'Se scegli di scambiare telefono, email o altri contatti nei messaggi, lo fai sotto la tua responsabilità: condividi solo ciò che serve e solo con chi ti sembra affidabile. Non pagare in anticipo a chi non conosci.';
 
   @override
   String get marketplaceInfoReports =>
@@ -7582,7 +7588,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get marketplaceInfoTerms =>
-      'Dettagli nei Termini di servizio, sezione Mercatino.';
+      'Dettagli nei Termini di Servizio, sezione Mercatino.';
 
   @override
   String marketplaceRestrictedAppeal(String place) {
@@ -7790,17 +7796,17 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get authRecoverSteps =>
-      'Se il periodo di attesa non è ancora finito, accedi con la stessa e-mail dell\'account eliminato: se non ricordi la password, reimpostala con il link che ti mandiamo per e-mail. Dopo l\'accesso potrai annullare l\'eliminazione.';
+      'Se il periodo di attesa non è ancora finito, accedi con la stessa email dell\'account eliminato: se non ricordi la password, reimpostala con il link che ti mandiamo per email. Dopo l\'accesso potrai annullare l\'eliminazione.';
 
   @override
-  String get authRecoverLogin => 'Accedi con la stessa e-mail';
+  String get authRecoverLogin => 'Accedi con la stessa email';
 
   @override
   String get authRecoverReset => 'Reimposta la password';
 
   @override
   String get authRecoverExpired =>
-      'Se il periodo è finito, l\'account e i dati sono stati cancellati: puoi creare un nuovo account con la stessa e-mail.';
+      'Se il periodo è finito, l\'account e i dati sono stati cancellati: puoi creare un nuovo account con la stessa email.';
 
   @override
   String accountDeletePeriodNote(int days, String date) {
@@ -7810,7 +7816,7 @@ class AppLocalizationsIt extends AppLocalizations {
       other: '# giorni',
       one: '# giorno',
     );
-    return 'L\'account verrà disattivato subito. Per $_temp0 puoi cambiare idea: accedi con la stessa e-mail (se serve, reimposta la password) e annulla l\'eliminazione. Dopo il $date cancelliamo l\'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.';
+    return 'L\'account verrà disattivato subito. Per $_temp0 puoi cambiare idea: accedi con la stessa email (se serve, reimposta la password) e annulla l\'eliminazione. Dopo il $date cancelliamo l\'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua email, che prova la cancellazione.';
   }
 
   @override
@@ -7849,7 +7855,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get accountRestoreDeleteNowBody =>
-      'Cancelliamo subito l\'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione. Dopo potrai iscriverti di nuovo con la stessa e-mail.';
+      'Cancelliamo subito l\'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua email, che prova la cancellazione. Dopo potrai iscriverti di nuovo con la stessa email.';
 
   @override
   String get authRegisterEmailInUseRecoverHint =>
@@ -7869,7 +7875,7 @@ class AppLocalizationsIt extends AppLocalizations {
       other: '# mesi',
       one: '# mese',
     );
-    return 'L\'account resta inattivo, senza promemoria né notifiche, e conserviamo i tuoi dati finché non torni, fino a $_temp0 senza accessi: poi li cancelliamo. Per tornare basta accedere con la stessa e-mail.';
+    return 'L\'account resta inattivo, senza promemoria né notifiche, e conserviamo i tuoi dati finché non torni, fino a $_temp0 senza accessi: poi li cancelliamo. Per tornare basta accedere con la stessa email.';
   }
 
   @override
@@ -7877,14 +7883,14 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get accountDeleteOptionBody =>
-      'Lo disattiviamo subito. Per un periodo puoi cambiare idea accedendo con la stessa e-mail; poi cancelliamo i tuoi dati. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.';
+      'Lo disattiviamo subito. Per un periodo puoi cambiare idea accedendo con la stessa email; poi cancelliamo i tuoi dati. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua email, che prova la cancellazione.';
 
   @override
   String get accountPauseSubmit => 'Metti in pausa';
 
   @override
   String accountPauseDone(String date) {
-    return 'Il tuo account è in pausa. Se non accedi entro il $date, lo cancelliamo insieme ai tuoi dati. Per tornare basta accedere con la stessa e-mail.';
+    return 'Il tuo account è in pausa. Se non accedi entro il $date, lo cancelliamo insieme ai tuoi dati. Per tornare basta accedere con la stessa email.';
   }
 
   @override
@@ -7893,7 +7899,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get accountPausedElsewhere =>
-      'Il tuo account è stato messo in pausa da un altro dispositivo. Per riprenderlo, accedi di nuovo con la stessa e-mail.';
+      'Il tuo account è stato messo in pausa da un altro dispositivo. Per riprenderlo, accedi di nuovo con la stessa email.';
 
   @override
   String get accountPauseEndedTitle => 'La pausa è finita';
@@ -8105,14 +8111,14 @@ class AppLocalizationsIt extends AppLocalizations {
       'Pagamento in attesa di conferma dallo store.';
 
   @override
-  String get storeBillingVerifying => 'Verifica dell’acquisto in corso…';
+  String get storeBillingVerifying => 'Verifica dell\'acquisto in corso…';
 
   @override
   String get storeBillingVerified => 'Abbonamento attivo.';
 
   @override
   String get storeBillingFailed =>
-      'Non è stato possibile verificare l’acquisto. Riprova più tardi: non ti verrà addebitato due volte.';
+      'Non è stato possibile verificare l\'acquisto. Riprova più tardi: non ti verrà addebitato due volte.';
 
   @override
   String get storeBillingOwnedByOther =>
@@ -8147,7 +8153,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get storeBillingPricesFromStore =>
-      'Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L’abbonamento si rinnova automaticamente finché non lo disdici nello store.';
+      'Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L\'abbonamento si rinnova automaticamente finché non lo disdici nello store.';
 
   @override
   String get emergencyNoticeShort =>
@@ -8192,7 +8198,7 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
-  String get authResendButton => 'Invia di nuovo l\'e-mail';
+  String get authResendButton => 'Invia di nuovo l\'email';
 
   @override
   String authResendWait(String seconds) {
@@ -8201,11 +8207,11 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get authResendSent =>
-      'E-mail inviata di nuovo. Controlla la posta, anche lo spam.';
+      'Email inviata di nuovo. Controlla la posta, anche lo spam.';
 
   @override
   String get authErrorEmailUndeliverable =>
-      'Non riusciamo a consegnare l\'e-mail a questo indirizzo. Controlla che sia scritto bene oppure usane un altro.';
+      'Non riusciamo a consegnare l\'email a questo indirizzo. Controlla che sia scritto bene oppure usane un altro.';
 
   @override
   String get authErrorLinkOtherDevice =>

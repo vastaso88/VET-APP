@@ -1964,7 +1964,7 @@
   "placesDetailDogUnleashed": "Cani liberi senza guinzaglio",
   "placesDetailAdoptionYes": "Adozioni possibili",
   "placesDetailAdoptionNo": "Non dà in adozione",
-  "placesPendingDogPark": "Segnalata dagli utenti, verifica che sia un’area pubblica ({progress})",
+  "placesPendingDogPark": "Segnalata dagli utenti, verifica che sia un'area pubblica ({progress})",
   "@placesPendingDogPark": {
     "placeholders": {
       "progress": {
@@ -1988,7 +1988,7 @@
       }
     }
   },
-  "placesMailRemoveBody": "Questa area segnalata dagli utenti non è un’area cani pubblica.\n\nNome: {name}\nPosizione: {position}\nIdentificativo: {id}\n\nMotivo: ",
+  "placesMailRemoveBody": "Questa area segnalata dagli utenti non è un'area cani pubblica.\n\nNome: {name}\nPosizione: {position}\nIdentificativo: {id}\n\nMotivo: ",
   "@placesMailRemoveBody": {
     "placeholders": {
       "name": {
@@ -2021,7 +2021,7 @@
   "placesReportAlreadyKnown": "Era già stato segnalato: la tua segnalazione vale come conferma.",
   "placesReportSent": "Segnalazione inviata. Sarà applicata quando altri utenti la confermano.",
   "placesSheetPendingQuestion": "Questo luogo esiste davvero qui?",
-  "placesSheetNotPublicWrite": "Non è un’area pubblica? Scrivici",
+  "placesSheetNotPublicWrite": "Non è un'area pubblica? Scrivici",
   "placesSheetClosedReported": "Segnalato come chiuso ({progress})",
   "@placesSheetClosedReported": {
     "placeholders": {
@@ -2063,7 +2063,7 @@
   },
   "placesReportProblemAction": "Segnala un problema",
   "placesBannerWithdrawing": "Ritiro la segnalazione…",
-  "placesBannerYouReported": "L’hai segnalato tu: servono le conferme di altri utenti.",
+  "placesBannerYouReported": "L'hai segnalato tu: servono le conferme di altri utenti.",
   "placesBannerConfirmedSaving": "Hai confermato. Salvataggio…",
   "placesBannerConfirmedChange": "Hai confermato. Puoi cambiare idea.",
   "placesBannerDeniedSaving": "Hai indicato che non è così. Salvataggio…",
@@ -2123,7 +2123,7 @@
       }
     }
   },
-  "placesRatingPrompt": "Com’è quest’area cani? Tocca una stella per dare il tuo voto.",
+  "placesRatingPrompt": "Com'è quest'area cani? Tocca una stella per dare il tuo voto.",
   "placesExpiryToday": "Scade oggi se nessuno conferma.",
   "placesExpiryDays": "{days, plural, =1{Scade tra 1 giorno se nessuno conferma.} other{Scade tra {days} giorni se nessuno conferma.}}",
   "@placesExpiryDays": {
@@ -2244,12 +2244,12 @@
   },
   "placesReportTitle": "Segnala un luogo mancante",
   "placesReportUnavailable": "Le segnalazioni non sono disponibili in questo momento. Riprova più tardi.",
-  "placesReportWhatIs": "Che cos’è?",
+  "placesReportWhatIs": "Che cos'è?",
   "placesReportNameOptional": "Nome (facoltativo)",
-  "placesReportNameLabel": "Nome sull’insegna",
+  "placesReportNameLabel": "Nome sull'insegna",
   "placesReportNameHelper": "Solo il nome: niente telefoni, indirizzi o nomi di persone.",
   "placesReportWhere": "Dove si trova?",
-  "placesReportMapHint": "Sposta la mappa finché il segnaposto è sul luogo. L’indirizzo viene ricavato dalla posizione.",
+  "placesReportMapHint": "Sposta la mappa finché il segnaposto è sul luogo. L'indirizzo viene ricavato dalla posizione.",
   "placesReportSubmit": "Invia segnalazione",
   "placesReportFootnote": "La segnalazione sarà visibile a tutti come \"in attesa di conferma\" e diventerà definitiva quando altri utenti la confermano. Se entro {days} giorni nessuno la conferma, viene cancellata in automatico. Puoi ritirarla in ogni momento dalla sua scheda. Il tuo nome non compare.",
   "@placesReportFootnote": {
@@ -2270,9 +2270,9 @@
   "placesRulesTitle": "Prima di segnalare o votare",
   "placesRulesCheckbox": "Ho letto le regole e segnalo o voto in buona fede.",
   "placesRulesAccept": "Accetto",
-  "placesRulesFallback": "Segnala solo ciò che hai verificato di persona. Per le attività scrivi solo il nome dell’insegna, senza telefoni, indirizzi privati o dati di altre persone. Le segnalazioni restano in attesa finché altri utenti non le confermano. Segnalazioni false o ripetute possono portare alla sospensione dell’account. Segnalazioni e voti sono pubblicati senza il tuo nome.",
+  "placesRulesFallback": "Segnala solo ciò che hai verificato di persona. Per le attività scrivi solo il nome dell'insegna, senza telefoni, indirizzi privati o dati di altre persone. Le segnalazioni restano in attesa finché altri utenti non le confermano. Segnalazioni false o ripetute possono portare alla sospensione dell'account. Segnalazioni e voti sono pubblicati senza il tuo nome.",
   "placesErrSignedOutContribute": "Accedi per segnalare o votare.",
-  "placesErrOperationFailed": "Non sono riuscito a completare l’operazione. Riprova.",
+  "placesErrOperationFailed": "Non sono riuscito a completare l'operazione. Riprova.",
   "placesErrTimeout": "La richiesta ha impiegato troppo tempo. Riprova.",
   "placesErrNotConfigured": "Anteprima senza backend: i luoghi mostrati sono dati di esempio.",
   "placesErrSignedOut": "Accedi per vedere i servizi per animali vicino a te.",
@@ -2402,9 +2402,9 @@
   "localActivitiesKindService": "Servizio",
   "localEventsTitle": "Vicino a me",
   "localEventsLocating": "Cerco la tua posizione…",
-  "localEventsSearchingAround": "Cerco cosa c’è attorno a te. La prima volta in una zona può richiedere fino a un minuto.",
+  "localEventsSearchingAround": "Cerco cosa c'è attorno a te. La prima volta in una zona può richiedere fino a un minuto.",
   "localEventsConsentTitle": "Usare la tua posizione?",
-  "localEventsConsentBody": "Per mostrarti cosa c’è vicino a te Quokka usa la posizione del telefono solo mentre usi l’app. In alternativa puoi indicare un indirizzo.",
+  "localEventsConsentBody": "Per mostrarti cosa c'è vicino a te Quokka usa la posizione del telefono solo mentre usi l'app. In alternativa puoi indicare un indirizzo.",
   "localEventsConsentChooseAddress": "Scegli un indirizzo",
   "localEventsConsentAllow": "Consenti",
   "localEventsReportMissing": "Segnala! Manca un luogo",
@@ -2415,7 +2415,7 @@
   "localEventsAll": "Tutti",
   "localEventsMapFullscreen": "Apri la mappa a tutto schermo",
   "localEventsNoLocationTitle": "Imposta una località",
-  "localEventsNoLocationBody": "Per mostrarti cosa c’è attorno a te serve la tua posizione. Consenti l’accesso alla posizione oppure indica la tua residenza in Impostazioni → Località.",
+  "localEventsNoLocationBody": "Per mostrarti cosa c'è attorno a te serve la tua posizione. Consenti l'accesso alla posizione oppure indica la tua residenza in Impostazioni → Località.",
   "localEventsOpenSettings": "Apri Impostazioni",
   "localEventsSearchingRadius": "Cerco i servizi entro {radius}. La prima volta in una zona può richiedere fino a un minuto.",
   "@localEventsSearchingRadius": {
@@ -2876,7 +2876,7 @@
   "settingsSectionPermissions": "Permessi e consensi",
   "settingsConsentsUnavailable": "Non disponibili al momento",
   "settingsConsentsTapToRetry": "Tocca per riprovare",
-  "settingsConsentTerms": "Termini di servizio",
+  "settingsConsentTerms": "Termini di Servizio",
   "settingsConsentPrivacy": "Informativa privacy",
   "settingsConsentMarketingEmail": "Email di marketing: novità e consigli di Quokka",
   "settingsConsentAnalytics": "Analisi d'uso",
@@ -2899,7 +2899,7 @@
   "settingsHelpCenterTitle": "Centro assistenza",
   "settingsHelpCenterComingSoon": "Domande frequenti e guide rapide, presto disponibili direttamente qui.",
   "settingsContactUs": "Contattaci",
-  "settingsContactUnavailable": "Il contatto dell’assistenza non è disponibile in questo momento. Riprova più tardi.",
+  "settingsContactUnavailable": "Il contatto dell'assistenza non è disponibile in questo momento. Riprova più tardi.",
   "settingsContactWriteTo": "Scrivi a {email} per qualsiasi domanda.",
   "@settingsContactWriteTo": {
     "placeholders": {
@@ -3291,7 +3291,7 @@
   "accountExportPackaging": "Preparo lo zip…",
   "accountExportCancelled": "Operazione annullata. Nessun file è stato salvato.",
   "accountExportTooBig": "Troppi file per uno zip su questo dispositivo: scarica solo i dati (JSON).",
-  "accountExportZipDoneMissing": "Zip salvato. {count, plural, one{1 file non si è scaricato} other{{count} file non si sono scaricati}}: l’elenco è nella pagina leggimi.html.",
+  "accountExportZipDoneMissing": "Zip salvato. {count, plural, one{1 file non si è scaricato} other{{count} file non si sono scaricati}}: l'elenco è nella pagina leggimi.html.",
   "@accountExportZipDoneMissing": {
     "placeholders": {
       "count": {
@@ -3341,7 +3341,7 @@
     }
   },
   "accountExportFieldName": "Nome",
-  "accountExportFieldEmail": "E-mail",
+  "accountExportFieldEmail": "Email",
   "accountExportFieldSurname": "Cognome",
   "accountExportFieldPhone": "Telefono",
   "accountExportFieldLocale": "Lingua",
@@ -3530,12 +3530,12 @@
     }
   },
   "monitoringBcsStepTouch": "Tocca le costole",
-  "monitoringBcsStepAbove": "Guarda dall’alto",
+  "monitoringBcsStepAbove": "Guarda dall'alto",
   "monitoringBcsStepSide": "Guarda di lato",
-  "monitoringBcsViewAbove": "Dall’alto",
+  "monitoringBcsViewAbove": "Dall'alto",
   "monitoringBcsViewSide": "Di lato",
   "monitoringBcsRowTouch": "Al tatto",
-  "monitoringBcsRowAbove": "Dall’alto",
+  "monitoringBcsRowAbove": "Dall'alto",
   "monitoringBcsRowSide": "Di lato",
   "monitoringBcsGuideScale": "Nella scala della fonte: {range} su {max}",
   "@monitoringBcsGuideScale": {
@@ -3557,7 +3557,7 @@
     }
   },
   "monitoringBcsGuideClear": "Rimuovi la valutazione",
-  "monitoringBcsGuideDisclaimer": "È un’indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di Quokka.",
+  "monitoringBcsGuideDisclaimer": "È un'indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di Quokka.",
   "monitoringBcsGuideSource": "Fonte: {source}",
   "@monitoringBcsGuideSource": {
     "placeholders": {
@@ -3582,7 +3582,7 @@
   "monitoringBcsGuideCaveatRabbit": "Per i conigli questa scala è meno affidabile: due persone possono dare punteggi diversi allo stesso coniglio. Se hai dubbi, chiedi al veterinario.",
   "monitoringBcsSourceDog": "criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i cani (Laflamme, 1997), riassunti con parole nostre e ridotti a 5 livelli da Quokka. Non è materiale ufficiale WSAVA.",
   "monitoringBcsSourceCat": "criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i gatti (Laflamme, 1997; validata da Bjornvad e colleghi, 2011), riassunti con parole nostre e ridotti a 5 livelli da Quokka. Non è materiale ufficiale WSAVA.",
-  "monitoringBcsSourceRabbit": "Rabbit Size-O-Meter a 5 livelli della PFMA (Pet Food Manufacturers’ Association), riassunto con parole nostre. L’affidabilità tra chi valuta è limitata (Halck e colleghi, Veterinary Record, 2025).",
+  "monitoringBcsSourceRabbit": "Rabbit Size-O-Meter a 5 livelli della PFMA (Pet Food Manufacturers' Association), riassunto con parole nostre. L'affidabilità tra chi valuta è limitata (Halck e colleghi, Veterinary Record, 2025).",
   "monitoringBcsNotAssessed": "Non valutata",
   "monitoringBcsAssess": "Valuta la corporatura",
   "monitoringBcsReassess": "Rivaluta la corporatura",
@@ -3687,7 +3687,7 @@
     }
   },
   "monitoringChartSinglePoint": "Aggiungi un'altra misurazione per vedere l'andamento.",
-  "monitoringChartGrowthHintReference": "Il peso di {petName} in base all’età, confrontato con l’area di riferimento.",
+  "monitoringChartGrowthHintReference": "Il peso di {petName} in base all'età, confrontato con l'area di riferimento.",
   "@monitoringChartGrowthHintReference": {
     "placeholders": {
       "petName": {
@@ -3705,7 +3705,7 @@
     }
   },
   "monitoringGrowthSourceKitten": "Riferimento: gattini domestici a pelo corto non sterilizzati (USA). Derivato da dati CC BY 3.0 di Salt C. et al., PLOS ONE 2022; non sono le curve ufficiali WALTHAM.",
-  "monitoringGrowthDisclaimer": "È un riferimento, non una diagnosi: ogni animale cresce con il suo ritmo. Se il peso di {petName} esce spesso dall’area o cambia all’improvviso, parlane con il veterinario.",
+  "monitoringGrowthDisclaimer": "È un riferimento, non una diagnosi: ogni animale cresce con il suo ritmo. Se il peso di {petName} esce spesso dall'area o cambia all'improvviso, parlane con il veterinario.",
   "@monitoringGrowthDisclaimer": {
     "placeholders": {
       "petName": {
@@ -3722,7 +3722,7 @@
     }
   },
   "monitoringGrowthChange": "Cambia",
-  "monitoringGrowthPromptTitle": "Mostra l’area di riferimento",
+  "monitoringGrowthPromptTitle": "Mostra l'area di riferimento",
   "monitoringGrowthPromptBody": "Per confrontare {petName} con cuccioli sani serve il peso che avrà da adulto: scegli la fascia più probabile (razza, genitori, veterinario).",
   "@monitoringGrowthPromptBody": {
     "placeholders": {
@@ -3940,7 +3940,7 @@
   "consentChoicesSave": "Salva le scelte",
   "consentChoicesNotNow": "Non ora",
   "medHistorySendAllDocs": "Storico e tutti i documenti (PDF unico)",
-  "medHistorySendAllDocsSubtitle": "Un solo PDF con eventi, foto e documenti, adatto a e-mail e WhatsApp",
+  "medHistorySendAllDocsSubtitle": "Un solo PDF con eventi, foto e documenti, adatto a email e WhatsApp",
   "medHistoryDocsSeparate": "{count, plural, =1{1 documento non è entrato nel PDF ed è allegato} other{{count} documenti non sono entrati nel PDF e sono allegati}} a parte.",
   "@medHistoryDocsSeparate": {
     "placeholders": {
@@ -4345,18 +4345,18 @@
   "placesBackendClaimVetOnly": "Si può segnalare solo per un veterinario.",
   "placesBackendClaimGroups": "Scegli almeno un gruppo di animali tra quelli proposti.",
   "placesBackendPlaceNotFound": "Struttura non trovata.",
-  "marketplacePublishDisclaimer": "Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. L'app controlla il testo dell'annuncio con un controllo automatico, che può sbagliare, e il team può guardare l'annuncio dopo la pubblicazione; non verifichiamo che l'annuncio e l'oggetto siano esatti: descrivi lo stato dell'oggetto e i difetti in modo onesto e completo. Non si possono vendere né regalare animali, cibo, mangimi, snack, integratori, farmaci o medicinali (anche veterinari) né prodotti con principi attivi. Nel testo non scrivere telefoni o e-mail: ti si scrive con i messaggi.",
+  "marketplacePublishDisclaimer": "Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. L'app controlla il testo dell'annuncio con un controllo automatico, che può sbagliare, e il team può guardare l'annuncio dopo la pubblicazione; non verifichiamo che l'annuncio e l'oggetto siano esatti: descrivi lo stato dell'oggetto e i difetti in modo onesto e completo. Non si possono vendere né regalare animali, cibo, mangimi, snack, integratori, farmaci o medicinali (anche veterinari) né prodotti con principi attivi. Nel testo non scrivere telefoni o email: ti si scrive con i messaggi.",
   "marketplaceDetailPrivateSeller": "Annuncio di un privato (lo dichiara chi vende): non valgono le garanzie previste per gli acquisti da professionisti.",
   "marketplaceInfoTitle": "Come funziona il Mercatino",
   "marketplaceInfoWhat": "Il Mercatino è solo per privati: persone che vendono o regalano oggetti usati per animali, senza farne un'attività commerciale o professionale. Lo dichiari a ogni annuncio. Quokka mette in contatto chi pubblica e chi cerca: non vende, non compra e non è parte di nessun accordo.",
   "marketplaceInfoDeal": "Accordo, prezzo, pagamento, consegna e garanzie si decidono solo tra voi due. Quokka non gestisce pagamenti né spedizioni e non risponde dell'esito di una compravendita (oggetto diverso dall'annuncio, difetti, mancata consegna o mancato pagamento), salvo ciò che la legge non permette di escludere.",
   "marketplaceInfoChecks": "Non verifichiamo l'esattezza degli annunci né l'identità o l'affidabilità delle persone. Chiedi foto e informazioni, guarda l'oggetto prima di pagare e controlla che sia sicuro per il tuo animale: cinghie, gabbie, lampade e trasportini usati possono avere difetti nascosti.",
   "marketplaceInfoPrivateSale": "Tra privati non valgono le garanzie e le tutele previste per gli acquisti da un professionista (come la garanzia legale di conformità e il recesso dei contratti a distanza): valgono le regole del codice civile sulla compravendita.",
-  "marketplaceInfoContacts": "Se scegli di scambiare telefono, e-mail o altri contatti nei messaggi, lo fai sotto la tua responsabilità: condividi solo ciò che serve e solo con chi ti sembra affidabile. Non pagare in anticipo a chi non conosci.",
+  "marketplaceInfoContacts": "Se scegli di scambiare telefono, email o altri contatti nei messaggi, lo fai sotto la tua responsabilità: condividi solo ciò che serve e solo con chi ti sembra affidabile. Non pagare in anticipo a chi non conosci.",
   "marketplaceInfoReports": "Annunci e messaggi sono scritti dagli utenti, che ne sono responsabili. Se un annuncio o una conversazione ti sembra scorretto, segnalalo: il nostro team valuta la segnalazione e può rimuovere l'annuncio, chiudere la conversazione o tenere una persona fuori dal Mercatino.",
   "marketplaceInfoForbidden": "Non si vendono animali, cibo, mangimi, snack, integratori né farmaci o medicinali, anche veterinari. L'app controlla il testo degli annunci: blocca i farmaci, chiede conferma per cibo, integratori e prodotti che potrebbero avere principi attivi e li fa controllare dal team dopo la pubblicazione, ma può sbagliare e non riconoscere tutto: se ne vedi uno, segnalalo.",
   "marketplaceInfoPrivacy": "Le conversazioni sono private. Il team di Quokka legge una conversazione solo se una delle due persone la segnala, per valutare la segnalazione.",
-  "marketplaceInfoTerms": "Dettagli nei Termini di servizio, sezione Mercatino.",
+  "marketplaceInfoTerms": "Dettagli nei Termini di Servizio, sezione Mercatino.",
   "marketplaceRestrictedAppeal": "Se pensi sia un errore, scrivici da {place}.",
   "@marketplaceRestrictedAppeal": {
     "placeholders": {
@@ -4465,11 +4465,11 @@
   "authHubRecoverAccount": "Recupera account",
   "authRecoverTitle": "Recupera il tuo account",
   "authRecoverSubtitle": "Hai eliminato l'account da poco? Puoi riaprirlo.",
-  "authRecoverSteps": "Se il periodo di attesa non è ancora finito, accedi con la stessa e-mail dell'account eliminato: se non ricordi la password, reimpostala con il link che ti mandiamo per e-mail. Dopo l'accesso potrai annullare l'eliminazione.",
-  "authRecoverLogin": "Accedi con la stessa e-mail",
+  "authRecoverSteps": "Se il periodo di attesa non è ancora finito, accedi con la stessa email dell'account eliminato: se non ricordi la password, reimpostala con il link che ti mandiamo per email. Dopo l'accesso potrai annullare l'eliminazione.",
+  "authRecoverLogin": "Accedi con la stessa email",
   "authRecoverReset": "Reimposta la password",
-  "authRecoverExpired": "Se il periodo è finito, l'account e i dati sono stati cancellati: puoi creare un nuovo account con la stessa e-mail.",
-  "accountDeletePeriodNote": "L'account verrà disattivato subito. Per {days, plural, one{# giorno} other{# giorni}} puoi cambiare idea: accedi con la stessa e-mail (se serve, reimposta la password) e annulla l'eliminazione. Dopo il {date} cancelliamo l'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.",
+  "authRecoverExpired": "Se il periodo è finito, l'account e i dati sono stati cancellati: puoi creare un nuovo account con la stessa email.",
+  "accountDeletePeriodNote": "L'account verrà disattivato subito. Per {days, plural, one{# giorno} other{# giorni}} puoi cambiare idea: accedi con la stessa email (se serve, reimposta la password) e annulla l'eliminazione. Dopo il {date} cancelliamo l'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua email, che prova la cancellazione.",
   "@accountDeletePeriodNote": {
     "placeholders": {
       "days": {
@@ -4503,11 +4503,11 @@
   "accountRestoreFailed": "Non sono riuscito ad annullare l'eliminazione. Riprova.",
   "accountDeleteNowLink": "Elimina subito, senza possibilità di recupero",
   "accountRestoreDeleteNow": "Elimina subito",
-  "accountRestoreDeleteNowBody": "Cancelliamo subito l'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione. Dopo potrai iscriverti di nuovo con la stessa e-mail.",
+  "accountRestoreDeleteNowBody": "Cancelliamo subito l'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua email, che prova la cancellazione. Dopo potrai iscriverti di nuovo con la stessa email.",
   "authRegisterEmailInUseRecoverHint": "Se l'hai eliminato da poco e il periodo di attesa non è finito, usa «Recupera account»: puoi annullare l'eliminazione oppure eliminarlo subito per ricominciare.",
   "accountLeaveQuestion": "Cosa vuoi fare con il tuo account?",
   "accountPauseOptionTitle": "Metti in pausa",
-  "accountPauseOptionBody": "L'account resta inattivo, senza promemoria né notifiche, e conserviamo i tuoi dati finché non torni, fino a {months, plural, one{# mese} other{# mesi}} senza accessi: poi li cancelliamo. Per tornare basta accedere con la stessa e-mail.",
+  "accountPauseOptionBody": "L'account resta inattivo, senza promemoria né notifiche, e conserviamo i tuoi dati finché non torni, fino a {months, plural, one{# mese} other{# mesi}} senza accessi: poi li cancelliamo. Per tornare basta accedere con la stessa email.",
   "@accountPauseOptionBody": {
     "placeholders": {
       "months": {
@@ -4516,9 +4516,9 @@
     }
   },
   "accountDeleteOptionTitle": "Elimina l'account",
-  "accountDeleteOptionBody": "Lo disattiviamo subito. Per un periodo puoi cambiare idea accedendo con la stessa e-mail; poi cancelliamo i tuoi dati. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.",
+  "accountDeleteOptionBody": "Lo disattiviamo subito. Per un periodo puoi cambiare idea accedendo con la stessa email; poi cancelliamo i tuoi dati. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua email, che prova la cancellazione.",
   "accountPauseSubmit": "Metti in pausa",
-  "accountPauseDone": "Il tuo account è in pausa. Se non accedi entro il {date}, lo cancelliamo insieme ai tuoi dati. Per tornare basta accedere con la stessa e-mail.",
+  "accountPauseDone": "Il tuo account è in pausa. Se non accedi entro il {date}, lo cancelliamo insieme ai tuoi dati. Per tornare basta accedere con la stessa email.",
   "@accountPauseDone": {
     "placeholders": {
       "date": {
@@ -4527,7 +4527,7 @@
     }
   },
   "accountPauseFailed": "Non siamo riusciti a mettere l'account in pausa. Riprova tra poco.",
-  "accountPausedElsewhere": "Il tuo account è stato messo in pausa da un altro dispositivo. Per riprenderlo, accedi di nuovo con la stessa e-mail.",
+  "accountPausedElsewhere": "Il tuo account è stato messo in pausa da un altro dispositivo. Per riprenderlo, accedi di nuovo con la stessa email.",
   "accountPauseEndedTitle": "La pausa è finita",
   "accountPauseEndedBody": "Bentornato: il tuo account è di nuovo attivo e i tuoi dati sono come li hai lasciati.",
   "accountPauseEndedNoPlan": "Non hai un piano: conserviamo i tuoi dati fino al {date}. Scegli un piano per tenere l'account, oppure rimettilo in pausa da Impostazioni.",
@@ -4642,9 +4642,9 @@
   "storeBillingRestore": "Ripristina acquisti",
   "storeBillingManage": "Gestisci abbonamento nello store",
   "storeBillingPending": "Pagamento in attesa di conferma dallo store.",
-  "storeBillingVerifying": "Verifica dell’acquisto in corso…",
+  "storeBillingVerifying": "Verifica dell'acquisto in corso…",
   "storeBillingVerified": "Abbonamento attivo.",
-  "storeBillingFailed": "Non è stato possibile verificare l’acquisto. Riprova più tardi: non ti verrà addebitato due volte.",
+  "storeBillingFailed": "Non è stato possibile verificare l'acquisto. Riprova più tardi: non ti verrà addebitato due volte.",
   "storeBillingOwnedByOther": "Questo acquisto è collegato a un altro account Quokka.",
   "storeBillingUnavailable": "Gli acquisti dallo store non sono disponibili su questo dispositivo.",
   "storeBillingCanceledUntil": "Rinnovo disattivato: attivo fino al {date}",
@@ -4667,7 +4667,7 @@
     }
   },
   "storeBillingRestoreDone": "Ripristino completato.",
-  "storeBillingPricesFromStore": "Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L’abbonamento si rinnova automaticamente finché non lo disdici nello store.",
+  "storeBillingPricesFromStore": "Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L'abbonamento si rinnova automaticamente finché non lo disdici nello store.",
   "emergencyNoticeShort": "Quokka non gestisce le urgenze: in emergenza rivolgiti subito a un veterinario, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Non aspettare la risposta dell'app.",
   "emergencyNoticeTitle": "Quokka non gestisce le urgenze",
   "emergencyNoticeCheckbox": "Ho capito che Quokka non gestisce le urgenze e non lo uso in caso di emergenza.",
@@ -4686,7 +4686,7 @@
       }
     }
   },
-  "authResendButton": "Invia di nuovo l'e-mail",
+  "authResendButton": "Invia di nuovo l'email",
   "authResendWait": "Puoi richiederla di nuovo tra {seconds} s",
   "@authResendWait": {
     "placeholders": {
@@ -4695,7 +4695,7 @@
       }
     }
   },
-  "authResendSent": "E-mail inviata di nuovo. Controlla la posta, anche lo spam.",
-  "authErrorEmailUndeliverable": "Non riusciamo a consegnare l'e-mail a questo indirizzo. Controlla che sia scritto bene oppure usane un altro.",
+  "authResendSent": "Email inviata di nuovo. Controlla la posta, anche lo spam.",
+  "authErrorEmailUndeliverable": "Non riusciamo a consegnare l'email a questo indirizzo. Controlla che sia scritto bene oppure usane un altro.",
   "authErrorLinkOtherDevice": "Questo link va aperto sullo stesso dispositivo da cui l'hai richiesto. Se stavi confermando l'indirizzo, è già confermato: accedi con email e password. Se stavi reimpostando la password, richiedi un nuovo link da questo dispositivo."
 }
