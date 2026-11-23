@@ -8202,5 +8202,5 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get authErrorLinkOtherDevice =>
-      'Ce lien doit être ouvert sur l\'appareil depuis lequel vous l\'avez demandé. Si vous confirmiez votre adresse, elle est déjà confirmée : connectez-vous avec votre e-mail et votre mot de passe. Si vous réinitialisiez votre mot de passe, demandez un nouveau lien depuis cet appareil.';
+      'Ce lien doit être ouvert sur l\'appareil depuis lequel vous l\'avez demandé. Si vous confirmiez votre adresse, elle est déjà confirmée : connectez-vous avec votre e-mail et votre mot de passe. Si vous réinitialisiez votre mot de passe, demandez un nouveau lien depuis cet appareil.';
 }

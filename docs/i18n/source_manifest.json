@@ -21211,5 +21211,68 @@
       "de": "4feb292fc3e38e175f8107ddfc49b1b60c56bf3a1f25d0cc182b6cc9b63ae41a",
       "fr": "a30910d8759a115696a5b0b6d45e2c64c43e99d02f7b7a207012df21108ff73b"
     }
+  },
+  "ui:authRegisterCheckEmailTitle": {
+    "source": "6053d3773e0fe00633e01fd513994e62cbae3176e8952a5b6c351f30f5fede86",
+    "targets": {
+      "en": "6e929bdc508bc9d954783eff3c3cf60c0e24542cfb3abc6cb2ea9a92078799e5",
+      "es": "1127e26df34fa12c38f895134887a791b9e6fb13ab1651ee89a9b5a392db5690",
+      "de": "36dd11889219d3f01e13b6b75e081397239faa3041cfc078f2fb75e60a42dbe1",
+      "fr": "072ae4384628d8058c13994bfece9cbb741fddccf2e7b92b350609e287ecfc33"
+    }
+  },
+  "ui:authRegisterCheckEmailMessage": {
+    "source": "6f64bea08ca45a219d0b7e0d755cc892064a740e2064e2f7018c1b258c1d25a9",
+    "targets": {
+      "en": "92e16c4905597467ebaa02f47a1849acfc45788b65391d4dd23f9d600cba06aa",
+      "es": "2c10da3bfea5e0af0f050cc0157b3704774c8f9f1aa0b64700b597d3a15e1dec",
+      "de": "54be2aafb851497446e9af0f4c95c77dfa0bc768bcb343f1a6733a4d40fd1b3e",
+      "fr": "baf2294d1e495a01edf001e0c3f85fbb22eb2803de8dbc19075fc7bb1e583c33"
+    }
+  },
+  "ui:authResendButton": {
+    "source": "f7fadeffa440c1386b6ef71debea5abf80a7efac4ad323968357931b7812c427",
+    "targets": {
+      "en": "19327d770033542679cd66b96d65809b379896faef0e621f0ac0ab6b9ce36bdd",
+      "es": "e7f6423ec5169b7f8655edd604aa91f5153e82caeea7077e85cb87c14e39f2c2",
+      "de": "ffd214e122875d28385d5b1e76a695482d69eef7a9f3af1210180bcaa90d0da3",
+      "fr": "9975cb5427159b0d7a9e84f32509c63455c0ded6a9fb8efd1cf1f84d07d3caf0"
+    }
+  },
+  "ui:authResendWait": {
+    "source": "6e74b1383bb2eb278dbe99f67596902b36374af8b8b430f8c76d6c452709158e",
+    "targets": {
+      "en": "833138d0bcfe4814c05913110a3199000f7df9eb7e579749ca6d6a483869747d",
+      "es": "190f1b2cbd93a0532075d15eab974f83450b0d9bca079053e5dc7fe76d65873d",
+      "de": "36520860b959dac797f7fc19455472d6eb27865b6e2623c0c2e3f43ffa06a9e1",
+      "fr": "9abab13caa671f88b9b5b29ecbe656ea6347be0788543e0a77dca0c443980429"
+    }
+  },
+  "ui:authResendSent": {
+    "source": "d2e418fea23890bb3f8d9a297ecc66a756cb74cd3f233f1da9d8535296871c63",
+    "targets": {
+      "en": "b8296fa1d88ef199031fee5928fdaf22945fd0cf2805437ec79b1cacb4d95c33",
+      "es": "b55f8451eb162ec9dacffd6e773a4c57c4525570bd5948068fecdad9f463ee03",
+      "de": "adca5695bcee813299aa5a91908a10de2f8a10a47ea071427679adf4d646295e",
+      "fr": "25f22c79ce8c445f293c946214c9165769af7a916072f3dca0791e1d3cbb1789"
+    }
+  },
+  "ui:authErrorEmailUndeliverable": {
+    "source": "65c85823e4201b41f6acaa777aa5ed5301a43e5afb4d4d2f696994c26d7fbf6f",
+    "targets": {
+      "en": "7f98c3d6e93676037e63c2d3a1f6afd9c407b0347c6de650c71c94c18e1b72dd",
+      "es": "c98b2d7ca201df55c91c0d495fa188e191ce34c029b0921de79f50e9133d316d",
+      "de": "15a378f2c01a9b8b5a31c3be336d28c3489a8656e28e03a1f24cb0a5cad4e141",
+      "fr": "5a120c0ecf94b87718cce28b119e9f1c4cb9a5c2cff8c2b71cdc671367bd02f7"
+    }
+  },
+  "ui:authErrorLinkOtherDevice": {
+    "source": "159d9c9359fc1ca7b5707a4efef10ec287a2c8f8050644f739e3f37065e3a94b",
+    "targets": {
+      "en": "447bc07ea28c0a717d8129e4f58e84e1361574216c1c218a1f82b78c2f4284d0",
+      "es": "aae81c70e4fcad68c24115212d0e8fcd41668fd8f78aeba18da51ee278675786",
+      "de": "aac548bf1cc3f40dd11e8d551ba1087ca0a8c59ee628166ae8e190984632ce61",
+      "fr": "5708e199bbb34b81d154f155f4aa2d6de4802b984d104dabfba3a1221dfdb5ca"
+    }
   }
 }
