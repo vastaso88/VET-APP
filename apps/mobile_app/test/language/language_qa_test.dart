@@ -32,6 +32,9 @@ import 'package:vet_app_mobile/features/language/presentation/widgets/language_s
 import 'package:vet_app_mobile/features/marketplace/presentation/pages/marketplace_conversation_page.dart';
 import 'package:vet_app_mobile/features/marketplace/presentation/pages/marketplace_conversations_page.dart';
 import 'package:vet_app_mobile/features/marketplace/presentation/pages/marketplace_info_page.dart';
+import 'package:vet_app_mobile/features/marketplace/domain/listing_content.dart';
+import 'package:vet_app_mobile/features/marketplace/presentation/pages/my_listings_page.dart';
+import 'package:vet_app_mobile/features/marketplace/presentation/widgets/listing_content_dialog.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/pet_create_page.dart';
 import 'package:vet_app_mobile/features/travel_guide/data/travel_cards_repository.dart';
 import 'package:vet_app_mobile/features/travel_guide/domain/travel_card.dart';
@@ -80,6 +83,13 @@ final _pages = <String, Widget Function()>{
   'billing': () => const BillingPage(),
   'marketplace messages': () => const MarketplaceConversationsPage(),
   'marketplace info': () => const MarketplaceInfoPage(),
+  'marketplace my listings': () => const MyListingsPage(),
+  'marketplace content notice': () => const ListingContentDialog(
+        required: ListingConfirmationRequiredException(
+          notices: ListingContentNotice.values,
+          words: {},
+        ),
+      ),
   'marketplace conversation': () =>
       const MarketplaceConversationPage(listingId: 'ad', listingTitle: 'Ad'),
   'around the world': () => TravelGuidePage(repository: _NoTravelCards()),

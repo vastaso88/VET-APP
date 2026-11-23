@@ -48,7 +48,9 @@ IN_MEMORY = {
     "evidence_retriever": "InMemoryEvidenceRetriever",
     "geocoding_service": "GeocodingService",
     "image_analyzer": "EchoImageAnalyzer",
+    "listing_photo_vault": "InMemoryListingPhotoVault",
     "listing_report_repository": "InMemoryListingReportRepository",
+    "listing_review_repository": "InMemoryListingReviewRepository",
     "llm_budget": "LlmBudget",
     "llm_client": "InstrumentedLLMClient",
     "llm_usage_repository": "InMemoryLlmUsageRepository",
@@ -92,7 +94,9 @@ SUPABASE = {
     "evidence_retriever": "SupabaseEvidenceRetriever",
     "geocoding_service": "GeocodingService",
     "image_analyzer": "EchoImageAnalyzer",
+    "listing_photo_vault": "SupabaseListingPhotoVault",
     "listing_report_repository": "SupabaseListingReportRepository",
+    "listing_review_repository": "SupabaseListingReviewRepository",
     "llm_budget": "LlmBudget",
     "llm_client": "InstrumentedLLMClient",
     "llm_usage_repository": "SupabaseLlmUsageRepository",
@@ -161,6 +165,7 @@ PUBLIC_NAMES = [
     "list_nearby_radar_places_service",
     "list_pet_profiles_service",
     "list_reminders_service",
+    "listing_review_service",
     "llm_usage_report_service",
     "mark_not_helpful_service",
     "marketplace_messaging_moderation_service",
@@ -169,6 +174,7 @@ PUBLIC_NAMES = [
     "owner_limits_lookup",
     "pet_news_service",
     "photo_reading_enabled",
+    "prune_removed_listings_service",
     "radar_community_view",
     "radar_open_sources",
     "radar_report_settings",
@@ -219,7 +225,9 @@ BUILD_HOOKS = [
     "_build_evidence_retriever",
     "_build_image_analyzer",
     "_build_inner_auth_provider",
+    "_build_listing_photo_vault",
     "_build_listing_report_repository",
+    "_build_listing_review_repository",
     "_build_llm_client",
     "_build_llm_usage_repository",
     "_build_local_activity_repository",
@@ -517,7 +525,7 @@ def test_supabase_configuration_wires_supabase_collaborators_with_fake_clients(
     assert type(inner).__name__ == "SupabaseAuthProvider"
     # Construction asks for the service-role client once per collaborator and for the
     # anon client once (the auth provider); `client.py` turns the former into one per process.
-    assert (fake_supabase.service, fake_supabase.public) == (31, 1)
+    assert (fake_supabase.service, fake_supabase.public) == (33, 1)
 
 
 def test_calling_every_factory_builds_only_the_lazy_collaborators_and_no_public_client(
@@ -527,7 +535,7 @@ def test_calling_every_factory_builds_only_the_lazy_collaborators_and_no_public_
     for name in _factories():
         getattr(container, name)()
 
-    assert (fake_supabase.service, fake_supabase.public) == (40, 1)
+    assert (fake_supabase.service, fake_supabase.public) == (42, 1)
     assert type(container._event_catalog_repository).__name__ == "SupabaseEventCatalogRepository"
     submissions = type(container._event_submission_repository).__name__
     assert submissions == "SupabaseEventSubmissionRepository"

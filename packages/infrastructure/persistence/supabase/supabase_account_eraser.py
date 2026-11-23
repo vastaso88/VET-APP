@@ -33,6 +33,8 @@ logger = logging.getLogger(__name__)
 _LIST_PAGE = 100
 PET_PHOTOS_BUCKET = "pet-photos"
 MARKETPLACE_PHOTOS_BUCKET = "marketplace-photos"
+# Photos of ads taken down by the team (storage/listing_photo_vaults.py).
+MARKETPLACE_HELD_PHOTOS_BUCKET = "marketplace-photos-held"
 
 # (table, column holding the owner id), children before parents. Rows that
 # hang off a pet or a listing (clinical_events, chat_response_reports of the
@@ -44,6 +46,7 @@ OWNER_TABLES: tuple[tuple[str, str], ...] = (
     ("admin_plan_changes", "owner_id"),
     ("marketplace_listing_reports", "reporter_owner_id"),
     ("marketplace_user_restrictions", "owner_id"),
+    ("marketplace_listing_reviews", "owner_id"),
     ("marketplace_listings", "owner_id"),
     ("chat_response_reports", "reporter_owner_id"),
     ("chat_message_keys", "owner_id"),
@@ -101,6 +104,11 @@ HANDLED_ELSEWHERE = frozenset(
 # Not exported to the owner, not erased: it is the proof of the erasure and what
 # lets a restore from backup apply it again.
 RETAINED_AFTER_DELETION: dict[str, str] = {
+    "marketplace_listing_decision_log": (
+        "registro delle decisioni del team sugli annunci (docs/compliance/24): id "
+        "dell'annuncio, esito, motivo, data, id di chi ha deciso; nessun id di chi vende e "
+        "nessun testo; 24 mesi"
+    ),
     "account_deletion_log": (
         "art. 17(3)(b)/(e) e 5(2), impronta senza dati identificativi; conservato "
         "per la finestra di ripristino dei backup e, come prova, per 5 anni"
@@ -271,7 +279,11 @@ class SupabaseAccountEraser:
         keys = [str(row["storage_key"]) for row in self._rows(attachments)]
         report.files_removed += self._remove(self._media_bucket, keys)
         # Pet gallery, account photo and marketplace photos live under "<uid>/".
-        for bucket in (PET_PHOTOS_BUCKET, MARKETPLACE_PHOTOS_BUCKET):
+        for bucket in (
+            PET_PHOTOS_BUCKET,
+            MARKETPLACE_PHOTOS_BUCKET,
+            MARKETPLACE_HELD_PHOTOS_BUCKET,
+        ):
             report.files_removed += self._remove(bucket, self._list_all(bucket, owner_id))
 
     def _list_all(self, bucket: str, prefix: str) -> list[str]:

@@ -34,6 +34,7 @@ from packages.core.domain.device.models import UserDevice
 from packages.core.domain.dog_walk.models import WalkSession
 from packages.core.domain.events.submission import EventSubmission
 from packages.core.domain.feedback.models import ChatResponseReport
+from packages.core.domain.marketplace.content_review import ListingDecision, ListingReview
 from packages.core.domain.marketplace.messaging import (
     MarketplaceConversation,
     MarketplaceConversationReport,
@@ -92,6 +93,16 @@ SAVED_MODELS: dict[tuple[str, str], tuple[type[BaseModel], str, frozenset[str]]]
         Conversation,
         "conversations",
         frozenset({"last_message_at"}),
+    ),
+    ("supabase_listing_reviews.py", "SupabaseListingReviewRepository.save"): (
+        ListingReview,
+        "marketplace_listing_reviews",
+        frozenset(),
+    ),
+    ("supabase_listing_reviews.py", "SupabaseListingReviewRepository.log_decision"): (
+        ListingDecision,
+        "marketplace_listing_decision_log",
+        frozenset(),
     ),
     ("supabase_repositories.py", "SupabaseReminderRepository.save"): (
         Reminder,

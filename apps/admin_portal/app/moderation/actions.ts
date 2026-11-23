@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import {
+  decideListingReview,
   resolveChatModeration,
   resolveMarketplaceMessageModeration,
   resolveMarketplaceModeration,
@@ -88,4 +90,30 @@ export async function resolveMarketplaceMessageReport(formData: FormData): Promi
   );
   refreshModeration();
   revalidatePath(`/moderation/marketplace_messages/${reportId}`);
+}
+
+export async function decideListingReviewAction(formData: FormData): Promise<void> {
+  const reviewId = String(formData.get("review_id") ?? "");
+  const outcome = String(formData.get("outcome") ?? "");
+  const reason = String(formData.get("reason") ?? "");
+  const note = String(formData.get("note") ?? "");
+
+  if (!reviewId) throw new Error("Missing review id");
+  if (!["checked", "removed", "restored"].includes(outcome)) {
+    throw new Error("Invalid listing decision");
+  }
+  if (outcome === "removed" && !["food", "supplement", "medicine", "other"].includes(reason)) {
+    throw new Error("Choose the reason told to the seller");
+  }
+
+  const decided = await decideListingReview(
+    reviewId,
+    outcome as "checked" | "removed" | "restored",
+    reason,
+    note,
+  );
+  refreshModeration();
+  const page = `/moderation/listing_reviews/${encodeURIComponent(reviewId)}`;
+  revalidatePath(page);
+  if (!decided) redirect(`${page}?conflict=1`);
 }

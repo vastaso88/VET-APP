@@ -51,6 +51,7 @@ export type AdminOverview = {
     radar_reports: number;
     chat_reports: number;
     marketplace_reports: number;
+    listing_reviews?: number;
   };
   data_sources: DataSourceSummary[];
   recent_runs: ScrapeRunSummary[];

@@ -2,9 +2,11 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from packages.core.application.ports.listing_review_repository import ListingReviewRepository
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
+from packages.core.application.services.listing_review import confirmed_terms, new_review
 from packages.core.domain.geo.models import Coordinates, approximate_coordinates
 from packages.core.domain.marketplace.animal_policy import (
     ANIMAL_POLICY_MESSAGE,
@@ -14,8 +16,10 @@ from packages.core.domain.marketplace.content_policy import (
     CONTACT_POLICY_MESSAGE,
     MEDICINE_POLICY_MESSAGE,
     contains_contact_details,
+    offers_active_substances,
     offers_medicines,
 )
+from packages.core.domain.marketplace.content_review import ContentNotice
 from packages.core.domain.marketplace.models import (
     ListingCategory,
     ListingCondition,
@@ -40,6 +44,9 @@ class CreateListingInput(BaseModel):
     country: str = "IT"
     private_seller_declared_at: datetime | None = None
     private_seller_declaration_version: str | None = None
+    # The boxes the seller ticked (content_review.py).
+    content_confirmations: list[ContentNotice] = []
+    locale: str | None = None
 
 
 class CreateListingOutput(BaseModel):
@@ -51,8 +58,13 @@ class CreateListingService:
     `exact_location` never reaches the repository, only the grid-snapped result
     does (see geo.models.approximate_coordinates)."""
 
-    def __init__(self, repository: MarketplaceListingRepository) -> None:
+    def __init__(
+        self,
+        repository: MarketplaceListingRepository,
+        reviews: ListingReviewRepository | None = None,
+    ) -> None:
         self._repository = repository
+        self._reviews = reviews
 
     def execute(self, data: CreateListingInput) -> CreateListingOutput:
         if not is_known_country(data.country):
@@ -67,8 +79,18 @@ class CreateListingService:
         # by authorised sellers, Reg. (EU) 2019/6).
         if contains_contact_details(data.title, data.description):
             raise ValidationError(CONTACT_POLICY_MESSAGE)
-        if offers_medicines(data.title, data.description):
+        if offers_medicines(data.title, data.description) or offers_active_substances(
+            data.title, data.description
+        ):
+            # One refusal for both, in the words the installed apps already know.
             raise ValidationError(MEDICINE_POLICY_MESSAGE)
+        terms = confirmed_terms(
+            data.title,
+            data.description,
+            data.category,
+            confirmations=data.content_confirmations,
+            locale=data.locale,
+        )
         listing = MarketplaceListing(
             owner_id=data.owner_id,
             title=data.title,
@@ -81,7 +103,15 @@ class CreateListingService:
             city_label=data.city_label,
             country=country,
             location=approximate_coordinates(data.exact_location),
+            # The confirmation is the only barrier before the ad is online: it is
+            # visible only once that is recorded.
+            status="removed" if terms else "active",
             private_seller_declared_at=data.private_seller_declared_at,
             private_seller_declaration_version=data.private_seller_declaration_version,
         )
-        return CreateListingOutput(listing=self._repository.save(listing))
+        saved = self._repository.save(listing)
+        if terms:
+            if self._reviews is not None:
+                self._reviews.save(new_review(saved, terms))
+            saved = self._repository.save(saved.model_copy(update={"status": "active"}))
+        return CreateListingOutput(listing=saved)

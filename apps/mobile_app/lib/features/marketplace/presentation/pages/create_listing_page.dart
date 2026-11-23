@@ -19,9 +19,11 @@ import '../../data/listing_photo_store.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/animal_policy.dart';
 import '../../domain/content_policy.dart';
+import '../../domain/listing_content.dart';
 import '../../domain/listing_location.dart';
 import '../../domain/marketplace_listing.dart';
 import '../marketplace_labels.dart';
+import '../widgets/listing_content_dialog.dart';
 import '../widgets/listing_photo.dart';
 
 /// Where the listing's (approximated) position comes from.
@@ -328,43 +330,59 @@ class _CreateListingPageState extends State<CreateListingPage> {
           : (double.parse(_priceController.text.trim().replaceAll(',', '.')) * 100).round();
       final species = ListingSpecies.values.where(_species.contains).toList();
 
-      if (existing == null) {
-        await _repository.createListing(
-          MarketplaceListing(
-            id: id,
-            ownerId: ownerId,
-            title: _titleController.text.trim(),
-            description: description.isEmpty ? null : description,
-            category: _category!,
-            condition: _condition,
-            priceCents: priceCents,
-            photoUrls: photoUrls,
-            species: species,
-            location: _approxLocation!,
-            cityLabel: zone.isEmpty ? null : zone,
-            country: currentTerritory().countryCode,
-            createdAt: now,
-            updatedAt: now,
-          ),
-          privateSellerDeclared: _privateSeller,
-        );
-      } else {
-        await _repository.updateListing(
-          existing.copyWith(
-            title: _titleController.text.trim(),
-            description: () => description.isEmpty ? null : description,
-            category: _category,
-            condition: _condition,
-            priceCents: () => priceCents,
-            photoUrls: photoUrls,
-            species: species,
-            location: _approxLocation,
-            cityLabel: () => zone.isEmpty ? null : zone,
-            updatedAt: now,
-          ),
-          requesterId: requesterId,
-          privateSellerDeclared: _privateSeller,
-        );
+      Future<void> write(List<ListingContentNotice> confirmations) => existing == null
+          ? _repository.createListing(
+              MarketplaceListing(
+                id: id,
+                ownerId: ownerId,
+                title: _titleController.text.trim(),
+                description: description.isEmpty ? null : description,
+                category: _category!,
+                condition: _condition,
+                priceCents: priceCents,
+                photoUrls: photoUrls,
+                species: species,
+                location: _approxLocation!,
+                cityLabel: zone.isEmpty ? null : zone,
+                country: currentTerritory().countryCode,
+                createdAt: now,
+                updatedAt: now,
+              ),
+              privateSellerDeclared: _privateSeller,
+              confirmations: confirmations,
+            )
+          : _repository.updateListing(
+              existing.copyWith(
+                title: _titleController.text.trim(),
+                description: () => description.isEmpty ? null : description,
+                category: _category,
+                condition: _condition,
+                priceCents: () => priceCents,
+                photoUrls: photoUrls,
+                species: species,
+                location: _approxLocation,
+                cityLabel: () => zone.isEmpty ? null : zone,
+                updatedAt: now,
+              ),
+              requesterId: requesterId,
+              privateSellerDeclared: _privateSeller,
+              confirmations: confirmations,
+            );
+
+      try {
+        await write(const []);
+      } on ListingConfirmationRequiredException catch (required) {
+        // The backend found words that need the seller's word: asked at every
+        // publication and edit, never remembered.
+        final confirmed = mounted && await confirmListingContent(context, required);
+        if (!confirmed) {
+          await _repository.photoStore.remove(uploaded);
+          if (mounted) setState(() => _submitting = false);
+          return;
+        }
+        await write(required.notices);
+      }
+      if (existing != null) {
         // Only once the listing no longer points at them.
         await _repository.photoStore.remove(
           existing.photoUrls.where((url) => !photoUrls.contains(url)).toList(),

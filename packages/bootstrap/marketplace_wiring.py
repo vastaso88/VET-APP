@@ -1,7 +1,9 @@
 """Mercatino: listings, reports and messages (QK-20, moved verbatim)."""
 
 from packages.bootstrap.container_state import ContainerState
+from packages.core.application.ports.listing_photo_vault import ListingPhotoVault
 from packages.core.application.ports.listing_report_repository import ListingReportRepository
+from packages.core.application.ports.listing_review_repository import ListingReviewRepository
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
@@ -10,12 +12,17 @@ from packages.core.application.ports.marketplace_messaging_repository import (
 )
 from packages.core.application.services.create_listing import CreateListingService
 from packages.core.application.services.list_nearby_listings import ListNearbyListingsService
+from packages.core.application.services.listing_review import ListingReviewService
 from packages.core.application.services.marketplace_messaging import (
     MarketplaceMessagingModerationService,
     MarketplaceMessagingService,
 )
+from packages.core.application.services.removed_listings import PruneRemovedListingsService
 from packages.core.application.services.report_listing import ReportListingService
 from packages.core.application.services.update_listing import UpdateListingService
+from packages.infrastructure.persistence.in_memory_listing_reviews import (
+    InMemoryListingReviewRepository,
+)
 from packages.infrastructure.persistence.in_memory_marketplace_messaging import (
     InMemoryMarketplaceMessagingRepository,
 )
@@ -23,14 +30,33 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryListingReportRepository,
     InMemoryMarketplaceListingRepository,
 )
+from packages.infrastructure.storage.listing_photo_vaults import InMemoryListingPhotoVault
 
 
 class MarketplaceWiring(ContainerState):
     def create_listing_service(self) -> CreateListingService:
-        return CreateListingService(self.marketplace_listing_repository)
+        return CreateListingService(
+            self.marketplace_listing_repository, self.listing_review_repository
+        )
 
     def update_listing_service(self) -> UpdateListingService:
-        return UpdateListingService(self.marketplace_listing_repository)
+        return UpdateListingService(
+            self.marketplace_listing_repository, self.listing_review_repository
+        )
+
+    def listing_review_service(self) -> ListingReviewService:
+        return ListingReviewService(
+            self.marketplace_listing_repository,
+            self.listing_review_repository,
+            self.listing_photo_vault,
+        )
+
+    def prune_removed_listings_service(self) -> PruneRemovedListingsService:
+        return PruneRemovedListingsService(
+            self.marketplace_listing_repository,
+            self.listing_review_repository,
+            self.listing_photo_vault,
+        )
 
     def list_nearby_listings_service(self) -> ListNearbyListingsService:
         return ListNearbyListingsService(
@@ -96,6 +122,40 @@ class MarketplaceWiring(ContainerState):
                     return InMemoryMarketplaceMessagingRepository()
                 raise
         return InMemoryMarketplaceMessagingRepository()
+
+    def _build_listing_photo_vault(self) -> ListingPhotoVault:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.storage.listing_photo_vaults import (
+                    SupabaseListingPhotoVault,
+                )
+
+                return SupabaseListingPhotoVault(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryListingPhotoVault()
+                raise
+        return InMemoryListingPhotoVault()
+
+    def _build_listing_review_repository(self) -> ListingReviewRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_listing_reviews import (
+                    SupabaseListingReviewRepository,
+                )
+
+                return SupabaseListingReviewRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryListingReviewRepository()
+                raise
+        return InMemoryListingReviewRepository()
 
     def _build_listing_report_repository(self) -> ListingReportRepository:
         if self.settings.persistence_backend == "supabase":

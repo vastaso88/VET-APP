@@ -198,6 +198,8 @@ class ApplicationContainer(
         self.marketplace_listing_repository = self._build_marketplace_listing_repository()
         self.listing_report_repository = self._build_listing_report_repository()
         self.marketplace_messaging_repository = self._build_marketplace_messaging_repository()
+        self.listing_review_repository = self._build_listing_review_repository()
+        self.listing_photo_vault = self._build_listing_photo_vault()
         self.local_activity_repository = self._build_local_activity_repository()
         self.chat_response_report_repository = self._build_chat_response_report_repository()
         self.chat_attachment_repository = self._build_chat_attachment_repository()

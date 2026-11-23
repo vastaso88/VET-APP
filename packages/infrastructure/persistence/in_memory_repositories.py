@@ -497,6 +497,17 @@ class InMemoryMarketplaceListingRepository(MarketplaceListingRepository):
             if item_id in self._items
         }
 
+    def list_by_owner(self, owner_id: str, limit: int) -> list[MarketplaceListing]:
+        mine = [item for item in self._items.values() if item.owner_id == owner_id]
+        mine.sort(key=lambda item: item.created_at, reverse=True)
+        return mine[:limit]
+
+    def delete(self, listing_id: str) -> None:
+        self._items.pop(listing_id, None)
+
+    def list_by_ids(self, listing_ids: list[str]) -> list[MarketplaceListing]:
+        return [self._items[item_id] for item_id in set(listing_ids) if item_id in self._items]
+
 
 class InMemoryListingReportRepository(ListingReportRepository):
     def __init__(self) -> None:

@@ -33,6 +33,7 @@ import '../widgets/listing_photo.dart';
 import 'create_listing_page.dart';
 import 'listing_detail_page.dart';
 import 'marketplace_map_page.dart';
+import 'my_listings_page.dart';
 
 /// The user's position for distances: the Località preference (its mode
 /// decides between current position and residence), or null when neither
@@ -159,6 +160,13 @@ class _MarketplacePageState extends State<MarketplacePage> {
     if (created == true) await _reload();
   }
 
+  Future<void> _openMyListings() async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(builder: (_) => MyListingsPage(repository: _repository)),
+    );
+    if (changed == true) await _reload();
+  }
+
   Future<void> _openListing(ListingMatch match) async {
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
@@ -261,7 +269,16 @@ class _MarketplacePageState extends State<MarketplacePage> {
                     key: const ValueKey('marketplace-rules'),
                     style: AppTextStyles.caption,
                   ),
-                  const SizedBox(height: AppSpacing.lg),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton.icon(
+                      key: const ValueKey('marketplace-my-listings'),
+                      onPressed: _openMyListings,
+                      icon: const Icon(Icons.inventory_2_outlined),
+                      label: Text(context.l10n.marketplaceMyListings),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
                   if (_restriction case final restriction?) ...[
                     _RestrictionNotice(text: restriction.message(context.l10n)),
                     const SizedBox(height: AppSpacing.lg),

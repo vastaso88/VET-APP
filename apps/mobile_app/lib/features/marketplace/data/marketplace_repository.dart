@@ -11,6 +11,7 @@ import '../../territory/domain/territory.dart';
 import '../domain/animal_policy.dart';
 import '../domain/content_policy.dart';
 import '../../billing/data/subscription_required_signal.dart';
+import '../domain/listing_content.dart';
 import '../domain/marketplace_listing.dart';
 import '../domain/marketplace_restriction.dart';
 import 'listing_photo_store.dart';
@@ -169,6 +170,22 @@ class MarketplaceRepository {
     return null;
   }
 
+  /// The caller's own ads, whatever their state (`GET /marketplace/listings/mine`),
+  /// with the reason when the team took one down.
+  Future<List<MarketplaceListing>> loadMyListings({required String requesterId}) async {
+    if (!_localOnly) {
+      final response = await _callApi('GET', '/marketplace/listings/mine');
+      if (response != null && response.statusCode == 200) {
+        final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+        return _parseRows(json['listings'] as List<dynamic>? ?? const []);
+      }
+      if (response != null || _resolveClient() != null) {
+        throw const ListingBackendUnavailableException();
+      }
+    }
+    return _local.where((listing) => canManageListing(listing, requesterId)).toList();
+  }
+
   /// Calls the backend with the user's session; null when it cannot be asked
   /// (no address or no session) or did not answer at all (network, timeout).
   Future<http.Response?> _callApi(String method, String path, {Object? body}) async {
@@ -253,14 +270,17 @@ class MarketplaceRepository {
   ///
   /// [privateSellerDeclared]: the seller ticked "I sell as a private person"
   /// (owner decision 2026-11-09); the backend refuses the ad without it.
+  /// [confirmations]: the notices whose box the seller ticked, after a
+  /// [ListingConfirmationRequiredException].
   Future<void> createListing(
     MarketplaceListing listing, {
     bool privateSellerDeclared = false,
+    List<ListingContentNotice> confirmations = const [],
   }) async {
     _refuseAnimals(listing);
     if (!_localOnly) {
       if (await _writeViaApi('POST', '/marketplace/listings', listing,
-          privateSellerDeclared: privateSellerDeclared)) {
+          privateSellerDeclared: privateSellerDeclared, confirmations: confirmations)) {
         return;
       }
       if (_resolveClient() != null) throw const ListingBackendUnavailableException();
@@ -284,7 +304,9 @@ class MarketplaceRepository {
     if (detail == null) return appL10n.marketplaceSaveFailed;
     if (detail == animalPolicyBackendMessage) return appL10n.marketplaceNoAnimalsMessage;
     if (detail == contactPolicyBackendMessage) return appL10n.marketplaceNoContactsMessage;
-    if (detail == medicinePolicyBackendMessage) return appL10n.marketplaceNoMedicinesMessage;
+    if (detail == medicinePolicyBackendMessage) {
+      return '${appL10n.marketplaceNoMedicinesMessage} ${listingAppeal(appL10n)}';
+    }
     if (detail == 'private_seller_declaration_required') {
       return appL10n.marketplacePrivateSellerRequired;
     }
@@ -295,6 +317,7 @@ class MarketplaceRepository {
   Map<String, dynamic> _toApiBody(
     MarketplaceListing listing, {
     required bool privateSellerDeclared,
+    required List<ListingContentNotice> confirmations,
   }) =>
       {
         'title': listing.title,
@@ -309,6 +332,7 @@ class MarketplaceRepository {
         'city_label': listing.cityLabel,
         'country': listing.country,
         'private_seller_declared': privateSellerDeclared,
+        'content_confirmations': confirmations.map((notice) => notice.wire).toList(),
       };
 
   /// True once the backend took the ad; false when it cannot be asked (no
@@ -319,11 +343,16 @@ class MarketplaceRepository {
     String path,
     MarketplaceListing listing, {
     required bool privateSellerDeclared,
+    required List<ListingContentNotice> confirmations,
   }) async {
     final response = await _callApi(
       method,
       path,
-      body: _toApiBody(listing, privateSellerDeclared: privateSellerDeclared),
+      body: _toApiBody(
+        listing,
+        privateSellerDeclared: privateSellerDeclared,
+        confirmations: confirmations,
+      ),
     );
     if (response == null) return false;
     if (response.statusCode == 200) return true;
@@ -341,10 +370,13 @@ class MarketplaceRepository {
     }
     if (response.statusCode == 400) {
       String? detail;
+      ListingConfirmationRequiredException? confirmation;
       try {
-        detail = (jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>)['detail']
-            as String?;
+        final body = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+        detail = body['detail'] as String?;
+        confirmation = ListingConfirmationRequiredException.fromJson(body);
       } catch (_) {}
+      if (confirmation != null) throw confirmation;
       throw ListingRejectedException(_localizedRefusal(detail));
     }
     throw const ListingBackendUnavailableException();
@@ -381,12 +413,13 @@ class MarketplaceRepository {
     MarketplaceListing listing, {
     required String requesterId,
     bool privateSellerDeclared = false,
+    List<ListingContentNotice> confirmations = const [],
   }) async {
     _refuseAnimals(listing);
     if (!_localOnly && canManageListing(listing, requesterId)) {
       final path = '/marketplace/listings/${Uri.encodeComponent(listing.id)}';
       if (await _writeViaApi('PUT', path, listing,
-          privateSellerDeclared: privateSellerDeclared)) {
+          privateSellerDeclared: privateSellerDeclared, confirmations: confirmations)) {
         return;
       }
       if (_resolveClient() != null) throw const ListingBackendUnavailableException();
@@ -493,6 +526,7 @@ class MarketplaceRepository {
       reportCount: (row['report_count'] as num?)?.toInt() ?? 0,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      removal: ListingRemoval.fromJson(row['removal']),
     );
   }
 
@@ -561,6 +595,8 @@ class MarketplaceRepository {
         return ListingStatus.sold;
       case 'removed':
         return ListingStatus.removed;
+      case 'removed_policy':
+        return ListingStatus.removedPolicy;
       default:
         return null;
     }

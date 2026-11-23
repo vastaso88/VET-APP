@@ -17,6 +17,7 @@ import '../../domain/marketplace_listing.dart';
 import '../marketplace_labels.dart';
 import '../widgets/limited_marketplace_notice.dart';
 import '../widgets/listing_photo.dart';
+import '../widgets/listing_removal_notice.dart';
 import 'create_listing_page.dart';
 import 'marketplace_conversation_page.dart';
 
@@ -237,6 +238,10 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
             AppSpacing.xxxl,
           ),
           children: [
+            if (listing.removal case final removal?) ...[
+              ListingRemovalNotice(removal: removal),
+              const SizedBox(height: AppSpacing.xl),
+            ],
             if (listing.photoUrls.isNotEmpty) ...[
               _PhotoCarousel(urls: listing.photoUrls),
               const SizedBox(height: AppSpacing.xl),
@@ -312,7 +317,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                 onPressed: _busy ? null : _reportListing,
               )
             else if (isOwner) ...[
-              if (!listing.isLimited) ...[
+              if (!listing.isLimited && listing.isEditable) ...[
                 DashboardActionButton(
                   label: context.l10n.marketplaceEditListing,
                   icon: Icons.edit_outlined,

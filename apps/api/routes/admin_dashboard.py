@@ -89,6 +89,12 @@ def _cached_admin_overview(_bucket: int) -> dict[str, object]:
         except Exception:
             return 0
 
+    def optional_listing_reviews() -> int:
+        try:
+            return count_table("marketplace_listing_reviews", field="status", values=["open"])
+        except Exception:
+            return 0
+
     def load_sources() -> Any:
         return (
             _admin_client()
@@ -129,6 +135,7 @@ def _cached_admin_overview(_bucket: int) -> dict[str, object]:
                 count_table, "marketplace_listing_reports", field="status", values=["open"]
             ),
             "marketplace_message_reports": pool.submit(optional_message_reports),
+            "listing_reviews": pool.submit(optional_listing_reviews),
             "scrape_runs": pool.submit(count_table, "scrape_runs"),
             "sources_response": pool.submit(load_sources),
             "recent_runs_response": pool.submit(load_runs),
@@ -141,6 +148,7 @@ def _cached_admin_overview(_bucket: int) -> dict[str, object]:
     chat_reports = results["chat_reports"]
     marketplace_reports = results["marketplace_reports"]
     marketplace_message_reports = results["marketplace_message_reports"]
+    listing_reviews = results["listing_reviews"]
     scrape_runs = results["scrape_runs"]
     sources_response = results["sources_response"]
     recent_runs_response = results["recent_runs_response"]
@@ -154,7 +162,11 @@ def _cached_admin_overview(_bucket: int) -> dict[str, object]:
             "radar_osm": radar_osm,
             "radar_open": radar_open,
             "open_moderation": (
-                radar_reports + chat_reports + marketplace_reports + marketplace_message_reports
+                radar_reports
+                + chat_reports
+                + marketplace_reports
+                + marketplace_message_reports
+                + listing_reviews
             ),
             "scrape_runs": scrape_runs,
         },
@@ -178,6 +190,7 @@ def _cached_admin_overview(_bucket: int) -> dict[str, object]:
             "chat_reports": chat_reports,
             "marketplace_reports": marketplace_reports,
             "marketplace_message_reports": marketplace_message_reports,
+            "listing_reviews": listing_reviews,
         },
         "data_sources": getattr(sources_response, "data", None) or [],
         "recent_runs": getattr(recent_runs_response, "data", None) or [],

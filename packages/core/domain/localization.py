@@ -38,6 +38,13 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "de": "Um zu veröffentlichen, müssen Sie bestätigen, dass Sie als Privatperson verkaufen: Der Gebrauchtmarkt ist nicht für gewerbliche oder berufliche Tätigkeiten.",
         "fr": "Pour publier, vous devez confirmer que vous vendez en tant que particulier : le marché de l'occasion n'est pas destiné aux activités commerciales ou professionnelles.",
     },
+    "marketplace_content_confirmation_required": {
+        "it": "Il testo nomina cibo, integratori o prodotti che potrebbero contenere principi attivi, e nel Mercatino non sono ammessi. Se è un accessorio, aggiorna l'app per poterlo confermare: l'annuncio sarà pubblicato subito e il team potrà controllarlo dopo.",
+        "en": "The text names food, supplements or products that may contain active ingredients, and these are not allowed on the marketplace. If it is an accessory, update the app so you can confirm it: the listing will be published right away and the team may check it afterwards.",
+        "es": "El texto menciona comida, suplementos o productos que podrían contener principios activos, y no se admiten en el mercadillo. Si es un accesorio, actualiza la aplicación para poder confirmarlo: el anuncio se publicará enseguida y el equipo podrá revisarlo después.",
+        "de": "Der Text nennt Futter, Nahrungsergänzungsmittel oder Produkte, die Wirkstoffe enthalten könnten; auf dem Gebrauchtmarkt sind sie nicht erlaubt. Wenn es sich um Zubehör handelt, aktualisieren Sie die App, um es bestätigen zu können: Die Anzeige wird sofort veröffentlicht und kann danach vom Team geprüft werden.",
+        "fr": "Le texte mentionne de la nourriture, des compléments alimentaires ou des produits qui pourraient contenir des principes actifs, et ils ne sont pas admis sur le marché de l'occasion. S'il s'agit d'un accessoire, mettez l'application à jour pour pouvoir le confirmer : l'annonce sera publiée tout de suite et l'équipe pourra la vérifier ensuite.",
+    },
     "age_required_marketplace": {
         "it": "Per entrare nel Mercatino ci serve la tua data di nascita.",
         "en": "To enter the second-hand marketplace we need your date of birth.",

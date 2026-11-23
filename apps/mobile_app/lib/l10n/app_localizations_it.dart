@@ -1316,7 +1316,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'Sul Mercatino non si possono vendere farmaci o medicinali, anche veterinari, nemmeno senza ricetta.';
+      'Annuncio non pubblicato: il testo nomina un farmaco o un prodotto con principi attivi (per esempio un collare o una pipetta antiparassitari, o uno shampoo medicato), che non sono ammessi nel Mercatino. Il controllo è automatico e può sbagliare.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -7652,6 +7652,83 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get marketplaceListingGone => 'Questo annuncio non è più disponibile.';
+
+  @override
+  String get marketplaceContentFoodTitle => 'Cibo o integratori?';
+
+  @override
+  String get marketplaceContentFoodBody =>
+      'Il tuo annuncio sembra nominare cibo, mangimi, snack o integratori, che non sono ammessi nel Mercatino. Se si tratta di un accessorio (per esempio una ciotola o un distributore), puoi confermare e l\'annuncio sarà pubblicato subito. Il team può controllarlo dopo e toglierlo se non rispetta le regole. Se vendi cibo o integratori, non pubblicarlo. Una conferma falsa può portare alla rimozione dell\'annuncio e all\'esclusione dal Mercatino.';
+
+  @override
+  String get marketplaceContentFoodConfirm =>
+      'Confermo che questo annuncio non vende né regala cibo, mangimi, snack o integratori.';
+
+  @override
+  String get marketplaceContentActiveTitle => 'Principi attivi?';
+
+  @override
+  String get marketplaceContentActiveBody =>
+      'Il tuo annuncio nomina un prodotto (per esempio «antipulci» o «shampoo») che potrebbe contenere principi attivi, e i prodotti con principi attivi non sono ammessi nel Mercatino. Un pettine antipulci o uno shampoo non medicato vanno bene: puoi confermare e l\'annuncio sarà pubblicato subito. Il team può controllarlo dopo e toglierlo se non rispetta le regole. Se il prodotto contiene principi attivi (antiparassitari, shampoo medicati), non pubblicarlo. Una conferma falsa può portare alla rimozione dell\'annuncio e all\'esclusione dal Mercatino.';
+
+  @override
+  String get marketplaceContentActiveConfirm =>
+      'Confermo che questo annuncio non vende né regala farmaci o prodotti con principi attivi.';
+
+  @override
+  String marketplaceContentFoundWords(String words) {
+    return 'Parole trovate nel testo: $words';
+  }
+
+  @override
+  String get marketplaceContentPublish => 'Pubblica';
+
+  @override
+  String get marketplaceContentEdit => 'Modifica l\'annuncio';
+
+  @override
+  String marketplaceRemovedNotice(String date, String reason) {
+    return 'Annuncio tolto dal team il $date. Motivo: $reason. La decisione l\'ha presa una persona del team.';
+  }
+
+  @override
+  String marketplaceRemovedDetection(String words) {
+    return 'Il controllo automatico del testo aveva trovato queste parole: $words.';
+  }
+
+  @override
+  String marketplaceRemovedAppeal(String place) {
+    return 'Se pensi sia un errore, scrivici da $place; puoi anche rivolgerti al giudice (dettagli nei Termini, §8).';
+  }
+
+  @override
+  String get marketplaceRemovedReasonFood => 'cibo o mangimi';
+
+  @override
+  String get marketplaceRemovedReasonSupplement => 'integratori';
+
+  @override
+  String get marketplaceRemovedReasonMedicine =>
+      'farmaci o prodotti con principi attivi';
+
+  @override
+  String get marketplaceRemovedReasonOther =>
+      'altra violazione delle regole del Mercatino';
+
+  @override
+  String get marketplaceMyListings => 'I miei annunci';
+
+  @override
+  String get marketplaceMyListingsEmpty => 'Non hai annunci.';
+
+  @override
+  String get marketplaceStatusPublished => 'Pubblicato';
+
+  @override
+  String get marketplaceStatusHidden => 'Non visibile agli altri';
+
+  @override
+  String get marketplaceStatusRemovedByTeam => 'Tolto dal team';
 
   @override
   String get marketplacePrivateSellerDeclaration =>

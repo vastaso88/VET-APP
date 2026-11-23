@@ -2,9 +2,11 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from packages.core.application.ports.listing_review_repository import ListingReviewRepository
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
+from packages.core.application.services.listing_review import confirmed_terms, new_review
 from packages.core.domain.common.entity import utc_now
 from packages.core.domain.geo.models import Coordinates, approximate_coordinates
 from packages.core.domain.marketplace.animal_policy import (
@@ -15,8 +17,10 @@ from packages.core.domain.marketplace.content_policy import (
     CONTACT_POLICY_MESSAGE,
     MEDICINE_POLICY_MESSAGE,
     contains_contact_details,
+    offers_active_substances,
     offers_medicines,
 )
+from packages.core.domain.marketplace.content_review import ContentNotice, latest_by_listing
 from packages.core.domain.marketplace.models import (
     ListingCategory,
     ListingCondition,
@@ -42,6 +46,9 @@ class UpdateListingInput(BaseModel):
     country: str = "IT"
     private_seller_declared_at: datetime | None = None
     private_seller_declaration_version: str | None = None
+    # The boxes the seller ticked (content_review.py).
+    content_confirmations: list[ContentNotice] = []
+    locale: str | None = None
 
 
 class UpdateListingOutput(BaseModel):
@@ -51,10 +58,16 @@ class UpdateListingOutput(BaseModel):
 class UpdateListingService:
     """Edits an ad of its author. Runs the same content rule as the creation
     (a title or description cannot be changed into an animal offer), and never
-    touches the status, the report count or the owner."""
+    touches the status, the report count or the owner. A new text or new photos of an
+    ad with sensitive words need the confirmation again."""
 
-    def __init__(self, repository: MarketplaceListingRepository) -> None:
+    def __init__(
+        self,
+        repository: MarketplaceListingRepository,
+        reviews: ListingReviewRepository | None = None,
+    ) -> None:
         self._repository = repository
+        self._reviews = reviews
 
     def execute(self, data: UpdateListingInput) -> UpdateListingOutput:
         current = self._repository.get(data.listing_id)
@@ -72,8 +85,29 @@ class UpdateListingService:
         # by authorised sellers, Reg. (EU) 2019/6).
         if contains_contact_details(data.title, data.description):
             raise ValidationError(CONTACT_POLICY_MESSAGE)
-        if offers_medicines(data.title, data.description):
+        if offers_medicines(data.title, data.description) or offers_active_substances(
+            data.title, data.description
+        ):
+            # One refusal for both, in the words the installed apps already know.
             raise ValidationError(MEDICINE_POLICY_MESSAGE)
+
+        latest = None
+        if self._reviews is not None:
+            latest = latest_by_listing(self._reviews.list_by_listings([current.id])).get(current.id)
+        # The same text and photos, already confirmed: a new price needs nothing.
+        covered = (
+            latest is not None
+            and latest.status in ("open", "checked")
+            and latest.covers(data.title, data.description, data.category, data.photo_urls)
+        )
+        terms = confirmed_terms(
+            data.title,
+            data.description,
+            data.category,
+            confirmations=data.content_confirmations,
+            locale=data.locale,
+            covered=covered,
+        )
 
         updated = current.model_copy(
             update={
@@ -97,4 +131,10 @@ class UpdateListingService:
                 ),
             }
         )
+        # The records first: an ad is never online with words nobody confirmed.
+        if self._reviews is not None and not covered:
+            if terms:
+                self._reviews.save(new_review(updated, terms))
+            if latest is not None and latest.status == "open":
+                self._reviews.save(latest.model_copy(update={"status": "superseded"}))
         return UpdateListingOutput(listing=self._repository.save(updated))

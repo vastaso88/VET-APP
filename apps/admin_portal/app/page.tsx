@@ -133,6 +133,7 @@ export default async function OverviewPage() {
             <Link href="/moderation"><strong>{overview.moderation.radar_reports}</strong><span>Radar reports</span></Link>
             <Link href="/moderation"><strong>{overview.moderation.chat_reports}</strong><span>Chat response reports</span></Link>
             <Link href="/moderation"><strong>{overview.moderation.marketplace_reports}</strong><span>Marketplace reports</span></Link>
+            <Link href="/moderation"><strong>{overview.moderation.listing_reviews ?? 0}</strong><span>Listings to check</span></Link>
           </div>
         </section>
       </div>

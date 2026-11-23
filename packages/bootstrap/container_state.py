@@ -30,7 +30,9 @@ from packages.core.application.ports.event_catalog_repository import EventCatalo
 from packages.core.application.ports.event_submission_repository import EventSubmissionRepository
 from packages.core.application.ports.evidence_retriever import EvidenceRetriever
 from packages.core.application.ports.image_analyzer import ImageAnalyzer
+from packages.core.application.ports.listing_photo_vault import ListingPhotoVault
 from packages.core.application.ports.listing_report_repository import ListingReportRepository
+from packages.core.application.ports.listing_review_repository import ListingReviewRepository
 from packages.core.application.ports.llm_client import LLMClient
 from packages.core.application.ports.llm_usage_repository import LlmUsageRepository
 from packages.core.application.ports.local_activity_repository import LocalActivityRepository
@@ -115,6 +117,8 @@ class ContainerState:
     marketplace_listing_repository: MarketplaceListingRepository
     listing_report_repository: ListingReportRepository
     marketplace_messaging_repository: MarketplaceMessagingRepository
+    listing_review_repository: ListingReviewRepository
+    listing_photo_vault: ListingPhotoVault
     local_activity_repository: LocalActivityRepository
     chat_response_report_repository: ChatResponseReportRepository
     chat_attachment_repository: ChatAttachmentRepository

@@ -1301,7 +1301,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'Medicines, including veterinary ones, cannot be sold on the marketplace, even without a prescription.';
+      'Listing not published: the text names a medicine or a product with active ingredients (for example a flea and tick collar or pipette, or a medicated shampoo), which are not allowed on the marketplace. The check is automatic and can be wrong.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -7600,6 +7600,83 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceListingGone => 'This listing is no longer available.';
+
+  @override
+  String get marketplaceContentFoodTitle => 'Food or supplements?';
+
+  @override
+  String get marketplaceContentFoodBody =>
+      'Your listing seems to mention food, feed, treats or supplements, which are not allowed on the marketplace. If it is an accessory (for example a bowl or a feeder), you can confirm and the listing will be published right away. The team may check it afterwards and take it down if it breaks the rules. If you are selling food or supplements, do not publish it. A false confirmation can lead to the listing being removed and to you being kept out of the marketplace.';
+
+  @override
+  String get marketplaceContentFoodConfirm =>
+      'I confirm that this listing does not sell or give away food, feed, treats or supplements.';
+
+  @override
+  String get marketplaceContentActiveTitle => 'Active ingredients?';
+
+  @override
+  String get marketplaceContentActiveBody =>
+      'Your listing mentions a product (for example “flea” or “shampoo”) that may contain active ingredients, and products with active ingredients are not allowed on the marketplace. A flea comb or a non-medicated shampoo is fine: you can confirm and the listing will be published right away. The team may check it afterwards and take it down if it breaks the rules. If the product contains active ingredients (flea and tick treatments, medicated shampoos), do not publish it. A false confirmation can lead to the listing being removed and to you being kept out of the marketplace.';
+
+  @override
+  String get marketplaceContentActiveConfirm =>
+      'I confirm that this listing does not sell or give away medicines or products with active ingredients.';
+
+  @override
+  String marketplaceContentFoundWords(String words) {
+    return 'Words found in the text: $words';
+  }
+
+  @override
+  String get marketplaceContentPublish => 'Publish';
+
+  @override
+  String get marketplaceContentEdit => 'Edit listing';
+
+  @override
+  String marketplaceRemovedNotice(String date, String reason) {
+    return 'Listing taken down by the team on $date. Reason: $reason. A person on the team made the decision.';
+  }
+
+  @override
+  String marketplaceRemovedDetection(String words) {
+    return 'The automatic check of the text had found these words: $words.';
+  }
+
+  @override
+  String marketplaceRemovedAppeal(String place) {
+    return 'If you think this is a mistake, write to us from $place; you can also go to court (details in the Terms, §8).';
+  }
+
+  @override
+  String get marketplaceRemovedReasonFood => 'food or feed';
+
+  @override
+  String get marketplaceRemovedReasonSupplement => 'supplements';
+
+  @override
+  String get marketplaceRemovedReasonMedicine =>
+      'medicines or products with active ingredients';
+
+  @override
+  String get marketplaceRemovedReasonOther =>
+      'another breach of the marketplace rules';
+
+  @override
+  String get marketplaceMyListings => 'My listings';
+
+  @override
+  String get marketplaceMyListingsEmpty => 'You have no listings.';
+
+  @override
+  String get marketplaceStatusPublished => 'Published';
+
+  @override
+  String get marketplaceStatusHidden => 'Not visible to others';
+
+  @override
+  String get marketplaceStatusRemovedByTeam => 'Taken down by the team';
 
   @override
   String get marketplacePrivateSellerDeclaration =>

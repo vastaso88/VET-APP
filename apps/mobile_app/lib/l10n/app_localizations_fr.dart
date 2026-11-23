@@ -1319,7 +1319,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'Sur le marché de l\'occasion, on ne peut pas vendre de médicaments, y compris vétérinaires, même sans ordonnance.';
+      'Annonce non publiée : le texte mentionne un médicament ou un produit contenant des principes actifs (par exemple un collier ou une pipette antiparasitaires, ou un shampooing médicamenteux), qui ne sont pas admis sur le marché de l\'occasion. Le contrôle est automatique et peut se tromper.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -7689,6 +7689,85 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplaceListingGone => 'Cette annonce n\'est plus disponible.';
+
+  @override
+  String get marketplaceContentFoodTitle =>
+      'Nourriture ou compléments alimentaires ?';
+
+  @override
+  String get marketplaceContentFoodBody =>
+      'Votre annonce semble mentionner de la nourriture, des aliments pour animaux, des friandises ou des compléments alimentaires, qui ne sont pas admis sur le marché de l\'occasion. S\'il s\'agit d\'un accessoire (par exemple une gamelle ou un distributeur), vous pouvez le confirmer et l\'annonce sera publiée tout de suite. L\'équipe peut la vérifier ensuite et la retirer si elle ne respecte pas les règles. Si vous vendez de la nourriture ou des compléments alimentaires, ne publiez pas l\'annonce. Une fausse confirmation peut entraîner le retrait de l\'annonce et votre exclusion du marché de l\'occasion.';
+
+  @override
+  String get marketplaceContentFoodConfirm =>
+      'Je confirme que cette annonce ne vend ni ne donne de nourriture, d\'aliments pour animaux, de friandises ou de compléments alimentaires.';
+
+  @override
+  String get marketplaceContentActiveTitle => 'Principes actifs ?';
+
+  @override
+  String get marketplaceContentActiveBody =>
+      'Votre annonce mentionne un produit (par exemple « antipuces » ou « shampooing ») qui pourrait contenir des principes actifs, et les produits contenant des principes actifs ne sont pas admis sur le marché de l\'occasion. Un peigne antipuces ou un shampooing non médicamenteux conviennent : vous pouvez le confirmer et l\'annonce sera publiée tout de suite. L\'équipe peut la vérifier ensuite et la retirer si elle ne respecte pas les règles. Si le produit contient des principes actifs (antiparasitaires, shampooings médicamenteux), ne publiez pas l\'annonce. Une fausse confirmation peut entraîner le retrait de l\'annonce et votre exclusion du marché de l\'occasion.';
+
+  @override
+  String get marketplaceContentActiveConfirm =>
+      'Je confirme que cette annonce ne vend ni ne donne de médicaments ou de produits contenant des principes actifs.';
+
+  @override
+  String marketplaceContentFoundWords(String words) {
+    return 'Mots trouvés dans le texte : $words';
+  }
+
+  @override
+  String get marketplaceContentPublish => 'Publier';
+
+  @override
+  String get marketplaceContentEdit => 'Modifier l\'annonce';
+
+  @override
+  String marketplaceRemovedNotice(String date, String reason) {
+    return 'Annonce retirée par l\'équipe le $date. Motif : $reason. La décision a été prise par une personne de l\'équipe.';
+  }
+
+  @override
+  String marketplaceRemovedDetection(String words) {
+    return 'Le contrôle automatique du texte avait trouvé ces mots : $words.';
+  }
+
+  @override
+  String marketplaceRemovedAppeal(String place) {
+    return 'Si vous pensez qu\'il s\'agit d\'une erreur, écrivez-nous depuis $place ; vous pouvez aussi saisir un juge (détails dans les Conditions d\'utilisation, § 8).';
+  }
+
+  @override
+  String get marketplaceRemovedReasonFood =>
+      'nourriture ou aliments pour animaux';
+
+  @override
+  String get marketplaceRemovedReasonSupplement => 'compléments alimentaires';
+
+  @override
+  String get marketplaceRemovedReasonMedicine =>
+      'médicaments ou produits contenant des principes actifs';
+
+  @override
+  String get marketplaceRemovedReasonOther =>
+      'autre violation des règles du marché de l\'occasion';
+
+  @override
+  String get marketplaceMyListings => 'Mes annonces';
+
+  @override
+  String get marketplaceMyListingsEmpty => 'Vous n\'avez pas d\'annonces.';
+
+  @override
+  String get marketplaceStatusPublished => 'Publiée';
+
+  @override
+  String get marketplaceStatusHidden => 'Non visible pour les autres';
+
+  @override
+  String get marketplaceStatusRemovedByTeam => 'Retirée par l\'équipe';
 
   @override
   String get marketplacePrivateSellerDeclaration =>

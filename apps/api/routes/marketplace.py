@@ -19,6 +19,7 @@ from packages.core.domain.common.entity import utc_now
 from packages.core.domain.common.language import language_from_accept_header
 from packages.core.domain.geo.models import Coordinates
 from packages.core.domain.localization import translate
+from packages.core.domain.marketplace.content_review import ContentNotice
 from packages.core.domain.marketplace.models import (
     PRIVATE_SELLER_DECLARATION_REQUIRED,
     PRIVATE_SELLER_DECLARATION_VERSION,
@@ -123,6 +124,10 @@ class ListingPayload(BaseModel):
     # The seller ticks "I sell as a private person, not as a business" (owner
     # decision 2026-11-09). Without it the ad is neither published nor edited.
     private_seller_declared: bool = False
+    # The boxes of the notices the seller ticked (owner decisions 2026-11-23): needed
+    # only when the text names food, supplements or ambiguous products. The ad is
+    # published at once and checked by the team afterwards.
+    content_confirmations: list[ContentNotice] = Field(default=[], max_length=2)
 
 
 def _private_seller_declaration(payload: ListingPayload, locale: str | None) -> datetime:
@@ -153,9 +158,8 @@ def create_listing(
 ) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
-    declared_at = _private_seller_declaration(
-        payload, language_from_accept_header(accept_language) or user.preferred_locale
-    )
+    locale = language_from_accept_header(accept_language) or user.preferred_locale
+    declared_at = _private_seller_declaration(payload, locale)
     result = container.create_listing_service().execute(
         CreateListingInput(
             owner_id=user.id,
@@ -171,6 +175,8 @@ def create_listing(
             country=payload.country,
             private_seller_declared_at=declared_at,
             private_seller_declaration_version=PRIVATE_SELLER_DECLARATION_VERSION,
+            content_confirmations=payload.content_confirmations,
+            locale=locale,
         )
     )
     return {"listing": _public_row(result.listing, user.id)}
@@ -191,9 +197,8 @@ def update_listing(
 ) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
-    declared_at = _private_seller_declaration(
-        payload, language_from_accept_header(accept_language) or user.preferred_locale
-    )
+    locale = language_from_accept_header(accept_language) or user.preferred_locale
+    declared_at = _private_seller_declaration(payload, locale)
     result = container.update_listing_service().execute(
         UpdateListingInput(
             owner_id=user.id,
@@ -210,9 +215,39 @@ def update_listing(
             country=payload.country,
             private_seller_declared_at=declared_at,
             private_seller_declaration_version=PRIVATE_SELLER_DECLARATION_VERSION,
+            content_confirmations=payload.content_confirmations,
+            locale=locale,
         )
     )
     return {"listing": _public_row(result.listing, user.id)}
+
+
+# The caller's own ads, whatever their state: the only place a seller finds an ad the
+# team took down, with the reason and the date. Their own data: no plan needed. Before
+# "/listings/{listing_id}", or "mine" would be taken for an id.
+@router.get("/listings/mine")
+def my_listings() -> dict[str, object]:
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    rows = []
+    for item in container.listing_review_service().own_listings(user.id):
+        row = _public_row(item.listing, user.id)
+        review = item.review
+        # Only a removal is the seller's business: never the queue, the note or who
+        # decided. The words found say what the automatic check had noticed.
+        row["removal"] = None
+        if (
+            review is not None
+            and review.status == "removed"
+            and item.listing.status == "removed_policy"
+        ):
+            row["removal"] = {
+                "reason": review.removal_reason,
+                "decided_at": review.decided_at.isoformat() if review.decided_at else None,
+                "terms": review.terms,
+            }
+        rows.append(row)
+    return {"listings": rows}
 
 
 # One ad by id (the detail page): an active ad to anyone signed in, any state to

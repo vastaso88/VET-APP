@@ -30,8 +30,9 @@ ListingCondition = Literal["new", "like_new", "good", "worn"]
 ListingSpecies = Literal[
     "all", "dog", "cat", "small_mammal", "bird", "reptile_amphibian", "fish", "other"
 ]
-# "removed_policy": hidden because it offered an animal (animal_policy.py); the
-# row is kept, never deleted, and only "active" listings are ever served.
+# "removed_policy": hidden because it offered an animal (animal_policy.py) or the team
+# took it down after the check (content_review.py); the row is kept, and only
+# "active" listings are ever served to others.
 ListingStatus = Literal["active", "reserved", "sold", "removed", "removed_policy"]
 ListingReportReason = Literal[
     "spam", "scam", "prohibited_item", "inappropriate", "sells_animals", "other"

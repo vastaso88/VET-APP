@@ -72,7 +72,7 @@ def test_medicines_are_recognised(title: str, description: str | None) -> None:
 @pytest.mark.parametrize(
     "title, description",
     [
-        ("Collare antipulci nuovo", "Mai aperto"),
+        ("Pettine antipulci nuovo", "Mai aperto"),
         ("Integratore per articolazioni", "Scaduto nel 2027"),
         ("Shampoo delicato", None),
         ("Crocchette ipoallergeniche 12 kg", "Ricetta speciale del produttore senza cereali"),

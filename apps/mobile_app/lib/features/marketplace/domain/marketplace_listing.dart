@@ -1,4 +1,5 @@
 import '../../location/domain/coordinates.dart';
+import 'listing_content.dart';
 
 /// Owner-facing list agreed 2026-10-07 (session "Mercatino"). The wire
 /// values of the categories this replaced (food, accessories,
@@ -19,7 +20,9 @@ enum ListingCategory {
 
 enum ListingCondition { newItem, likeNew, good, worn }
 
-enum ListingStatus { active, reserved, sold, removed }
+/// [removedPolicy]: hidden by the rules on animals or taken down by the team
+/// ([MarketplaceListing.removal] says why).
+enum ListingStatus { active, reserved, sold, removed, removedPolicy }
 
 /// Same groups as the pet species picker (pets/data/pet_demo_store.dart),
 /// plus [allSpecies] for generic items (a bowl, a carrier for "any" pet).
@@ -51,6 +54,7 @@ class MarketplaceListing {
     required this.updatedAt,
     this.isLimited = false,
     this.serverDistanceMeters,
+    this.removal,
   });
 
   final String id;
@@ -87,6 +91,12 @@ class MarketplaceListing {
   /// The distance the backend computed, only for a limited ad (its position
   /// is withheld, so the app cannot measure it).
   final double? serverDistanceMeters;
+
+  /// Only on the seller's own ads ([MarketplaceRepository.loadMyListings]).
+  final ListingRemoval? removal;
+
+  /// What the backend lets its author change.
+  bool get isEditable => status == ListingStatus.active || status == ListingStatus.reserved;
 
   bool get isGift => priceCents == null;
 
@@ -130,6 +140,7 @@ class MarketplaceListing {
       updatedAt: updatedAt ?? this.updatedAt,
       isLimited: isLimited,
       serverDistanceMeters: serverDistanceMeters,
+      removal: removal,
     );
   }
 }

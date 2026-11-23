@@ -609,7 +609,7 @@
   "marketplaceRules": "Sul Mercatino si trovano solo oggetti per animali. Gli animali non si possono vendere, regalare né scambiare, in nessun paese.",
   "marketplaceNoAnimalsMessage": "Sul Mercatino si vendono solo oggetti per animali, non animali.",
   "marketplaceNoContactsMessage": "Nell'annuncio non inserire telefoni, email, siti web o profili social.",
-  "marketplaceNoMedicinesMessage": "Sul Mercatino non si possono vendere farmaci o medicinali, anche veterinari, nemmeno senza ricetta.",
+  "marketplaceNoMedicinesMessage": "Annuncio non pubblicato: il testo nomina un farmaco o un prodotto con principi attivi (per esempio un collare o una pipetta antiparassitari, o uno shampoo medicato), che non sono ammessi nel Mercatino. Il controllo è automatico e può sbagliare.",
   "marketplaceBackendUnavailable": "Il Mercatino non è raggiungibile in questo momento. Riprova tra poco.",
   "marketplaceEmptyFiltered": "Nessun annuncio con questi filtri per ora.",
   "marketplaceNeedsLocation": "Il Mercatino mostra solo gli annunci vicino a te. Imposta la tua posizione in Impostazioni → Località per vederli.",
@@ -4382,6 +4382,58 @@
   "ageGuardianBody": "Hai meno di 18 anni: per sottoscrivere un piano serve l'autorizzazione di un genitore o di chi esercita la responsabilità genitoriale. Prosegui solo se ce l'hai.",
   "ageGuardianConfirm": "Ho l'autorizzazione",
   "marketplaceListingGone": "Questo annuncio non è più disponibile.",
+  "marketplaceContentFoodTitle": "Cibo o integratori?",
+  "marketplaceContentFoodBody": "Il tuo annuncio sembra nominare cibo, mangimi, snack o integratori, che non sono ammessi nel Mercatino. Se si tratta di un accessorio (per esempio una ciotola o un distributore), puoi confermare e l'annuncio sarà pubblicato subito. Il team può controllarlo dopo e toglierlo se non rispetta le regole. Se vendi cibo o integratori, non pubblicarlo. Una conferma falsa può portare alla rimozione dell'annuncio e all'esclusione dal Mercatino.",
+  "marketplaceContentFoodConfirm": "Confermo che questo annuncio non vende né regala cibo, mangimi, snack o integratori.",
+  "marketplaceContentActiveTitle": "Principi attivi?",
+  "marketplaceContentActiveBody": "Il tuo annuncio nomina un prodotto (per esempio «antipulci» o «shampoo») che potrebbe contenere principi attivi, e i prodotti con principi attivi non sono ammessi nel Mercatino. Un pettine antipulci o uno shampoo non medicato vanno bene: puoi confermare e l'annuncio sarà pubblicato subito. Il team può controllarlo dopo e toglierlo se non rispetta le regole. Se il prodotto contiene principi attivi (antiparassitari, shampoo medicati), non pubblicarlo. Una conferma falsa può portare alla rimozione dell'annuncio e all'esclusione dal Mercatino.",
+  "marketplaceContentActiveConfirm": "Confermo che questo annuncio non vende né regala farmaci o prodotti con principi attivi.",
+  "marketplaceContentFoundWords": "Parole trovate nel testo: {words}",
+  "@marketplaceContentFoundWords": {
+    "placeholders": {
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceContentPublish": "Pubblica",
+  "marketplaceContentEdit": "Modifica l'annuncio",
+  "marketplaceRemovedNotice": "Annuncio tolto dal team il {date}. Motivo: {reason}. La decisione l'ha presa una persona del team.",
+  "@marketplaceRemovedNotice": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceRemovedDetection": "Il controllo automatico del testo aveva trovato queste parole: {words}.",
+  "@marketplaceRemovedDetection": {
+    "placeholders": {
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceRemovedAppeal": "Se pensi sia un errore, scrivici da {place}; puoi anche rivolgerti al giudice (dettagli nei Termini, §8).",
+  "@marketplaceRemovedAppeal": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceRemovedReasonFood": "cibo o mangimi",
+  "marketplaceRemovedReasonSupplement": "integratori",
+  "marketplaceRemovedReasonMedicine": "farmaci o prodotti con principi attivi",
+  "marketplaceRemovedReasonOther": "altra violazione delle regole del Mercatino",
+  "marketplaceMyListings": "I miei annunci",
+  "marketplaceMyListingsEmpty": "Non hai annunci.",
+  "marketplaceStatusPublished": "Pubblicato",
+  "marketplaceStatusHidden": "Non visibile agli altri",
+  "marketplaceStatusRemovedByTeam": "Tolto dal team",
   "marketplacePrivateSellerDeclaration": "Dichiaro di vendere come privato, non nell'ambito di un'attività commerciale o professionale.",
   "marketplacePrivateSellerRequired": "Per pubblicare devi confermare di vendere come privato: il Mercatino non è per attività commerciali o professionali.",
   "marketplaceInfoPrivateOnly": "Se vendi come attività commerciale o professionale non puoi usare il Mercatino: Quokka può rimuovere gli annunci e sospendere l'accesso.",

@@ -61,6 +61,18 @@ def prune_chat_message_keys(
     return PruneChatMessageKeysService(keys).run().model_dump(mode="json")
 
 
+@router.post("/prune-removed-listings")
+def prune_removed_listings(
+    x_vetapp_scheduler: str | None = Header(default=None, alias="X-VetApp-Scheduler"),
+) -> dict[str, object]:
+    """Mercatino ads taken down by the team: keeps their photos out of the public bucket,
+    deletes ad and photos 6 months after the decision and the register of decisions after
+    24. Counts only; scheduler token, no user session. `table_available: false` until the
+    SQL is applied."""
+    _require_scheduler_token(x_vetapp_scheduler)
+    return get_container().prune_removed_listings_service().run().model_dump(mode="json")
+
+
 @router.post("/underage-dry-run")
 def underage_review_dry_run(
     x_vetapp_scheduler: str | None = Header(default=None, alias="X-VetApp-Scheduler"),

@@ -85,6 +85,43 @@ export type MarketplaceRestrictionItem = {
   expires_at?: string | null;
 };
 
+// A published listing whose seller confirmed it sells no food, supplements or treatments.
+export type ListingReviewItem = {
+  id: string;
+  listing_id: string;
+  owner_id: string;
+  title: string;
+  category: string;
+  listing_status: string;
+  status: "open" | "checked" | "removed" | "superseded";
+  terms: string[];
+  notices: string[];
+  confirmed_at: string;
+  decided_at: string | null;
+  decided_by_admin_id: string | null;
+  removal_reason: string | null;
+};
+
+// The two states of the queue, plus what closed it otherwise.
+export const LISTING_REVIEW_LABELS: Record<ListingReviewItem["status"], string> = {
+  open: "da controllare",
+  checked: "controllato",
+  removed: "tolto dal team",
+  superseded: "superato da una modifica",
+};
+
+export type HighlightedPiece = { text: string; hit: boolean };
+
+export type ListingReviewDetail = ListingReviewItem & {
+  photo_urls: string[];
+  price_cents: number | null;
+  city_label: string | null;
+  confirmation_version: string;
+  highlighted_title: HighlightedPiece[];
+  highlighted_description: HighlightedPiece[];
+  note: string | null;
+};
+
 export type AdminModeration = {
   radar: RadarModerationItem[];
   chat: ChatModerationItem[];
@@ -202,6 +239,59 @@ export async function resolveMarketplaceModeration(
       }),
     },
   );
+}
+
+// A separate read, like the message reports: empty before the backend update or the SQL.
+export async function getListingReviews(): Promise<ListingReviewItem[]> {
+  await requireAdminSession();
+  try {
+    const payload = await authenticatedAdminRequest<{ reviews: ListingReviewItem[] }>(
+      "/admin/moderation/listing_reviews",
+    );
+    return payload.reviews;
+  } catch {
+    return [];
+  }
+}
+
+export async function getListingReview(reviewId: string): Promise<ListingReviewDetail | null> {
+  await requireAdminSession();
+  try {
+    const payload = await authenticatedAdminRequest<{ item: ListingReviewDetail }>(
+      `/admin/moderation/listing_reviews/${encodeURIComponent(reviewId)}`,
+    );
+    return payload.item;
+  } catch (error) {
+    if (isAdminApiStatus(error, 404)) return null;
+    throw error;
+  }
+}
+
+// False when the listing changed, or was decided, after the admin opened it.
+export async function decideListingReview(
+  reviewId: string,
+  outcome: "checked" | "removed" | "restored",
+  reason: string,
+  note: string,
+): Promise<boolean> {
+  await requireAdminSession();
+  try {
+    await authenticatedAdminRequest(
+      `/admin/moderation/listing_reviews/${encodeURIComponent(reviewId)}`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          outcome,
+          reason: outcome === "removed" ? reason : null,
+          note: note.trim() || null,
+        }),
+      },
+    );
+    return true;
+  } catch (error) {
+    if (isAdminApiStatus(error, 409)) return false;
+    throw error;
+  }
 }
 
 // Before the backend update or the SQL script this list is simply empty.

@@ -23,3 +23,14 @@ class MarketplaceListingRepository(Protocol):
     def statuses(self, listing_ids: list[str]) -> dict[str, str]:
         """Current status by id; a deleted ad is simply absent."""
         ...
+
+    def list_by_owner(self, owner_id: str, limit: int) -> list[MarketplaceListing]:
+        """Every ad of one owner, whatever its state, newest first."""
+        ...
+
+    def delete(self, listing_id: str) -> None: ...
+
+    def list_by_ids(self, listing_ids: list[str]) -> list[MarketplaceListing]:
+        """These ads in one read (or few), in no particular order; a deleted one is
+        simply absent."""
+        ...

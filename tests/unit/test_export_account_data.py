@@ -25,6 +25,9 @@ from packages.core.domain.reminders.models import Reminder
 from packages.infrastructure.persistence.in_memory_account_exporter import (
     InMemoryAccountExporter,
 )
+from packages.infrastructure.persistence.in_memory_listing_reviews import (
+    InMemoryListingReviewRepository,
+)
 from packages.infrastructure.persistence.in_memory_marketplace_messaging import (
     InMemoryMarketplaceMessagingRepository,
 )
@@ -195,6 +198,24 @@ def test_support_logs_are_exported_without_team_notes_and_keep_other_notes() -> 
     assert export.data["clinical_events"][0]["note"] == "owner clinical note"
 
 
+def test_listing_checks_are_exported_without_the_team_note_and_the_admin() -> None:
+    client = _SigningFake()
+    _seed(client, OWNER_A, tag="a")
+    client.db["marketplace_listing_reviews"][0].update(
+        {
+            "decided_by_admin_id": "team",
+            "note": "internal note",
+            "status": "removed",
+            "removal_reason": "food",
+        }
+    )
+
+    (review,) = _exporter(client).export_data(OWNER_A).data["marketplace_listing_reviews"]
+
+    assert review["removal_reason"] == "food"
+    assert not {"decided_by_admin_id", "note"} & review.keys()
+
+
 def test_export_refuses_a_non_uuid_owner() -> None:
     with pytest.raises(ValueError):
         _exporter(_SigningFake()).export_data("")
@@ -237,6 +258,7 @@ def test_in_memory_export_isolates_owners() -> None:
         dog_walks=InMemoryDogWalkRepository(),
         marketplace_listings=InMemoryMarketplaceListingRepository(),
         marketplace_messaging=InMemoryMarketplaceMessagingRepository(),
+        listing_reviews=InMemoryListingReviewRepository(),
     )
 
     export = exporter.export_data("owner-a")

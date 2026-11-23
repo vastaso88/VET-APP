@@ -15,10 +15,14 @@ class RequirementMissingError(ValidationError):
     synthetic users, 2026-11-16: nobody could publish and the answer did not
     say why). The API answers 400 with `detail` and `code` = [code] (what the
     app already compares), [message] in the owner's language, and [fix]: the
-    field to send, for anyone calling the API directly."""
+    field to send, for anyone calling the API directly. [detail]: what an app too old
+    to know the code shows as it comes, when the bare code would not do."""
 
-    def __init__(self, code: str, *, message: str, fix: dict[str, object]) -> None:
+    def __init__(
+        self, code: str, *, message: str, fix: dict[str, object], detail: str | None = None
+    ) -> None:
         super().__init__(code)
+        self.detail = detail or code
         self.code = code
         self.message = message
         self.fix = fix

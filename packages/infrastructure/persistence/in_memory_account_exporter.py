@@ -14,6 +14,7 @@ from packages.core.application.ports.account_exporter import AccountExport
 from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.dog_walk_repository import DogWalkRepository
+from packages.core.application.ports.listing_review_repository import ListingReviewRepository
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
@@ -40,6 +41,7 @@ class InMemoryAccountExporter:
         dog_walks: DogWalkRepository,
         marketplace_listings: MarketplaceListingRepository,
         marketplace_messaging: MarketplaceMessagingRepository,
+        listing_reviews: ListingReviewRepository,
     ) -> None:
         self._pet_profiles = pet_profiles
         self._conversations = conversations
@@ -51,6 +53,7 @@ class InMemoryAccountExporter:
         self._dog_walks = dog_walks
         self._marketplace_listings = marketplace_listings
         self._marketplace_messaging = marketplace_messaging
+        self._listing_reviews = listing_reviews
 
     def export_data(self, owner_id: str) -> AccountExport:
         pets = self._pet_profiles.list_by_owner(owner_id)
@@ -72,6 +75,10 @@ class InMemoryAccountExporter:
                     if listing.owner_id == owner_id
                 ]
             ),
+            "marketplace_listing_reviews": [
+                review.model_dump(mode="json", exclude={"decided_by_admin_id", "note"})
+                for review in self._listing_reviews.list_by_owner(owner_id)
+            ],
             **self._marketplace_messages(owner_id),
             "account_consents": _dump(
                 [c for c in [self._account_consents.get(owner_id)] if c is not None]

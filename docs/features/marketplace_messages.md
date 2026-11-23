@@ -114,3 +114,39 @@ oggi `2026-11-09`). Le due colonne si vedono solo nei propri annunci. SQL:
 policy restrittive per chi scrive direttamente nella tabella. Le app già installate non mandano la
 dichiarazione: dopo il deploy non possono pubblicare finché non si aggiornano.
 
+## Farmaci, cibo e integratori (decisioni del proprietario, 2026-11-23)
+
+Regole e testi: `docs/compliance/24_regole_del_mercatino_v1.md` (v2). Le parole stanno solo nel
+backend; l'app mostra ciò che il server risponde.
+
+| Caso | Che cosa succede | Dove |
+| --- | --- | --- |
+| Farmaco o prodotto con principi attivi inequivocabile (collare, pipetta, spray o compresse antipulci, shampoo medicato, marchi) | rifiutato, niente viene salvato | `content_policy.py` |
+| Cibo, mangimi, snack, integratori | avviso 1 e casella, poi **pubblicato subito** | `content_review.py` |
+| Parole ambigue da sole («antipulci», «antiparassitario», «shampoo») | avviso 2 e casella, poi **pubblicato subito** | `content_review.py` |
+| Accessori senza queste parole | niente | |
+
+- **Conferma**: 400 `content_confirmation_required` con `fix.value` (`food`, `active_substance`) e
+  `fix.terms` (parole trovate); l'app ripete la richiesta con `content_confirmations`. Si chiede di
+  nuovo quando cambiano testo, categoria o foto, non per il solo prezzo. Senza la riga della
+  conferma salvata l'annuncio non va online.
+- **Team**: `GET /admin/moderation/listing_reviews`, `GET` e `POST .../{id}` con `checked`,
+  `removed` (motivo obbligatorio: `food`, `supplement`, `medicine`, `other`) o `restored` (riesame
+  accolto). 409 se l'annuncio è cambiato dopo che l'amministratore lo ha aperto. Nel portale:
+  sezione «Listings to check» e pagina con le parole evidenziate. Se nessuno interviene, resta.
+- **Chi vende**: `GET /marketplace/listings/mine` e pagina «I miei annunci»: stato e, se tolto,
+  motivo, data, parole trovate e come chiedere il riesame. Mai la coda, la nota o chi ha deciso.
+- **Dati**: `scripts/setup/marketplace_content_review.sql` (stesso blocco in `supabase_schema.sql`):
+  `marketplace_listing_reviews` (si cancella con l'annuncio o l'account),
+  `marketplace_listing_decision_log` (senza id di chi vende e senza testo) e il bucket privato
+  `marketplace-photos-held`. **Va eseguito prima del deploy.**
+- **Foto e tempi** (`services/removed_listings.py`): quando il team toglie un annuncio le foto
+  passano dal bucket pubblico a quello privato (il team le vede con un link di 10 minuti) e
+  tornano se il riesame è accolto. Il lavoro orario `POST /admin/lifecycle/prune-removed-listings`
+  riprova gli spostamenti falliti, cancella annuncio e foto 6 mesi dopo la decisione (183 giorni),
+  subito dopo le foto di un annuncio che chi vende ha cancellato, e il registro dopo 24 mesi (730).
+  Si toccano solo file nella cartella di chi vende; una foto mostrata anche da un altro suo
+  annuncio online resta pubblica. Un link già aperto può restare nella cache della rete per il
+  tempo fissato da Supabase.
+- Le app già installate non hanno le caselle: un annuncio con quelle parole si pubblica solo dopo
+  l'aggiornamento (leggono la frase del server). Gli annunci già online non vengono toccati.

@@ -1308,7 +1308,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'En el mercadillo no se pueden vender fármacos ni medicamentos, tampoco veterinarios, ni siquiera sin receta.';
+      'Anuncio no publicado: el texto nombra un medicamento o un producto con principios activos (por ejemplo, un collar o una pipeta antiparasitarios, o un champú medicado), que no se admiten en el mercadillo. El control es automático y puede equivocarse.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -7651,6 +7651,83 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplaceListingGone => 'Este anuncio ya no está disponible.';
+
+  @override
+  String get marketplaceContentFoodTitle => '¿Comida o suplementos?';
+
+  @override
+  String get marketplaceContentFoodBody =>
+      'Tu anuncio parece mencionar comida, piensos, snacks o suplementos, que no se admiten en el mercadillo. Si se trata de un accesorio (por ejemplo, un comedero o un dispensador), puedes confirmarlo y el anuncio se publicará enseguida. El equipo puede revisarlo después y retirarlo si no cumple las normas. Si vendes comida o suplementos, no lo publiques. Una confirmación falsa puede llevar a la retirada del anuncio y a que te dejemos fuera del mercadillo.';
+
+  @override
+  String get marketplaceContentFoodConfirm =>
+      'Confirmo que este anuncio no vende ni regala comida, piensos, snacks ni suplementos.';
+
+  @override
+  String get marketplaceContentActiveTitle => '¿Principios activos?';
+
+  @override
+  String get marketplaceContentActiveBody =>
+      'Tu anuncio menciona un producto (por ejemplo, «antipulgas» o «champú») que podría contener principios activos, y los productos con principios activos no se admiten en el mercadillo. Un peine antipulgas o un champú no medicado están bien: puedes confirmarlo y el anuncio se publicará enseguida. El equipo puede revisarlo después y retirarlo si no cumple las normas. Si el producto contiene principios activos (antiparasitarios, champús medicados), no lo publiques. Una confirmación falsa puede llevar a la retirada del anuncio y a que te dejemos fuera del mercadillo.';
+
+  @override
+  String get marketplaceContentActiveConfirm =>
+      'Confirmo que este anuncio no vende ni regala medicamentos ni productos con principios activos.';
+
+  @override
+  String marketplaceContentFoundWords(String words) {
+    return 'Palabras encontradas en el texto: $words';
+  }
+
+  @override
+  String get marketplaceContentPublish => 'Publicar';
+
+  @override
+  String get marketplaceContentEdit => 'Modificar el anuncio';
+
+  @override
+  String marketplaceRemovedNotice(String date, String reason) {
+    return 'Anuncio retirado por el equipo el $date. Motivo: $reason. La decisión la ha tomado una persona del equipo.';
+  }
+
+  @override
+  String marketplaceRemovedDetection(String words) {
+    return 'El control automático del texto había encontrado estas palabras: $words.';
+  }
+
+  @override
+  String marketplaceRemovedAppeal(String place) {
+    return 'Si crees que es un error, escríbenos desde $place; también puedes acudir a los tribunales (detalles en los Términos, §8).';
+  }
+
+  @override
+  String get marketplaceRemovedReasonFood => 'comida o piensos';
+
+  @override
+  String get marketplaceRemovedReasonSupplement => 'suplementos';
+
+  @override
+  String get marketplaceRemovedReasonMedicine =>
+      'medicamentos o productos con principios activos';
+
+  @override
+  String get marketplaceRemovedReasonOther =>
+      'otro incumplimiento de las normas del mercadillo';
+
+  @override
+  String get marketplaceMyListings => 'Mis anuncios';
+
+  @override
+  String get marketplaceMyListingsEmpty => 'No tienes anuncios.';
+
+  @override
+  String get marketplaceStatusPublished => 'Publicado';
+
+  @override
+  String get marketplaceStatusHidden => 'No visible para los demás';
+
+  @override
+  String get marketplaceStatusRemovedByTeam => 'Retirado por el equipo';
 
   @override
   String get marketplacePrivateSellerDeclaration =>

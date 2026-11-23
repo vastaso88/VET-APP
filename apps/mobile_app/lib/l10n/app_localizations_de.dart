@@ -1322,7 +1322,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'Auf dem Gebrauchtmarkt dürfen keine Arzneimittel verkauft werden, auch keine Tierarzneimittel und auch nicht rezeptfrei.';
+      'Anzeige nicht veröffentlicht: Der Text nennt ein Arzneimittel oder ein Produkt mit Wirkstoffen (zum Beispiel ein Halsband oder eine Pipette gegen Parasiten oder ein medizinisches Shampoo), die auf dem Gebrauchtmarkt nicht erlaubt sind. Die Prüfung ist automatisch und kann sich irren.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -7678,6 +7678,84 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get marketplaceListingGone =>
       'Diese Anzeige ist nicht mehr verfügbar.';
+
+  @override
+  String get marketplaceContentFoodTitle =>
+      'Futter oder Nahrungsergänzungsmittel?';
+
+  @override
+  String get marketplaceContentFoodBody =>
+      'Ihre Anzeige scheint Futter, Futtermittel, Snacks oder Nahrungsergänzungsmittel zu nennen, die auf dem Gebrauchtmarkt nicht erlaubt sind. Wenn es sich um Zubehör handelt (zum Beispiel einen Napf oder einen Futterspender), können Sie das bestätigen und die Anzeige wird sofort veröffentlicht. Das Team kann sie danach prüfen und entfernen, wenn sie gegen die Regeln verstößt. Wenn Sie Futter oder Nahrungsergänzungsmittel anbieten, veröffentlichen Sie die Anzeige nicht. Eine falsche Bestätigung kann dazu führen, dass die Anzeige entfernt und Sie vom Gebrauchtmarkt ausgeschlossen werden.';
+
+  @override
+  String get marketplaceContentFoodConfirm =>
+      'Ich bestätige, dass mit dieser Anzeige kein Futter, keine Futtermittel, keine Snacks und keine Nahrungsergänzungsmittel verkauft oder verschenkt werden.';
+
+  @override
+  String get marketplaceContentActiveTitle => 'Wirkstoffe?';
+
+  @override
+  String get marketplaceContentActiveBody =>
+      'Ihre Anzeige nennt ein Produkt (zum Beispiel „Flohmittel“ oder „Shampoo“), das Wirkstoffe enthalten könnte, und Produkte mit Wirkstoffen sind auf dem Gebrauchtmarkt nicht erlaubt. Ein Flohkamm oder ein nicht medizinisches Shampoo ist in Ordnung: Sie können das bestätigen und die Anzeige wird sofort veröffentlicht. Das Team kann sie danach prüfen und entfernen, wenn sie gegen die Regeln verstößt. Wenn das Produkt Wirkstoffe enthält (Parasitenmittel, medizinische Shampoos), veröffentlichen Sie die Anzeige nicht. Eine falsche Bestätigung kann dazu führen, dass die Anzeige entfernt und Sie vom Gebrauchtmarkt ausgeschlossen werden.';
+
+  @override
+  String get marketplaceContentActiveConfirm =>
+      'Ich bestätige, dass mit dieser Anzeige weder Arzneimittel noch Produkte mit Wirkstoffen verkauft oder verschenkt werden.';
+
+  @override
+  String marketplaceContentFoundWords(String words) {
+    return 'Im Text gefundene Wörter: $words';
+  }
+
+  @override
+  String get marketplaceContentPublish => 'Veröffentlichen';
+
+  @override
+  String get marketplaceContentEdit => 'Anzeige ändern';
+
+  @override
+  String marketplaceRemovedNotice(String date, String reason) {
+    return 'Die Anzeige wurde am $date vom Team entfernt. Grund: $reason. Die Entscheidung hat eine Person aus dem Team getroffen.';
+  }
+
+  @override
+  String marketplaceRemovedDetection(String words) {
+    return 'Die automatische Prüfung des Textes hatte diese Wörter gefunden: $words.';
+  }
+
+  @override
+  String marketplaceRemovedAppeal(String place) {
+    return 'Wenn Sie glauben, dass es sich um einen Fehler handelt, schreiben Sie uns über $place; Sie können sich auch an ein Gericht wenden (Einzelheiten in den Nutzungsbedingungen, § 8).';
+  }
+
+  @override
+  String get marketplaceRemovedReasonFood => 'Futter oder Futtermittel';
+
+  @override
+  String get marketplaceRemovedReasonSupplement => 'Nahrungsergänzungsmittel';
+
+  @override
+  String get marketplaceRemovedReasonMedicine =>
+      'Arzneimittel oder Produkte mit Wirkstoffen';
+
+  @override
+  String get marketplaceRemovedReasonOther =>
+      'anderer Verstoß gegen die Regeln des Gebrauchtmarkts';
+
+  @override
+  String get marketplaceMyListings => 'Meine Anzeigen';
+
+  @override
+  String get marketplaceMyListingsEmpty => 'Sie haben keine Anzeigen.';
+
+  @override
+  String get marketplaceStatusPublished => 'Veröffentlicht';
+
+  @override
+  String get marketplaceStatusHidden => 'Für andere nicht sichtbar';
+
+  @override
+  String get marketplaceStatusRemovedByTeam => 'Vom Team entfernt';
 
   @override
   String get marketplacePrivateSellerDeclaration =>

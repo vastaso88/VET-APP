@@ -3,7 +3,7 @@ import Link from "next/link";
 import { AdminShell } from "../../components/admin-shell";
 import { MarketplaceRestrictForm } from "../../components/marketplace-restrict-form";
 import { ModerationCaseActions } from "../../components/moderation-case-actions";
-import { getAdminModeration, getMarketplaceRestrictions } from "../../lib/admin-api";
+import { getAdminModeration, getListingReviews, getMarketplaceRestrictions, LISTING_REVIEW_LABELS } from "../../lib/admin-api";
 
 function date(value: string | null): string {
   if (!value) return "—";
@@ -14,10 +14,12 @@ function date(value: string | null): string {
 }
 
 export default async function ModerationPage() {
-  const [moderation, restrictions] = await Promise.all([
+  const [moderation, restrictions, listingReviews] = await Promise.all([
     getAdminModeration(),
     getMarketplaceRestrictions(),
+    getListingReviews(),
   ]);
+  const openReviews = listingReviews.filter((item) => item.status === "open");
   const activeRestrictions = restrictions.filter((item) => !item.lifted_at && (!item.expires_at || new Date(item.expires_at).getTime() > Date.now()));
   const openRadar = moderation.radar.filter((item) => item.status === "pending");
   const openChat = moderation.chat.filter(
@@ -53,7 +55,43 @@ export default async function ModerationPage() {
           <strong>{openMessages.length}</strong>
           <small>{moderation.marketplace_messages.length} loaded</small>
         </article>
+        <article className="metric-card">
+          <span>Listings to check</span>
+          <strong>{openReviews.length}</strong>
+          <small>{listingReviews.length} loaded</small>
+        </article>
       </div>
+
+      <section className="panel">
+        <div className="panel-heading">
+          <div>
+            <p className="eyebrow">Marketplace</p>
+            <h2>Listings that name food, supplements or treatments ({openReviews.length} to check)</h2>
+          </div>
+        </div>
+        <p className="muted">
+          Already public: the seller confirmed they sell none of those things. If nobody acts, they stay.
+        </p>
+        <div className="data-table moderation-live-table moderation-with-action">
+          <div className="table-row table-head">
+            <span>Confirmed</span><span>Words found</span><span>Listing</span><span>Check</span><span>Listing status</span><span>Action</span>
+          </div>
+          {listingReviews.length ? listingReviews.map((item) => (
+            <div className="table-row" key={item.id}>
+              <span>{date(item.confirmed_at)}</span>
+              <span>{item.terms.join(", ") || "—"}</span>
+              <span>{item.title}</span>
+              <span>{item.status === "open" ? LISTING_REVIEW_LABELS.open : `${LISTING_REVIEW_LABELS[item.status]} · ${date(item.decided_at)} · ${item.decided_by_admin_id ?? "—"}`}</span>
+              <span>{item.listing_status}</span>
+              <span>
+                <Link className="table-action-link" href={`/moderation/listing_reviews/${encodeURIComponent(item.id)}`}>
+                  Open
+                </Link>
+              </span>
+            </div>
+          )) : <div className="table-empty">No listings to check.</div>}
+        </div>
+      </section>
 
       <section className="panel">
         <div className="panel-heading">

@@ -165,7 +165,7 @@ async def inject_access_token(
 async def handle_requirement_missing(_: Request, exc: RequirementMissingError) -> JSONResponse:
     return JSONResponse(
         status_code=400,
-        content={"detail": exc.code, "code": exc.code, "message": exc.message, "fix": exc.fix},
+        content={"detail": exc.detail, "code": exc.code, "message": exc.message, "fix": exc.fix},
     )
 
 

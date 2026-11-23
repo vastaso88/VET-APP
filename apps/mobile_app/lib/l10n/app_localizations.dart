@@ -2285,7 +2285,7 @@ abstract class AppLocalizations {
   /// No description provided for @marketplaceNoMedicinesMessage.
   ///
   /// In it, this message translates to:
-  /// **'Sul Mercatino non si possono vendere farmaci o medicinali, anche veterinari, nemmeno senza ricetta.'**
+  /// **'Annuncio non pubblicato: il testo nomina un farmaco o un prodotto con principi attivi (per esempio un collare o una pipetta antiparassitari, o uno shampoo medicato), che non sono ammessi nel Mercatino. Il controllo è automatico e può sbagliare.'**
   String get marketplaceNoMedicinesMessage;
 
   /// No description provided for @marketplaceBackendUnavailable.
@@ -12709,6 +12709,132 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Questo annuncio non è più disponibile.'**
   String get marketplaceListingGone;
+
+  /// No description provided for @marketplaceContentFoodTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Cibo o integratori?'**
+  String get marketplaceContentFoodTitle;
+
+  /// No description provided for @marketplaceContentFoodBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Il tuo annuncio sembra nominare cibo, mangimi, snack o integratori, che non sono ammessi nel Mercatino. Se si tratta di un accessorio (per esempio una ciotola o un distributore), puoi confermare e l\'annuncio sarà pubblicato subito. Il team può controllarlo dopo e toglierlo se non rispetta le regole. Se vendi cibo o integratori, non pubblicarlo. Una conferma falsa può portare alla rimozione dell\'annuncio e all\'esclusione dal Mercatino.'**
+  String get marketplaceContentFoodBody;
+
+  /// No description provided for @marketplaceContentFoodConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Confermo che questo annuncio non vende né regala cibo, mangimi, snack o integratori.'**
+  String get marketplaceContentFoodConfirm;
+
+  /// No description provided for @marketplaceContentActiveTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Principi attivi?'**
+  String get marketplaceContentActiveTitle;
+
+  /// No description provided for @marketplaceContentActiveBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Il tuo annuncio nomina un prodotto (per esempio «antipulci» o «shampoo») che potrebbe contenere principi attivi, e i prodotti con principi attivi non sono ammessi nel Mercatino. Un pettine antipulci o uno shampoo non medicato vanno bene: puoi confermare e l\'annuncio sarà pubblicato subito. Il team può controllarlo dopo e toglierlo se non rispetta le regole. Se il prodotto contiene principi attivi (antiparassitari, shampoo medicati), non pubblicarlo. Una conferma falsa può portare alla rimozione dell\'annuncio e all\'esclusione dal Mercatino.'**
+  String get marketplaceContentActiveBody;
+
+  /// No description provided for @marketplaceContentActiveConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Confermo che questo annuncio non vende né regala farmaci o prodotti con principi attivi.'**
+  String get marketplaceContentActiveConfirm;
+
+  /// No description provided for @marketplaceContentFoundWords.
+  ///
+  /// In it, this message translates to:
+  /// **'Parole trovate nel testo: {words}'**
+  String marketplaceContentFoundWords(String words);
+
+  /// No description provided for @marketplaceContentPublish.
+  ///
+  /// In it, this message translates to:
+  /// **'Pubblica'**
+  String get marketplaceContentPublish;
+
+  /// No description provided for @marketplaceContentEdit.
+  ///
+  /// In it, this message translates to:
+  /// **'Modifica l\'annuncio'**
+  String get marketplaceContentEdit;
+
+  /// No description provided for @marketplaceRemovedNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'Annuncio tolto dal team il {date}. Motivo: {reason}. La decisione l\'ha presa una persona del team.'**
+  String marketplaceRemovedNotice(String date, String reason);
+
+  /// No description provided for @marketplaceRemovedDetection.
+  ///
+  /// In it, this message translates to:
+  /// **'Il controllo automatico del testo aveva trovato queste parole: {words}.'**
+  String marketplaceRemovedDetection(String words);
+
+  /// No description provided for @marketplaceRemovedAppeal.
+  ///
+  /// In it, this message translates to:
+  /// **'Se pensi sia un errore, scrivici da {place}; puoi anche rivolgerti al giudice (dettagli nei Termini, §8).'**
+  String marketplaceRemovedAppeal(String place);
+
+  /// No description provided for @marketplaceRemovedReasonFood.
+  ///
+  /// In it, this message translates to:
+  /// **'cibo o mangimi'**
+  String get marketplaceRemovedReasonFood;
+
+  /// No description provided for @marketplaceRemovedReasonSupplement.
+  ///
+  /// In it, this message translates to:
+  /// **'integratori'**
+  String get marketplaceRemovedReasonSupplement;
+
+  /// No description provided for @marketplaceRemovedReasonMedicine.
+  ///
+  /// In it, this message translates to:
+  /// **'farmaci o prodotti con principi attivi'**
+  String get marketplaceRemovedReasonMedicine;
+
+  /// No description provided for @marketplaceRemovedReasonOther.
+  ///
+  /// In it, this message translates to:
+  /// **'altra violazione delle regole del Mercatino'**
+  String get marketplaceRemovedReasonOther;
+
+  /// No description provided for @marketplaceMyListings.
+  ///
+  /// In it, this message translates to:
+  /// **'I miei annunci'**
+  String get marketplaceMyListings;
+
+  /// No description provided for @marketplaceMyListingsEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Non hai annunci.'**
+  String get marketplaceMyListingsEmpty;
+
+  /// No description provided for @marketplaceStatusPublished.
+  ///
+  /// In it, this message translates to:
+  /// **'Pubblicato'**
+  String get marketplaceStatusPublished;
+
+  /// No description provided for @marketplaceStatusHidden.
+  ///
+  /// In it, this message translates to:
+  /// **'Non visibile agli altri'**
+  String get marketplaceStatusHidden;
+
+  /// No description provided for @marketplaceStatusRemovedByTeam.
+  ///
+  /// In it, this message translates to:
+  /// **'Tolto dal team'**
+  String get marketplaceStatusRemovedByTeam;
 
   /// No description provided for @marketplacePrivateSellerDeclaration.
   ///

@@ -194,6 +194,7 @@ class AccountLifecycleWiring(ContainerState):
             dog_walks=self.dog_walk_repository,
             marketplace_listings=self.marketplace_listing_repository,
             marketplace_messaging=self.marketplace_messaging_repository,
+            listing_reviews=self.listing_review_repository,
         )
 
     def _build_account_eraser(self) -> AccountEraser:

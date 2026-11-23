@@ -921,6 +921,35 @@ class SupabaseMarketplaceListingRepository(MarketplaceListingRepository):
         rows = cast(list[dict[str, Any]], response.data or [])
         return {str(row["id"]): str(row["status"]) for row in rows}
 
+    def list_by_owner(self, owner_id: str, limit: int) -> list[MarketplaceListing]:
+        response = (
+            self._client.table(self._table)
+            .select("*")
+            .eq("owner_id", owner_id)
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        return [_row_to_listing(cast(dict[str, Any], item)) for item in response.data or []]
+
+    def delete(self, listing_id: str) -> None:
+        self._client.table(self._table).delete().eq("id", listing_id).execute()
+
+    def list_by_ids(self, listing_ids: list[str]) -> list[MarketplaceListing]:
+        ids = sorted(set(listing_ids))
+        found: list[MarketplaceListing] = []
+        for start in range(0, len(ids), 100):
+            response = (
+                self._client.table(self._table)
+                .select("*")
+                .in_("id", ids[start : start + 100])
+                .execute()
+            )
+            found.extend(
+                _row_to_listing(cast(dict[str, Any], item)) for item in response.data or []
+            )
+        return found
+
 
 class SupabaseListingReportRepository(ListingReportRepository):
     def __init__(self, client: Client) -> None:

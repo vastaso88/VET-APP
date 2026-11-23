@@ -54,6 +54,14 @@ IconData listingCategoryIcon(ListingCategory category) {
   }
 }
 
+/// What the seller reads about their own ad.
+String listingStatusLabel(MarketplaceListing listing) {
+  if (listing.removal != null) return appL10n.marketplaceStatusRemovedByTeam;
+  return listing.status == ListingStatus.active
+      ? appL10n.marketplaceStatusPublished
+      : appL10n.marketplaceStatusHidden;
+}
+
 String listingConditionLabel(ListingCondition condition) {
   switch (condition) {
     case ListingCondition.newItem:

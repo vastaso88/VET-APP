@@ -50,6 +50,7 @@ ORDINE_SCHEMA: tuple[str, ...] = (
     "scripts/setup/marketplace_reports_via_backend.sql",
     "scripts/setup/subscriptions_retention.sql",
     "scripts/setup/marketplace_no_animals.sql",
+    "scripts/setup/marketplace_content_review.sql",
     "scripts/setup/ricordi_animali.sql",
     "scripts/setup/plan_access_rules.sql",
 )

@@ -45,6 +45,7 @@ UI/UX; questo documento descrive cosa riceve.
     "user_devices": [ ... ],
     "marketplace_listings": [ ... ],
     "marketplace_listing_reports": [ ... ],
+    "marketplace_listing_reviews": [ ... ],
     "marketplace_conversations": [ ... ],
     "marketplace_messages": [ ... ],
     "marketplace_user_blocks": [ ... ],

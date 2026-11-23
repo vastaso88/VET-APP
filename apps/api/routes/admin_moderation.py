@@ -11,6 +11,10 @@ from apps.api.routes.admin_common import (
     _admin_client,
     _require_admin,
 )
+from packages.core.application.services.listing_review import (
+    ListingReviewConflictError,
+    ListingReviewNotFoundError,
+)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -28,6 +32,12 @@ class RadarModerationRequest(BaseModel):
 class MarketplaceModerationRequest(BaseModel):
     action: Literal["remove_listing", "dismiss_report", "restore_listing", "reopen_report"]
     resolution_note: str | None = Field(default=None, max_length=1000)
+
+
+class ListingReviewDecisionRequest(BaseModel):
+    outcome: Literal["checked", "removed", "restored"]
+    reason: Literal["food", "supplement", "medicine", "other"] | None = None
+    note: str | None = Field(default=None, max_length=1000)
 
 
 class MarketplaceMessageModerationRequest(BaseModel):
@@ -115,6 +125,51 @@ def admin_moderation() -> dict[str, object]:
 def admin_marketplace_message_reports() -> dict[str, object]:
     _require_admin()
     return {"reports": get_container().marketplace_messaging_moderation_service().queue()}
+
+
+# Published ads whose seller confirmed they sell no food, supplements or treatments, to be
+# checked by the team (content_review.py).
+@router.get("/moderation/listing_reviews")
+def admin_listing_reviews() -> dict[str, object]:
+    _require_admin()
+    return {"reviews": get_container().listing_review_service().queue()}
+
+
+@router.get("/moderation/listing_reviews/{review_id}")
+def admin_listing_review_detail(review_id: str) -> dict[str, object]:
+    _require_admin()
+    detail = get_container().listing_review_service().detail(review_id)
+    if detail is None:
+        raise HTTPException(status_code=404, detail="Listing review not found")
+    return {"item": detail}
+
+
+@router.post("/moderation/listing_reviews/{review_id}")
+def admin_decide_listing_review(
+    review_id: str, request: ListingReviewDecisionRequest
+) -> dict[str, object]:
+    admin = _require_admin()
+    if request.outcome == "removed" and request.reason is None:
+        raise HTTPException(status_code=422, detail="A removal needs a reason")
+    try:
+        listing = (
+            get_container()
+            .listing_review_service()
+            .decide(
+                review_id,
+                request.outcome,
+                admin_id=admin.id,
+                reason=request.reason,
+                note=request.note,
+            )
+        )
+    except ListingReviewNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Listing review not found") from exc
+    except ListingReviewConflictError as exc:
+        raise HTTPException(
+            status_code=409, detail="The ad changed or was already decided: reload it"
+        ) from exc
+    return {"listing_id": listing.id, "listing_status": listing.status}
 
 
 @router.get("/moderation/{queue}/{item_id}")

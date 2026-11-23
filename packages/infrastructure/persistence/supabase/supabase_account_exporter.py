@@ -45,6 +45,7 @@ _INTERNAL_COLUMNS = frozenset(
         "voter_pseudonym",
         "created_by_admin_id",
         "lifted_by_admin_id",
+        "decided_by_admin_id",
         "admin_id",
     }
 )
@@ -143,6 +144,7 @@ class SupabaseAccountExporter:
                     for key, value in row.items()
                     if key not in _INTERNAL_COLUMNS
                     and not (table == "admin_user_actions" and key in {"note", "case_id"})
+                    and not (table == "marketplace_listing_reviews" and key == "note")
                 }
                 for row in rows
             ]

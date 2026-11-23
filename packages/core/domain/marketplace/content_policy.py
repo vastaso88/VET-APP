@@ -1,6 +1,6 @@
 """What a Mercatino ad may not contain besides animals (see animal_policy.py).
 
-Two rules, both decided by the backend whatever the app did:
+Three rules, all decided by the backend whatever the app did:
 
 * **No contact details** in the public text: phone numbers, e-mail addresses,
   web sites, social handles. The text of an ad is public to every signed-in
@@ -13,8 +13,16 @@ Two rules, both decided by the backend whatever the app did:
   authorised pharmacies and outlets (Reg. (EU) 2019/6, art. 103-104; in Italy
   d.lgs. 218/2023, which replaced d.lgs. 193/2006 from 18 January 2024), and
   medicines for people only by authorised outlets too; never between private
-  individuals. Food, supplements, flea collars and other accessories are not
-  medicines and pass.
+  individuals.
+* **No products with an active substance** (owner decisions 2026-11-23): flea and tick
+  collars, pipettes, sprays and tablets, antiparasitics, medicated shampoos. They are
+  not all medicines by law (some are biocides), but their composition, storage and
+  expiry cannot be checked between private people. Until that date they passed on
+  purpose. Only the unequivocal products are refused here: the bare words ("antipulci",
+  "shampoo") also name combs and ordinary shampoos and go through the confirmation.
+
+Food, feed, snacks, supplements and those ambiguous words are not refused: they need a
+confirmation and are checked by the team after publication (content_review.py).
 
 Messages are in Italian like every other backend validation message; the app
 maps them to the owner's language (marketplace_repository.dart).
@@ -59,8 +67,9 @@ def contains_contact_details(*texts: str | None) -> bool:
 
 # Normalised whole words (lowercase, no accents), it/en/es/de/fr. Generic
 # nouns for medicines, the prescription itself, and the molecules and brands
-# most often resold between owners. Deliberately NOT here: antiparassitario,
-# antipulci, integratore, mangime, shampoo (accessories and food).
+# most often resold between owners. Products with an active substance that are not
+# medicines by name have their own list below; food and supplements are in
+# content_review.py.
 MEDICINE_TERMS = (
     # it
     "farmaco farmaci medicinale medicinali antibiotico antibiotici antinfiammatorio "
@@ -96,3 +105,65 @@ def offers_medicines(*texts: str | None) -> bool:
     """True when any text names a medicine, a prescription or one of the
     listed active substances or brands."""
     return any(_MEDICINE.search(normalize_text(text)) for text in texts if text)
+
+
+# Unequivocal products with an active substance, same normalisation: a product form next
+# to the pest, or a brand. "Antipulci", "antiparassitario" or "shampoo" on their own are
+# not here (content_review.py).
+ACTIVE_SUBSTANCE_TERMS = (
+    # de (compounds)
+    "flohhalsband flohhalsbander zeckenhalsband zeckenhalsbander flohmittel zeckenmittel "
+    "flohspray zeckenspray flohshampoo zeckenshampoo flohpulver parasitenmittel "
+    # brands
+    "frontline seresto foresto scalibor advantix vectra"
+).split()
+# The form comes first in the Romance languages ("collare antipulci", "collare per cani
+# contro le pulci"), last in English and German ("flea collar", "Anti-Floh-Shampoo").
+_FORMS_BEFORE = (
+    "collare collari pipetta pipette spray compressa compresse pastiglia pastiglie gocce fiala "
+    "fiale polvere lozione shampoo shampo prodotto prodotti trattamento collar collares pipeta "
+    "pipetas pastilla pastillas gotas polvo champu champus producto productos tratamiento collier "
+    "colliers comprime comprimes poudre gouttes lotion shampooing shampooings shampoing "
+    "shampoings produit produits traitement"
+).split()
+_PEST_AFTER = (
+    "anti ?pulci|anti ?zecche|anti ?parassitari[aeo]?|(?:contro|per) (?:le )?(?:pulci|zecche)|"
+    "anti ?pulgas|anti ?garrapatas|antiparasitari[ao]s?|contra (?:las )?(?:pulgas|garrapatas)|"
+    "anti ?puces|anti ?tiques|antiparasitaires?|contre les (?:puces|tiques)"
+)
+# "collare per cani antipulci": whom it is for may come in between.
+_FOR_WHOM = r"(?: (?:per|da|para|pour) [a-z]+)?"
+_PEST_BEFORE = (
+    "(?:anti )?(?:flea|tick)(?: and)?(?: (?:flea|tick))?|anti ?parasitic|"
+    "(?:anti )?(?:floh|zecken)(?:schutz)?"
+)
+_FORMS_AFTER = (
+    "collar collars treatment treatments drops spray powder shampoo shampoos tablet tablets "
+    "pill pills halsband halsbander mittel pulver"
+).split()
+ACTIVE_SUBSTANCE_PHRASES = (
+    rf"(?:{'|'.join(_FORMS_BEFORE)}){_FOR_WHOM} (?:{_PEST_AFTER})|"
+    rf"(?:{_PEST_BEFORE}) (?:{'|'.join(_FORMS_AFTER)})|"
+    # "Spot on" alone is also "exactly right" in English: refused next to whom it is for
+    # or to what it is for.
+    "pipett[ae]s? spot on|spot on (?:pipettes?|treatments?|drops)|"
+    "spot on (?:per|da|para|pour|fur|for) [a-z]+|"
+    "spot on (?:can[ei]|gatt[io]|perros?|gatos?|chiens?|chats?|hunde?|katzen?|dogs?|cats?)|"
+    rf"(?:{_PEST_AFTER}) spot on|spot on (?:{_PEST_AFTER})|"
+    "shampoo? (?:medicat[oi]|curativ[oi]|antibatteric[oi]|antimicotic[oi])|"
+    "medicated shampoos?|champus? medicad[oa]s?|medizinisches shampoo|"
+    "shampoo?ings? (?:medicamenteux|traitants?)"
+)
+_ACTIVE_SUBSTANCE = re.compile(
+    r"\b(?:"
+    + "|".join(sorted(set(ACTIVE_SUBSTANCE_TERMS), key=len, reverse=True))
+    + "|"
+    + ACTIVE_SUBSTANCE_PHRASES
+    + r")\b"
+)
+
+
+def offers_active_substances(*texts: str | None) -> bool:
+    """True when any text names an unequivocal antiparasitic, a medicated shampoo or one
+    of the listed brands."""
+    return any(_ACTIVE_SUBSTANCE.search(normalize_text(text)) for text in texts if text)
