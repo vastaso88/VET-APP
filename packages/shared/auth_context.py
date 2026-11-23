@@ -19,6 +19,7 @@ class RequestIdentityMemo:
     def __init__(self) -> None:
         self._entry: tuple[str, Any] | None = None
         self._subscriptions: dict[tuple[str, str, str, bool | None], Any] = {}
+        self._quota_uses: list[Any] = []
 
     # --- identity -------------------------------------------------------------------
 
@@ -52,6 +53,20 @@ class RequestIdentityMemo:
         self, token: str, owner_id: str, email: str, email_verified: bool | None, outcome: Any
     ) -> None:
         self._subscriptions[(token, owner_id, email, email_verified)] = outcome
+
+    # --- daily allowances counted in this request -----------------------------------
+
+    def note_quota_use(self, use: Any) -> None:
+        """An allowance (a question, a photo reading, a dictation...) was counted for this
+        request. If the request then fails through no fault of the owner, the use is given
+        back (`take_quota_uses` + the budget's refund): only what the owner received counts."""
+        self._quota_uses.append(use)
+
+    def take_quota_uses(self) -> list[Any]:
+        """The uses counted so far in this request, removed from the list: whoever takes them
+        gives them back, so a use can never be returned twice."""
+        taken, self._quota_uses = self._quota_uses, []
+        return taken
 
     def forget_subscriptions(self, owner_id: str) -> None:
         """Drops every remembered outcome of one owner: their plan or state just changed."""

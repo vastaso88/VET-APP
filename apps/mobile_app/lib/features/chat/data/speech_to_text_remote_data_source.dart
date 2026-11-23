@@ -71,6 +71,18 @@ class HttpSpeechToTextRemoteDataSource implements SpeechToTextRemoteDataSource {
       }
 
       final json = jsonDecode(response.body) as Map<String, dynamic>;
+      // A recording with no speech: the backend answers with an empty text and says so in the
+      // user's language ("I didn't hear anything"), so the person is told instead of the field
+      // staying silently empty.
+      if (json['heard_nothing'] == true) {
+        final spoken = json['message'] as String?;
+        return Result.failure(
+          AppNetworkError(
+            code: 'speech_heard_nothing',
+            message: (spoken != null && spoken.isNotEmpty) ? spoken : appL10n.chatErrorTranscribe,
+          ),
+        );
+      }
       return Result.success(json['text'] as String? ?? '');
     } on TimeoutException {
       return Result.failure<String>(

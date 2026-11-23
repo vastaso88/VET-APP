@@ -13,7 +13,7 @@ router = APIRouter(prefix="/chat-attachments", tags=["chat-attachments"])
 
 @router.post("", dependencies=[Depends(require_active_subscription)])
 async def upload_attachment(
-    pet_id: str = Form(...),
+    pet_id: str = Form(..., max_length=100),
     file: UploadFile = File(...),
     accept_language: str | None = Header(default=None),
 ) -> dict[str, object]:

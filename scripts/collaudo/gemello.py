@@ -53,6 +53,9 @@ ORDINE_SCHEMA: tuple[str, ...] = (
     "scripts/setup/marketplace_content_review.sql",
     "scripts/setup/ricordi_animali.sql",
     "scripts/setup/plan_access_rules.sql",
+    # K13: giving back an allowance the owner did not receive. Without it the twin's refund call
+    # fails (logged, harmless) and the counters stay where the failed request left them.
+    "scripts/setup/chat_usage_refund.sql",
 )
 MIGRATIONS_DIR = "supabase/migrations"
 PIANO_COLLAUDO = "pro"

@@ -81,6 +81,19 @@ if TYPE_CHECKING:
 _logger = logging.getLogger(__name__)
 
 
+def _readable_rows(model: Any, rows: list[Any], table: str) -> list[Any]:
+    """The rows of [table] that the model can read. A row it cannot read (a value written by
+    something other than the app) is skipped, so one bad row never takes the whole record,
+    and the chat of that pet, down. The log carries the table name and nothing of the row."""
+    readable = []
+    for row in rows:
+        try:
+            readable.append(model.model_validate(row))
+        except ValueError:
+            _logger.warning("skipped an unreadable row of %s", table)
+    return readable
+
+
 def _serialize_payload(payload: dict[str, Any]) -> dict[str, Any]:
     serialized: dict[str, Any] = {}
     for key, value in payload.items():
@@ -267,7 +280,7 @@ class SupabaseClinicalEventRepository(ClinicalEventRepository):
 
     def list_by_pet(self, pet_id: str) -> list[ClinicalEvent]:
         response = self._client.table(self._table).select("*").eq("pet_id", pet_id).execute()
-        return [ClinicalEvent.model_validate(item) for item in response.data or []]
+        return _readable_rows(ClinicalEvent, response.data or [], self._table)
 
 
 class SupabasePetConditionRepository(PetConditionRepository):
@@ -277,7 +290,7 @@ class SupabasePetConditionRepository(PetConditionRepository):
 
     def list_by_pet(self, pet_id: str) -> list[PetCondition]:
         response = self._client.table(self._table).select("*").eq("pet_id", pet_id).execute()
-        return [PetCondition.model_validate(item) for item in response.data or []]
+        return _readable_rows(PetCondition, response.data or [], self._table)
 
 
 class SupabaseAccountConsentsRepository(AccountConsentsRepository):
@@ -1174,6 +1187,15 @@ class SupabaseLlmUsageRepository(LlmUsageRepository):
     def add_user_usage(self, owner_id: str, day: date, kind: str) -> int:
         response = self._client.rpc(
             "chat_user_daily_usage_add_kind",
+            {"p_owner_id": owner_id, "p_day": day.isoformat(), "p_kind": kind},
+        ).execute()
+        data = response.data
+        return int(data) if isinstance(data, (int, float, str)) else 0
+
+    def remove_user_usage(self, owner_id: str, day: date, kind: str) -> int:
+        # scripts/setup/chat_usage_refund.sql; without it the call fails and the budget logs it.
+        response = self._client.rpc(
+            "chat_user_daily_usage_remove_kind",
             {"p_owner_id": owner_id, "p_day": day.isoformat(), "p_kind": kind},
         ).execute()
         data = response.data

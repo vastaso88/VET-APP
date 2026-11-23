@@ -1,6 +1,6 @@
 import logging
 import threading
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import UTC, date, datetime, timedelta
 
@@ -17,7 +17,9 @@ from packages.core.application.ports.weight_measurement_repository import (
 from packages.core.application.services.chat_orchestrator import (
     ChatOrchestrator,
     ChatOrchestratorInput,
+    ChatOrchestratorResult,
 )
+from packages.core.application.services.llm_budget import is_our_failure
 from packages.core.application.services.message_claims import MessageClaims
 from packages.core.application.services.reminder_context_retriever import (
     ReminderContextRetriever,
@@ -66,6 +68,18 @@ logger = logging.getLogger(__name__)
 # resend the entire history). SituationModelBuilder itself only looks at
 # the last 6, so this is a generous ceiling, not the real working window.
 MAX_HISTORY_MESSAGES = 12
+
+
+# What the orchestrator answers when it could not answer: the provider failed (the text says
+# so and the model is a guard, not a model), or the day's quota ended mid-turn.
+_UNANSWERED_MODELS = frozenset({"natural-answer-guard", "evidence-guard"})
+_UNANSWERED_MODES = frozenset({"quota_exhausted", "user_limit_reached"})
+
+
+def not_answered(result: ChatOrchestratorResult) -> bool:
+    """True for a result that is an apology or a refusal rather than an answer: only what the
+    owner actually received counts against their daily questions."""
+    return result.model in _UNANSWERED_MODELS or result.mode in _UNANSWERED_MODES
 
 
 def owner_names_for_anonymization(display_name: str | None, *, pet_name: str) -> list[str]:
@@ -200,6 +214,8 @@ class SendChatMessageService:
         recent_other_chats: bool = False,
         message_claims: MessageClaims | None = None,
         in_flight: _InFlightMessages | None = None,
+        quota_refund: Callable[[], object] | None = None,
+        quota_commit: Callable[[], object] | None = None,
     ) -> None:
         self._repository = repository
         # Plan 08, v2 only (CHAT_ANSWER_V2): the last lines of the pet's other recent
@@ -230,6 +246,12 @@ class SendChatMessageService:
         self._message_claims = message_claims
         # The lock inside this process; a test gives each simulated instance its own.
         self._in_flight = in_flight or _IN_FLIGHT
+        # Gives back the daily allowances counted for this request (LlmBudget
+        # .refund_request_quota_uses) when the turn ends without an answer.
+        self._quota_refund = quota_refund
+        # Makes the counted allowances final once the answer is stored: nothing that happens
+        # afterwards (a 500 building the response, the client gone) can give them back.
+        self._quota_commit = quota_commit
 
     _MAX_OTHER_PETS = 12
 
@@ -442,7 +464,26 @@ class SendChatMessageService:
     ) -> SendChatMessageOutput:
         """Adds the owner's message to [conversation] (already loaded, and
         possibly changed by the caller — see EditChatMessageService), answers
-        it through the usual path and stores the result."""
+        it through the usual path and stores the result.
+
+        The question counted for this turn is settled HERE, by the service, whoever calls it
+        (a new message or an edited one) and whether or not the client is still connected (a
+        client that hangs up does not stop this work, and nothing outside gives back for a
+        client that left): given back if the turn fails through our fault or the provider's,
+        final once the answer is stored."""
+        try:
+            return self._respond_in(conversation, data, pet_profile)
+        except BaseException as exc:
+            if self._quota_refund is not None and is_our_failure(exc):
+                self._quota_refund()
+            raise
+
+    def _respond_in(
+        self,
+        conversation: Conversation,
+        data: SendChatMessageInput,
+        pet_profile: PetProfile | None = None,
+    ) -> SendChatMessageOutput:
         if pet_profile is None:
             pet_profile = self._pet_profile_repository.get(conversation.pet_id)
             if pet_profile is None:
@@ -547,6 +588,10 @@ class SendChatMessageService:
                 safety_clarification_category=conversation.safety_clarification_category,
             )
         )
+        if self._quota_refund is not None and not_answered(orchestrator_result):
+            # An apology instead of an answer (provider down, models out of quota): the
+            # owner received nothing, so the question is not counted against them.
+            self._quota_refund()
         reply = ChatMessage(
             role="assistant",
             content=orchestrator_result.answer,
@@ -591,6 +636,9 @@ class SendChatMessageService:
         else:
             stored_conversation = self._repository.save(conversation)
             self._link_attachment(attachment, stored_conversation)
+        if self._quota_commit is not None:
+            # The answer is stored: the question is spent, whatever happens next.
+            self._quota_commit()
         return SendChatMessageOutput(
             conversation=stored_conversation,
             reply=reply,

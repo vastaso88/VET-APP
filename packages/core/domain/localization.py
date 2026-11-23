@@ -377,6 +377,13 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "de": "Noch eine Sache: Im Profil von {pet_name} fehlt das Gewicht. Wenn Sie es im Tierprofil ergänzen, kann ich es bei künftigen Antworten berücksichtigen.",
         "fr": "Une dernière chose : le poids manque dans le profil de {pet_name}. Si vous l'ajoutez depuis sa fiche, je pourrai en tenir compte dans mes prochaines réponses.",
     },
+    "dictation_heard_nothing": {
+        "it": "Non ho sentito nulla. Riprova, avvicinandoti al microfono.",
+        "en": "I didn't hear anything. Try again, a little closer to the microphone.",
+        "es": "No he oído nada. Inténtalo de nuevo, más cerca del micrófono.",
+        "de": "Ich habe nichts gehört. Versuchen Sie es noch einmal, näher am Mikrofon.",
+        "fr": "Je n'ai rien entendu. Réessayez, un peu plus près du micro.",
+    },
     "weight_marker": {
         "it": "manca il peso",
         "en": "the weight is missing",

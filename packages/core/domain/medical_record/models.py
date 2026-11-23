@@ -2,6 +2,7 @@ from datetime import UTC, date, datetime
 
 from pydantic import BaseModel, Field, field_validator
 
+from packages.core.domain.common.db_timestamps import lenient_timestamp
 from packages.core.domain.common.entity import new_id, utc_now
 from packages.core.domain.consent.models import ConsentRecord
 
@@ -93,8 +94,9 @@ class ClinicalEvent(BaseModel):
     @classmethod
     def _created_at_or_oldest(cls, value: object) -> object:
         # A row without a timestamp sorts as the oldest rather than
-        # failing the whole pet's record.
-        return datetime.min.replace(tzinfo=UTC) if value is None else value
+        # failing the whole pet's record. The text column's own default
+        # (`now()::text` = "2026-11-22 10:11:12.1+00") is read as it is written.
+        return datetime.min.replace(tzinfo=UTC) if value is None else lenient_timestamp(value)
 
     @field_validator("created_at", mode="after")
     @classmethod
@@ -157,7 +159,7 @@ class PetCondition(BaseModel):
     @field_validator("created_at", mode="before")
     @classmethod
     def _created_at_or_oldest(cls, value: object) -> object:
-        return datetime.min.replace(tzinfo=UTC) if value is None else value
+        return datetime.min.replace(tzinfo=UTC) if value is None else lenient_timestamp(value)
 
     @field_validator("created_at", mode="after")
     @classmethod

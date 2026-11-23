@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
@@ -16,7 +16,7 @@ class VerifyPurchaseRequest(BaseModel):
 
 class RestorePurchasesRequest(BaseModel):
     store: Literal["apple", "google"]
-    store_subscription_ids: list[str] = Field(max_length=50)
+    store_subscription_ids: list[Annotated[str, Field(max_length=200)]] = Field(max_length=50)
 
 
 class AppleNotificationRequest(BaseModel):

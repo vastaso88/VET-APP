@@ -20,7 +20,11 @@ from packages.core.application.ports.llm_client import LLMClient, LLMGenerationR
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizationRequest, PiiAnonymizer
 from packages.core.application.services.finished_text import generate_finished_lines
-from packages.core.application.services.llm_budget import LlmBudget, require_feature_allowance
+from packages.core.application.services.llm_budget import (
+    LlmBudget,
+    refund_if_our_failure,
+    require_feature_allowance,
+)
 from packages.core.application.services.medical_record_context_retriever import italian_date
 from packages.core.application.services.send_chat_message import owner_names_for_anonymization
 from packages.core.domain.conversation.models import (
@@ -86,6 +90,14 @@ class VetSummaryService:
         self._pii_anonymizer = pii_anonymizer
 
     def execute(self, data: VetSummaryInput) -> VetSummaryOutput:
+        with refund_if_our_failure(self._budget):
+            result = self._execute(data)
+        if self._budget is not None:
+            # Handed over: the use is final.
+            self._budget.commit_request_quota_uses()
+        return result
+
+    def _execute(self, data: VetSummaryInput) -> VetSummaryOutput:
         """Raises ValidationError when the conversation is not the owner's
         or has no owner message yet, ProviderError when the model is
         unavailable."""

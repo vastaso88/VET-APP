@@ -634,6 +634,13 @@ class InMemoryLlmUsageRepository(LlmUsageRepository):
         self._user_messages[key] = counters.get("messages", 0)
         return counters[kind]
 
+    def remove_user_usage(self, owner_id: str, day: date, kind: str) -> int:
+        key = (owner_id, day)
+        counters = self._user_usage.setdefault(key, {})
+        counters[kind] = max(0, counters.get(kind, 0) - 1)
+        self._user_messages[key] = counters.get("messages", 0)
+        return counters[kind]
+
     def cleanup(self, today: date, *, usage_days: int, user_days: int) -> dict[str, int]:
         kept = [e for e in self.events if (today - e.day).days < usage_days]
         removed_events = len(self.events) - len(kept)

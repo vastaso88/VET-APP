@@ -4,6 +4,7 @@ import uuid
 from urllib import error, request
 
 from packages.core.application.ports.speech_to_text_provider import SpeechToTextProvider
+from packages.infrastructure.speech.transcription_filter import spoken_text
 from packages.shared.config.settings import Settings
 from packages.shared.errors.base import ProviderError
 from packages.shared.http_identity import USER_AGENT
@@ -83,10 +84,13 @@ class GroqSpeechToTextProvider(SpeechToTextProvider):
         except TimeoutError as exc:
             raise ProviderError("Groq transcription request timed out") from exc
 
-        text = payload.get("text")
-        if not isinstance(text, str) or not text.strip():
+        if not isinstance(payload, dict) or not (
+            isinstance(payload.get("text"), str) or isinstance(payload.get("segments"), list)
+        ):
             raise ProviderError("Groq transcription response did not contain text")
-        return text.strip()
+        # "" means nothing was said: silence, or only what the recogniser invents out of it
+        # (see transcription_filter.py). The service tells the owner "I heard nothing".
+        return spoken_text(payload, len(audio_bytes))
 
     def _build_multipart_body(
         self, boundary: str, audio_bytes: bytes, filename: str, content_type: str
@@ -96,6 +100,10 @@ class GroqSpeechToTextProvider(SpeechToTextProvider):
             f"--{boundary}\r\n".encode(),
             b'Content-Disposition: form-data; name="model"\r\n\r\n',
             f"{self._settings.stt_model}\r\n".encode(),
+            f"--{boundary}\r\n".encode(),
+            # Per-segment signals (no_speech_prob, avg_logprob) tell speech from silence.
+            b'Content-Disposition: form-data; name="response_format"\r\n\r\n',
+            b"verbose_json\r\n",
             f"--{boundary}\r\n".encode(),
             f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'.encode(),
             f"Content-Type: {content_type}\r\n\r\n".encode(),

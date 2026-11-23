@@ -1,3 +1,5 @@
+import re
+
 from pydantic import BaseModel
 
 from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
@@ -9,6 +11,7 @@ from packages.core.application.ports.pii_anonymizer import PiiAnonymizationReque
 from packages.core.application.services.document_summarizer import DocumentSummarizer
 from packages.core.application.services.llm_budget import (
     LlmBudget,
+    refund_if_our_failure,
     require_feature_allowance,
 )
 from packages.core.domain.conversation.attachment import ChatAttachment
@@ -37,6 +40,15 @@ _DOCUMENT_OR_PHOTO_CONTEXT = (
     "libretto), trascrivine il contenuto rilevante, compreso l'animale a cui si "
     "riferisce così come è scritto (nome, specie, età)."
 )
+
+
+_PROVIDER_FILE_REJECTIONS = re.compile(r"status (400|413|415|422)\b")
+
+
+def provider_rejected_the_file(exc: ProviderError) -> bool:
+    """True when the provider answered that the file itself is not acceptable (bad request,
+    too large, unsupported type, unprocessable): the owner's doing, not an outage."""
+    return _PROVIDER_FILE_REJECTIONS.search(str(exc)) is not None
 
 
 class UploadChatAttachmentInput(BaseModel):
@@ -102,6 +114,11 @@ class UploadChatAttachmentService:
         self._max_pdf_pages = max_pdf_pages
 
     def execute(self, data: UploadChatAttachmentInput) -> UploadChatAttachmentOutput:
+        # A failure of ours gives the reading back here, client connected or not.
+        with refund_if_our_failure(self._budget):
+            return self._execute(data)
+
+    def _execute(self, data: UploadChatAttachmentInput) -> UploadChatAttachmentOutput:
         pet_profile = self._pet_profile_repository.get(data.pet_id)
         if pet_profile is None:
             raise ValidationError("pet_profile not found")
@@ -160,11 +177,16 @@ class UploadChatAttachmentService:
                 analysis = self._analyze_pdf(pdf_content, pet_profile.species, known_names)
             else:
                 analysis = self._analyze_image(content, media_type, pet_profile.species)
-        except ProviderError:
+        except ProviderError as exc:
             # The file itself is still saved and usable — only the
             # analysis step degrades, the same fail-safe posture as every
             # other model call in this codebase on a provider error.
             analysis = None
+            if self._budget is not None and not provider_rejected_the_file(exc):
+                # The reading failed through no fault of the owner (outage, timeout): it is
+                # not one of their readings. A file the provider refuses as invalid stays
+                # counted, so invalid files are never a free round with the provider.
+                self._budget.refund_request_quota_uses()
         if analysis:
             attachment = attachment.model_copy(
                 update={"analysis": self._anonymize(analysis, known_names)}
@@ -172,7 +194,11 @@ class UploadChatAttachmentService:
         else:
             attachment = attachment.model_copy(update={"analysis_failed": True})
 
-        return UploadChatAttachmentOutput(attachment=self._attachment_repository.save(attachment))
+        saved = self._attachment_repository.save(attachment)
+        if self._budget is not None:
+            # Saved (with or without its reading): the use is final.
+            self._budget.commit_request_quota_uses()
+        return UploadChatAttachmentOutput(attachment=saved)
 
     def _without_metadata(self, content: bytes, media_type: str) -> bytes:
         if media_type == PDF:

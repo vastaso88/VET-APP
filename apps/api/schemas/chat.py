@@ -7,12 +7,15 @@ from pydantic import BaseModel, Field
 # limit, 200 KB of text cost ~2 s of CPU in the safety gate.
 MAX_USER_MESSAGE_CHARS = 8000
 
+# Ids are uuids or short slugs; this only stops a request from carrying a megabyte as one.
+MAX_ID_CHARS = 100
+
 
 class SendChatMessageRequest(BaseModel):
-    pet_id: str
-    conversation_id: str | None = None
+    pet_id: str = Field(max_length=MAX_ID_CHARS)
+    conversation_id: str | None = Field(default=None, max_length=MAX_ID_CHARS)
     user_message: str = Field(max_length=MAX_USER_MESSAGE_CHARS)
-    attachment_id: str | None = None
+    attachment_id: str | None = Field(default=None, max_length=MAX_ID_CHARS)
     # Same value on a retry of the same message (see ChatMessage).
     client_message_id: str | None = Field(default=None, max_length=100)
     # Language of the reply ("it", "en", "de", "fr", "es"; "en-GB" is read as

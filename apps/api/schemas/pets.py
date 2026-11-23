@@ -2,6 +2,31 @@ from pydantic import BaseModel, Field
 
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails
 
+# The enclosure and the stock are stored as they come and the habitat notes reach the chat
+# prompt: bounded here, in the request only (the domain models also read old rows as written).
+# Numbers: the largest tank is far below these, and they are far below any integer column.
+MAX_ENCLOSURE_CM = 100_000
+MAX_ENCLOSURE_LITERS = 10_000_000
+MAX_FISH_PER_SEX = 100_000
+MAX_STOCK_SPECIES = 100
+
+
+class HabitatRequest(HabitatDetails):
+    dimensions: str = Field(default="", max_length=80)
+    length_cm: int | None = Field(default=None, ge=0, le=MAX_ENCLOSURE_CM)
+    width_cm: int | None = Field(default=None, ge=0, le=MAX_ENCLOSURE_CM)
+    height_cm: int | None = Field(default=None, ge=0, le=MAX_ENCLOSURE_CM)
+    volume_liters: int | None = Field(default=None, ge=0, le=MAX_ENCLOSURE_LITERS)
+    temperature_label: str = Field(default="", max_length=80)
+    substrate: str = Field(default="", max_length=80)
+    notes: str = Field(default="", max_length=1000)
+
+
+class FishStockRequest(FishStock):
+    species: str = Field(max_length=80)
+    male_count: int = Field(default=0, ge=0, le=MAX_FISH_PER_SEX)
+    female_count: int = Field(default=0, ge=0, le=MAX_FISH_PER_SEX)
+
 
 class CreatePetProfileRequest(BaseModel):
     # Upper bounds keep a single request from storing arbitrarily large
@@ -22,8 +47,10 @@ class CreatePetProfileRequest(BaseModel):
     coat_color: str | None = Field(default=None, max_length=80)
     body_condition: str | None = Field(default=None, max_length=40)
     activity_level: str | None = Field(default=None, max_length=40)
-    habitat: HabitatDetails | None = None
-    aquarium_stock: list[FishStock] = Field(default_factory=list)
+    habitat: HabitatRequest | None = None
+    aquarium_stock: list[FishStockRequest] = Field(
+        default_factory=list, max_length=MAX_STOCK_SPECIES
+    )
 
 
 class UpdatePetProfileRequest(BaseModel):
@@ -44,8 +71,10 @@ class UpdatePetProfileRequest(BaseModel):
     coat_color: str | None = Field(default=None, max_length=80)
     body_condition: str | None = Field(default=None, max_length=40)
     activity_level: str | None = Field(default=None, max_length=40)
-    habitat: HabitatDetails | None = None
-    aquarium_stock: list[FishStock] | None = None
+    habitat: HabitatRequest | None = None
+    aquarium_stock: list[FishStockRequest] | None = Field(
+        default=None, max_length=MAX_STOCK_SPECIES
+    )
 
 
 class SetMedicalRecordConsentRequest(BaseModel):

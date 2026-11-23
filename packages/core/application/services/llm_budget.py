@@ -33,9 +33,11 @@ serverless instance sees the same totals) and are re-read at most every
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from datetime import UTC, date, datetime, timedelta
 
 from pydantic import BaseModel
@@ -54,7 +56,8 @@ from packages.core.domain.llm_usage.pricing import (
     spend_usd,
 )
 from packages.core.domain.localization import translate
-from packages.shared.errors.base import ProviderError, QuotaExceededError
+from packages.shared.auth_context import get_identity_memo
+from packages.shared.errors.base import ProviderError, QuotaExceededError, VetAppError
 from packages.shared.user_clock import current_utc_offset_minutes
 
 logger = logging.getLogger("vetgpt.budget")
@@ -136,6 +139,38 @@ def format_wait(seconds: int, locale: str = "it") -> str:
 
 def format_wait_it(seconds: int) -> str:
     return format_wait(seconds, "it")
+
+
+# Errors that say "the owner's request cannot be served as asked" (an id that is not theirs, a
+# limit, a missing consent...): the owner's doing or state, never a reason to give a use back.
+# Everything else (the provider, a bug, a database outage, a timeout) is ours.
+_OWNERS_OWN_ERRORS: tuple[type[BaseException], ...] = (VetAppError,)
+
+
+def is_our_failure(exc: BaseException) -> bool:
+    """True when [exc] is a failure of ours or of a provider: the service could not do its
+    work through no fault of the owner. A cancellation is the client leaving, not a failure:
+    whoever hangs up keeps what was counted."""
+    if isinstance(exc, asyncio.CancelledError | GeneratorExit | KeyboardInterrupt | SystemExit):
+        return False
+    if isinstance(exc, ProviderError):
+        return True
+    return not isinstance(exc, _OWNERS_OWN_ERRORS)
+
+
+@contextmanager
+def refund_if_our_failure(budget: LlmBudget | None) -> Iterator[None]:
+    """For the body of a service that counted an allowance: when it fails through our fault
+    the service itself gives the use back, however the request ends (the client may have left
+    already, and then nobody else would). An error that is the owner's own (refused file, a
+    limit) keeps the use; the same for anything after `commit_request_quota_uses`, which
+    leaves nothing to give back."""
+    try:
+        yield
+    except BaseException as exc:
+        if budget is not None and is_our_failure(exc):
+            budget.refund_request_quota_uses()
+        raise
 
 
 def require_feature_allowance(
@@ -408,17 +443,21 @@ class LlmBudget:
         offset = current_utc_offset_minutes()
         if not counts_as_question:
             return self._admit_follow_up(owner_id, limit, now, offset)
+        day = owner_day(now, offset)
         try:
-            count = self._repository.add_user_message(owner_id, owner_day(now, offset))
+            count = self._repository.add_user_message(owner_id, day)
         except Exception:  # noqa: BLE001 - fail open: a ledger outage must not block owners
             logger.exception("llm budget: could not count the owner's message")
             return None
         if count > limit:
+            # A refused message is not a use: the count it added is taken back at once.
+            self._give_back(owner_id, day, "messages")
             return QuotaDenial(
                 reason="user_limit",
                 retry_after_seconds=self._seconds_until_owner_midnight(now, offset),
                 daily_limit=limit,
             )
+        self._reserve(owner_id, day, "messages")
         return None
 
     def admit_feature(
@@ -431,17 +470,20 @@ class LlmBudget:
             return None
         now = self._clock()
         offset = current_utc_offset_minutes()
+        day = owner_day(now, offset)
         try:
-            count = self._repository.add_user_usage(owner_id, owner_day(now, offset), kind)
+            count = self._repository.add_user_usage(owner_id, day, kind)
         except Exception:  # noqa: BLE001 - fail open: a ledger outage must not block owners
             logger.exception("llm budget: could not count the owner's %s use", kind)
             return None
         if count > limit:
+            self._give_back(owner_id, day, kind)
             return QuotaDenial(
                 reason=f"{kind}_limit",
                 retry_after_seconds=self._seconds_until_owner_midnight(now, offset),
                 daily_limit=limit,
             )
+        self._reserve(owner_id, day, kind)
         return None
 
     def _admit_follow_up(
@@ -452,17 +494,20 @@ class LlmBudget:
         plan's questions). Same fail-open as the questions: a ledger outage
         must not cut a case under way."""
         ceiling = question_limit * FOLLOWUPS_PER_QUESTION
+        day = owner_day(now, offset)
         try:
-            count = self._repository.add_user_usage(owner_id, owner_day(now, offset), FOLLOWUP_KIND)
+            count = self._repository.add_user_usage(owner_id, day, FOLLOWUP_KIND)
         except Exception:  # noqa: BLE001 - fail open, as for the questions
             logger.exception("llm budget: could not count the owner's follow-up")
             return None
         if count > ceiling:
+            self._give_back(owner_id, day, FOLLOWUP_KIND)
             return QuotaDenial(
                 reason="user_limit",
                 retry_after_seconds=self._seconds_until_owner_midnight(now, offset),
                 daily_limit=question_limit,
             )
+        self._reserve(owner_id, day, FOLLOWUP_KIND)
         return None
 
     def admit_sonnet(
@@ -496,14 +541,57 @@ class LlmBudget:
             return None
         if limit <= 0 or not owner_id:
             return QuotaDenial(reason="sonnet_limit", retry_after_seconds=wait, daily_limit=0)
+        day = owner_day(now, offset)
         try:
-            count = self._repository.add_user_usage(owner_id, owner_day(now, offset), SONNET_KIND)
+            count = self._repository.add_user_usage(owner_id, day, SONNET_KIND)
         except Exception:  # noqa: BLE001 - fail closed: Haiku answers
             logger.exception("llm budget: could not count the owner's Sonnet answer")
             return QuotaDenial(reason="sonnet_ledger", retry_after_seconds=wait, daily_limit=limit)
         if count > limit:
+            self._give_back(owner_id, day, SONNET_KIND)
             return QuotaDenial(reason="sonnet_limit", retry_after_seconds=wait, daily_limit=limit)
+        self._reserve(owner_id, day, SONNET_KIND)
         return None
+
+    # --- giving a use back ----------------------------------------------------------
+
+    @staticmethod
+    def _reserve(owner_id: str, day: date, kind: str) -> None:
+        """Remembers, for the request being served, that this use was counted: if the request
+        fails through no fault of the owner it is given back (`refund_request_quota_uses`).
+        Outside a request (a job, a test calling the service directly) nothing is remembered."""
+        memo = get_identity_memo()
+        if memo is not None:
+            memo.note_quota_use((owner_id, day, kind))
+
+    def _give_back(self, owner_id: str, day: date, kind: str) -> None:
+        try:
+            self._repository.remove_user_usage(owner_id, day, kind)
+        except Exception:  # noqa: BLE001 - the ledger must never take a request down
+            # Kind only: no owner, no counts. Without scripts/setup/chat_usage_refund.sql
+            # the call fails here and the counter stays as it was.
+            logger.warning("llm budget: could not give back a %s use", kind, exc_info=False)
+
+    def refund_request_quota_uses(self) -> int:
+        """Gives back every use counted so far in the request being served (the owner received
+        nothing for them): a question, a photo reading, a dictation, a summary, a Sonnet
+        answer. The model spend (llm_usage) is NOT touched: money already spent stays counted.
+        Each use is returned once, however many times this is called. Returns how many."""
+        memo = get_identity_memo()
+        if memo is None:
+            return 0
+        uses = memo.take_quota_uses()
+        for owner_id, day, kind in uses:
+            self._give_back(owner_id, day, kind)
+        return len(uses)
+
+    def commit_request_quota_uses(self) -> int:
+        """The result is saved or handed over: every use counted so far in this request becomes
+        final. From here nobody can give it back, not even a failure that comes after (a 500
+        while building the response, the client having left): otherwise a client could send a
+        question, hang up, and read the saved answer for free. Returns how many."""
+        memo = get_identity_memo()
+        return len(memo.take_quota_uses()) if memo is not None else 0
 
     # --- internals ------------------------------------------------------------------
 

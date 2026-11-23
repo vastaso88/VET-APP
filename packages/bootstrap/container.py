@@ -470,6 +470,9 @@ class ApplicationContainer(
             recent_other_chats=self.settings.chat_answer_v2,
             # QK-03b: the same message in flight on another instance is answered once.
             message_claims=MessageClaims(self.chat_message_key_repository),
+            # K13: an apology instead of an answer gives the question back.
+            quota_refund=self.llm_budget.refund_request_quota_uses,
+            quota_commit=self.llm_budget.commit_request_quota_uses,
         )
 
     def chat_usage_maintenance_service(self) -> ChatUsageMaintenanceService:
