@@ -5,7 +5,6 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Query
 
 from apps.api.routes.admin_common import _admin_client, _require_admin
-from apps.api.routes.admin_directories_legacy import legacy_pets_directory
 from packages.infrastructure.admin.user_reports import pets_directory
 
 router = APIRouter(prefix="/admin/pets", tags=["admin"])
@@ -35,17 +34,6 @@ def list_admin_pets(
             region=region,
             page=page,
             page_size=page_size,
-            # TEMPORARY: the old logic while the database function does not exist yet.
-            fallback=lambda: legacy_pets_directory(
-                client,
-                q=q,
-                species=species,
-                status=status,
-                country=country,
-                region=region,
-                page=page,
-                page_size=page_size,
-            ),
         )
         return {
             "pets": directory["rows"],

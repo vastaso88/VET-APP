@@ -1,3 +1,19 @@
+-- Shared trigger function, defined FIRST (QK-30, 2026-11-22): trg_admin_ingestion_schedules_
+-- set_updated_at below uses it, and until now it was created only by
+-- supabase_llm_sources_schema.sql, which runs after this script: on an empty database this
+-- script stopped there. Same definition as in that script (`create or replace`, so having it
+-- in both places is harmless).
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+set search_path = pg_catalog, extensions
+as $$
+begin
+    new.updated_at = now();
+    return new;
+end;
+$$;
+
 create table if not exists public.pet_profiles (
     id text primary key,
     owner_id text not null,

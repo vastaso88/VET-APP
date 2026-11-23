@@ -7,7 +7,6 @@ two `rpc` functions with a Python reference of supabase/migrations/
 show what crosses the wire. The SQL itself is exercised by tests/sql/admin_directories.mjs
 (embedded Postgres); here only the routes and their contract are tested."""
 
-import logging
 from collections import Counter
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -21,7 +20,6 @@ from fastapi.testclient import TestClient
 from apps.api.main import app
 from packages.bootstrap.container import get_container
 from packages.core.application.ports.auth_provider import AuthenticatedUser
-from packages.infrastructure.admin import user_reports as reports
 
 WINDOW = 1000  # rows the provider returns per plain read
 N_USERS = 2500
@@ -96,16 +94,8 @@ class _Table:
     def __init__(self, owner: "Directories", name: str) -> None:
         self.owner, self.name = owner, name
         self._in: tuple[str, list[str]] | None = None
-        self._range: tuple[int, int] | None = None
 
     def select(self, *_: Any) -> "_Table":
-        return self
-
-    def order(self, *_: Any, **__: Any) -> "_Table":
-        return self
-
-    def range(self, start: int, end: int) -> "_Table":
-        self._range = (start, end)
         return self
 
     def in_(self, column: str, values: list[str]) -> "_Table":
@@ -119,8 +109,6 @@ class _Table:
         if self._in:
             column, values = self._in
             rows = [row for row in rows if row[column] in values]
-        if self._range is not None:
-            rows = rows[self._range[0] : self._range[1] + 1]
         rows = rows[:WINDOW]  # the provider window
         self.owner.transferred += len(rows)
         return SimpleNamespace(data=[dict(row) for row in rows])
@@ -133,20 +121,13 @@ class Directories:
         self.pets = [_pet(i) for i in range(N_PETS)]
         self.tables: dict[str, list[dict[str, Any]]] = {
             "subscriptions": [],
-            "user_locations": list(self.locations.values()),
         }
         self.transferred = 0
         self.rpc_calls: list[tuple[str, dict[str, Any]]] = []
         # The new path never lists Auth users; the old one (fallback) does, in pages.
         self.auth = Mock()
-        self.auth.admin.list_users.side_effect = self._list_auth_users
         self.fail_with: Exception | None = None
         self.reply: Any = None  # force a malformed reply
-
-    def _list_auth_users(self, page: int, per_page: int) -> list[SimpleNamespace]:
-        chunk = self.users[(page - 1) * per_page : page * per_page]
-        self.transferred += len(chunk)
-        return [SimpleNamespace(**user) for user in chunk]
 
     def table(self, name: str) -> _Table:
         return _Table(self, name)
@@ -261,11 +242,6 @@ class _ApiError(Exception):
         super().__init__("provider detail with person@example.com")
         self.code = code
         self.status = status
-
-
-@pytest.fixture(autouse=True)
-def _forget_missing_functions() -> None:
-    reports._MISSING_FUNCTIONS.clear()
 
 
 @pytest.fixture
@@ -485,139 +461,46 @@ def test_pet_rows_keep_their_shape_and_carry_no_medical_fields(
     assert pet["region"] is None
 
 
-# ------------------------------------------------- temporary fallback (no function yet)
-
-MISSING = [
-    pytest.param(_ApiError("PGRST202"), id="PGRST202"),
-    pytest.param(_ApiError("42883"), id="42883"),
-    pytest.param(_ApiError(status=404), id="http-404"),
-]
-USER_QUERIES = [
-    {},
-    {"page": 7, "page_size": 100},
-    {"country": "FR", "page_size": 40},
-    {"country": "unknown", "page": 3, "page_size": 25},
-    {"q": "PERSON12", "page_size": 100},
-    {"q": "person0@example"},
-    {"page": 2000, "page_size": 100},
-]
-
-
-def _users_page(browser: TestClient, params: dict[str, Any]) -> dict[str, Any]:
-    response = browser.get("/admin/users", params=params)
-    assert response.status_code == 200
-    body: dict[str, Any] = response.json()
-    return body
-
-
-@pytest.mark.parametrize("error", MISSING)
-@pytest.mark.parametrize("params", USER_QUERIES)
-def test_without_the_users_function_the_old_logic_gives_the_same_pages(
-    portal: tuple[TestClient, Directories], error: Exception, params: dict[str, Any]
-) -> None:
-    browser, database = portal
-    with_function = _users_page(browser, params)
-    reports._MISSING_FUNCTIONS.clear()
-    database.fail_with = error
-    without_function = _users_page(browser, params)
-    assert without_function == with_function
-    database.auth.admin.list_users.assert_called()  # it really took the old road
-
-
-@pytest.mark.parametrize("error", MISSING)
-def test_without_the_pets_function_the_old_logic_gives_the_same_pages(
-    portal: tuple[TestClient, Directories], error: Exception
-) -> None:
-    browser, database = portal
-    database.pets = database.pets[:900]  # the old read is cut at 1,000 rows: stay below
-    queries: list[dict[str, Any]] = [
-        {},
-        {"page": 4, "page_size": 100},
-        {"q": "pet00899"},
-        {"species": "dog"},
-        {"status": "memorial"},
-        {"status": "inactive", "page_size": 100},
-        {"country": "es"},
-        {"region": "city 3", "page": 2, "page_size": 20},
-        {"page": 2000},
-    ]
-    for params in queries:
-        reports._MISSING_FUNCTIONS.clear()
-        database.fail_with = None
-        expected = browser.get("/admin/pets", params=params).json()
-        reports._MISSING_FUNCTIONS.clear()
-        database.fail_with = error
-        assert browser.get("/admin/pets", params=params).json() == expected
-
-
-def test_the_old_pets_read_keeps_its_old_limit_it_is_only_a_stop_gap(
-    portal: tuple[TestClient, Directories],
-) -> None:
-    browser, database = portal
-    database.fail_with = _ApiError("PGRST202")
-    assert browser.get("/admin/pets").json()["total"] == WINDOW  # of 1,500: as before QK-07
-
-
-def test_a_missing_function_is_remembered_and_logged_without_personal_data(
-    portal: tuple[TestClient, Directories], caplog: pytest.LogCaptureFixture
-) -> None:
-    browser, database = portal
-    database.fail_with = _ApiError("PGRST202")
-    with caplog.at_level(logging.WARNING, logger=reports.__name__):
-        _users_page(browser, {})
-        _users_page(browser, {"page": 2})
-        browser.get("/admin/pets")
-    # One attempt per function for the whole process, not one per request.
-    assert [call[0] for call in database.rpc_calls] == [
-        "admin_users_directory",
-        "admin_pets_directory",
-    ]
-    warnings = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
-    assert len(warnings) == 2
-    assert all("admin_" in message and "20261122100000" in message for message in warnings)
-    assert all("example.com" not in message for message in warnings)
+# ----------------------------------------- a failing function is a 503, never a detour
 
 
 @pytest.mark.parametrize("path", ["/admin/users", "/admin/pets"])
 @pytest.mark.parametrize(
-    "error", [_ApiError("42501"), _ApiError("PGRST301"), _ApiError(status=500), RuntimeError("x")]
+    "error",
+    [
+        _ApiError("PGRST202"),  # "function not found": no more old road since QK-07e
+        _ApiError("42883"),
+        _ApiError(status=404),
+        _ApiError("42501"),
+        _ApiError("PGRST301"),
+        _ApiError(status=500),
+        RuntimeError("x"),
+    ],
 )
-def test_any_other_error_stays_a_503_and_is_not_remembered_as_missing(
+def test_every_error_of_the_function_is_a_generic_503_asked_again_each_time(
     portal: tuple[TestClient, Directories], path: str, error: Exception
 ) -> None:
     browser, database = portal
     database.fail_with = error
+    first = browser.get(path)
+    assert first.status_code == 503
+    assert "example.com" not in first.text and "provider detail" not in first.text
     assert browser.get(path).status_code == 503
-    assert reports._MISSING_FUNCTIONS == set()
-    assert browser.get(path).status_code == 503
-    assert len(database.rpc_calls) == 2  # asked again: a real failure is never cached
-    database.auth.admin.list_users.assert_not_called()  # and the old road was not taken
+    assert len(database.rpc_calls) == 2  # nothing is remembered about a failure
+    database.auth.admin.list_users.assert_not_called()  # and no other road is taken
+    assert database.transferred == 0
 
 
-@pytest.mark.parametrize("path", ["/admin/users", "/admin/pets"])
-def test_a_failing_old_road_is_a_503_too_never_an_empty_list(
-    portal: tuple[TestClient, Directories], path: str
-) -> None:
-    browser, database = portal
-    database.fail_with = _ApiError("PGRST202")
-    database.auth.admin.list_users.side_effect = RuntimeError("person@example.com")
-    database.table = Mock(side_effect=RuntimeError("person@example.com"))  # type: ignore[method-assign]
-    response = browser.get(path)
-    assert response.status_code == 503 and "example.com" not in response.text
-
-
-def test_with_the_function_present_the_new_road_is_taken(
-    portal: tuple[TestClient, Directories],
-) -> None:
-    browser, database = portal
-    _users_page(browser, {})
-    browser.get("/admin/pets")
-    assert [call[0] for call in database.rpc_calls] == [
-        "admin_users_directory",
-        "admin_pets_directory",
-    ]
-    database.auth.admin.list_users.assert_not_called()
-    assert reports._MISSING_FUNCTIONS == set()
+def test_the_temporary_fallback_is_gone() -> None:
+    root = Path("apps/api/routes")
+    assert not (root / "admin_directories_legacy.py").exists()
+    for source in (
+        root / "admin_users.py",
+        root / "admin_pets.py",
+        Path("packages/infrastructure/admin/user_reports.py"),
+    ):
+        text = source.read_text(encoding="utf-8")
+        assert "legacy" not in text and "fallback" not in text and "_MISSING" not in text
 
 
 # ------------------------------------------------------------------ SQL file

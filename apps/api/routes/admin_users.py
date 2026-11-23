@@ -14,7 +14,6 @@ from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
 from apps.api.routes.admin_common import _admin_client, _parse_datetime, _require_admin
-from apps.api.routes.admin_directories_legacy import legacy_users_directory
 from packages.core.domain.subscription.models import Subscription
 from packages.infrastructure.admin.user_reports import moderation, users_directory
 from packages.shared.auth_context import get_access_token
@@ -106,10 +105,6 @@ def list_users(
             country=country,
             page=page,
             page_size=page_size,
-            # TEMPORARY: the old logic while the database function does not exist yet.
-            fallback=lambda: legacy_users_directory(
-                client, q=q, country=country, page=page, page_size=page_size
-            ),
         )
         selected = [_directory_user(row) for row in directory["rows"]]
         subscriptions = {}
