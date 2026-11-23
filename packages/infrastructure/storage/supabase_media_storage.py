@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from packages.core.application.ports.media_storage import MediaStorage
+from packages.core.domain.conversation.media_type import detect_media_type
+from packages.shared.errors.base import ProviderError
 
 if TYPE_CHECKING:
     from supabase import Client
@@ -21,7 +23,16 @@ class SupabaseMediaStorage(MediaStorage):
         self._bucket = bucket
 
     def save(self, key: str, content: bytes) -> None:
-        self._client.storage.from_(self._bucket).upload(key, content, {"upsert": "true"})
+        # Without a content type storage3 declares "text/plain", which the bucket
+        # refuses (it accepts only images and PDF): the type comes from the file's
+        # own signature, never from what the client said.
+        content_type = detect_media_type(content) or "application/octet-stream"
+        try:
+            self._client.storage.from_(self._bucket).upload(
+                key, content, {"content-type": content_type, "upsert": "true"}
+            )
+        except Exception as exc:
+            raise ProviderError("attachment storage refused the file") from exc
 
     def delete(self, key: str) -> None:
         try:
