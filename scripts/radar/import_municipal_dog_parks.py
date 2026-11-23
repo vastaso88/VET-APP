@@ -35,7 +35,7 @@ from packages.infrastructure.radar_places.overture_mapping import (  # noqa: E40
     place_to_open_row,
 )
 
-USER_AGENT = "VET-APP/1.0 (+https://vet-app-psi-nine.vercel.app; import periodico)"
+USER_AGENT = "QuokkaImport/1.0 (+https://quokkapet.net; import periodico)"
 
 
 def download(dataset: MunicipalDataset) -> list[dict[str, Any]]:

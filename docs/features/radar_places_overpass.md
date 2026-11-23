@@ -271,7 +271,7 @@ I server pubblici sono gratuiti e condivisi. Comportamento osservato il 2026-10-
 
 Su Vercel l'indirizzo IP è condiviso con altri clienti, quindi i 429 possono essere più frequenti che in sviluppo. Prima di un lancio pubblico serve un'istanza Overpass propria o un estratto OSM importato periodicamente.
 
-`OVERPASS_USER_AGENT` identifica l'app con il suo indirizzo web. In produzione va impostato con un contatto tecnico reale, come chiede la policy d'uso di Overpass.
+`OVERPASS_USER_AGENT` identifica l'app con il suo nome e il sito ufficiale (`Quokka/1.0 (+https://quokkapet.net)`, in `packages/shared/http_identity.py`), come chiede la policy d'uso di Overpass. Un valore diverso in ambiente deve comunque iniziare con «Quokka».
 
 ### Categorie importate
 

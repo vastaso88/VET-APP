@@ -70,7 +70,7 @@ def test_search_identifies_the_app_limits_the_country_and_keeps_only_strings() -
 
     asked = opener.requests[0]
     params = parse.parse_qs(parse.urlsplit(asked.full_url).query)
-    assert asked.get_header("User-agent").startswith("VET-APP/1.0")
+    assert asked.get_header("User-agent").startswith("Quokka/")
     assert params["countrycodes"] == ["it"] and params["limit"] == ["1"]
     assert results == [
         GeocodedPlace(

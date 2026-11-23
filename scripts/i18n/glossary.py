@@ -152,7 +152,11 @@ def deepl_sync(github_env: Path | None = None) -> int:
         print("DEEPL_API_KEY is not set: nothing to synchronise.")
         return 1
     endpoint = "https://api-free.deepl.com" if key.endswith(":fx") else "https://api.deepl.com"
-    headers = {"Authorization": "DeepL-Auth-Key " + key, "Content-Type": "application/json"}
+    headers = {
+        "Authorization": "DeepL-Auth-Key " + key,
+        "Content-Type": "application/json",
+        "User-Agent": "QuokkaTranslations/1.0",
+    }
 
     def call(method: str, path: str, body: dict | None = None) -> object:
         request = Request(

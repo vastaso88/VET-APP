@@ -10,6 +10,7 @@ from packages.core.application.ports.evidence_retriever import (
 from packages.core.application.services.evidence_query_planner import EvidenceQueryPlanner
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.infrastructure.llm.retrieval.intent_domain import domain_from_intent
+from packages.shared.http_identity import USER_AGENT
 
 BASE_URL = "https://api.crossref.org/works"
 
@@ -44,7 +45,9 @@ def _tier_from_title(title: str) -> str:
 
 
 def _default_fetcher(url: str, *, timeout_seconds: int) -> bytes:
-    http_request = request.Request(url, headers={"Accept": "application/json"})
+    http_request = request.Request(
+        url, headers={"Accept": "application/json", "User-Agent": USER_AGENT}
+    )
     with request.urlopen(http_request, timeout=timeout_seconds) as response:
         body: bytes = response.read()
         return body

@@ -31,7 +31,7 @@ from collections import Counter
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 from common import (  # type: ignore[import-not-found]
     ROOT_DIR,
@@ -58,6 +58,7 @@ from packages.infrastructure.radar_places.overture_mapping import (  # noqa: E40
 )
 
 STAC_CATALOG_URL = "https://stac.overturemaps.org/catalog.json"
+USER_AGENT = "QuokkaImport/1.0 (+https://quokkapet.net; import periodico)"
 LICENSE_DIR = ROOT_DIR / "docs" / "licenses"
 CACHE_DIR = ROOT_DIR / ".local" / "radar" / "overture"
 DEFAULT_CACHE_HOURS = 24
@@ -65,7 +66,8 @@ ATTRIBUTION = "© Overture Maps Foundation — Places"
 
 
 def latest_release() -> str:
-    with urlopen(STAC_CATALOG_URL, timeout=30) as response:
+    catalog = Request(STAC_CATALOG_URL, headers={"User-Agent": USER_AGENT})
+    with urlopen(catalog, timeout=30) as response:
         return str(json.load(response)["latest"])
 
 

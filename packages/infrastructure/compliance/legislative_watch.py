@@ -76,7 +76,9 @@ class ChangeReport:
 
 
 def fetch_source(url: str, *, timeout: int = 30) -> str:
-    req = request.Request(url, headers={"User-Agent": "VetApp-LegislativeWatch/1.0"})
+    req = request.Request(
+        url, headers={"User-Agent": "QuokkaLegislativeWatch/1.0 (+https://quokkapet.net)"}
+    )
     with request.urlopen(req, timeout=timeout) as response:  # noqa: S310 - fixed https sources
         body: bytes = response.read()
         return body.decode("utf-8", errors="replace")

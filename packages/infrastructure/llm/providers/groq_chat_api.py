@@ -27,6 +27,7 @@ from typing import Any, Protocol
 from urllib import error, request
 
 from packages.shared.errors.base import ProviderError
+from packages.shared.http_identity import USER_AGENT
 
 logger = logging.getLogger(__name__)
 
@@ -189,7 +190,7 @@ class GroqChatApi:
                 # Cloudflare (in front of Groq's API) blocks urllib's default
                 # "Python-urllib/x.y" user agent outright (HTTP 403, error
                 # code 1010) — any identifiable client string satisfies it.
-                "User-Agent": "VetApp/1.0",
+                "User-Agent": USER_AGENT,
             },
             method="POST",
         )

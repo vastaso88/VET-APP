@@ -45,7 +45,7 @@ from packages.infrastructure.events.ical_source import (  # noqa: E402
 )
 
 SOURCES_FILE = Path(__file__).resolve().parent / "sources.json"
-USER_AGENT = "VetApp-EventsImport/1.0 (public calendar feeds; https://vet-app.vercel.app)"
+USER_AGENT = "QuokkaEvents/1.0 (public calendar feeds; https://quokkapet.net)"
 MAX_BYTES = 5_000_000
 
 
