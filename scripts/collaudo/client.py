@@ -103,6 +103,12 @@ def registra_tempo(chat: str, metodo: str, path: str, risposta: Risposta, funzio
     )
 
 
+def fuso_locale_minuti() -> int:
+    """The offset the app would send from this computer: 60 in winter, 120 in summer in Italy."""
+    offset = datetime.now().astimezone().utcoffset()
+    return int(offset.total_seconds() // 60) if offset is not None else 0
+
+
 class Sessione:
     """A signed-in tester. Tokens live in `.local/collaudo/stato/<chat>.json`."""
 
@@ -116,9 +122,10 @@ class Sessione:
         self.base, self.indice = persone.risolvi_account(chat)
         self.persona = persone.persona(self.base)
         # `--lingua` (col-chloe-lingue switches language) wins over the persona's language;
-        # `--utc-offset` sends X-UTC-Offset-Minutes as the app does from the phone's time zone.
+        # The app always sends X-UTC-Offset-Minutes (without it the server counts UTC days);
+        # `--utc-offset` simulates a phone in another time zone.
         self.lingua = lingua or str(self.persona.get("lingua", "it"))
-        self.utc_offset = utc_offset
+        self.utc_offset = fuso_locale_minuti() if utc_offset is None else utc_offset
 
     # -- auth ---------------------------------------------------------------------------
     def _token_request(self, grant: str, body: dict[str, str]) -> dict[str, Any]:
@@ -176,10 +183,10 @@ class Sessione:
         return answer
 
     def _api_headers(self) -> dict[str, str]:
-        headers = {"Accept-Language": self.lingua}
-        if self.utc_offset is not None:
-            headers["X-UTC-Offset-Minutes"] = str(self.utc_offset)
-        return headers
+        return {
+            "Accept-Language": self.lingua,
+            "X-UTC-Offset-Minutes": str(self.utc_offset),
+        }
 
     def api(
         self,
@@ -383,7 +390,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--lingua", default="", help="es. en-US, en-AU: sostituisce quella della persona"
     )
-    parser.add_argument("--utc-offset", type=int, default=None, help="minuti, es. 60 per UTC+1")
+    parser.add_argument(
+        "--utc-offset",
+        type=int,
+        default=None,
+        help="minuti, es. 60 per UTC+1 (senza: il fuso di questo PC, come fa l'app)",
+    )
     sub = parser.add_subparsers(dest="comando", required=True)
     sub.add_parser("accedi")
     sub.add_parser("prepara")

@@ -288,5 +288,10 @@ def test_language_offset_and_message_id_options_reach_the_server(
 
     session = client.Sessione("col-chloe-lingue", TWIN)
     session.chat_message("Poule", "Bonjour", False)
-    assert seen["headers"] == {"Accept-Language": "fr", "Authorization": "Bearer t"}
+    # Without the option the header is still there, as in the app: this computer's own offset.
+    assert seen["headers"] == {
+        "Accept-Language": "fr",
+        "Authorization": "Bearer t",
+        "X-UTC-Offset-Minutes": str(client.fuso_locale_minuti()),
+    }
     assert "client_message_id" not in seen["body"]
