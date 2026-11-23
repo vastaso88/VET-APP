@@ -52,6 +52,14 @@ def resolve_language(explicit: str | None, accept_language: str | None) -> str:
     return language_from_accept_header(accept_language) or DEFAULT_LANGUAGE
 
 
+def reply_in_this_language(language: str) -> str:
+    """The last line of the owner's message; nothing for Italian (prompts stay as they are)."""
+    code = normalize_language(language)
+    if code == DEFAULT_LANGUAGE:
+        return ""
+    return f"\n\n(Reply in {LANGUAGE_NAMES[code]} only.)"
+
+
 def _header_items(parts: Iterable[str]) -> list[str]:
     return [part.split(";")[0].strip() for part in parts if part.strip()]
 

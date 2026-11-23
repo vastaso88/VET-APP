@@ -8,7 +8,11 @@ production quota is never touched. EVAL_CLI_MODEL picks the model (default
 claude-haiku-5-5, the production one).
 
 The program has no ``max_tokens``: lengths measured this way are the model's
-own, not cut by the production ceiling.
+own, not cut by the production ceiling, and it always reports ``finish_reason: "stop"``. So
+this harness CANNOT see a reply cut by the token budget (collaudo, 23/11/2026: five of
+seventeen on the online twin, none in any measure made here). It is also slower than the
+API, so the owner's 20 seconds are switched off below: otherwise the severity check and the
+shortening would be skipped and what they do would not be measured.
 
 Same behaviour as the client of scripts/eval/synthetic_users/server.py: the
 variables of this Claude Code session (CLAUDE_CODE_*, ANTHROPIC_*) are not
@@ -27,6 +31,14 @@ DEFAULT_MODEL = "claude-haiku-5-5"
 CONFIG_DIR = Path.home() / ".claude-eval-cli"
 
 
+def no_turn_deadline() -> None:
+    """The program takes 10-20 s a call: with the owner's 19 s in force the checks after
+    writing are skipped, and the measure is of something else."""
+    from packages.core.application.services import chat_orchestrator
+
+    chat_orchestrator._TURN_SECONDS = 3600.0
+
+
 def cli_exe() -> str:
     """The program's path, from the process environment only."""
     return os.environ.get("EVAL_CLAUDE_EXE", "").strip()
@@ -40,6 +52,7 @@ class ClaudeCliClient:
     """An LLMClient that runs `claude -p` once per request."""
 
     def __init__(self, exe: str, work_dir: Path, *, model: str = DEFAULT_MODEL) -> None:
+        no_turn_deadline()
         self._exe = exe
         self._work_dir = work_dir
         self._model = model

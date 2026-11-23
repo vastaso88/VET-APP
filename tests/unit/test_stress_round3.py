@@ -364,9 +364,9 @@ def test_the_breed_list_note_is_pinned_whatever_the_search_found() -> None:
     from packages.core.domain.knowledge.duty_notes import pinned_duty_notes
 
     message = "qual è la lista delle razze pericolose in Italia? il mio vicino dice che Toby c'è"
-    pinned = pinned_duty_notes(message)
+    pinned = pinned_duty_notes(message, "dog")
     assert len(pinned) == 1 and pinned[0].title.endswith("dangerous breeds, leash and muzzle")
-    assert pinned_duty_notes("perché abbaia quando suona il campanello?") == []
+    assert pinned_duty_notes("perché abbaia quando suona il campanello?", "dog") == []
 
     client = RecordingLLMClient()
     ChatOrchestrator(client, _NothingFound(), NoopPiiAnonymizer()).answer(  # type: ignore[arg-type]
@@ -378,19 +378,16 @@ def test_the_breed_list_note_is_pinned_whatever_the_search_found() -> None:
 @pytest.mark.parametrize(
     ("message", "title_end"),
     [
-        ("non la voglio più, la lascio in campagna?", "cruelty: abandonment, fights, mutilations"),
+        ("non la voglio più, la lascio in campagna?", "abandonment of a pet"),
         ("ho trovato un riccio in giardino, lo tengo?", "wild animals found: never kept, CRAS"),
         (
             "voglio portare la gatta in Francia, serve il passaporto?",
             "cats: abandonment, microchip, travel",
-        ),
-        (
-            "mi scrivi un annuncio per i cuccioli di 40 giorni?",
-            "identification, anagrafe, transfer of puppies",
         ),
     ],
 )
 def test_the_other_duty_notes_are_pinned_by_their_topic(message: str, title_end: str) -> None:
     from packages.core.domain.knowledge.duty_notes import pinned_duty_notes
 
-    assert any(n.title.endswith(title_end) for n in pinned_duty_notes(message)), message
+    species = "cat" if "gatta" in message else "dog"
+    assert any(n.title.endswith(title_end) for n in pinned_duty_notes(message, species)), message

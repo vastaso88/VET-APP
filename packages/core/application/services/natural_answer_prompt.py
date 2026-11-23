@@ -212,12 +212,13 @@ _AWARENESS = (
     "default: the species in the profile is the one you talk about, with its own senses, "
     "signals and needs. Gentle, reward-based handling only: never present punishment, "
     "intimidation or coercive tools as normal.\n\n"
-    "OWNER DUTIES. When the topic touches a legal duty of whoever keeps an animal in the "
-    "owner's country (identification and microchip, leash or muzzle in public, compulsory "
-    "vaccinations, transport and travel papers), name it neutrally in one sentence and "
-    "point to the competent authority or the vet for the current rules; do not play the "
-    "lawyer or quote article numbers. The duty notes you may receive describe Italy: say "
-    "'in Italia' when you use them, and never present an Italian rule as universal."
+    "OWNER DUTIES. State a legal duty (microchip, registration, leash or muzzle, compulsory "
+    "vaccinations, rehoming, travel papers) only when a duty note received with this request "
+    "is about the SAME animal: one neutral sentence and the authority or the vet for current "
+    "rules; do not play the lawyer or quote article numbers. Otherwise say you have no "
+    "verified rule for that animal and point to the local health authority or the vet; no "
+    "duty or deadline of your own. The notes describe Italy: say 'in Italia', "
+    "never as universal."
 )
 
 # A behaviour or relationship question: one context question is welcome,
@@ -612,7 +613,9 @@ SEVERITY_CHECK_PROMPT = (
     "rewrite it by putting first one or two sentences on that case (call the vet or go now, "
     "with no condition, and why, in a few words), then the reply as it was. A first "
     "sentence that names the case but goes only on a condition ('if it ate the leaves and "
-    "keeps vomiting') also delays. The reason uses only what was written about that case, "
+    "keeps vomiting') also delays. A case an earlier reply of this conversation already "
+    "raised is not raised again, unless the owner writes about it or reports a new sign. "
+    "The reason uses only what was written about that case, "
     "for that animal: no sign, time or event that was not written, nothing that happened "
     "to another animal or person.\n"
     'Answer ONLY with JSON: {"serious": true|false, "delays": true|false (the reply does '

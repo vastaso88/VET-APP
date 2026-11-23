@@ -133,7 +133,7 @@ def test_a_new_chat_sees_the_serious_case_of_another_chat() -> None:
     _ask(llm, "che miglio le compro?", other_chats=_SERIOUS_ELSEWHERE)
 
     (request,) = llm.requests_for("answer")
-    assert "Other conversations about this animal in the last 72 hours" in request.user_prompt
+    assert "Other conversations about this animal in the last 24 hours" in request.user_prompt
     assert "feci verdi" in request.user_prompt
     assert "OTHER RECENT CONVERSATIONS" in request.system_prompt
 
@@ -168,7 +168,7 @@ def _conversation(pet: str, text: str, hours_ago: float) -> Conversation:
     )
 
 
-def test_the_service_passes_only_the_same_pets_chats_of_the_last_72_hours() -> None:
+def test_the_service_passes_only_the_same_pets_chats_of_the_last_24_hours() -> None:
     repo = InMemoryConversationRepository()
     repo.save(_conversation("pet-1", "feci verdi e occhi socchiusi", hours_ago=5))
     repo.save(_conversation("pet-1", "una settimana fa perdeva piume", hours_ago=24 * 7))
@@ -181,7 +181,7 @@ def test_the_service_passes_only_the_same_pets_chats_of_the_last_72_hours() -> N
 
     (request,) = llm.requests_for("answer")
     assert "feci verdi" in request.user_prompt
-    assert "perdeva piume" not in request.user_prompt  # older than 72 hours
+    assert "perdeva piume" not in request.user_prompt  # older than 24 hours
     assert "zoppica" not in request.user_prompt  # another animal
 
 

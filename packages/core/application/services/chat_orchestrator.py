@@ -67,7 +67,12 @@ from packages.core.application.services.urgency_classifier import (
     UrgencyClassifier,
     UrgencyVerdict,
 )
-from packages.core.domain.common.language import normalize_language, response_language_instruction
+from packages.core.domain.common.language import (
+    LANGUAGE_NAMES,
+    normalize_language,
+    response_language_instruction,
+)
+from packages.core.domain.common.text_language import is_in_another_language
 from packages.core.domain.conversation.answer_cache import (
     cache_key,
     is_cacheable_question,
@@ -95,6 +100,12 @@ from packages.core.domain.knowledge.answer_validation import (
     without_phone_numbers,
 )
 from packages.core.domain.knowledge.dose_in_answer import find_dosage, without_dose_sentences
+from packages.core.domain.knowledge.duty_claims import (
+    has_no_pet_passport,
+    unsourced_duties,
+    without_unsourced_duties,
+)
+from packages.core.domain.knowledge.duty_notes import DUTY_CATALOG
 from packages.core.domain.knowledge.enclosure_size import (
     unsourced_sizes,
     without_unsourced_sizes,
@@ -1007,7 +1018,7 @@ class ChatOrchestratorInput(BaseModel):
     photo_reading_off: bool = False
     conversation_history: list[ChatMessage] = Field(default_factory=list)
     # Plan 08, v2 (synthetic users round 4b): the last lines of OTHER conversations about
-    # this animal in the last 72 hours, oldest first, so a new chat knows a serious case
+    # this animal in the last 24 hours, oldest first, so a new chat knows a serious case
     # opened in another one. Same consent rule as the history; used only in v2.
     recent_other_chats: list[ChatMessage] = Field(default_factory=list)
     situation_model: SituationModel | None = None
@@ -2030,7 +2041,7 @@ class ChatOrchestrator:
         except Exception:  # noqa: BLE001 - the fixed text alone is still a safe reply
             logger.warning("guard follow-up unavailable: the fixed text alone")
             return result
-        response = self._finished(response)
+        response = self._in_language(self._finished(response), data.language)
         if not response.content.strip():
             return result
         if has_phone_number(response.content):
@@ -2189,6 +2200,42 @@ class ChatOrchestrator:
         return response.model_copy(
             update={"content": closed if len(closed) >= _MIN_CLOSED_REPLY_CHARS else ""}
         )
+
+    def _in_language(self, response: LLMResponse, language: str) -> LLMResponse:
+        """The reply in the account's language (collaudo, wave 1: five answers of eleven for
+        an English account came out in Italian, whatever wrote them). Translated as it is by
+        the light model; when that fails or there is no time, the reply stays as written."""
+        expected = normalize_language(language)
+        if not is_in_another_language(response.content, expected):
+            return response
+        left = _seconds_left()
+        if left < _MIN_SECONDS_FOR_A_CALL:
+            return response
+        logger.warning("reply not in %s: translated", expected)
+        try:
+            fixed = self._llm_client.generate(
+                LLMGenerationRequest(
+                    system_prompt=(
+                        f"Translate this chat answer to a pet owner into "
+                        f"{LANGUAGE_NAMES[expected]}. Keep every meaning, every warning, every "
+                        "figure, the numbered steps and the layout. Add nothing, remove "
+                        "nothing. Reply with the translation only."
+                        + response_language_instruction(expected)
+                    ),
+                    user_prompt=response.content,
+                    max_tokens=1200,
+                    purpose="language_fix",
+                    model_class="light",
+                    timeout_seconds=int(left),
+                )
+            )
+        except Exception as exc:  # noqa: BLE001 - the reply is still an answer
+            logger.warning("language fix: %s", type(exc).__name__)
+            return response
+        text = fixed.content.strip()
+        if not text or fixed.finish_reason == "length" or is_in_another_language(text, expected):
+            return response
+        return response.model_copy(update={"content": text})
 
     def _shortened(self, response: LLMResponse, words: int = 150) -> LLMResponse:
         """The same answer in fewer words (SHORTEN_PROMPT), by the light
@@ -3012,7 +3059,7 @@ class ChatOrchestrator:
         except Exception:  # noqa: BLE001 - an emergency reply never fails on a helper
             logger.exception("urgent answer: unexpected failure; the fixed steps go")
             return fixed
-        response = self._finished(response)
+        response = self._in_language(self._finished(response), data.language)
         text = clean_answer_text(response.content).strip()
         if not self._urgent_text_passes(text, species):
             logger.warning("urgent answer: the model's text failed the checks; the fixed steps go")
@@ -3874,7 +3921,12 @@ class ChatOrchestrator:
             )
         # Two sources at most go into the prompt, the duty notes of the country named
         # (natural_answer_preparation.select_prompt_sources).
-        selected = select_prompt_sources(message, sources, max_sources=self._prompt_max_sources)
+        selected = select_prompt_sources(
+            message,
+            sources,
+            max_sources=self._prompt_max_sources,
+            species=normalize_species(effective_species),
+        )
         sources = selected.sources
         evidence_block = self._format_sources_for_prompt(sources) if sources else ""
         # The owner's words and the text read from their file go to the
@@ -3994,6 +4046,7 @@ class ChatOrchestrator:
 
         try:
             response = generate(system_prompt)
+            response = self._in_language(response, data.language)
             if not may_ask and is_question_only(response.content):
                 # The owner asked for something explicit, said to stop, or
                 # has already answered two rounds of questions: a reply of
@@ -4045,7 +4098,7 @@ class ChatOrchestrator:
                 # the rewrite adds the "now" sentence: shortened again, which keeps every
                 # mention of the vet with its reason (SHORTEN_PROMPT)
                 checked = self._shortened(checked, words=max(90, min(150, budget - 30)))
-            response = checked
+            response = self._in_language(checked, data.language)
 
         validation = validate_answer(response.content, sources_count=len(sources))
         if (
@@ -4099,6 +4152,22 @@ class ChatOrchestrator:
             if refuse or len(trimmed) < 120:
                 return self._dosage_rewritten_result(data.language, dosage)
             logger.warning("answer validator: a dose (%s) was cut from the reply", dosage)
+            response = response.model_copy(update={"content": trimmed})
+        # Collaudo, wave 1: a legal obligation no duty note received names is not said.
+        duty_texts = [s.snippet or "" for s in sources if s in DUTY_CATALOG]
+        no_passport = has_no_pet_passport(normalize_species(effective_species), data.breed)
+        if unsourced_duties(response.content, duty_texts, no_passport=no_passport):
+            logger.warning("answer validator: an obligation with no note was cut")
+            trimmed = without_unsourced_duties(
+                response.content, duty_texts, no_passport=no_passport
+            )
+            if len(trimmed) < 80:
+                return self._validation_failure_result(
+                    sources=sources,
+                    violations=["unsourced_duty"],
+                    mode="natural",
+                    response_locale=data.language,
+                )
             response = response.model_copy(update={"content": trimmed})
         # Collaudo, wave 0: a cage size no source given here states is not said. What was
         # given: the reference material, the official passages, the owner's words in this
@@ -4613,7 +4682,7 @@ class ChatOrchestrator:
             for m in data.recent_other_chats
         ]
         return (
-            "Other conversations about this animal in the last 72 hours:\n"
+            "Other conversations about this animal in the last 24 hours:\n"
             + "\n".join(lines)
             + "\n\n"
         )

@@ -31,6 +31,7 @@ from packages.core.application.services.natural_answer_prompt import (
     stable_prefix,
 )
 from packages.core.application.services.safety_gate import SafetyGate
+from packages.core.domain.common.language import reply_in_this_language
 from packages.core.domain.conversation.request_kind import (
     RequestKind,
     asks_to_stop_questions,
@@ -222,7 +223,7 @@ class PromptSources:
 
 
 def select_prompt_sources(
-    message: str, sources: list[EvidenceSource], *, max_sources: int
+    message: str, sources: list[EvidenceSource], *, max_sources: int, species: str
 ) -> PromptSources:
     """Two sources at most go into the prompt (build 32): the model uses
     one or two at best, and each one costs a few hundred tokens.
@@ -235,7 +236,7 @@ def select_prompt_sources(
         # duty notes stay out (wide eval 2026-11-06).
         sources = [source for source in sources if source not in DUTY_CATALOG]
     else:
-        pinned = pinned_duty_notes(message)
+        pinned = pinned_duty_notes(message, species)
         if pinned:
             sources = pinned + [source for source in sources if source not in pinned]
     return PromptSources(sources=list(sources)[:max_sources], foreign_country=foreign)
@@ -412,6 +413,9 @@ def assemble_natural_prompts(
             if inputs.evidence_block
             else ""
         )
+        # Said again at the end of the message, where it is closest to the answer (collaudo,
+        # wave 1: five answers of eleven for an English account came out in Italian).
+        + reply_in_this_language(data.language)
     )
     # A report is explained in four or five paragraphs; anything else
     # fits the prompt's own ceiling of about 1000 characters (build 32:

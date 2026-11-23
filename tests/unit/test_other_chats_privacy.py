@@ -142,14 +142,14 @@ def test_at_most_two_conversations_first_line_and_last_two() -> None:
     assert "CONV3-old2" not in prompt
 
 
-@pytest.mark.parametrize(("hours_ago", "kept"), [(71.0, True), (73.0, False)])
-def test_only_the_last_72_hours(hours_ago: float, kept: bool) -> None:
+@pytest.mark.parametrize(("hours_ago", "kept"), [(23.0, True), (25.0, False)])
+def test_only_the_last_24_hours(hours_ago: float, kept: bool) -> None:
     repo = InMemoryConversationRepository()
-    repo.save(_chat("owner-a", "pet-a1", "FINESTRA-72", "ok", hours_ago=hours_ago))
+    repo.save(_chat("owner-a", "pet-a1", "FINESTRA-24", "ok", hours_ago=hours_ago))
 
     prompt = _ask(repo, "owner-a", "pet-a1")
 
-    assert ("FINESTRA-72" in prompt) is kept
+    assert ("FINESTRA-24" in prompt) is kept
 
 
 # --- (c) a deleted conversation -------------------------------------------------------------

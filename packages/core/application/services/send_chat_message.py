@@ -255,7 +255,10 @@ class SendChatMessageService:
 
     _MAX_OTHER_PETS = 12
 
-    _OTHER_CHATS_WINDOW = timedelta(hours=72)
+    # A case opened in another chat is raised once, in the first reply of a new one, and
+    # only while it is fresh (collaudo, wave 1: the chocolate of one chat came back as
+    # "call the vet now" at the head of every reply of another, for hours).
+    _OTHER_CHATS_WINDOW = timedelta(hours=24)
     _OTHER_CHATS_MAX = 2  # conversations
     _OTHER_CHATS_LINES = 2  # last messages of each, after the owner's first one
 
@@ -263,11 +266,13 @@ class SendChatMessageService:
         self, conversation: Conversation, record_allowed: bool, now: datetime
     ) -> list[ChatMessage]:
         """The owner's first line and the last two lines of the pet's OTHER conversations of
-        the last 72 hours, oldest first: a serious case opened there stays known in a new
-        chat. Same owner, same pet, the same consent rule as the history; nothing beyond
-        what the app already stores."""
+        the last 24 hours, oldest first, for the FIRST reply of a new conversation only: a
+        serious case opened there is raised once. Same owner, same pet, the same consent
+        rule as the history; nothing beyond what the app already stores."""
         if not self._recent_other_chats:
             return []
+        if any(m.role == "assistant" for m in conversation.messages):
+            return []  # this conversation has already had its first reply
         try:
             # QK-11: a bounded read (this owner, this pet, not this chat, active in the window)
             # instead of every conversation of the pet; two spare rows in case the stored

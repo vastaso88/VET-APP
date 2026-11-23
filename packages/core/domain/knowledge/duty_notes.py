@@ -49,30 +49,29 @@ DUTY_CATALOG: list[EvidenceSource] = [
             "Current rules: municipality, ASL, vet."
         ),
     ),
+    # Normativa, 23/11/2026: the sentence on abandonment holds for every domestic animal;
+    # dog fights (legge 189/2004) and the cosmetic cuts (European Convention) are about dogs.
     EvidenceSource(
-        title=_DUTY_PREFIX + "identification, anagrafe, transfer of puppies",
+        title=_DUTY_PREFIX + "abandonment of a pet",
         tier="D",
         access_depth="D",
         clinical_domain="behavior",
-        species="dog",
+        species="other",
         snippet=(
-            "Dogs are identified with a microchip and registered in the anagrafe canina; "
-            "puppies are not sold or given away before 60 days of age, and only with "
-            "microchip and a written passage of ownership. Selling regularly is a regulated "
-            "activity. Current rules: municipality, ASL, vet."
+            "Abandoning a pet of any kind is a crime (art. 727 codice penale), not a fine. "
+            "Current rules: municipality, ASL, vet."
         ),
     ),
     EvidenceSource(
-        title=_DUTY_PREFIX + "cruelty: abandonment, fights, mutilations",
+        title=_DUTY_PREFIX + "dog fights and mutilations",
         tier="D",
         access_depth="D",
         clinical_domain="behavior",
         species="dog",
         snippet=(
-            "Abandoning an animal is a crime (art. 727 codice penale), not a fine; organising "
-            "or training for dog fights is a crime (legge 189/2004); cosmetic ear cropping "
-            "and tail docking are forbidden (European Convention for the Protection of Pet "
-            "Animals, in force in Italy)."
+            "Organising or training for dog fights is a crime (legge 189/2004); cosmetic ear "
+            "cropping and tail docking are forbidden (European Convention for the Protection "
+            "of Pet Animals, in force in Italy)."
         ),
     ),
     EvidenceSource(
@@ -117,23 +116,20 @@ _PINS: tuple[tuple[re.Pattern[str], str], ...] = (
     ),
     (
         re.compile(
-            r"cessione|cedere|vendere i cuccioli|annuncio|cuccioli .{0,30}(?:giorni|settimane|"
-            r"mesi)|anagrafe canina|iscri\w* all'anagrafe|sell\w* (?:the )?puppies|rehom\w*|"
-            r"vender los cachorros|welpen (?:verkaufen|abgeben)|vendre les chiots"
+            r"abbandon\w*|lasci\w* (?:in campagna|per strada|in un parcheggio|fuori)|"
+            r"non (?:la|lo|li|le) voglio piu|"
+            r"liberarl\w* (?:in natura|nel parco|nel laghetto|nel bosco)|abandon\w*|aussetzen"
         ),
-        "identification, anagrafe, transfer of puppies",
+        "abandonment of a pet",
     ),
     (
         re.compile(
-            r"abbandon\w*|lasci\w* (?:in campagna|per strada|in un parcheggio|fuori)|"
-            r"non (?:la|lo|li|le) voglio piu|"
-            r"liberarl\w* (?:in natura|nel parco|nel laghetto|nel bosco)|"
             r"combattiment\w*|taglio (?:delle |della )?(?:orecchie|coda)|tagliare le "
-            r"orecchie|orecchie a punta|caudotomi\w*|conchectomi\w*|abandon\w*|dog ?fight\w*|"
-            r"ear cropping|tail docking|peleas? de perros|aussetzen|hundekampf\w*|kupier\w*|"
+            r"orecchie|orecchie a punta|caudotomi\w*|conchectomi\w*|dog ?fight\w*|"
+            r"ear cropping|tail docking|peleas? de perros|hundekampf\w*|kupier\w*|"
             r"combats? de chiens|couper les oreilles"
         ),
-        "cruelty: abandonment, fights, mutilations",
+        "dog fights and mutilations",
     ),
     (
         re.compile(
@@ -156,9 +152,16 @@ _PINS: tuple[tuple[re.Pattern[str], str], ...] = (
 )
 
 
-def pinned_duty_notes(message: str) -> list[EvidenceSource]:
-    """The duty notes whose topic the owner names: always in the prompt,
-    whatever the evidence search found."""
+def pinned_duty_notes(message: str, species: str) -> list[EvidenceSource]:
+    """The duty notes whose topic the owner names, always in the prompt whatever the evidence
+    search found, when they are about this animal (Normativa, 23/11/2026: "cessione" or
+    "rehome" pinned the note on dog puppies to a rabbit's question). A note with no species of
+    its own (abandonment, wild animals found) is for every animal."""
     text = normalize_for_matching(message)
     titles = [title for pattern, title in _PINS if pattern.search(text)]
-    return [note for note in DUTY_CATALOG if any(note.title.endswith(title) for title in titles)]
+    return [
+        note
+        for note in DUTY_CATALOG
+        if any(note.title.endswith(title) for title in titles)
+        and note.species in (species, "other")
+    ]
