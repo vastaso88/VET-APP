@@ -113,6 +113,13 @@ def test_api_calls_reach_the_twin_with_the_code_and_pages_get_the_app(web_server
         assert response.read() == b"<html>app</html>"
 
 
+def test_the_bridge_never_asks_the_twin_for_a_compressed_answer() -> None:
+    request = ponte.richiesta_inoltrata(
+        TWIN, "GET", "/news", {"Accept-Encoding": "gzip, br", "Accept": "*/*"}, None
+    )
+    assert not any(name.lower() == "accept-encoding" for name, _ in request.header_items())
+
+
 def test_external_sites_can_be_shut_out(tmp_path: Path) -> None:
     (tmp_path / "index.html").write_text("<html></html>", "utf-8")
     handler = functools.partial(

@@ -39,6 +39,9 @@ _SKIP_REQUEST = {
     "trailer",
     BYPASS_HEADER,
     "content-length",
+    # The answer is passed on as received: asked for compressed, it would reach the app as
+    # compressed bytes with no `Content-Encoding`, and the app could not read it.
+    "accept-encoding",
 }
 _SKIP_RESPONSE = {
     "connection",
