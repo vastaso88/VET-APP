@@ -81,5 +81,13 @@ def test_garbage_after_the_start_marker_yields_only_what_was_understood() -> Non
     assert b"TelefonoDiProva" not in cleaned
 
 
+def test_an_app0_that_is_not_jfif_is_dropped() -> None:
+    jfif = _segment(0xE0, b"JFIF" + bytes(10))
+    scan = bytes((0xFF, 0xDA, 0, 2, 0x11, 0x22, 0xFF, 0xD9))
+    for other in (b"Exif-POSITION", b"JFXX-POSITION", b"POSITION", b""):
+        jpeg = SOI + jfif + _segment(0xE0, other) + scan
+        assert strip_image_metadata(jpeg, JPEG) == SOI + jfif + scan, other
+
+
 def test_something_that_is_not_a_jpeg_at_all_is_left_alone() -> None:
     assert strip_image_metadata(b"not an image", JPEG) == b"not an image"

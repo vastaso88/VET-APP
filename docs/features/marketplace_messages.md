@@ -8,7 +8,8 @@ e-mail o id dell'altro.
 ## Decisioni del proprietario (2026-11-07)
 
 1. **Conservazione**: una conversazione si cancella 6 mesi dopo l'ultimo messaggio se
-   l'annuncio è chiuso, comunque dopo 12 mesi, mai finché ha una segnalazione aperta.
+   l'annuncio è chiuso, comunque dopo 12 mesi, mai finché ha una segnalazione aperta
+   (confermata il 2026-11-23; l'8 novembre il codice era passato a contare dalla chiusura).
 2. **Anti-spam**: al massimo 10 nuove conversazioni al giorno per persona; le risposte non
    contano.
 3. **Venditore senza piano**: nessuno può aprire una conversazione nuova con lui. L'annuncio
@@ -29,7 +30,7 @@ e-mail o id dell'altro.
     `deleted-buyer` o `deleted-seller` in conversazione, messaggi e segnalazione; vale anche se
     cancella chi ha segnalato. Da quel momento la vede solo il team: all'altra persona sparisce
     dall'app, come senza la segnalazione. Si cancella appena la segnalazione è respinta, oppure
-    12 mesi dopo la decisione. Ogni lettura e decisione del team resta in
+    6 mesi dopo la decisione (12 fino al 2026-11-23). Ogni lettura e decisione del team resta in
     `marketplace_moderation_access_log` (24 mesi). Nel portale il dettaglio mostra fino a quando
     la si tiene e chi l'ha guardata.
 22. **Contatti nei messaggi privati: permessi**; negli annunci pubblici restano vietati. Testi
@@ -86,12 +87,25 @@ Si legge e si scrive solo dal backend: `anon` e `authenticated` non hanno privil
 lettura diretta mostrerebbe l'id dell'altra persona.
 
 - **Cancellazione dell'account**: sparisce l'intera conversazione, anche con le risposte
-  dell'altra persona, che possono citare i dati di chi cancella.
+  dell'altra persona, che possono citare i dati di chi cancella. Resta solo, per il team, una
+  conversazione con una segnalazione aperta o accolta (decisione 21).
 - **Esportazione**: conversazioni e messaggi di entrambi, con l'id dell'altra persona sempre
   `null`; solo i blocchi fatti, non quelli subiti.
-- **Conservazione (decisa)**: 6 mesi dall'ultimo messaggio se l'annuncio è chiuso, 12 mesi
-  comunque, mai con una segnalazione aperta; un blocco del team annullato da più di 12 mesi si
-  cancella. La esegue `marketplace_messages_cleanup()` ogni notte con pg_cron.
+- **Conservazione (decisa il 2026-11-07, confermata il 2026-11-23: come promettono i testi)**:
+  6 mesi dall'ultimo messaggio se l'annuncio è chiuso (venduto) o cancellato, 12 mesi dall'ultimo
+  messaggio comunque, mai con una segnalazione aperta; la chiusura della conversazione da parte
+  del team non conta (precisazione dell'Orchestratore, 2026-11-23). Decisioni B e C del
+  proprietario (2026-11-23 sera, riferite dall'Orchestratore): dopo una segnalazione decisa,
+  accolta o respinta, la conversazione resta ancora 6 mesi per un riesame, anche oltre i 6 e i 12
+  (`review_months`); un annuncio tolto (`removed`, `removed_policy`) si può ripristinare, quindi
+  non conta come chiuso finché non viene cancellato, e i 12 mesi valgono anche per lui; quando si
+  cancella un annuncio tolto dal team (`removed_policy`) le sue conversazioni mai segnalate vanno
+  con lui (trigger `marketplace_listing_10_drop_conversations`); con un account eliminato una
+  conversazione con segnalazione accolta resta 6 mesi dopo la decisione (prima 12); un blocco
+  del team si cancella 12 mesi dopo che è finito, annullato o scaduto. La esegue
+  `marketplace_messages_cleanup()` ogni notte con pg_cron; la regola è nella migrazione
+  `20261123100000_marketplace_messages_retention.sql`. Per aggiornare un database esistente si
+  lancia solo quella, dopo che i testi pubblicati dicono B e C.
 - **Blocco del team**: tabella `marketplace_user_restrictions`. Anche scrivendo direttamente
   nella tabella degli annunci con la propria sessione, una policy restrittiva lo impedisce
   (`marketplace_caller_is_restricted()`, che risponde solo su chi chiama).

@@ -72,6 +72,9 @@ create table if not exists public.marketplace_user_restrictions (
     lifted_at timestamptz,
     lifted_by_admin_id text
 );
+-- Scadenza del blocco (2026-11-21): vuota = senza scadenza. Prima della funzione che la legge.
+alter table public.marketplace_user_restrictions
+    add column if not exists expires_at timestamptz;
 
 -- Conversazione tenuta dopo la cancellazione di un account perché segnalata
 -- (decisione del proprietario 2026-11-08, parere docs/compliance/10 §2.3).
@@ -161,16 +164,13 @@ using (owner_id = auth.uid()::text);
 -- nella tabella con la propria sessione (finché le policy insert/update esistono:
 -- marketplace_lock_writes.sql le toglie). La funzione guarda solo chi chiama, così
 -- nessuno può chiedere se un'altra persona è bloccata.
+-- Stesso testo della migrazione 20261121165154: un blocco scaduto non vale più.
 create or replace function public.marketplace_caller_is_restricted()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
+returns boolean language sql stable security definer set search_path = '' as $$
     select exists (
         select 1 from public.marketplace_user_restrictions r
         where r.owner_id = auth.uid()::text and r.lifted_at is null
+          and (r.expires_at is null or r.expires_at > now())
     );
 $$;
 revoke all on function public.marketplace_caller_is_restricted()
@@ -195,14 +195,26 @@ to authenticated
 using (not public.marketplace_caller_is_restricted())
 with check (not public.marketplace_caller_is_restricted());
 
--- Conservazione (decisione del proprietario, 2026-11-07): la conversazione si
--- cancella 6 mesi dopo la chiusura dell'annuncio (o della conversazione da parte
--- del team), 12 mesi dopo l'ultimo messaggio comunque; mai finché ha una
--- segnalazione aperta. Un annuncio cancellato non lascia la data di chiusura: lì
--- valgono 6 mesi dall'ultimo messaggio. Messaggi e
--- segnalazioni seguono la conversazione (on delete cascade). I blocchi tra utenti
--- restano finché esiste l'account; un blocco del team annullato da più di 12 mesi
--- si cancella, uno in vigore resta.
+-- Conservazione. Decisioni del proprietario, riferite dall'Orchestratore: 2026-11-07,
+-- confermata il 2026-11-23 («come promettono i testi»); 2026-11-23 sera, B e C.
+-- * La conversazione si cancella 6 mesi dopo l'ultimo messaggio se l'annuncio è chiuso
+--   (venduto o cancellato), 12 mesi dopo l'ultimo messaggio comunque.
+-- * Mai finché ha una segnalazione aperta, né nei 6 mesi dopo che una segnalazione è
+--   stata decisa (accolta o respinta): serve a un riesame, anche oltre i 6 e i 12 mesi.
+-- * Un annuncio tolto (dal team, o in attesa del team per le segnalazioni) si può
+--   ripristinare: non conta come chiuso finché non viene cancellato. I 12 mesi valgono
+--   anche per lui.
+-- * La chiusura della conversazione da parte del team NON conta: i testi parlano solo
+--   dell'annuncio. (Dall'8 novembre 2026 fino a questa versione i 6 mesi si contavano
+--   anche dalla chiusura: non corrispondeva ai testi.)
+-- * Le conversazioni mai segnalate di un annuncio che il team ha tolto si cancellano
+--   insieme all'annuncio (dal sistema dopo 6 mesi, o prima se lo cancella chi vende): lo fa
+--   un automatismo sull'annuncio, qui sotto.
+-- * Con un account eliminato resta solo una conversazione con una segnalazione aperta o
+--   accolta: fino a 6 mesi dopo la decisione; respinta, si cancella subito.
+-- Messaggi e segnalazioni seguono la conversazione (on delete cascade). I blocchi tra
+-- utenti restano finché esiste l'account; un blocco del team si cancella 12 mesi dopo
+-- che è finito (annullato o scaduto), uno in vigore resta.
 create or replace function public.marketplace_messages_cleanup()
 returns jsonb
 language plpgsql
@@ -210,18 +222,20 @@ security definer
 set search_path = public
 as $$
 declare
+    -- Mesi in cui una conversazione con una segnalazione DECISA resta dopo la decisione:
+    -- accolta o respinta con i due account, solo accolta se un account è stato eliminato.
+    -- Anche oltre i 6 e i 12 mesi. Lo dicono anche i testi: si cambia solo insieme a loro.
+    review_months constant integer := 6;
     conversation_rows integer;
     restriction_rows integer;
 begin
-    -- "6 mesi dalla chiusura": the closing moment is when the team closed the
-    -- conversation, or the ad's last change of state (a closed ad cannot be
-    -- edited any more, so its updated_at is when it closed). An ad deleted
-    -- outright leaves no date: there the last message counts.
     delete from public.marketplace_conversations c
     where c.erased_participant_at is null
       and not exists (
             select 1 from public.marketplace_conversation_reports r
-            where r.conversation_id = c.id and r.status = 'open'
+            where r.conversation_id = c.id
+              and (r.status = 'open'
+                   or r.resolved_at > now() - make_interval(months => review_months))
         )
         and (
             c.last_message_at < now() - interval '12 months'
@@ -229,34 +243,32 @@ begin
                 c.last_message_at < now() - interval '6 months'
                 and (
                     c.listing_id is null
-                    or (
-                        c.moderation_closed_at is not null
-                        and c.moderation_closed_at < now() - interval '6 months'
-                    )
                     or exists (
                         select 1 from public.marketplace_listings l
                         where l.id = c.listing_id
-                          and l.status not in ('active', 'reserved')
-                          and l.updated_at < now() - interval '6 months'
+                          and l.status = 'sold'
                     )
                 )
             )
         );
     get diagnostics conversation_rows = row_count;
-    -- Tenute dopo una cancellazione: via appena la segnalazione è respinta, o 12
-    -- mesi dopo la decisione; mai finché è aperta.
+    -- Tenute dopo una cancellazione: via appena la segnalazione è respinta, o
+    -- review_months dopo la decisione; mai finché è aperta.
     delete from public.marketplace_conversations c
     where c.erased_participant_at is not null
       and not exists (
             select 1 from public.marketplace_conversation_reports r
             where r.conversation_id = c.id
               and (r.status = 'open'
-                   or (r.status = 'resolved' and r.resolved_at > now() - interval '12 months'))
+                   or (r.status = 'resolved'
+                       and r.resolved_at > now() - make_interval(months => review_months)))
         );
     delete from public.marketplace_moderation_access_log
     where accessed_at < now() - interval '24 months';
+    -- La prima delle due date; least() ignora quella che manca. Senza nessuna delle due
+    -- il blocco è in vigore, e una scadenza futura non è ancora passata.
     delete from public.marketplace_user_restrictions
-    where lifted_at is not null and lifted_at < now() - interval '12 months';
+    where least(lifted_at, expires_at) < now() - interval '12 months';
     get diagnostics restriction_rows = row_count;
     return jsonb_build_object(
         'marketplace_conversations', conversation_rows,
@@ -268,6 +280,35 @@ revoke all on function public.marketplace_messages_cleanup()
     from public, anon, authenticated;
 grant execute on function public.marketplace_messages_cleanup()
     to service_role;
+
+-- Quando si cancella un annuncio che il team ha tolto ('removed_policy'), le sue conversazioni
+-- mai segnalate vanno con lui. Quelle segnalate restano e seguono i tempi qui sopra. Un annuncio
+-- venduto, attivo o nascosto in automatico ('removed') non è «tolto dal team»: tempi normali.
+create or replace function public.marketplace_drop_conversations_of_removed_ad()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+    if old.status = 'removed_policy' then
+        delete from public.marketplace_conversations c
+        where c.listing_id = old.id
+          and c.erased_participant_at is null
+          and not exists (
+                select 1 from public.marketplace_conversation_reports r
+                where r.conversation_id = c.id
+            );
+    end if;
+    return old;
+end;
+$$;
+revoke all on function public.marketplace_drop_conversations_of_removed_ad()
+    from public, anon, authenticated;
+drop trigger if exists marketplace_listing_10_drop_conversations on public.marketplace_listings;
+create trigger marketplace_listing_10_drop_conversations
+before delete on public.marketplace_listings
+for each row execute function public.marketplace_drop_conversations_of_removed_ad();
 
 -- La riga per la pulizia automatica, ogni notte alle 03:30 UTC. Serve pg_cron
 -- (Supabase: Database > Extensions); senza, questo blocco non fa nulla.

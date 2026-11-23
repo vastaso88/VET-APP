@@ -22,6 +22,7 @@ from packages.infrastructure.persistence.supabase.missing_table import (
 from packages.infrastructure.persistence.supabase.supabase_account_eraser import (
     CHAT_REPORT_REF,
     HANDLED_ELSEWHERE,
+    LEGACY_OWNER_TABLES,
     MARKETPLACE_PARTICIPANT_COLUMNS,
     OWNER_TABLES,
     PET_PHOTOS_BUCKET,
@@ -54,6 +55,7 @@ _INTERNAL_COLUMNS = frozenset(
 # added to one side shows up missing on the other in the alignment test.
 EXPORTED_TABLES: frozenset[str] = frozenset(
     {table for table, _ in OWNER_TABLES}
+    | {table for table, _ in LEGACY_OWNER_TABLES}
     | {table for table, _ in RADAR_PSEUDONYM_TABLES}
     | {CHAT_REPORT_REF[0]}
     | HANDLED_ELSEWHERE
@@ -99,6 +101,9 @@ class SupabaseAccountExporter:
 
         for table, column in OWNER_TABLES:
             export.data[table] = self._select_where(table, column, owner_id, missing=missing)
+        # Old tables that may not exist at all: nothing to tell the owner then.
+        for table, column in LEGACY_OWNER_TABLES:
+            export.data[table] = self._select_where(table, column, owner_id, missing=[])
 
         pet_ids = [str(row["id"]) for row in export.data.get("pet_profiles", []) if "id" in row]
         export.data["clinical_events"] = (

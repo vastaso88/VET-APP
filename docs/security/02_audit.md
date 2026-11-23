@@ -25,7 +25,7 @@ proprietario · 👤 azione del proprietario (dashboard, chiavi, contratti) ·
 | --- | --- | --- | --- |
 | BE-1 | Critica | `GET`/`PUT /pets/{id}` senza login e senza controllo di proprietà: chiunque, con l'id di un animale, ne leggeva e riscriveva il profilo (note, microchip, consenso) | ✅ |
 | BE-2 | Critica | `POST /chat` accettava `pet_id` e `conversation_id` di altri utenti: un utente loggato leggeva l'intera chat altrui e faceva leggere al modello la cartella clinica di un animale non suo | ✅ |
-| DB-2 | Alta | Conferma e-mail **disattivata** su Supabase (`mailer_autoconfirm = true`, verificato live): ci si registra con l'indirizzo di chiunque senza dimostrare di possederlo; con l'allowlist admin basata sull'e-mail era una via verso il backoffice | 👤 attivare "Confirm email"; ✅ lato backend admin/developer richiedono e-mail verificata |
+| DB-2 | Alta | Conferma e-mail **disattivata** su Supabase (`mailer_autoconfirm = true`, verificato live): ci si registra con l'indirizzo di chiunque senza dimostrare di possederlo; con l'allowlist admin basata sull'e-mail era una via verso il backoffice | ✅ «Confirm email» **acceso** (letto in dashboard dall'Orchestratore il 2026-11-23, sola lettura; quando sia stato acceso non è noto); ✅ lato backend admin/developer richiedono e-mail verificata. Conseguenza: senza SMTP proprio le e-mail di conferma non arrivano agli utenti veri, vedi R32 |
 | DB-1 | Alta | `marketplace_listings` leggibile **senza login** (policy `using (true)`, verificato live: 1 annuncio, con `owner_id`, posizione ~1 km, città) | 🔧 in correzione dalla sessione UI/UX; vedi §3 |
 | BE-3 | Alta | Backend di autenticazione "demo" come default: se su Vercel mancava `AUTH_BACKEND` ogni richiesta era autenticata come utente demo | ✅ in produzione il backend ora **rifiuta di partire** senza `AUTH_BACKEND=supabase` e `PERSISTENCE_BACKEND=supabase` |
 | LLM-1 | Alta | Il messaggio **grezzo, non anonimizzato** partiva verso Groq (USA) attraverso il normalizzatore della ricerca scientifica, contro il confine dichiarato nei documenti di compliance | ✅ |
@@ -63,19 +63,21 @@ Metodo: richiesta `HEAD` con `Prefer: count=exact` su ogni tabella dello schema
 | Privilegio revocato ad anonimo (401) | billing_founder_slots, billing_webhook_events (conferma che `supabase_security_hardening.sql` è stato applicato) |
 | Tabella assente in produzione (404) | **radar_country_coverage** (prevista dallo schema: eseguire `supabase_schema.sql` aggiornato) |
 | Bucket | lista bucket vuota per anonimo; radice pubblica dei tre bucket non elencabile |
-| Auth | registrazione aperta, solo provider e-mail, **conferma e-mail disattivata** |
+| Auth | registrazione aperta, solo provider e-mail, **conferma e-mail disattivata** (valore del 2026-10-26; **attiva** al 2026-11-23) |
 
 ### Rilievi
 
 | ID | Gravità | Rilievo | Stato |
 | --- | --- | --- | --- |
 | DB-1 | Alta | Annunci leggibili senza login con `owner_id` (uid Supabase del venditore) | 🔧 sessione UI/UX: policy `to authenticated` e colonna `owner_id` fuori dalla risposta all'app; `security_2026_10_26.sql` lascia volutamente il grant per non interferire |
-| DB-2 | Alta | Conferma e-mail disattivata | 👤 Authentication → Providers → Email → Confirm email ON |
+| DB-2 | Alta | Conferma e-mail disattivata | ✅ accesa (dashboard, 2026-11-23) |
 | DB-3 | Media | Il ruolo `anon` ha privilegi su tutte le tabelle: la difesa è affidata solo alle policy (una `using (true)` futura espone tutto) e l'esistenza delle tabelle è enumerabile | 🗄️ `scripts/setup/security_2026_10_26.sql` revoca i privilegi di anon (e di authenticated sulle tabelle solo-backend) e cambia i privilegi di default per le tabelle future |
 | DB-4 | Media | `radar_country_coverage` manca in produzione: lo schema applicato è più vecchio dello script | 🗄️ rieseguire `supabase_schema.sql` |
 | DB-5 | Bassa | `supabase_security_hardening.sql` (applicato il 2026-10-02) esisteva solo sul ramo `roberto` | ✅ copiato in `scripts/setup/` per documentare lo stato applicato |
 | DB-6 | Bassa | Bucket `chat-attachments` senza limite di dimensione né tipi ammessi lato storage | 🗄️ nello stesso script: 5 MB, jpeg/png/webp/pdf |
 | DB-7 | Bassa | Protezione password compromesse (HaveIBeenPwned) e 2FA degli account dashboard | 👤 |
+| DB-8 | Alta (disponibilità) | Difetto nato da questo audit: il limite sui tipi del bucket `chat-attachments` (DB-6) non era provato con un caricamento vero e rifiutava gli allegati (trovato dal giro 1 nei log del gemello, 2026-11-23) | ✅ Francesco 86f1ab72; `test_storage_bucket_limits.py` confronta il bucket con i tipi e la dimensione ammessi dal codice. **Regola: un limite nel contenitore si prova sempre con un caricamento vero sul gemello prima della produzione** |
+| DB-9 | Alta | Differenze tra il database di produzione e gli script del repository (confronto del 2026-11-23): cancellazione, esportazione e inventario vanno tenuti allineati alle tabelle che esistono davvero | ✅ codice: `LEGACY_OWNER_TABLES`, `test_production_tables_covered.py` (fotografia dei nomi a ogni rilascio); 🗄️ da eseguire dal proprietario: `13_righe_orfane.md`. Dettaglio nel registro interno |
 
 Funzioni `security definer`: tutte con `set search_path` e `revoke … from
 public, anon, authenticated` + `grant … to service_role` (ledger, cache,
@@ -223,7 +225,8 @@ solo per prove sul proprio telefono.
 ## 8. Cosa non è stato verificato
 
 - Variabili d'ambiente effettive su Vercel e stato "Confirm email" al momento
-  del merge (il valore letto live il 2026-10-26 era "disattivata").
+  del merge (il valore letto live il 2026-10-26 era "disattivata"; il
+  2026-11-23 in dashboard è attiva).
 - Versioni delle dipendenze Python installate su Vercel (nessun lockfile).
 - Contenuto delle policy RLS live riga per riga: il controllo con la chiave
   pubblica dimostra che gli anonimi non leggono nulla, non che un utente
@@ -263,7 +266,7 @@ Esaminati: `scripts/setup/marketplace_messages.sql`, `apps/api/routes/marketplac
 | ID | Gravità | Rilievo | Stato |
 | --- | --- | --- | --- |
 | MM-1 | Media | `POST /marketplace/listings/{id}/conversations` continua anche una conversazione esistente ed era fuori dal limite di 60 messaggi al minuto: da lì si poteva inondare un venditore | ✅ `rate_limit.py`: regola con suffisso e conteggio condiviso tra le due rotte di scrittura; test `test_messages_are_throttled_through_both_doors_with_one_count` |
-| MM-2 | Media | La pulizia cancellava una conversazione 6 mesi dopo l'**ultimo messaggio** se l'annuncio era chiuso: una conversazione ferma da mesi spariva il giorno della vendita, contro la decisione «6 mesi dalla chiusura» | ✅ `marketplace_messages.sql` e `supabase_schema.sql`: la data di chiusura è `moderation_closed_at` o l'`updated_at` dell'annuncio chiuso; test SQL aggiornato. Resta: un annuncio cancellato non lascia data, lì contano 6 mesi dall'ultimo messaggio |
+| MM-2 | Media | La pulizia cancellava una conversazione 6 mesi dopo l'**ultimo messaggio** se l'annuncio era chiuso: una conversazione ferma da mesi spariva il giorno della vendita, contro la decisione «6 mesi dalla chiusura» | ✅ `marketplace_messages.sql` e `supabase_schema.sql`: la data di chiusura è `moderation_closed_at` o l'`updated_at` dell'annuncio chiuso; test SQL aggiornato. Resta: un annuncio cancellato non lascia data, lì contano 6 mesi dall'ultimo messaggio **Superato il 2026-11-23**: il proprietario conferma la regola dei testi (6 mesi dall'ultimo messaggio); l'attribuzione «dalla chiusura» veniva da un messaggio dell'8 novembre in contrasto con la decisione scritta del 7, e questa revisione non aveva segnalato il contrasto. Migrazione `20261123100000_marketplace_messages_retention.sql`, che contiene anche le decisioni B e C della stessa sera (attesa dopo una segnalazione decisa, annunci tolti, blocchi scaduti) |
 | MM-3 | Bassa | Contatore dei non letti calcolato dal valore letto prima dell'invio: due messaggi simultanei possono contarne uno | aperto, non di sicurezza |
 | MM-4 | — | Dubbi per l'Orchestratore/proprietario | vedi R26 |
 

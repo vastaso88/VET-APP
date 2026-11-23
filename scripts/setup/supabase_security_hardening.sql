@@ -14,13 +14,11 @@ grant all on table public.billing_founder_slots to service_role;
 grant all on table public.billing_webhook_events to service_role;
 
 -- SECURITY DEFINER billing helpers must not be callable by browser/mobile roles.
+-- (Two more, the old signup and pet-limit triggers, are removed by the migration
+-- 20261123200000_remove_legacy_signup_triggers.sql.)
 revoke execute on function public.billing_claim_founder_slot(text)
   from public, anon, authenticated;
 revoke execute on function public.billing_claim_stripe_webhook_event(text, text, text, jsonb)
-  from public, anon, authenticated;
-revoke execute on function public.billing_create_trial_for_new_auth_user()
-  from public, anon, authenticated;
-revoke execute on function public.billing_enforce_pet_limit()
   from public, anon, authenticated;
 revoke execute on function public.billing_mark_stripe_webhook_failed(text, text, text)
   from public, anon, authenticated;
@@ -29,8 +27,6 @@ revoke execute on function public.billing_mark_stripe_webhook_processed(text, te
 
 grant execute on function public.billing_claim_founder_slot(text) to service_role;
 grant execute on function public.billing_claim_stripe_webhook_event(text, text, text, jsonb) to service_role;
-grant execute on function public.billing_create_trial_for_new_auth_user() to service_role;
-grant execute on function public.billing_enforce_pet_limit() to service_role;
 grant execute on function public.billing_mark_stripe_webhook_failed(text, text, text) to service_role;
 grant execute on function public.billing_mark_stripe_webhook_processed(text, text) to service_role;
 

@@ -45,6 +45,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
 from packages.infrastructure.persistence.supabase.supabase_account_eraser import (
     CHAT_REPORT_REF,
     HANDLED_ELSEWHERE,
+    LEGACY_OWNER_TABLES,
     OWNER_TABLES,
     RADAR_PSEUDONYM_TABLES,
 )
@@ -110,11 +111,36 @@ def _exporter(client: FakeSupabase) -> SupabaseAccountExporter:
 def test_export_covers_every_table_the_deletion_erases() -> None:
     erased = (
         {table for table, _ in OWNER_TABLES}
+        | {table for table, _ in LEGACY_OWNER_TABLES}
         | {table for table, _ in RADAR_PSEUDONYM_TABLES}
         | {CHAT_REPORT_REF[0]}
         | set(HANDLED_ELSEWHERE)
     )
     assert EXPORTED_TABLES == erased
+
+
+def test_the_old_production_tables_are_exported_to_their_owner_only() -> None:
+    client = _SigningFake()
+    for table, column in LEGACY_OWNER_TABLES:
+        client.db[table] = [{"id": "mine", column: OWNER_A}, {"id": "theirs", column: OWNER_B}]
+    export = _exporter(client).export_data(OWNER_A)
+    for table, _ in LEGACY_OWNER_TABLES:
+        assert [row["id"] for row in export.data[table]] == ["mine"], table
+
+
+def test_where_the_old_tables_do_not_exist_the_owner_is_told_nothing() -> None:
+    from test_delete_account import _FailingQuery
+
+    class _Twin(_SigningFake):
+        def table(self, name: str) -> Any:
+            if name in dict(LEGACY_OWNER_TABLES):
+                return _FailingQuery(self.db, name, "PGRST205")
+            return super().table(name)
+
+    export = _exporter(_Twin()).export_data(OWNER_A)
+    for table, _ in LEGACY_OWNER_TABLES:
+        assert export.data[table] == []
+        assert not any(table in note for note in export.notes)
 
 
 def test_the_export_of_messages_never_names_the_other_person() -> None:

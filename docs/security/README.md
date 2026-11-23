@@ -19,6 +19,7 @@ personali e la aggiorna quando cambia qualcosa (vedi `05_checklist.md`).
 | [`10_crash_reporting.md`](10_crash_reporting.md) | Parere Crashlytics vs Sentry (privacy, consenso, configurazione minima): raccomandato Sentry regione EU con consenso opt-in | prima di integrare il crash reporting |
 | [`11_scritture_dirette_piano_proposta.md`](11_scritture_dirette_piano_proposta.md) | Scritture dirette dell'app su Supabase e regole del piano: inventario e proposta (database o backend) | prima di toccare limiti, prova o scritture dell'app |
 | [`12_copie_dati_e_backup.md`](12_copie_dati_e_backup.md) | Backup di Supabase per piano (verificati), regola sulle copie manuali, procedura di ripristino con il registro delle cancellazioni | prima di fare una copia dei dati o un ripristino |
+| [`13_righe_orfane.md`](13_righe_orfane.md) | Dati che restano dopo l'eliminazione di un account: perché, pulizia, controllo sui nomi di produzione | a ogni rilascio e prima di togliere una tabella vecchia |
 | [`/SECURITY.md`](../../SECURITY.md) | Politica pubblica di segnalazione delle vulnerabilità (richiesta anche dal Cyber Resilience Act) | va attivata la "Private vulnerability reporting" su GitHub |
 
 Strumenti:

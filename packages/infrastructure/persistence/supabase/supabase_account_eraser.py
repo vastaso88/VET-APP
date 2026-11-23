@@ -5,7 +5,9 @@ the owner is listed in [OWNER_TABLES] (or handled in [erase_data]); every
 other table is listed in [NOT_PERSONAL_TABLES] or, when only a pseudonym is
 kept on purpose, in [RETAINED_AFTER_DELETION], each with the reason. A test reads
 scripts/setup/supabase_schema.sql and fails when a table is in neither list,
-so a new table cannot silently escape the deletion."""
+so a new table cannot silently escape the deletion. A second one does the same
+with the tables production really has (scripts/security/production_tables.json):
+some were made by hand long ago and are in no script of the repository."""
 
 from __future__ import annotations
 
@@ -35,6 +37,8 @@ PET_PHOTOS_BUCKET = "pet-photos"
 MARKETPLACE_PHOTOS_BUCKET = "marketplace-photos"
 # Photos of ads taken down by the team (storage/listing_photo_vaults.py).
 MARKETPLACE_HELD_PHOTOS_BUCKET = "marketplace-photos-held"
+# Documents of the old system (clinical_documents), in production only.
+LEGACY_DOCUMENTS_BUCKET = "clinical-documents"
 
 # (table, column holding the owner id), children before parents. Rows that
 # hang off a pet or a listing (clinical_events, chat_response_reports of the
@@ -70,6 +74,31 @@ OWNER_TABLES: tuple[tuple[str, str], ...] = (
     ("chat_user_daily_usage", "owner_id"),
     ("local_activities", "submitted_by_owner_id"),
     ("event_submissions", "submitted_by"),
+)
+
+# The same, for tables that exist only in production: no script of the repository
+# creates them (found 2026-11-23, docs/security/02_audit.md DB-9). Where they do not
+# exist (the twin, a new install, production once they are dropped) nothing is missing:
+# they are skipped without a note. Any other error still stops the deletion.
+LEGACY_OWNER_TABLES: tuple[tuple[str, str], ...] = (
+    ("adoption_contact_requests", "owner_id"),
+    ("adoption_listings", "owner_id"),
+    # The old billing: everything hangs off owner_profiles, which goes last.
+    ("billing_founder_slots", "owner_id"),
+    ("billing_one_time_purchases", "owner_id"),
+    ("billing_subscriptions", "owner_id"),
+    ("billing_customers", "owner_id"),
+    ("owner_billing_entitlements", "owner_id"),
+    ("owner_profiles", "owner_id"),
+    ("clinical_documents", "owner_id"),
+    ("local_service_reviews", "owner_id"),
+    ("local_service_events", "owner_id"),
+    ("local_service_venues", "owner_id"),
+    # The old radar kept who searched and around which point.
+    ("radar_place_ingestion_jobs", "owner_id"),
+    ("radar_place_coverages", "owner_id"),
+    ("radar_coverages", "owner_id"),
+    ("radar_places", "owner_id"),
 )
 
 # Tables keyed by a keyed pseudonym of the owner instead of the id.
@@ -137,6 +166,26 @@ NOT_PERSONAL_TABLES: dict[str, str] = {
     ),
 }
 
+# The same answer for the tables of production that supabase_schema.sql does not create:
+# old ones made by hand (see LEGACY_OWNER_TABLES) and a few made by a migration only.
+# One with a column that names a person is here only with the reason why it is not an
+# owner's data.
+LEGACY_NOT_PERSONAL_TABLES: dict[str, str] = {
+    "admin_plan_totp_attempts": "team-only: failed codes of an administrator, no owner column",
+    "admin_plan_totp_replay": "team-only: used codes of an administrator, no owner column",
+    "billing_plans": "old price list",
+    "billing_webhook_events": "events of the old payment provider, no owner column",
+    "health_cards": "old health cards of the team, no owner column",
+    "plan_access_config": "plan limits read by the database rules, no owner column",
+    "pricing_admin_audit": "team-only trail of price changes: the id is the administrator's",
+    "pricing_plan_features": "what each plan includes; updated_by is the administrator's id",
+    "pricing_store_prices": "price list; updated_by is the administrator's id",
+    "scrape_runs": "team-only trail of the imports: the id is the administrator's, or 'shared'",
+    "system_settings": "service settings, no owner column",
+}
+# Gone with the sign-in account itself: foreign key to auth.users, on delete cascade.
+ERASED_WITH_THE_IDENTITY: frozenset[str] = frozenset({"plan_access_unlimited"})
+
 
 class SupabaseAccountEraser:
     def __init__(
@@ -187,6 +236,8 @@ class SupabaseAccountEraser:
                 report, table, column, reporter_ref(owner_id, self._chat_reporter_secret)
             )
 
+        for table, column in LEGACY_OWNER_TABLES:
+            self._delete_where(report, table, column, owner_id, may_be_absent=True)
         for table, column in OWNER_TABLES:
             self._delete_where(report, table, column, owner_id)
         return report
@@ -201,7 +252,7 @@ class SupabaseAccountEraser:
         docs/compliance/10 §2.3): with a report still open or upheld by the team it
         stays, for the team only, with the deleted owner's id replaced by the role
         everywhere it appears (conversation, messages, report). The nightly cleanup
-        removes it 12 months after the decision, or as soon as the report is
+        removes it 6 months after the decision, or as soon as the report is
         dismissed. It applies whoever deletes: the reported person or the reporter."""
         roles: dict[str, str] = {}
         for column, role in zip(MARKETPLACE_PARTICIPANT_COLUMNS, ("buyer", "seller"), strict=True):
@@ -278,6 +329,9 @@ class SupabaseAccountEraser:
         )
         keys = [str(row["storage_key"]) for row in self._rows(attachments)]
         report.files_removed += self._remove(self._media_bucket, keys)
+        report.files_removed += self._remove(
+            LEGACY_DOCUMENTS_BUCKET, self._legacy_document_paths(owner_id)
+        )
         # Pet gallery, account photo and marketplace photos live under "<uid>/".
         for bucket in (
             PET_PHOTOS_BUCKET,
@@ -285,6 +339,24 @@ class SupabaseAccountEraser:
             MARKETPLACE_HELD_PHOTOS_BUCKET,
         ):
             report.files_removed += self._remove(bucket, self._list_all(bucket, owner_id))
+
+    def _legacy_document_paths(self, owner_id: str) -> list[str]:
+        """Files of the old clinical_documents, known only from its rows. Read before the
+        rows are erased; where the old table does not exist there is nothing to remove."""
+        try:
+            response = (
+                self._client.table("clinical_documents")
+                .select("file_path")
+                .eq("owner_id", owner_id)
+                .execute()
+            )
+        except Exception as exc:
+            if not is_missing_table(exc):
+                raise
+            return []
+        prefix = f"{LEGACY_DOCUMENTS_BUCKET}/"
+        paths = [str(row.get("file_path") or "").lstrip("/") for row in self._rows(response)]
+        return [path.removeprefix(prefix) for path in paths if path]
 
     def _list_all(self, bucket: str, prefix: str) -> list[str]:
         paths: list[str] = []
@@ -320,7 +392,15 @@ class SupabaseAccountEraser:
     def _rows(response: Any) -> list[dict[str, Any]]:
         return cast(list[dict[str, Any]], response.data or [])
 
-    def _delete_where(self, report: ErasureReport, table: str, column: str, value: str) -> None:
+    def _delete_where(
+        self,
+        report: ErasureReport,
+        table: str,
+        column: str,
+        value: str,
+        *,
+        may_be_absent: bool = False,
+    ) -> None:
         try:
             response = self._client.table(table).delete().eq(column, value).execute()
         except Exception as exc:
@@ -328,6 +408,8 @@ class SupabaseAccountEraser:
             # Any other failure stops the deletion (the identity is kept).
             if not is_missing_table(exc):
                 raise
+            if may_be_absent:
+                return
             note = missing_table_note(table)
             if note not in report.notes:
                 report.notes.append(note)

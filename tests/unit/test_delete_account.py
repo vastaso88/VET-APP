@@ -21,6 +21,7 @@ from packages.core.domain.radar_reports.models import contributor_pseudonym
 from packages.infrastructure.persistence.supabase.supabase_account_eraser import (
     CHAT_REPORT_REF,
     HANDLED_ELSEWHERE,
+    LEGACY_OWNER_TABLES,
     NOT_PERSONAL_TABLES,
     OWNER_TABLES,
     RADAR_PSEUDONYM_TABLES,
@@ -141,7 +142,7 @@ class FakeSupabase:
 
 def _seed(client: FakeSupabase, owner: str, *, tag: str) -> None:
     """One row per owned table, shaped the way the real schema keys it."""
-    for table, column in OWNER_TABLES:
+    for table, column in (*OWNER_TABLES, *LEGACY_OWNER_TABLES):
         client.db.setdefault(table, []).append({"id": f"{tag}-{table}", column: owner})
     client.db["pet_profiles"][-1]["id"] = f"{tag}-pet"
     client.db.setdefault("clinical_events", []).append(
@@ -403,6 +404,68 @@ def test_every_table_of_the_schema_is_either_erased_or_declared_not_personal() -
         "or to NOT_PERSONAL_TABLES with the reason"
     )
     assert covered - tables == set(), "Account deletion lists a table the schema does not have"
+
+
+def test_the_old_production_tables_are_erased_for_that_owner_only() -> None:
+    owner, other = "11111111-1111-4111-8111-111111111111", "22222222-2222-4222-8222-222222222222"
+    client = FakeSupabase()
+    for table, column in LEGACY_OWNER_TABLES:
+        client.db[table] = [{"id": "mine", column: owner}, {"id": "theirs", column: other}]
+
+    report = _eraser(client).erase_data(owner)
+
+    for table, _ in LEGACY_OWNER_TABLES:
+        assert [row["id"] for row in client.db[table]] == ["theirs"], table
+        assert report.rows_deleted[table] == 1
+    assert {"owner_profiles", "owner_billing_entitlements"} <= dict(LEGACY_OWNER_TABLES).keys()
+
+
+@pytest.mark.parametrize("code", ["42P01", "PGRST205"])
+def test_where_the_old_tables_do_not_exist_the_deletion_goes_on_without_a_note(code: str) -> None:
+    owner = "11111111-1111-4111-8111-111111111111"
+    legacy = dict(LEGACY_OWNER_TABLES)
+
+    class _Twin(FakeSupabase):
+        def table(self, name: str) -> Any:
+            if name in legacy:
+                return _FailingQuery(self.db, name, code)
+            return super().table(name)
+
+    client = _Twin()
+    client.db["reminders"] = [{"id": "r", "owner_id": owner}]
+    report = _eraser(client).erase_data(owner)
+
+    assert client.db["reminders"] == []
+    assert not any(table in note for table in legacy for note in report.notes)
+
+
+def test_the_files_of_the_old_documents_go_with_their_owner_only() -> None:
+    owner, other = "11111111-1111-4111-8111-111111111111", "22222222-2222-4222-8222-222222222222"
+    client = FakeSupabase()
+    client.db["clinical_documents"] = [
+        {"id": "1", "owner_id": owner, "file_path": "pets/a/one.pdf"},
+        {"id": "2", "owner_id": owner, "file_path": "/clinical-documents/pets/a/two.pdf"},
+        {"id": "3", "owner_id": owner, "file_path": None},
+        {"id": "4", "owner_id": other, "file_path": "pets/b/three.pdf"},
+    ]
+    client.buckets["clinical-documents"] = {"pets/a/one.pdf", "pets/a/two.pdf", "pets/b/three.pdf"}
+
+    report = _eraser(client).erase_data(owner)
+
+    assert client.buckets["clinical-documents"] == {"pets/b/three.pdf"}
+    assert report.files_removed == 2
+    assert [row["id"] for row in client.db["clinical_documents"]] == ["4"]
+
+
+def test_an_old_table_that_refuses_the_deletion_stops_it() -> None:
+    class _Denied(FakeSupabase):
+        def table(self, name: str) -> Any:
+            if name == "owner_profiles":
+                return _FailingQuery(self.db, name, "42501")
+            return super().table(name)
+
+    with pytest.raises(_DatabaseError):
+        _eraser(_Denied()).erase_data("11111111-1111-4111-8111-111111111111")
 
 
 @pytest.mark.parametrize("bad_id", ["", "   ", "user-a", "../etc", "11111111-1111-4111-8111"])

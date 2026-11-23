@@ -172,7 +172,7 @@ def _carries_colour_information(marker: int, segment: bytes) -> bool:
     """JFIF, the ICC profile and the Adobe APP14 (colour transform: dropping
     it can shift the colours of CMYK/editor JPEGs) are not personal data."""
     if marker == _JPEG_APP0:
-        return True
+        return segment[4:8] == b"JFIF"
     if marker == _JPEG_APP2:
         return segment[4 : 4 + len(_ICC_PROFILE)] == _ICC_PROFILE
     if marker == _JPEG_APP14:
