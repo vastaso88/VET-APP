@@ -2802,13 +2802,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other':
-            'Si el microchip de $name estaba inscrito en un registro de animales de compañía, normalmente hay que comunicar el fallecimiento: tu veterinario o el organismo que lleva el registro en tu país (en Italia, la ASL o el ayuntamiento) te dirán cómo y en qué plazo.',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other':
+          'Si el microchip de $name estaba inscrito en un registro de animales de compañía, normalmente hay que comunicar el fallecimiento: tu veterinario o el organismo que lleva el registro en tu país (en Italia, la ASL o el ayuntamiento) te dirán cómo y en qué plazo.',
+    });
     return '$_temp0';
   }
 
@@ -2834,13 +2831,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'female': '¿La has movido por error? Devolver a Animales',
-        'other': '¿Lo has movido por error? Devolver a Animales',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'female': '¿La has movido por error? Devolver a Animales',
+      'other': '¿Lo has movido por error? Devolver a Animales',
+    });
     return '$_temp0';
   }
 
@@ -8147,4 +8141,32 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get chatFixedLine =>
       'Responde una IA y puede equivocarse. No gestiona urgencias: ante la duda, llama al veterinario.';
+
+  @override
+  String get authRegisterCheckEmailTitle => 'Revisa tu correo';
+
+  @override
+  String authRegisterCheckEmailMessage(String email) {
+    return 'Te hemos enviado un enlace de confirmación a $email. Ábrelo para activar la cuenta y luego inicia sesión. Si no lo encuentras, mira también en spam.';
+  }
+
+  @override
+  String get authResendButton => 'Enviar el correo de nuevo';
+
+  @override
+  String authResendWait(String seconds) {
+    return 'Podrás pedirlo de nuevo en $seconds s';
+  }
+
+  @override
+  String get authResendSent =>
+      'Correo enviado de nuevo. Revisa tu bandeja de entrada y el spam.';
+
+  @override
+  String get authErrorEmailUndeliverable =>
+      'No podemos entregar el correo a esta dirección. Comprueba que esté bien escrita o usa otra.';
+
+  @override
+  String get authErrorLinkOtherDevice =>
+      'Este enlace debe abrirse en el mismo dispositivo desde el que lo pediste. Si estabas confirmando tu dirección, ya está confirmada: inicia sesión con tu correo y tu contraseña. Si estabas restableciendo la contraseña, pide un enlace nuevo desde este dispositivo.';
 }

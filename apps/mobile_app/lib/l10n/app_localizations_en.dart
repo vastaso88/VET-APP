@@ -2785,13 +2785,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other':
-            'If $name\'s microchip was registered with a pet registry, the death usually has to be reported: your vet or the body that keeps the registry in your country (in Italy, the ASL or the municipality) can tell you how and by when.',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other':
+          'If $name\'s microchip was registered with a pet registry, the death usually has to be reported: your vet or the body that keeps the registry in your country (in Italy, the ASL or the municipality) can tell you how and by when.',
+    });
     return '$_temp0';
   }
 
@@ -2817,12 +2814,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other': 'Moved by mistake? Bring back to Pets',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other': 'Moved by mistake? Bring back to Pets',
+    });
     return '$_temp0';
   }
 
@@ -8095,4 +8089,32 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatFixedLine =>
       'Answers come from an AI, which can make mistakes. It does not handle emergencies: if in doubt, call the vet.';
+
+  @override
+  String get authRegisterCheckEmailTitle => 'Check your email';
+
+  @override
+  String authRegisterCheckEmailMessage(String email) {
+    return 'We sent a confirmation link to $email. Open it to activate your account, then sign in. If you can\'t find it, check your spam folder too.';
+  }
+
+  @override
+  String get authResendButton => 'Send the email again';
+
+  @override
+  String authResendWait(String seconds) {
+    return 'You can ask again in $seconds s';
+  }
+
+  @override
+  String get authResendSent =>
+      'Email sent again. Check your inbox, and your spam folder.';
+
+  @override
+  String get authErrorEmailUndeliverable =>
+      'We can\'t deliver the email to this address. Check that it is spelled correctly or use another one.';
+
+  @override
+  String get authErrorLinkOtherDevice =>
+      'This link must be opened on the same device you asked for it from. If you were confirming your address, it is already confirmed: sign in with your email and password. If you were resetting your password, request a new link from this device.';
 }

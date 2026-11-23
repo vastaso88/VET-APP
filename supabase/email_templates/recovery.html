@@ -12,31 +12,31 @@
         <tr><td style="padding:16px 24px 24px;">
 {{ if and .Data.preferred_locale (eq .Data.preferred_locale "en") }}
 <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#213134;">Reset your password</h1>
-<p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#213134;">You asked to reset the password of your Quokka account. Tap the button to choose a new one. The link works for a limited time.</p>
+<p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#213134;">You asked to reset the password of your Quokka account. Open this email on the phone where the Quokka app is installed, then tap the button to choose a new password. The link works for a limited time.</p>
 <p style="margin:0 0 20px;"><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 24px;border-radius:12px;background:#2E686A;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;">Choose a new password</a></p>
 <p style="margin:0 0 20px;font-size:13px;line-height:1.4;color:#5E706E;word-break:break-all;">{{ .ConfirmationURL }}</p>
 <p style="margin:0;font-size:13px;line-height:1.4;color:#5E706E;">If you did not ask for this, ignore this email: your password stays the same.</p>
 {{ else if and .Data.preferred_locale (eq .Data.preferred_locale "de") }}
 <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#213134;">Passwort zurücksetzen</h1>
-<p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#213134;">Sie haben das Zurücksetzen des Passworts Ihres Quokka-Kontos angefordert. Tippen Sie auf die Schaltfläche, um ein neues zu wählen. Der Link ist nur begrenzt gültig.</p>
+<p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#213134;">Sie haben das Zurücksetzen des Passworts Ihres Quokka-Kontos angefordert. Öffnen Sie diese E-Mail auf dem Telefon, auf dem die Quokka-App installiert ist, und tippen Sie dann auf die Schaltfläche, um ein neues Passwort zu wählen. Der Link ist nur begrenzt gültig.</p>
 <p style="margin:0 0 20px;"><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 24px;border-radius:12px;background:#2E686A;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;">Neues Passwort wählen</a></p>
 <p style="margin:0 0 20px;font-size:13px;line-height:1.4;color:#5E706E;word-break:break-all;">{{ .ConfirmationURL }}</p>
 <p style="margin:0;font-size:13px;line-height:1.4;color:#5E706E;">Falls Sie das nicht angefordert haben, ignorieren Sie diese E-Mail: Ihr Passwort bleibt unverändert.</p>
 {{ else if and .Data.preferred_locale (eq .Data.preferred_locale "fr") }}
 <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#213134;">Réinitialisez votre mot de passe</h1>
-<p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#213134;">Vous avez demandé à réinitialiser le mot de passe de votre compte Quokka. Appuyez sur le bouton pour en choisir un nouveau. Le lien est valable pour une durée limitée.</p>
+<p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#213134;">Vous avez demandé à réinitialiser le mot de passe de votre compte Quokka. Ouvrez cet e-mail sur le téléphone où l'application Quokka est installée, puis appuyez sur le bouton pour choisir un nouveau mot de passe. Le lien est valable pour une durée limitée.</p>
 <p style="margin:0 0 20px;"><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 24px;border-radius:12px;background:#2E686A;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;">Choisir un nouveau mot de passe</a></p>
 <p style="margin:0 0 20px;font-size:13px;line-height:1.4;color:#5E706E;word-break:break-all;">{{ .ConfirmationURL }}</p>
 <p style="margin:0;font-size:13px;line-height:1.4;color:#5E706E;">Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail : votre mot de passe reste inchangé.</p>
 {{ else if and .Data.preferred_locale (eq .Data.preferred_locale "es") }}
 <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#213134;">Restablece tu contraseña</h1>
-<p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#213134;">Has pedido restablecer la contraseña de tu cuenta de Quokka. Toca el botón para elegir una nueva. El enlace es válido durante un tiempo limitado.</p>
+<p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#213134;">Has pedido restablecer la contraseña de tu cuenta de Quokka. Abre este correo en el teléfono donde está instalada la app de Quokka y toca el botón para elegir una contraseña nueva. El enlace es válido durante un tiempo limitado.</p>
 <p style="margin:0 0 20px;"><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 24px;border-radius:12px;background:#2E686A;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;">Elegir una contraseña nueva</a></p>
 <p style="margin:0 0 20px;font-size:13px;line-height:1.4;color:#5E706E;word-break:break-all;">{{ .ConfirmationURL }}</p>
 <p style="margin:0;font-size:13px;line-height:1.4;color:#5E706E;">Si no lo has pedido tú, ignora este correo: tu contraseña no cambia.</p>
 {{ else }}
 <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#213134;">Reimposta la tua password</h1>
-<p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#213134;">Hai chiesto di reimpostare la password del tuo account Quokka. Tocca il pulsante per sceglierne una nuova. Il link vale per un tempo limitato.</p>
+<p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#213134;">Hai chiesto di reimpostare la password del tuo account Quokka. Apri questa email sul telefono dove hai l'app Quokka e tocca il pulsante per scegliere una nuova password. Il link vale per un tempo limitato.</p>
 <p style="margin:0 0 20px;"><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 24px;border-radius:12px;background:#2E686A;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;">Scegli una nuova password</a></p>
 <p style="margin:0 0 20px;font-size:13px;line-height:1.4;color:#5E706E;word-break:break-all;">{{ .ConfirmationURL }}</p>
 <p style="margin:0;font-size:13px;line-height:1.4;color:#5E706E;">Se non l'hai chiesto tu, ignora questa email: la tua password resta invariata.</p>

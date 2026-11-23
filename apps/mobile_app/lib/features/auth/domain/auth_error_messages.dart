@@ -31,6 +31,12 @@ String localizedAuthMessage(AppError error) {
   return error.message;
 }
 
+/// True when the error says the address has not confirmed its e-mail yet.
+bool isEmailNotConfirmed(AppError error) {
+  return error.code.toLowerCase() == 'email_not_confirmed' ||
+      error.message.toLowerCase().contains('email not confirmed');
+}
+
 AuthErrorPresentation? _knownAuthError(AppError error) {
   final l10n = appL10n;
   final code = error.code.toLowerCase();
@@ -67,6 +73,21 @@ AuthErrorPresentation? _knownAuthError(AppError error) {
     return AuthErrorPresentation(message: l10n.authErrorEmailNotConfirmed);
   }
 
+  // The sender refused or could not deliver (the project's default sender only writes to
+  // its own team; a bad address; a failed hand-over): never the provider's raw text.
+  if (code == 'email_address_not_authorized' ||
+      (code == 'unexpected_failure' && raw.contains('sending')) ||
+      raw.contains('error sending') ||
+      raw.contains('not authorized') ||
+      raw.contains('smtp')) {
+    return AuthErrorPresentation(message: l10n.authErrorEmailUndeliverable);
+  }
+
+  // A link opened where it was not asked for (PKCE needs the device that started it).
+  if (raw.contains('code verifier') || raw.contains('pkce') || code == 'bad_code_verifier') {
+    return AuthErrorPresentation(message: l10n.authErrorLinkOtherDevice);
+  }
+
   if (code == 'email_not_found' || raw.contains('no account found')) {
     return AuthErrorPresentation(message: l10n.authErrorEmailNotFound);
   }
@@ -84,7 +105,11 @@ AuthErrorPresentation? _knownAuthError(AppError error) {
     return AuthErrorPresentation(message: l10n.authErrorLinkExpired);
   }
 
-  if (code == 'over_email_send_rate_limit' || raw.contains('rate limit')) {
+  if (code == 'over_email_send_rate_limit' ||
+      code == 'over_request_rate_limit' ||
+      code == '429' ||
+      raw.contains('rate limit') ||
+      raw.contains('too many')) {
     return AuthErrorPresentation(message: l10n.authErrorRateLimit);
   }
 

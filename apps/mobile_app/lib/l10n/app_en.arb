@@ -4526,5 +4526,26 @@
   "emergencyNoticeDeclineTitle": "Without this confirmation you cannot use Quokka",
   "emergencyNoticeDeclineBody": "You can download your data, delete the account or sign out. If you change your mind, you will be asked to confirm again at your next sign-in.",
   "emergencyNoticeRequired": "To sign up, confirm that you understand that Quokka does not handle emergencies.",
-  "chatFixedLine": "Answers come from an AI, which can make mistakes. It does not handle emergencies: if in doubt, call the vet."
+  "chatFixedLine": "Answers come from an AI, which can make mistakes. It does not handle emergencies: if in doubt, call the vet.",
+  "authRegisterCheckEmailTitle": "Check your email",
+  "authRegisterCheckEmailMessage": "We sent a confirmation link to {email}. Open it to activate your account, then sign in. If you can't find it, check your spam folder too.",
+  "@authRegisterCheckEmailMessage": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "authResendButton": "Send the email again",
+  "authResendWait": "You can ask again in {seconds} s",
+  "@authResendWait": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "authResendSent": "Email sent again. Check your inbox, and your spam folder.",
+  "authErrorEmailUndeliverable": "We can't deliver the email to this address. Check that it is spelled correctly or use another one.",
+  "authErrorLinkOtherDevice": "This link must be opened on the same device you asked for it from. If you were confirming your address, it is already confirmed: sign in with your email and password. If you were resetting your password, request a new link from this device."
 }

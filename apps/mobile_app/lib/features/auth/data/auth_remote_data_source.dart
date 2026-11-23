@@ -12,6 +12,9 @@ abstract interface class AuthRemoteDataSource {
 
   Future<Result<void>> resetPasswordForEmail(String email);
 
+  /// Sends the sign-up confirmation e-mail again to an address that has not confirmed it.
+  Future<Result<void>> resendConfirmation(String email);
+
   /// Sets a new password. [email] is only used by data sources that have no
   /// notion of "current session" (the fake/offline one) — the Supabase
   /// implementation ignores it and updates whichever session Supabase

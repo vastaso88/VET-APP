@@ -94,6 +94,12 @@ class FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   }
 
   @override
+  Future<Result<void>> resendConfirmation(String email) async {
+    // Offline demo accounts need no confirmation: nothing to send.
+    return Result.success(null);
+  }
+
+  @override
   Future<Result<void>> resetPasswordForEmail(String email) async {
     await _restorePersistedUsers();
     final normalizedEmail = email.trim().toLowerCase();

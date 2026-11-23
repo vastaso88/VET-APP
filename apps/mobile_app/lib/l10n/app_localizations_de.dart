@@ -2823,13 +2823,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other':
-            'Wenn der Mikrochip von $name in einem Heimtierregister eingetragen war, muss der Tod in der Regel gemeldet werden: Ihre Tierärztin bzw. Ihr Tierarzt oder die Stelle, die in Ihrem Land das Register führt (in Italien die ASL oder die Gemeinde), sagt Ihnen, wie und bis wann.',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other':
+          'Wenn der Mikrochip von $name in einem Heimtierregister eingetragen war, muss der Tod in der Regel gemeldet werden: Ihre Tierärztin bzw. Ihr Tierarzt oder die Stelle, die in Ihrem Land das Register führt (in Italien die ASL oder die Gemeinde), sagt Ihnen, wie und bis wann.',
+    });
     return '$_temp0';
   }
 
@@ -2855,12 +2852,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other': 'Versehentlich verschoben? Zurück zu den Tieren',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other': 'Versehentlich verschoben? Zurück zu den Tieren',
+    });
     return '$_temp0';
   }
 
@@ -8174,4 +8168,32 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get chatFixedLine =>
       'Eine KI antwortet und kann sich irren. Sie ist nicht für Notfälle zuständig: Rufen Sie im Zweifel die Tierärztin oder den Tierarzt an.';
+
+  @override
+  String get authRegisterCheckEmailTitle => 'Prüfen Sie Ihr Postfach';
+
+  @override
+  String authRegisterCheckEmailMessage(String email) {
+    return 'Wir haben einen Bestätigungslink an $email geschickt. Öffnen Sie ihn, um das Konto zu aktivieren, und melden Sie sich dann an. Wenn Sie ihn nicht finden, sehen Sie auch im Spam-Ordner nach.';
+  }
+
+  @override
+  String get authResendButton => 'E-Mail erneut senden';
+
+  @override
+  String authResendWait(String seconds) {
+    return 'Sie können sie in $seconds s erneut anfordern';
+  }
+
+  @override
+  String get authResendSent =>
+      'E-Mail erneut gesendet. Prüfen Sie Ihr Postfach und den Spam-Ordner.';
+
+  @override
+  String get authErrorEmailUndeliverable =>
+      'Wir können die E-Mail nicht an diese Adresse zustellen. Prüfen Sie die Schreibweise oder verwenden Sie eine andere Adresse.';
+
+  @override
+  String get authErrorLinkOtherDevice =>
+      'Dieser Link muss auf dem Gerät geöffnet werden, von dem Sie ihn angefordert haben. Wenn Sie Ihre Adresse bestätigen wollten, ist sie bereits bestätigt: Melden Sie sich mit E-Mail und Passwort an. Wenn Sie das Passwort zurücksetzen wollten, fordern Sie auf diesem Gerät einen neuen Link an.';
 }

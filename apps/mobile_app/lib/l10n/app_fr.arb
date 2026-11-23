@@ -4526,5 +4526,26 @@
   "emergencyNoticeDeclineTitle": "Sans cette confirmation, vous ne pouvez pas utiliser Quokka",
   "emergencyNoticeDeclineBody": "Vous pouvez télécharger vos données, supprimer le compte ou vous déconnecter. Si vous changez d'avis, la confirmation vous sera demandée à nouveau à votre prochaine connexion.",
   "emergencyNoticeRequired": "Pour vous inscrire, confirmez que vous avez compris que Quokka ne gère pas les urgences.",
-  "chatFixedLine": "C'est une IA qui répond, et elle peut se tromper. Elle ne gère pas les urgences : dans le doute, appelez le vétérinaire."
+  "chatFixedLine": "C'est une IA qui répond, et elle peut se tromper. Elle ne gère pas les urgences : dans le doute, appelez le vétérinaire.",
+  "authRegisterCheckEmailTitle": "Vérifiez votre e-mail",
+  "authRegisterCheckEmailMessage": "Nous avons envoyé un lien de confirmation à {email}. Ouvrez-le pour activer votre compte, puis connectez-vous. Si vous ne le trouvez pas, regardez aussi dans les spams.",
+  "@authRegisterCheckEmailMessage": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "authResendButton": "Renvoyer l'e-mail",
+  "authResendWait": "Vous pourrez le redemander dans {seconds} s",
+  "@authResendWait": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "authResendSent": "E-mail renvoyé. Vérifiez votre boîte de réception et vos spams.",
+  "authErrorEmailUndeliverable": "Nous ne pouvons pas livrer l'e-mail à cette adresse. Vérifiez qu'elle est bien écrite ou utilisez-en une autre.",
+  "authErrorLinkOtherDevice": "Ce lien doit être ouvert sur l'appareil depuis lequel vous l'avez demandé. Si vous confirmiez votre adresse, elle est déjà confirmée : connectez-vous avec votre e-mail et votre mot de passe. Si vous réinitialisiez votre mot de passe, demandez un nouveau lien depuis cet appareil."
 }

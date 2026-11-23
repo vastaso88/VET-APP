@@ -4526,5 +4526,26 @@
   "emergencyNoticeDeclineTitle": "Ohne diese Bestätigung können Sie Quokka nicht nutzen",
   "emergencyNoticeDeclineBody": "Sie können Ihre Daten herunterladen, das Konto löschen oder sich abmelden. Wenn Sie es sich anders überlegen, werden Sie bei der nächsten Anmeldung erneut um die Bestätigung gebeten.",
   "emergencyNoticeRequired": "Bestätigen Sie für die Registrierung, dass Sie verstanden haben, dass Quokka nicht für Notfälle zuständig ist.",
-  "chatFixedLine": "Eine KI antwortet und kann sich irren. Sie ist nicht für Notfälle zuständig: Rufen Sie im Zweifel die Tierärztin oder den Tierarzt an."
+  "chatFixedLine": "Eine KI antwortet und kann sich irren. Sie ist nicht für Notfälle zuständig: Rufen Sie im Zweifel die Tierärztin oder den Tierarzt an.",
+  "authRegisterCheckEmailTitle": "Prüfen Sie Ihr Postfach",
+  "authRegisterCheckEmailMessage": "Wir haben einen Bestätigungslink an {email} geschickt. Öffnen Sie ihn, um das Konto zu aktivieren, und melden Sie sich dann an. Wenn Sie ihn nicht finden, sehen Sie auch im Spam-Ordner nach.",
+  "@authRegisterCheckEmailMessage": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "authResendButton": "E-Mail erneut senden",
+  "authResendWait": "Sie können sie in {seconds} s erneut anfordern",
+  "@authResendWait": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "authResendSent": "E-Mail erneut gesendet. Prüfen Sie Ihr Postfach und den Spam-Ordner.",
+  "authErrorEmailUndeliverable": "Wir können die E-Mail nicht an diese Adresse zustellen. Prüfen Sie die Schreibweise oder verwenden Sie eine andere Adresse.",
+  "authErrorLinkOtherDevice": "Dieser Link muss auf dem Gerät geöffnet werden, von dem Sie ihn angefordert haben. Wenn Sie Ihre Adresse bestätigen wollten, ist sie bereits bestätigt: Melden Sie sich mit E-Mail und Passwort an. Wenn Sie das Passwort zurücksetzen wollten, fordern Sie auf diesem Gerät einen neuen Link an."
 }

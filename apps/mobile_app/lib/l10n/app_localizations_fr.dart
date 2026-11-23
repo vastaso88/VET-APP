@@ -2821,13 +2821,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other':
-            'Si la puce de $name était enregistrée dans un fichier des animaux de compagnie, le décès doit en général être déclaré : votre vétérinaire ou l\'organisme qui tient le fichier dans votre pays (en Italie, l\'ASL ou la commune) vous dira comment et dans quel délai.',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other':
+          'Si la puce de $name était enregistrée dans un fichier des animaux de compagnie, le décès doit en général être déclaré : votre vétérinaire ou l\'organisme qui tient le fichier dans votre pays (en Italie, l\'ASL ou la commune) vous dira comment et dans quel délai.',
+    });
     return '$_temp0';
   }
 
@@ -2853,13 +2850,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'female': 'Déplacée par erreur ? Remettre dans Animaux',
-        'other': 'Déplacé par erreur ? Remettre dans Animaux',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'female': 'Déplacée par erreur ? Remettre dans Animaux',
+      'other': 'Déplacé par erreur ? Remettre dans Animaux',
+    });
     return '$_temp0';
   }
 
@@ -8181,4 +8175,32 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get chatFixedLine =>
       'C\'est une IA qui répond, et elle peut se tromper. Elle ne gère pas les urgences : dans le doute, appelez le vétérinaire.';
+
+  @override
+  String get authRegisterCheckEmailTitle => 'Vérifiez votre e-mail';
+
+  @override
+  String authRegisterCheckEmailMessage(String email) {
+    return 'Nous avons envoyé un lien de confirmation à $email. Ouvrez-le pour activer votre compte, puis connectez-vous. Si vous ne le trouvez pas, regardez aussi dans les spams.';
+  }
+
+  @override
+  String get authResendButton => 'Renvoyer l\'e-mail';
+
+  @override
+  String authResendWait(String seconds) {
+    return 'Vous pourrez le redemander dans $seconds s';
+  }
+
+  @override
+  String get authResendSent =>
+      'E-mail renvoyé. Vérifiez votre boîte de réception et vos spams.';
+
+  @override
+  String get authErrorEmailUndeliverable =>
+      'Nous ne pouvons pas livrer l\'e-mail à cette adresse. Vérifiez qu\'elle est bien écrite ou utilisez-en une autre.';
+
+  @override
+  String get authErrorLinkOtherDevice =>
+      'Ce lien doit être ouvert sur l\'appareil depuis lequel vous l\'avez demandé. Si vous confirmiez votre adresse, elle est déjà confirmée : connectez-vous avec votre e-mail et votre mot de passe. Si vous réinitialisiez votre mot de passe, demandez un nouveau lien depuis cet appareil.';
 }

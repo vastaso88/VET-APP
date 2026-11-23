@@ -11,6 +11,27 @@ import 'auth_remote_data_source.dart';
 
 const kPasswordRecoveryRedirect = 'vetapp://auth-callback';
 
+/// Where the link that CONFIRMS A SIGN-UP brings the person back. On a phone it is the page
+/// `<API>/auth/confirmed` (https), because the link may be opened on a computer, which does not
+/// know the app's scheme; that page has a button that opens the app. Without a usable https
+/// API address it falls back to the app's scheme; on the web it is the app's own origin.
+/// The page has to be among the project's allowed redirect URLs.
+String signUpConfirmationRedirect({bool? isWeb, String? origin, String? apiBaseUrl}) {
+  if (isWeb ?? kIsWeb) return origin ?? Uri.base.origin;
+  final base = (apiBaseUrl ?? '').trim().replaceAll(RegExp(r'/+$'), '');
+  if (base.startsWith('https://') && base.length > 'https://'.length) {
+    return '$base/auth/confirmed';
+  }
+  return kPasswordRecoveryRedirect;
+}
+
+/// Where the link of an e-mail (confirmation, recovery, change of address) brings
+/// the person back: this app's own origin on the web, the app's scheme on a phone.
+/// Without it the link ends on the project's Site URL, which is not the app.
+String authEmailRedirect({bool? isWeb, String? origin}) {
+  return (isWeb ?? kIsWeb) ? (origin ?? Uri.base.origin) : kPasswordRecoveryRedirect;
+}
+
 class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
   const SupabaseAuthRemoteDataSource({
     required this.config,
@@ -77,6 +98,7 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
       final response = await _client.signUp(
         email: request.email.trim(),
         password: request.password,
+        emailRedirectTo: signUpConfirmationRedirect(apiBaseUrl: config.apiBaseUrl),
         data: {
           if (request.displayName != null && request.displayName!.trim().isNotEmpty)
             'display_name': request.displayName!.trim(),
@@ -117,6 +139,34 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
   }
 
   @override
+  Future<Result<void>> resendConfirmation(String email) async {
+    if (!isConfigured) {
+      return Result.failure(_missingConfigError());
+    }
+
+    try {
+      await _client.resend(
+        type: OtpType.signup,
+        email: email.trim(),
+        emailRedirectTo: signUpConfirmationRedirect(apiBaseUrl: config.apiBaseUrl),
+      );
+      return Result.success(null);
+    } on AuthException catch (error) {
+      return Result.failure(
+        AppAuthError(code: error.code ?? error.statusCode ?? 'auth_error', message: error.message),
+      );
+    } catch (error) {
+      return Result.failure(
+        AppAuthError(
+          code: 'unexpected_resend_error',
+          message: 'Unable to send the email again right now',
+          details: error,
+        ),
+      );
+    }
+  }
+
+  @override
   Future<Result<void>> resetPasswordForEmail(String email) async {
     if (!isConfigured) {
       return Result.failure(_missingConfigError());
@@ -128,7 +178,7 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
       // filter in AndroidManifest.xml — see docs/auth/01_brainstorm.md).
       await _client.resetPasswordForEmail(
         email.trim(),
-        redirectTo: kIsWeb ? Uri.base.origin : kPasswordRecoveryRedirect,
+        redirectTo: authEmailRedirect(),
       );
       return Result.success(null);
     } on AuthException catch (error) {
@@ -231,7 +281,7 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
       final target = newEmail.trim();
       final response = await _client.updateUser(
         UserAttributes(email: target),
-        emailRedirectTo: kIsWeb ? Uri.base.origin : kPasswordRecoveryRedirect,
+        emailRedirectTo: authEmailRedirect(),
       );
       // With email confirmation off in the project the new address is applied
       // straight away; with it on, GoTrue keeps the old one and parks the new

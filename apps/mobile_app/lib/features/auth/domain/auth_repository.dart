@@ -19,6 +19,9 @@ abstract interface class AuthRepository {
 
   Future<Result<void>> resetPasswordForEmail(String email);
 
+  /// Sends the sign-up confirmation e-mail again.
+  Future<Result<void>> resendConfirmation(String email);
+
   Future<Result<void>> updatePassword({String? email, required String newPassword});
 
   /// Saves the profile and refreshes the signed-in user everywhere.

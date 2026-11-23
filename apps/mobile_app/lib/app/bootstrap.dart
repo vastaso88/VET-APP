@@ -13,6 +13,8 @@ import 'config/app_bootstrap_state.dart';
 import 'router/app_router.dart';
 import '../features/account/data/profile_photo_repository.dart';
 import '../features/auth/data/remember_me_store.dart';
+import '../features/auth/domain/auth_link_notice.dart';
+import '../shared/errors/app_auth_error.dart';
 import '../features/billing/data/billing_demo_store.dart';
 import '../features/billing/data/store_billing_controller.dart';
 import '../features/chat/data/chat_demo_store.dart';
@@ -134,6 +136,14 @@ Future<void> bootstrap({Future<void> Function()? afterSupabaseReady}) async {
         }
         if (state.event == AuthChangeEvent.signedIn) {
           unawaited(LanguageStore.instance.syncAfterAuthentication());
+        }
+      }, onError: (Object error) {
+        // A link from an e-mail that could not be used (already used, expired, opened on another
+        // device): the SDK reports it here. The sign-in screen tells the person, once.
+        if (error is AuthException) {
+          AuthLinkNotice.instance.record(
+            AppAuthError(code: error.code ?? error.statusCode ?? 'auth_error', message: error.message),
+          );
         }
       });
     } catch (_) {

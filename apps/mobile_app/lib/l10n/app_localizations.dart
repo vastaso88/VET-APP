@@ -66,7 +66,7 @@ import 'app_localizations_it.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -89,11 +89,11 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -101,7 +101,7 @@ abstract class AppLocalizations {
     Locale('en'),
     Locale('es'),
     Locale('fr'),
-    Locale('it')
+    Locale('it'),
   ];
 
   /// No description provided for @petsConsentFullText.
@@ -13501,6 +13501,48 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Risponde un\'IA e può sbagliare. Non gestisce le urgenze: nel dubbio, chiama il veterinario.'**
   String get chatFixedLine;
+
+  /// No description provided for @authRegisterCheckEmailTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Controlla la tua email'**
+  String get authRegisterCheckEmailTitle;
+
+  /// No description provided for @authRegisterCheckEmailMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'Ti abbiamo mandato un link di conferma a {email}. Aprilo per attivare l\'account, poi accedi. Se non lo trovi, guarda anche in spam.'**
+  String authRegisterCheckEmailMessage(String email);
+
+  /// No description provided for @authResendButton.
+  ///
+  /// In it, this message translates to:
+  /// **'Invia di nuovo l\'e-mail'**
+  String get authResendButton;
+
+  /// No description provided for @authResendWait.
+  ///
+  /// In it, this message translates to:
+  /// **'Puoi richiederla di nuovo tra {seconds} s'**
+  String authResendWait(String seconds);
+
+  /// No description provided for @authResendSent.
+  ///
+  /// In it, this message translates to:
+  /// **'E-mail inviata di nuovo. Controlla la posta, anche lo spam.'**
+  String get authResendSent;
+
+  /// No description provided for @authErrorEmailUndeliverable.
+  ///
+  /// In it, this message translates to:
+  /// **'Non riusciamo a consegnare l\'e-mail a questo indirizzo. Controlla che sia scritto bene oppure usane un altro.'**
+  String get authErrorEmailUndeliverable;
+
+  /// No description provided for @authErrorLinkOtherDevice.
+  ///
+  /// In it, this message translates to:
+  /// **'Questo link va aperto sullo stesso dispositivo da cui l\'hai richiesto. Se stavi confermando l\'indirizzo, è già confermato: accedi con email e password. Se stavi reimpostando la password, richiedi un nuovo link da questo dispositivo.'**
+  String get authErrorLinkOtherDevice;
 }
 
 class _AppLocalizationsDelegate
@@ -13536,8 +13578,9 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

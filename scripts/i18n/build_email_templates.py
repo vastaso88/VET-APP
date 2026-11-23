@@ -98,11 +98,11 @@ TEMPLATES: dict[str, dict] = {
             "it": "Reimposta la tua password",
         },
         "body": {
-            "en": "You asked to reset the password of your Quokka account. Tap the button to choose a new one. The link works for a limited time.",
-            "de": "Sie haben das Zurücksetzen des Passworts Ihres Quokka-Kontos angefordert. Tippen Sie auf die Schaltfläche, um ein neues zu wählen. Der Link ist nur begrenzt gültig.",
-            "fr": "Vous avez demandé à réinitialiser le mot de passe de votre compte Quokka. Appuyez sur le bouton pour en choisir un nouveau. Le lien est valable pour une durée limitée.",
-            "es": "Has pedido restablecer la contraseña de tu cuenta de Quokka. Toca el botón para elegir una nueva. El enlace es válido durante un tiempo limitado.",
-            "it": "Hai chiesto di reimpostare la password del tuo account Quokka. Tocca il pulsante per sceglierne una nuova. Il link vale per un tempo limitato.",
+            "en": "You asked to reset the password of your Quokka account. Open this email on the phone where the Quokka app is installed, then tap the button to choose a new password. The link works for a limited time.",
+            "de": "Sie haben das Zurücksetzen des Passworts Ihres Quokka-Kontos angefordert. Öffnen Sie diese E-Mail auf dem Telefon, auf dem die Quokka-App installiert ist, und tippen Sie dann auf die Schaltfläche, um ein neues Passwort zu wählen. Der Link ist nur begrenzt gültig.",
+            "fr": "Vous avez demandé à réinitialiser le mot de passe de votre compte Quokka. Ouvrez cet e-mail sur le téléphone où l'application Quokka est installée, puis appuyez sur le bouton pour choisir un nouveau mot de passe. Le lien est valable pour une durée limitée.",
+            "es": "Has pedido restablecer la contraseña de tu cuenta de Quokka. Abre este correo en el teléfono donde está instalada la app de Quokka y toca el botón para elegir una contraseña nueva. El enlace es válido durante un tiempo limitado.",
+            "it": "Hai chiesto di reimpostare la password del tuo account Quokka. Apri questa email sul telefono dove hai l'app Quokka e tocca il pulsante per scegliere una nuova password. Il link vale per un tempo limitato.",
         },
         "button": {
             "en": "Choose a new password",

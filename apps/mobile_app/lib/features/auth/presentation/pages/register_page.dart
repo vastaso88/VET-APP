@@ -27,6 +27,7 @@ import '../../../age/presentation/pages/underage_notice_page.dart';
 import '../../../age/presentation/widgets/birth_date_form.dart';
 import '../widgets/auth_widgets.dart';
 import '../widgets/phone_number_field.dart';
+import '../widgets/resend_confirmation_button.dart';
 import 'legal_text_page.dart';
 import 'login_page.dart';
 
@@ -122,6 +123,8 @@ class _RegisterPageState extends State<RegisterPage> {
   String Function(AppLocalizations) _title = (_) => '';
   String Function(AppLocalizations) _message = (_) => '';
   bool _hasValidated = false;
+  // Set when the account exists but waits for the e-mail link: the address it went to.
+  String? _confirmationSentTo;
   String Function()? _emailServerError;
   String Function()? _passwordServerError;
 
@@ -153,6 +156,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     setState(() {
       _isLoading = true;
+      _confirmationSentTo = null;
       _emailServerError = null;
       _passwordServerError = null;
       _status = AuthBannerStatus.loading;
@@ -185,6 +189,18 @@ class _RegisterPageState extends State<RegisterPage> {
         // write the date with yet): keep the date for the first sign-in.
         if (error.code == 'sign_up_confirmation_required' && _birthDate != null) {
           unawaited(AgeStore.instance.rememberPending(_birthDate!));
+        }
+        if (error.code == 'sign_up_confirmation_required') {
+          // Not a failure: the e-mail with the link is on its way.
+          final sentTo = _emailController.text.trim();
+          setState(() {
+            _isLoading = false;
+            _confirmationSentTo = sentTo;
+            _status = AuthBannerStatus.info;
+            _title = (l10n) => l10n.authRegisterCheckEmailTitle;
+            _message = (l10n) => l10n.authRegisterCheckEmailMessage(sentTo);
+          });
+          return false;
         }
         final presented = presentAuthError(error);
         setState(() {
@@ -338,6 +354,12 @@ class _RegisterPageState extends State<RegisterPage> {
                   status: _status!,
                   title: _title(context.l10n),
                   message: _message(context.l10n)),
+            if (_confirmationSentTo != null)
+              ResendConfirmationButton(
+                email: _confirmationSentTo!,
+                resend: _authRepository.resendConfirmation,
+                startWaiting: true,
+              ),
             PhoneNumberField(
               controller: _phone,
               label: context.l10n.authPhoneLabel,

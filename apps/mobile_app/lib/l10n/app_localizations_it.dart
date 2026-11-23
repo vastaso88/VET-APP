@@ -2810,17 +2810,14 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'male':
-            'Se $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-        'female':
-            'Se $name era iscritta all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-        'other':
-            'Se il microchip di $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'male':
+          'Se $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+      'female':
+          'Se $name era iscritta all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+      'other':
+          'Se il microchip di $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+    });
     return '$_temp0';
   }
 
@@ -2846,13 +2843,10 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'female': 'Spostata per errore? Riporta tra gli animali',
-        'other': 'Spostato per errore? Riporta tra gli animali',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'female': 'Spostata per errore? Riporta tra gli animali',
+      'other': 'Spostato per errore? Riporta tra gli animali',
+    });
     return '$_temp0';
   }
 
@@ -8146,4 +8140,32 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get chatFixedLine =>
       'Risponde un\'IA e può sbagliare. Non gestisce le urgenze: nel dubbio, chiama il veterinario.';
+
+  @override
+  String get authRegisterCheckEmailTitle => 'Controlla la tua email';
+
+  @override
+  String authRegisterCheckEmailMessage(String email) {
+    return 'Ti abbiamo mandato un link di conferma a $email. Aprilo per attivare l\'account, poi accedi. Se non lo trovi, guarda anche in spam.';
+  }
+
+  @override
+  String get authResendButton => 'Invia di nuovo l\'e-mail';
+
+  @override
+  String authResendWait(String seconds) {
+    return 'Puoi richiederla di nuovo tra $seconds s';
+  }
+
+  @override
+  String get authResendSent =>
+      'E-mail inviata di nuovo. Controlla la posta, anche lo spam.';
+
+  @override
+  String get authErrorEmailUndeliverable =>
+      'Non riusciamo a consegnare l\'e-mail a questo indirizzo. Controlla che sia scritto bene oppure usane un altro.';
+
+  @override
+  String get authErrorLinkOtherDevice =>
+      'Questo link va aperto sullo stesso dispositivo da cui l\'hai richiesto. Se stavi confermando l\'indirizzo, è già confermato: accedi con email e password. Se stavi reimpostando la password, richiedi un nuovo link da questo dispositivo.';
 }

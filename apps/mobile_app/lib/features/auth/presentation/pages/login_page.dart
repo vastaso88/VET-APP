@@ -10,7 +10,9 @@ import '../../../../features/billing/data/subscription_gate.dart';
 import '../../../../shared/auth/auth.dart';
 import '../../data/auth_repository_factory.dart';
 import '../../domain/auth_error_messages.dart';
+import '../../domain/auth_link_notice.dart';
 import '../widgets/auth_widgets.dart';
+import '../widgets/resend_confirmation_button.dart';
 import 'register_page.dart';
 import 'reset_password_page.dart';
 
@@ -33,6 +35,19 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   bool _rememberMe = true;
   bool _hasValidated = false;
+  bool _offerResend = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // A link from an e-mail that did not work (used, expired, opened elsewhere): say so once.
+    final linkProblem = AuthLinkNotice.instance.take();
+    if (linkProblem != null) {
+      _status = AuthBannerStatus.error;
+      _title = (l10n) => l10n.authLoginFailureTitle;
+      _message = (_) => localizedAuthMessage(linkProblem);
+    }
+  }
 
   @override
   void dispose() {
@@ -55,6 +70,7 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() {
       _isLoading = true;
+      _offerResend = false;
       _status = AuthBannerStatus.loading;
       _title = (l10n) => l10n.authLoginLoadingTitle;
       _message = (l10n) => l10n.authLoginLoadingMessage;
@@ -85,6 +101,7 @@ class _LoginPageState extends State<LoginPage> {
           _status = AuthBannerStatus.error;
           _title = (l10n) => l10n.authLoginFailureTitle;
           _message = (_) => localizedAuthMessage(error);
+          _offerResend = isEmailNotConfirmed(error);
         });
         return false;
       },
@@ -119,6 +136,12 @@ class _LoginPageState extends State<LoginPage> {
                   status: _status!,
                   title: _title(context.l10n),
                   message: _message(context.l10n)),
+            if (_offerResend)
+              ResendConfirmationButton(
+                email: _emailController.text.trim(),
+                resend: _authRepository.resendConfirmation,
+                startWaiting: false,
+              ),
             AuthInputField(
               controller: _emailController,
               label: context.l10n.authEmailLabel,
