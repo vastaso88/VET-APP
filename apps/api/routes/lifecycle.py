@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Header
+from typing import Annotated
+
+from fastapi import APIRouter, Header, Query, Response
+from fastapi.responses import JSONResponse
 
 from apps.api.dependencies.container import get_container
 from apps.api.routes.admin_common import _require_scheduler_token
@@ -64,13 +67,20 @@ def prune_chat_message_keys(
 @router.post("/prune-removed-listings")
 def prune_removed_listings(
     x_vetapp_scheduler: str | None = Header(default=None, alias="X-VetApp-Scheduler"),
-) -> dict[str, object]:
+    allow_leftovers: Annotated[int, Query(ge=0, le=100_000)] = 0,
+) -> Response:
     """Mercatino ads taken down by the team: keeps their photos out of the public bucket,
     deletes ad and photos 6 months after the decision and the register of decisions after
-    24. Counts only; scheduler token, no user session. `table_available: false` until the
-    SQL is applied."""
+    24; deletes the photos without an ad. Counts only; scheduler token, no user session.
+    `table_available: false` until the SQL is applied. 500, with the counts, when the photos
+    without an ad are too many to be believed: none is deleted until someone has looked and
+    calls again with `allow_leftovers` (docs/features/marketplace_messages.md)."""
     _require_scheduler_token(x_vetapp_scheduler)
-    return get_container().prune_removed_listings_service().run().model_dump(mode="json")
+    output = get_container().prune_removed_listings_service().run(allow_leftovers=allow_leftovers)
+    return JSONResponse(
+        status_code=500 if output.leftovers_blocked else 200,
+        content=output.model_dump(mode="json"),
+    )
 
 
 @router.post("/underage-dry-run")

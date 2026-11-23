@@ -509,6 +509,31 @@ class InMemoryMarketplaceListingRepository(MarketplaceListingRepository):
     def delete(self, listing_id: str) -> None:
         self._items.pop(listing_id, None)
 
+    def list_after(self, listing_id: str, limit: int) -> list[MarketplaceListing]:
+        ids = sorted(item_id for item_id in self._items if item_id > listing_id)
+        return [self._items[item_id] for item_id in ids[:limit]]
+
+    def set_photos(self, listing_id: str, photo_urls: list[str]) -> None:
+        listing = self._items.get(listing_id)
+        if listing is not None:
+            self._items[listing_id] = listing.model_copy(update={"photo_urls": photo_urls})
+
+    def list_hidden(self, limit: int) -> list[MarketplaceListing]:
+        hidden = [
+            item for item in self._items.values() if item.status in ("removed", "removed_policy")
+        ]
+        hidden.sort(key=lambda item: item.updated_at)
+        return hidden[:limit]
+
+    def record_reports(self, listing_id: str, count: int, *, hide: bool) -> None:
+        listing = self._items.get(listing_id)
+        if listing is None:
+            return
+        updates: dict[str, object] = {"report_count": count}
+        if hide and listing.status in ("active", "reserved"):
+            updates["status"] = "removed"
+        self._items[listing_id] = listing.model_copy(update=updates)
+
     def list_by_ids(self, listing_ids: list[str]) -> list[MarketplaceListing]:
         return [self._items[item_id] for item_id in set(listing_ids) if item_id in self._items]
 
@@ -523,6 +548,9 @@ class InMemoryListingReportRepository(ListingReportRepository):
 
     def list_by_listing(self, listing_id: str) -> list[ListingReport]:
         return [item for item in self._items if item.listing_id == listing_id]
+
+    def list_by_listings(self, listing_ids: list[str]) -> list[ListingReport]:
+        return [item for item in self._items if item.listing_id in set(listing_ids)]
 
 
 class InMemoryChatResponseReportRepository(ChatResponseReportRepository):

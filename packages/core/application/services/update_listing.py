@@ -2,9 +2,15 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from packages.core.application.ports.listing_photo_vault import ListingPhotoVault
 from packages.core.application.ports.listing_review_repository import ListingReviewRepository
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
+)
+from packages.core.application.services.listing_photos import (
+    clean_up,
+    plan_photos,
+    published,
 )
 from packages.core.application.services.listing_review import confirmed_terms, new_review
 from packages.core.domain.common.entity import utc_now
@@ -17,10 +23,13 @@ from packages.core.domain.marketplace.content_policy import (
     CONTACT_POLICY_MESSAGE,
     MEDICINE_POLICY_MESSAGE,
     contains_contact_details,
-    offers_active_substances,
-    offers_medicines,
+    refused_terms,
 )
-from packages.core.domain.marketplace.content_review import ContentNotice, latest_by_listing
+from packages.core.domain.marketplace.content_review import (
+    ContentNotice,
+    ListingReview,
+    latest_by_listing,
+)
 from packages.core.domain.marketplace.models import (
     ListingCategory,
     ListingCondition,
@@ -28,7 +37,7 @@ from packages.core.domain.marketplace.models import (
     MarketplaceListing,
 )
 from packages.core.domain.territory.rules import is_known_country, normalize_country
-from packages.shared.errors.base import ValidationError
+from packages.shared.errors.base import ContentRefusedError, ValidationError
 
 
 class UpdateListingInput(BaseModel):
@@ -65,9 +74,11 @@ class UpdateListingService:
         self,
         repository: MarketplaceListingRepository,
         reviews: ListingReviewRepository | None = None,
+        vault: ListingPhotoVault | None = None,
     ) -> None:
         self._repository = repository
         self._reviews = reviews
+        self._vault = vault
 
     def execute(self, data: UpdateListingInput) -> UpdateListingOutput:
         current = self._repository.get(data.listing_id)
@@ -85,12 +96,13 @@ class UpdateListingService:
         # by authorised sellers, Reg. (EU) 2019/6).
         if contains_contact_details(data.title, data.description):
             raise ValidationError(CONTACT_POLICY_MESSAGE)
-        if offers_medicines(data.title, data.description) or offers_active_substances(
-            data.title, data.description
-        ):
-            # One refusal for both, in the words the installed apps already know.
-            raise ValidationError(MEDICINE_POLICY_MESSAGE)
+        refused = refused_terms(data.title, data.description)
+        if refused:
+            # One refusal for medicines and active substances, in the words the installed
+            # apps already know. Nothing of the text is kept.
+            raise ContentRefusedError(MEDICINE_POLICY_MESSAGE, terms=refused)
 
+        plan = plan_photos(data.photo_urls, data.owner_id, self._vault, current)
         latest = None
         if self._reviews is not None:
             latest = latest_by_listing(self._reviews.list_by_listings([current.id])).get(current.id)
@@ -98,7 +110,7 @@ class UpdateListingService:
         covered = (
             latest is not None
             and latest.status in ("open", "checked")
-            and latest.covers(data.title, data.description, data.category, data.photo_urls)
+            and latest.covers(data.title, data.description, data.category, plan.links)
         )
         terms = confirmed_terms(
             data.title,
@@ -116,7 +128,6 @@ class UpdateListingService:
                 "category": data.category,
                 "condition": data.condition,
                 "price_cents": data.price_cents,
-                "photo_urls": data.photo_urls,
                 "target_species": data.target_species,
                 "city_label": data.city_label,
                 "country": normalize_country(data.country),
@@ -131,10 +142,29 @@ class UpdateListingService:
                 ),
             }
         )
-        # The records first: an ad is never online with words nobody confirmed.
-        if self._reviews is not None and not covered:
-            if terms:
-                self._reviews.save(new_review(updated, terms))
-            if latest is not None and latest.status == "open":
-                self._reviews.save(latest.model_copy(update={"status": "superseded"}))
-        return UpdateListingOutput(listing=self._repository.save(updated))
+        # Last of all, when nothing else can refuse the edit: the copies of the photos.
+        with published(plan, current.id, self._vault, self._repository) as links:
+            updated = updated.model_copy(update={"photo_urls": links})
+            # The records first: an ad is never online with words nobody confirmed.
+            review = new_review(updated, terms) if terms and not covered else None
+            if self._reviews is not None and not covered:
+                if review is not None:
+                    self._reviews.save(review)
+                if latest is not None and latest.status == "open":
+                    self._reviews.save(latest.model_copy(update={"status": "superseded"}))
+            try:
+                saved = self._repository.save(updated)
+            except Exception:
+                self._undo(review, latest if not covered else None)
+                raise
+        clean_up(plan, self._vault, self._repository, before=current, after=saved)
+        return UpdateListingOutput(listing=saved)
+
+    def _undo(self, review: ListingReview | None, latest: ListingReview | None) -> None:
+        """The ad stays as it was: so does its check."""
+        if self._reviews is None:
+            return
+        if review is not None:
+            self._reviews.save(review.model_copy(update={"status": "superseded"}))
+        if latest is not None:
+            self._reviews.save(latest)

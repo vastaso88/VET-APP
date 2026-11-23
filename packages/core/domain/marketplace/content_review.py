@@ -44,7 +44,20 @@ _NOTICE_OF_KIND: dict[SensitiveKind, ContentNotice] = {
 ListingReviewStatus = Literal["open", "checked", "removed", "superseded"]
 # Why the team took it down: a code, so the seller reads it in their language; the
 # team's own words go in the note, never shown to them.
-RemovalReason = Literal["food", "supplement", "medicine", "other"]
+RemovalReason = Literal[
+    "food",
+    "supplement",
+    "medicine",
+    # From the queue of reports: the same codes as a report.
+    "spam",
+    "scam",
+    "prohibited_item",
+    "inappropriate",
+    "sells_animals",
+    "other",
+]
+# Why the ad came to the team: the seller's confirmation, or other people's reports.
+ReviewOrigin = Literal["confirmation", "report"]
 DecisionOutcome = Literal["checked", "removed", "restored"]
 
 # Normalised (lowercase, no accents) whole words, it/en/es/de/fr. A word here costs the
@@ -266,6 +279,7 @@ class ListingReview(BaseModel):
     listing_id: str
     owner_id: str
     status: ListingReviewStatus = "open"
+    origin: ReviewOrigin = "confirmation"
     title: str
     description: str | None = None
     category: str

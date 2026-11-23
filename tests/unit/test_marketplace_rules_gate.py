@@ -1,3 +1,4 @@
+import hashlib
 from dataclasses import dataclass, field
 from types import SimpleNamespace
 
@@ -101,15 +102,62 @@ _TERM = {
 def test_the_rules_are_in_the_catalog_with_a_version_in_every_language() -> None:
     for language, term in _TERM.items():
         entry = build_consent_catalog(language)[KEY]
-        assert entry.version == "v1"
+        assert entry.version == "v2"
         assert term in entry.text, language
         if language != "it":
             assert "Mercatino" not in entry.text, language
 
     # No language, or one without a text, gets the English one (never the Italian).
     for fallback_language in (None, "ja"):
-        assert build_consent_catalog(fallback_language)[KEY].version == "v1"
+        assert build_consent_catalog(fallback_language)[KEY].version == "v2"
     assert build_consent_catalog("ja")[KEY].text == build_consent_catalog("en")[KEY].text
+
+
+# The texts of v1 (2026-11-21), so none of them can be served as v2.
+_V1_SHA256 = {
+    "it": "d6cc42f615bcd25ded1ee80410f10e86b1ade6d85db37caf70f8672ad75db790",
+    "en": "6dcb29c582e58bd2ad6fafcffc5564a31e241e258cdf5c24d5c605d013f7b9e5",
+    "es": "7cfafede11a115edbc5a75f6396af1ced0c63066e9b5f6ccc817a0a9ccebe24e",
+    "de": "9771966949d806748ae696970f9884e5d5bf7b805e821937d312d6f54fb8373b",
+    "fr": "c0f3e13153bf186ffe3269ac6c704de9161a91d094c0d00ba6034f15d8233275",
+}
+# What every language must say since v2: the periods, the age, the way to ask for a review.
+_V2_FACTS = {
+    "it": ("24 mesi", "12 mesi", "6 mesi", "18 anni", "Impostazioni → Contattaci"),
+    "en": ("24 months", "12 months", "6 months", "18 or over", "Settings → Contact us"),
+    "es": ("24 meses", "12 meses", "6 meses", "18 años", "Ajustes → Contáctanos"),
+    "de": ("24 Monate", "12 Monate", "6 Monate", "ab 18 Jahren", "Einstellungen → Kontakt"),
+    "fr": ("24 mois", "12 mois", "6 mois", "18 ans", "Paramètres → Nous contacter"),
+}
+
+
+_KEPT_AT_LEAST = {
+    "it": "la teniamo almeno altri 6 mesi",
+    "en": "we keep it for at least another 6 months",
+    "es": "la conservamos al menos 6 meses más",
+    "de": "bewahren wir sie mindestens weitere 6 Monate auf",
+    "fr": "nous la conservons au moins 6 mois de plus",
+}
+
+
+@pytest.mark.parametrize("language", list(_TERM))
+def test_no_language_is_left_with_the_text_of_v1(language: str) -> None:
+    text = build_consent_catalog(language)[KEY].text
+
+    assert hashlib.sha256(text.encode("utf-8")).hexdigest() != _V1_SHA256[language]
+    for fact in _V2_FACTS[language]:
+        assert fact in text, fact
+    # Point 7 as approved last: kept at least 6 more months, not deleted after 6.
+    assert _KEPT_AT_LEAST[language] in text
+
+
+@pytest.mark.parametrize("language", list(_TERM))
+def test_whoever_accepted_v1_is_asked_again(monkeypatch: pytest.MonkeyPatch, language: str) -> None:
+    _use(monkeypatch, _Repository(_accepted("v1")), required=True)
+
+    assert build_consent_catalog(language)[KEY].version != "v1"
+    with pytest.raises(MarketplaceRulesRequiredError):
+        marketplace_rules.require_marketplace_rules_accepted()
 
 
 def test_the_texts_say_what_the_italian_says() -> None:
@@ -119,9 +167,10 @@ def test_the_texts_say_what_the_italian_says() -> None:
     assert "Regole del Mercatino" in texts["it"]
     assert "il team di Quokka può leggerla" in texts["it"]
     for language, text in texts.items():
-        # Eight numbered rules, the same everywhere.
-        for number in range(1, 9):
+        # Twelve numbered rules, the same everywhere.
+        for number in range(1, 13):
             assert f"\n{number}. " in text, (language, number)
+        assert "\n13. " not in text and "*" not in text
     # The English app: "own responsibility", not "own risk" (that reads as a disclaimer).
     assert "on your own responsibility" in texts["en"]
     assert "at your own risk" not in texts["en"]

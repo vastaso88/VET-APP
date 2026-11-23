@@ -30,6 +30,23 @@ class MarketplaceListingRepository(Protocol):
 
     def delete(self, listing_id: str) -> None: ...
 
+    def list_after(self, listing_id: str, limit: int) -> list[MarketplaceListing]:
+        """Every ad, by id, a page at a time."""
+        ...
+
+    def set_photos(self, listing_id: str, photo_urls: list[str]) -> None:
+        """Writes only the photos."""
+        ...
+
+    def list_hidden(self, limit: int) -> list[MarketplaceListing]:
+        """Ads hidden by reports, by the rules or by the team, oldest change first."""
+        ...
+
+    def record_reports(self, listing_id: str, count: int, *, hide: bool) -> None:
+        """Writes only the count and, when [hide] and the ad is still visible, its state:
+        a decision taken by the team meanwhile is never written over."""
+        ...
+
     def list_by_ids(self, listing_ids: list[str]) -> list[MarketplaceListing]:
         """These ads in one read (or few), in no particular order; a deleted one is
         simply absent."""

@@ -622,7 +622,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplaceLimitedNotice =>
-      'Solo ves el artículo, el precio y las fotos. Con un plan ves también la descripción y los detalles, y puedes publicar y denunciar anuncios.';
+      'Solo ves el artículo, el precio y las fotos. Con un plan ves también la descripción y los detalles, y puedes publicar anuncios. Puedes denunciar un anuncio aunque no tengas un plan.';
 
   @override
   String get marketplaceLimitedSeePlans => 'Ver los planes';
@@ -1308,7 +1308,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'Anuncio no publicado: el texto nombra un medicamento o un producto con principios activos (por ejemplo, un collar o una pipeta antiparasitarios, o un champú medicado), que no se admiten en el mercadillo. El control es automático y puede equivocarse.';
+      'Anuncio no publicado: el texto nombra un medicamento o un producto con principios activos (por ejemplo, un collar o una pipeta antiparasitarios, o un champú medicado), que no se admiten en el mercadillo.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -7537,7 +7537,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplacePublishDisclaimer =>
-      'Publicas un anuncio como particular. Quokka pone en contacto a las personas, pero no es parte de la compraventa: el acuerdo, el pago y la entrega son cosa solo tuya y de quien compra, y Quokka no responde de ellos. No revisamos de antemano los anuncios ni los objetos: describe el estado del objeto y sus defectos de forma honesta y completa. No se pueden vender animales ni fármacos o medicamentos, tampoco veterinarios. No escribas teléfonos ni correos electrónicos en el texto: te escribirán a través de los mensajes de la app.';
+      'Publicas un anuncio como particular. Quokka pone en contacto a las personas, pero no es parte de la compraventa: el acuerdo, el pago y la entrega conciernen solo a ti y a quien compra, y Quokka no responde de ellos. La app revisa el texto del anuncio con un control automático, que puede equivocarse, y el equipo puede ver el anuncio después de publicarlo; no verificamos que el anuncio y el objeto sean exactos: describe el estado del objeto y sus defectos de forma honesta y completa. No se pueden vender ni regalar animales, comida, piensos, snacks, suplementos, fármacos o medicamentos (tampoco veterinarios) ni productos con principios activos. No escribas teléfonos ni correos electrónicos en el texto: te escribirán a través de los mensajes de la app.';
 
   @override
   String get marketplaceDetailPrivateSeller =>
@@ -7572,7 +7572,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplaceInfoForbidden =>
-      'No se venden animales ni fármacos o medicamentos, tampoco veterinarios. La app bloquea muchos anuncios que los mencionan, pero no todos: denúncialos.';
+      'No se venden animales, comida, piensos, snacks, suplementos ni fármacos o medicamentos, tampoco veterinarios. La app revisa el texto de los anuncios: bloquea los medicamentos, pide confirmación para la comida, los suplementos y los productos que podrían tener principios activos, y hace que el equipo los revise después de publicarlos, pero puede equivocarse y no reconocerlo todo: si ves alguno, denúncialo.';
 
   @override
   String get marketplaceInfoPrivacy =>
@@ -7715,6 +7715,38 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get marketplaceRemovedReasonOther =>
       'otro incumplimiento de las normas del mercadillo';
+
+  @override
+  String get marketplaceContentAutomatic =>
+      'El control es automático y puede equivocarse.';
+
+  @override
+  String get marketplaceStatusHiddenPending => 'Oculto a la espera de revisión';
+
+  @override
+  String marketplaceHiddenAutoNotice(String date) {
+    return 'Anuncio oculto el $date: varias personas lo han denunciado y la app lo oculta automáticamente, a la espera de la revisión del equipo. Lo revisamos lo antes posible. La decisión es automática y puede equivocarse.';
+  }
+
+  @override
+  String marketplaceHiddenAnimalNotice(String date) {
+    return 'Anuncio oculto el $date: el texto parece ofrecer un animal, y en el mercadillo no se pueden vender, regalar ni intercambiar animales, en ningún país. La decisión es automática y puede equivocarse.';
+  }
+
+  @override
+  String get marketplaceRemovedReasonSpam => 'spam';
+
+  @override
+  String get marketplaceRemovedReasonScam => 'sospecha de estafa';
+
+  @override
+  String get marketplaceRemovedReasonProhibitedItem => 'artículo no permitido';
+
+  @override
+  String get marketplaceRemovedReasonInappropriate => 'contenido inapropiado';
+
+  @override
+  String get marketplaceRemovedReasonSellsAnimals => 'venta de animales';
 
   @override
   String get marketplaceMyListings => 'Mis anuncios';

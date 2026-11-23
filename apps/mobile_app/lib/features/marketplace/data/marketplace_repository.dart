@@ -300,13 +300,11 @@ class MarketplaceRepository {
 
   /// The backend speaks Italian; these are its refusals the owner reads in
   /// their own language. Anything else is shown as it came.
-  String _localizedRefusal(String? detail) {
+  String _localizedRefusal(String? detail, {List<String> words = const []}) {
     if (detail == null) return appL10n.marketplaceSaveFailed;
     if (detail == animalPolicyBackendMessage) return appL10n.marketplaceNoAnimalsMessage;
     if (detail == contactPolicyBackendMessage) return appL10n.marketplaceNoContactsMessage;
-    if (detail == medicinePolicyBackendMessage) {
-      return '${appL10n.marketplaceNoMedicinesMessage} ${listingAppeal(appL10n)}';
-    }
+    if (detail == medicinePolicyBackendMessage) return refusedMedicineMessage(appL10n, words);
     if (detail == 'private_seller_declaration_required') {
       return appL10n.marketplacePrivateSellerRequired;
     }
@@ -371,13 +369,17 @@ class MarketplaceRepository {
     if (response.statusCode == 400) {
       String? detail;
       ListingConfirmationRequiredException? confirmation;
+      var words = const <String>[];
       try {
         final body = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
         detail = body['detail'] as String?;
+        if (body['code'] == photoRefusedCode) detail = null;
         confirmation = ListingConfirmationRequiredException.fromJson(body);
+        final terms = body['terms'];
+        if (terms is List<dynamic>) words = terms.map((term) => term.toString()).toList();
       } catch (_) {}
       if (confirmation != null) throw confirmation;
-      throw ListingRejectedException(_localizedRefusal(detail));
+      throw ListingRejectedException(_localizedRefusal(detail, words: words));
     }
     throw const ListingBackendUnavailableException();
   }
@@ -441,8 +443,19 @@ class MarketplaceRepository {
         : const ListingPermissionException();
   }
 
-  /// Author only; the listing's photos are removed from storage afterwards.
+  /// Author only; the listing's photos go too. The backend deletes them: they are where
+  /// no account can write (K23).
   Future<void> deleteListing(MarketplaceListing listing, {required String requesterId}) async {
+    if (!_localOnly && canManageListing(listing, requesterId)) {
+      final response =
+          await _callApi('DELETE', '/marketplace/listings/${Uri.encodeComponent(listing.id)}');
+      if (response != null) {
+        if (response.statusCode == 200) return;
+        if (response.statusCode == 404) throw const ListingPermissionException();
+        // 405: a backend older than the route. Anything else is a refusal.
+        if (response.statusCode != 405) throw const ListingBackendUnavailableException();
+      }
+    }
     final client = _resolveClient();
     if (client == null) {
       final index = _local.indexWhere((item) => item.id == listing.id);

@@ -196,6 +196,8 @@ def test_export_returns_only_the_owners_rows_and_signed_links() -> None:
     kinds = {(f.kind, f.bucket) for f in export.files}
     assert ("chat_attachment", MEDIA_BUCKET) in kinds
     assert ("profile_photo", "pet-photos") in kinds
+    # A hidden ad: its photos are not behind the links of the row.
+    assert ("marketplace_photo", "marketplace-photos-held") in kinds
     assert all(f.url and f.url_expires_at for f in export.files)
     assert all(expires == SIGNED_URL_SECONDS for _, _, expires in client.signed)
     assert not any(OWNER_B in path for _, path, _ in client.signed)

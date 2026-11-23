@@ -618,7 +618,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceLimitedNotice =>
-      'You are only seeing the item, price and photos. With a plan you also see the description and details, and you can post and report listings.';
+      'You are only seeing the item, price and photos. With a plan you also see the description and details, and you can post listings. You can report a listing even without a plan.';
 
   @override
   String get marketplaceLimitedSeePlans => 'See plans';
@@ -1301,7 +1301,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'Listing not published: the text names a medicine or a product with active ingredients (for example a flea and tick collar or pipette, or a medicated shampoo), which are not allowed on the marketplace. The check is automatic and can be wrong.';
+      'Listing not published: the text names a medicine or a product with active ingredients (for example a flea and tick collar or pipette, or a medicated shampoo), which are not allowed on the marketplace.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -7486,7 +7486,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplacePublishDisclaimer =>
-      'You are publishing an ad as a private individual. Quokka puts people in touch but is not a party to the sale: the agreement, payment and delivery concern only you and the buyer, and Quokka is not responsible for them. We do not check ads or items in advance: describe the item\'s condition and any defects honestly and completely. Animals cannot be sold, nor can medicines, including veterinary ones. Do not write phone numbers or email addresses in the text: people contact you through messages.';
+      'You are publishing a listing as a private individual. Quokka puts people in touch but is not a party to the sale: the agreement, payment and delivery concern only you and the buyer, and Quokka is not responsible for them. The app checks the text of the listing with an automatic check, which can be wrong, and the team may look at the listing after it is published; we do not verify that the listing or the item is accurate: describe the item\'s condition and any defects honestly and completely. You cannot sell or give away animals, food, feed, treats, supplements, medicines (including veterinary ones) or products with active ingredients. Do not write phone numbers or email addresses in the text: people contact you through messages.';
 
   @override
   String get marketplaceDetailPrivateSeller =>
@@ -7521,7 +7521,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceInfoForbidden =>
-      'Animals and medicines, including veterinary ones, cannot be sold. The app blocks many ads that mention them, but not all: report them.';
+      'Animals, food, feed, treats, supplements and medicines, including veterinary ones, are not sold here. The app checks the text of listings: it blocks medicines, asks you to confirm for food, supplements and products that may contain active ingredients, and has the team check them after they are published, but it can be wrong and miss some: if you see one, report it.';
 
   @override
   String get marketplaceInfoPrivacy =>
@@ -7664,6 +7664,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get marketplaceRemovedReasonOther =>
       'another breach of the marketplace rules';
+
+  @override
+  String get marketplaceContentAutomatic =>
+      'The check is automatic and can be wrong.';
+
+  @override
+  String get marketplaceStatusHiddenPending => 'Hidden pending review';
+
+  @override
+  String marketplaceHiddenAutoNotice(String date) {
+    return 'Listing hidden on $date: several people reported it and the app hides it automatically until the team checks it. We check it as soon as we can. The decision is automatic and can be wrong.';
+  }
+
+  @override
+  String marketplaceHiddenAnimalNotice(String date) {
+    return 'Listing hidden on $date: the text seems to offer an animal, and animals cannot be sold, given away or exchanged on the marketplace, in any country. The decision is automatic and can be wrong.';
+  }
+
+  @override
+  String get marketplaceRemovedReasonSpam => 'spam';
+
+  @override
+  String get marketplaceRemovedReasonScam => 'suspected scam';
+
+  @override
+  String get marketplaceRemovedReasonProhibitedItem => 'prohibited item';
+
+  @override
+  String get marketplaceRemovedReasonInappropriate => 'inappropriate content';
+
+  @override
+  String get marketplaceRemovedReasonSellsAnimals => 'selling animals';
 
   @override
   String get marketplaceMyListings => 'My listings';

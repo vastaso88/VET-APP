@@ -89,6 +89,20 @@ class ListingPhotoStore {
   }
 }
 
+final _listingPhotoPath = RegExp(r'^[A-Za-z0-9_-]+/[A-Za-z0-9_-]+/[A-Za-z0-9_-]+\.jpg$');
+
+/// True for a photo of the app's own public bucket, as the backend writes the link: the
+/// configured server, the whole path, nothing to decode and no query. [supabaseUrl] is the
+/// app's own configuration (tests pass it).
+bool isListingPhotoUrl(String url, {String? supabaseUrl}) {
+  final base = (supabaseUrl ?? const AppRuntimeConfigLoader().load().supabaseUrl)
+      .trim()
+      .replaceFirst(RegExp(r'/+$'), '');
+  if (base.isEmpty) return false;
+  final prefix = '$base/storage/v1/object/public/${ListingPhotoStore.bucket}/';
+  return url.startsWith(prefix) && _listingPhotoPath.hasMatch(url.substring(prefix.length));
+}
+
 /// `.../storage/v1/object/public/marketplace-photos/<path>` -> `<path>`.
 String? storagePathFromPublicUrl(String url) {
   const marker = '/object/public/${ListingPhotoStore.bucket}/';

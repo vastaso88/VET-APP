@@ -22,6 +22,7 @@ from packages.core.domain.subscription.models import Subscription
 pytestmark = pytest.mark.usefixtures("adult_everyone")
 
 OWNER = "demo-user"
+PHOTOS = "https://storage.invalid/storage/v1/object/public/marketplace-photos"
 ME = {"latitude": 45.46, "longitude": 9.19}
 LISTING_BODY = {
     "private_seller_declared": True,
@@ -60,7 +61,7 @@ def _seed(listing_id: str, *, owner_id: str = "seller", status: str = "active") 
             category="kennels_carriers",
             condition="like_new",
             price_cents=2500,
-            photo_urls=["https://example.com/a.jpg"],
+            photo_urls=[f"{PHOTOS}/published/{listing_id}/a.jpg"],
             target_species=["cat"],
             city_label="Milano",
             status=status,  # type: ignore[arg-type]
@@ -98,7 +99,7 @@ def test_without_a_plan_the_list_carries_only_the_first_look() -> None:
     assert set(item) <= set(LIMITED_LISTING_FIELDS)
     assert item["title"] == "Trasportino per gatti"
     assert item["price_cents"] == 2500
-    assert item["photo_urls"] == ["https://example.com/a.jpg"]
+    assert item["photo_urls"] == [f"{PHOTOS}/published/{item['id']}/a.jpg"]
     assert item["city_label"] == "Milano"
     assert "distance_km" in item
     assert not WITHHELD & set(item)
@@ -130,6 +131,7 @@ def test_the_seller_text_never_reaches_an_owner_without_a_plan() -> None:
     )
 
     assert "Telegram" not in dumped
+    # Not even in the links of the photos (K23).
     assert "seller" not in dumped
 
 

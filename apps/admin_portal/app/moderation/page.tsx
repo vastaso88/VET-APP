@@ -78,7 +78,7 @@ export default async function ModerationPage() {
           </div>
           {listingReviews.length ? listingReviews.map((item) => (
             <div className="table-row" key={item.id}>
-              <span>{date(item.confirmed_at)}</span>
+              <span>{item.origin === "report" ? "from a report" : date(item.confirmed_at)}</span>
               <span>{item.terms.join(", ") || "—"}</span>
               <span>{item.title}</span>
               <span>{item.status === "open" ? LISTING_REVIEW_LABELS.open : `${LISTING_REVIEW_LABELS[item.status]} · ${date(item.decided_at)} · ${item.decided_by_admin_id ?? "—"}`}</span>

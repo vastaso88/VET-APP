@@ -8,6 +8,9 @@
 const contactPolicyBackendMessage =
     "Nell'annuncio non inserire telefoni, email, siti web o profili social.";
 
+/// `code` of the backend's refusal of a photo that this app has not uploaded.
+const photoRefusedCode = 'photo_refused';
+
 /// What the backend answers (400) when it refuses a medicine.
 const medicinePolicyBackendMessage =
     'Sul Mercatino non si possono vendere farmaci o medicinali veterinari, '

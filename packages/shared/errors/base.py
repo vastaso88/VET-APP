@@ -10,6 +10,16 @@ class ValidationError(VetAppError):
     """Raised when a domain invariant is violated."""
 
 
+class ContentRefusedError(ValidationError):
+    """The text of an ad is refused: `detail` is the sentence the app already compares,
+    `terms` the words the automatic check found, so the seller reads them (DSA art. 17)."""
+
+    def __init__(self, message: str, *, terms: list[str], code: str = "content_refused") -> None:
+        super().__init__(message)
+        self.terms = terms
+        self.code = code
+
+
 class RequirementMissingError(ValidationError):
     """Refused because the owner has not given something yet (round 2 of the
     synthetic users, 2026-11-16: nobody could publish and the answer did not

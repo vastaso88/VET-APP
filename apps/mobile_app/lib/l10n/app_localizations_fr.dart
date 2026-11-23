@@ -624,7 +624,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplaceLimitedNotice =>
-      'Vous ne voyez que l\'objet, le prix et les photos. Avec une offre, vous voyez aussi la description et les détails, et vous pouvez publier et signaler des annonces.';
+      'Vous ne voyez que l\'objet, le prix et les photos. Avec une offre, vous voyez aussi la description et les détails, et vous pouvez publier des annonces. Vous pouvez signaler une annonce même sans offre.';
 
   @override
   String get marketplaceLimitedSeePlans => 'Voir les offres';
@@ -1319,7 +1319,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'Annonce non publiée : le texte mentionne un médicament ou un produit contenant des principes actifs (par exemple un collier ou une pipette antiparasitaires, ou un shampooing médicamenteux), qui ne sont pas admis sur le marché de l\'occasion. Le contrôle est automatique et peut se tromper.';
+      'Annonce non publiée : le texte mentionne un médicament ou un produit contenant des principes actifs (par exemple un collier ou une pipette antiparasitaires, ou un shampooing médicamenteux), qui ne sont pas admis sur le marché de l\'occasion.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -7573,7 +7573,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplacePublishDisclaimer =>
-      'Vous publiez une annonce en tant que particulier. Quokka met les personnes en relation mais n\'est pas partie à la vente : l\'accord, le paiement et la remise de l\'objet ne concernent que vous et l\'acheteur, et Quokka n\'en répond pas. Nous ne contrôlons pas à l\'avance les annonces ni les objets : décrivez l\'état de l\'objet et ses défauts de façon honnête et complète. On ne peut vendre ni animaux ni médicaments, y compris vétérinaires. N\'écrivez ni téléphone ni e-mail dans le texte : on vous écrit via la messagerie.';
+      'Vous publiez une annonce en tant que particulier. Quokka met les personnes en relation mais n\'est pas partie à la vente : l\'accord, le paiement et la remise de l\'objet ne concernent que vous et l\'acheteur, et Quokka n\'en répond pas. L\'application contrôle le texte de l\'annonce avec un contrôle automatique, qui peut se tromper, et l\'équipe peut consulter l\'annonce après sa publication ; nous ne vérifions pas que l\'annonce et l\'objet soient exacts : décrivez l\'état de l\'objet et ses défauts de façon honnête et complète. On ne peut vendre ni donner d\'animaux, de nourriture, d\'aliments pour animaux, de friandises, de compléments alimentaires, de médicaments (y compris vétérinaires) ni de produits contenant des principes actifs. N\'écrivez ni téléphone ni e-mail dans le texte : on vous écrit via la messagerie.';
 
   @override
   String get marketplaceDetailPrivateSeller =>
@@ -7609,7 +7609,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplaceInfoForbidden =>
-      'On ne vend ni animaux ni médicaments, y compris vétérinaires. L\'application bloque de nombreuses annonces qui en parlent, mais pas toutes : signalez-les.';
+      'On ne vend ni animaux, ni nourriture, ni aliments pour animaux, ni friandises, ni compléments alimentaires, ni médicaments, y compris vétérinaires. L\'application contrôle le texte des annonces : elle bloque les médicaments, demande une confirmation pour la nourriture, les compléments et les produits susceptibles de contenir des principes actifs, et les fait vérifier par l\'équipe après leur publication, mais elle peut se tromper et ne pas tout reconnaître : si vous en voyez une, signalez-la.';
 
   @override
   String get marketplaceInfoPrivacy =>
@@ -7755,6 +7755,39 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get marketplaceRemovedReasonOther =>
       'autre violation des règles du marché de l\'occasion';
+
+  @override
+  String get marketplaceContentAutomatic =>
+      'Le contrôle est automatique et peut se tromper.';
+
+  @override
+  String get marketplaceStatusHiddenPending =>
+      'Masquée en attendant la vérification';
+
+  @override
+  String marketplaceHiddenAutoNotice(String date) {
+    return 'Annonce masquée le $date : plusieurs personnes l\'ont signalée et l\'application la masque automatiquement, en attendant la vérification de l\'équipe. Nous la vérifions dès que possible. La décision est automatique et peut se tromper.';
+  }
+
+  @override
+  String marketplaceHiddenAnimalNotice(String date) {
+    return 'Annonce masquée le $date : le texte semble proposer un animal, et sur le marché de l\'occasion les animaux ne peuvent être ni vendus, ni donnés, ni échangés, dans aucun pays. La décision est automatique et peut se tromper.';
+  }
+
+  @override
+  String get marketplaceRemovedReasonSpam => 'spam';
+
+  @override
+  String get marketplaceRemovedReasonScam => 'soupçon d\'arnaque';
+
+  @override
+  String get marketplaceRemovedReasonProhibitedItem => 'article interdit';
+
+  @override
+  String get marketplaceRemovedReasonInappropriate => 'contenu inapproprié';
+
+  @override
+  String get marketplaceRemovedReasonSellsAnimals => 'vente d\'animaux';
 
   @override
   String get marketplaceMyListings => 'Mes annonces';

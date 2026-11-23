@@ -70,7 +70,7 @@ export default async function ListingReviewPage({
           <div><span>Price cents</span><strong>{review.price_cents ?? "gift"}</strong></div>
           <div><span>City</span><strong>{review.city_label ?? "—"}</strong></div>
           <div><span>Words found</span><strong>{review.terms.join(", ") || "—"}</strong></div>
-          <div><span>Confirmed by the seller</span><strong>{date(review.confirmed_at)} (text {review.confirmation_version})</strong></div>
+          <div><span>Confirmed by the seller</span><strong>{review.origin === "report" ? "no: it comes from a report" : `${date(review.confirmed_at)} (text ${review.confirmation_version})`}</strong></div>
           <div><span>Decided</span><strong>{date(review.decided_at)}</strong></div>
           <div><span>Decided by</span><strong>{review.decided_by_admin_id ?? "—"}</strong></div>
           <div><span>Reason told to the seller</span><strong>{review.removal_reason ?? "—"}</strong></div>
@@ -86,6 +86,7 @@ export default async function ListingReviewPage({
             {photos.length ? photos.map((url, index) => (
               <span key={url}><a className="table-action-link" href={url} target="_blank" rel="noreferrer">Photo {index + 1} ↗</a></span>
             )) : <span>No photos.</span>}
+            {review.photos_not_shown ? <span>{review.photos_not_shown} link(s) to other sites, not shown to anyone.</span> : null}
           </div>
         </div>
       </section>

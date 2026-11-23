@@ -1,7 +1,8 @@
 """Admin moderation: chat, radar, marketplace reports and marketplace restrictions."""
 
+from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import Literal
+from typing import Any, Literal, get_args
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -14,7 +15,11 @@ from apps.api.routes.admin_common import (
 from packages.core.application.services.listing_review import (
     ListingReviewConflictError,
     ListingReviewNotFoundError,
+    ListingReviewService,
 )
+from packages.core.domain.marketplace.content_review import RemovalReason
+from packages.core.domain.marketplace.models import ListingReportReason
+from packages.core.domain.marketplace.photos import owner_links
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -31,6 +36,9 @@ class RadarModerationRequest(BaseModel):
 
 class MarketplaceModerationRequest(BaseModel):
     action: Literal["remove_listing", "dismiss_report", "restore_listing", "reopen_report"]
+    # What the seller is told when the ad is taken down; the report's own reason when
+    # the team does not choose another.
+    removal_reason: RemovalReason | None = None
     resolution_note: str | None = Field(default=None, max_length=1000)
 
 
@@ -240,7 +248,7 @@ def admin_moderation_detail(queue: str, item_id: str) -> dict[str, object]:
             .execute()
         )
         listing_rows = getattr(listing_response, "data", None) or []
-        report["listing"] = listing_rows[0] if listing_rows else None
+        report["listing"] = _with_own_photos(listing_rows[0]) if listing_rows else None
         return {"queue": queue, "item": report}
 
     raise HTTPException(status_code=404, detail="Unknown moderation queue")
@@ -332,6 +340,32 @@ def admin_resolve_radar_report(
     return {"report": (getattr(updated, "data", None) or [report])[0]}
 
 
+def _with_own_photos(listing: dict[str, Any]) -> dict[str, Any]:
+    """Only the files of the ad."""
+    links = listing.get("photo_urls")
+    return {
+        **listing,
+        "photo_urls": owner_links(
+            [link for link in links if isinstance(link, str)] if isinstance(links, list) else [],
+            str(listing.get("id") or ""),
+            str(listing.get("owner_id") or ""),
+            get_container().marketplace_photo_base,
+        ),
+    }
+
+
+def _report_reason(reason: object) -> RemovalReason:
+    known: tuple[RemovalReason, ...] = get_args(ListingReportReason)
+    return next((item for item in known if item == reason), "other")
+
+
+def _decide_reported(decide: Callable[[ListingReviewService], object]) -> None:
+    try:
+        decide(get_container().listing_review_service())
+    except ListingReviewNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="The listing is gone") from exc
+
+
 @router.post("/moderation/marketplace/{report_id}")
 def admin_resolve_marketplace_report(
     report_id: str,
@@ -354,9 +388,14 @@ def admin_resolve_marketplace_report(
     now = datetime.now(UTC).isoformat()
 
     if request.action == "remove_listing":
-        client.table("marketplace_listings").update({"status": "removed", "updated_at": now}).eq(
-            "id", listing_id
-        ).execute()
+        _decide_reported(
+            lambda service: service.remove_reported(
+                listing_id,
+                request.removal_reason or _report_reason(report.get("reason")),
+                admin_id=admin.id,
+                note=request.resolution_note,
+            )
+        )
         report_update = {
             "status": "resolved",
             "resolution_action": "remove_listing",
@@ -373,9 +412,7 @@ def admin_resolve_marketplace_report(
             "resolved_by_admin_id": admin.id,
         }
     elif request.action == "restore_listing":
-        client.table("marketplace_listings").update({"status": "active", "updated_at": now}).eq(
-            "id", listing_id
-        ).execute()
+        _decide_reported(lambda service: service.restore_reported(listing_id, admin_id=admin.id))
         report_update = {
             "status": "resolved",
             "resolution_action": "restore_listing",

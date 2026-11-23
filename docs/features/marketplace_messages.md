@@ -164,3 +164,60 @@ backend; l'app mostra ciò che il server risponde.
   tempo fissato da Supabase.
 - Le app già installate non hanno le caselle: un annuncio con quelle parole si pubblica solo dopo
   l'aggiornamento (leggono la frase del server). Gli annunci già online non vengono toccati.
+
+### Annunci nascosti o tolti dopo le segnalazioni (Regole v2, punto 6)
+
+| Caso | Stato | Che cosa vede chi vende (`removal` in `GET /marketplace/listings/mine`) |
+| --- | --- | --- |
+| Tre segnalazioni aperte di persone diverse | `removed`, finché il team non decide | `kind: reports` e il **giorno** (mai l'ora né ciò che le persone hanno scritto, per non far riconoscere chi ha segnalato) |
+| Tolto dal team, da una coda o dall'altra | `removed_policy` | `kind: team`, motivo scelto dal team, data, parole trovate se c'era una conferma |
+| Regola automatica sugli animali | `removed_policy` senza decisione | `kind: rule`, `sells_animals`, data |
+
+- Nella coda delle segnalazioni «Remove listing» registra la stessa decisione della coda dei
+  controlli (motivo per chi vende, registro senza il suo id, 6 mesi); «Restore listing» la annulla.
+- Le foto di ogni annuncio nascosto escono dal bucket pubblico; tornano se l'annuncio torna. Solo
+  gli annunci **tolti dal team** si cancellano dopo 6 mesi.
+- Una segnalazione nuova non cambia lo stato di un annuncio già tolto dal team, quelle respinte non
+  contano e il conteggio non riscrive più tutta la riga dell'annuncio.
+- SQL: `scripts/setup/marketplace_hidden_ads.sql`, dopo `marketplace_content_review.sql`.
+
+### Foto degli annunci (K23, 2026-11-23)
+
+1. L'app carica la foto nella cartella di chi vende (`<id>/<...>/<...>.jpg`).
+2. Quando l'annuncio si pubblica o cambia, e solo dopo tutti i controlli e le conferme, il backend
+   copia le foto nuove in `published/<id annuncio>/` (JPEG verificato, senza metadati), salva
+   l'annuncio e cancella gli originali e le foto tolte. Se qualcosa fallisce le copie si cancellano e
+   l'annuncio resta com'era: mai metà delle foto.
+3. Agli altri si mostrano solo le copie di quell'annuncio. Chi vende
+   vede anche le proprie foto vecchie, per non perderle in una modifica.
+4. `DELETE /marketplace/listings/{id}` toglie subito annuncio e foto. Le app già installate cancellano
+   la riga da sole: le copie le toglie il lavoro orario, che toglie anche quelle senza annuncio (dopo
+   un'ora) e i caricamenti mai pubblicati (dopo 24 ore).
+5. Cancellazione account: copie pubbliche e private di ogni annuncio. Esportazione: le foto degli
+   annunci visibili sono dietro i loro indirizzi, quelle degli annunci nascosti hanno un link firmato.
+
+**Freno del lavoro orario**: i file non hanno una copia di sicurezza. Un file che una riga può
+intendere non si cancella mai (conta il percorso, non l'indirizzo); se i file senza annuncio sono più
+di 50, più del 10% (oltre 5) o tutti, non se ne cancella nessuno e il lavoro risponde 500 con i
+conteggi. Dopo aver guardato, si ripete con `?allow_leftovers=<numero>`.
+
+**Se cambia l'indirizzo di Supabase** (`SUPABASE_URL`): prima di riaprire il Mercatino si riscrivono
+i collegamenti in `photo_urls` degli annunci e dei controlli. Il lavoro orario dà l'allarme solo
+finché nessun annuncio è al nuovo indirizzo: dal primo annuncio nuovo tace, e le foto di un annuncio
+vecchio nascosto dopo non verrebbero spostate.
+
+**Annunci già pubblicati**: fino alla copia gli altri non ne vedono le foto. La fa
+`scripts/maintenance/publish_marketplace_photos.py` (senza `--apply` conta soltanto), un annuncio alla
+volta, e aggiorna anche le righe dei controlli.
+
+### Note di rilascio delle Regole v2
+
+1. In produzione, nell'ordine: conteggio `marketplace_external_photos.sql`,
+   `marketplace_content_review.sql`, `marketplace_hidden_ads.sql`,
+   `marketplace_published_photos.sql`, la migrazione di Cybersicurezza sui tempi dei messaggi
+   (punto 7), la copia delle foto vecchie (prima il conteggio, poi `--apply`), poi il deploy.
+2. **`MARKETPLACE_RULES_REQUIRED` si accende solo dopo quella migrazione**: prima il punto 7
+   direbbe una cosa che il database non fa.
+3. Chi ha accettato la v1 accetta di nuovo.
+4. I testi ES, DE e FR delle Regole sono passati da Revisione traduzioni, non da un madrelingua.
+5. Dopo il deploy, una seconda volta la copia delle foto: prende gli annunci pubblicati nel mezzo.

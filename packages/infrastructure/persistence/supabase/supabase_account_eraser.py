@@ -22,6 +22,7 @@ from packages.core.domain.marketplace.messaging import (
     DELETED_PARTICIPANT_IDS,
     KEEPING_REPORT_STATUSES,
 )
+from packages.core.domain.marketplace.photos import PUBLISHED, is_plain_name
 from packages.core.domain.radar_reports.models import contributor_pseudonym
 from packages.infrastructure.persistence.supabase.missing_table import (
     is_missing_table,
@@ -339,6 +340,20 @@ class SupabaseAccountEraser:
             MARKETPLACE_HELD_PHOTOS_BUCKET,
         ):
             report.files_removed += self._remove(bucket, self._list_all(bucket, owner_id))
+        # The copies of the ads' photos are under the id of the ad, not of the owner: read
+        # while the rows still say whose they are.
+        ads = (
+            self._client.table("marketplace_listings")
+            .select("id")
+            .eq("owner_id", owner_id)
+            .execute()
+        )
+        for row in self._rows(ads):
+            if not is_plain_name(row.get("id")):
+                continue  # no folder of ours has such a name
+            folder = f"{PUBLISHED}/{row['id']}"
+            for bucket in (MARKETPLACE_PHOTOS_BUCKET, MARKETPLACE_HELD_PHOTOS_BUCKET):
+                report.files_removed += self._remove(bucket, self._list_all(bucket, folder))
 
     def _legacy_document_paths(self, owner_id: str) -> list[str]:
         """Files of the old clinical_documents, known only from its rows. Read before the

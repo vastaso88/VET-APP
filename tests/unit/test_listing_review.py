@@ -35,6 +35,7 @@ from packages.infrastructure.persistence.in_memory_listing_reviews import (
     InMemoryListingReviewRepository,
 )
 from packages.infrastructure.persistence.in_memory_repositories import (
+    InMemoryListingReportRepository,
     InMemoryMarketplaceListingRepository,
 )
 from packages.infrastructure.storage.listing_photo_vaults import InMemoryListingPhotoVault
@@ -189,7 +190,9 @@ class _Market:
         self.listings = InMemoryMarketplaceListingRepository()
         self.reviews = InMemoryListingReviewRepository()
         self.vault = InMemoryListingPhotoVault()
-        self.service = ListingReviewService(self.listings, self.reviews, self.vault)
+        self.vault.public = {"user-a/ad/1.jpg", "user-a/ad/2.jpg"}
+        self.reports = InMemoryListingReportRepository()
+        self.service = ListingReviewService(self.listings, self.reviews, self.vault, self.reports)
 
     def publish(
         self,
@@ -200,7 +203,7 @@ class _Market:
         owner: str = OWNER,
     ) -> MarketplaceListing:
         return (
-            CreateListingService(self.listings, self.reviews)
+            CreateListingService(self.listings, self.reviews, self.vault)
             .execute(
                 CreateListingInput(
                     owner_id=owner,
@@ -225,7 +228,7 @@ class _Market:
         price_cents: int | None = None,
     ) -> MarketplaceListing:
         return (
-            UpdateListingService(self.listings, self.reviews)
+            UpdateListingService(self.listings, self.reviews, self.vault)
             .execute(
                 UpdateListingInput(
                     owner_id=listing.owner_id,
@@ -320,8 +323,7 @@ def test_without_the_record_of_the_confirmation_the_ad_does_not_go_online(
     with pytest.raises(RuntimeError):
         market.publish("Ciotola per crocchette", "food")
 
-    (listing,) = market.listings.list_by_owner(OWNER, 10)
-    assert listing.status != "active"
+    assert market.listings.list_by_owner(OWNER, 10) == [], "nothing left behind either"
 
 
 def test_a_bowl_cannot_become_kibble_without_a_new_confirmation(market: _Market) -> None:
@@ -346,12 +348,12 @@ def test_a_new_price_needs_no_new_confirmation(market: _Market) -> None:
 
 @pytest.mark.parametrize(
     "change",
-    [{"title": "Ciotola grande per crocchette"}, {"photos": ["https://example.com/2.jpg"]}],
+    [{"title": "Ciotola grande per crocchette"}, {"photos": ["user-a/ad/2.jpg"]}],
 )
 def test_new_text_or_photos_need_the_confirmation_again_and_another_check(
     market: _Market, change: dict[str, object]
 ) -> None:
-    listing = market.publish("Ciotola per crocchette", "food", photos=["https://example.com/1.jpg"])
+    listing = market.publish("Ciotola per crocchette", "food", photos=["user-a/ad/1.jpg"])
 
     with pytest.raises(RequirementMissingError):
         market.edit(listing, **change)  # type: ignore[arg-type]

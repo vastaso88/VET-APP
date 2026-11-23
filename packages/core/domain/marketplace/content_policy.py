@@ -167,3 +167,15 @@ def offers_active_substances(*texts: str | None) -> bool:
     """True when any text names an unequivocal antiparasitic, a medicated shampoo or one
     of the listed brands."""
     return any(_ACTIVE_SUBSTANCE.search(normalize_text(text)) for text in texts if text)
+
+
+def refused_terms(*texts: str | None) -> list[str]:
+    """The words for which an ad is refused, each once, as the check reads them
+    (lowercase, without accents)."""
+    found: dict[str, None] = {}
+    for text in texts:
+        normalized = normalize_text(text) if text else ""
+        for pattern in (_MEDICINE, _ACTIVE_SUBSTANCE):
+            for match in pattern.finditer(normalized):
+                found.setdefault(match.group(), None)
+    return list(found)

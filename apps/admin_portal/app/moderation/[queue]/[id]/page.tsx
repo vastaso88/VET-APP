@@ -298,6 +298,20 @@ export default async function ModerationDetailPage({
           <form action={resolveMarketplaceReport} className="moderation-action-form">
             <input type="hidden" name="report_id" value={id} />
             <label>
+              Reason told to the seller when the listing is removed
+              <select name="removal_reason" defaultValue={value(item, "reason")}>
+                <option value="spam">Spam</option>
+                <option value="scam">Scam</option>
+                <option value="prohibited_item">Item not allowed</option>
+                <option value="inappropriate">Inappropriate content</option>
+                <option value="sells_animals">Sells animals</option>
+                <option value="food">Food or feed</option>
+                <option value="supplement">Supplements</option>
+                <option value="medicine">Medicines or products with active ingredients</option>
+                <option value="other">Another breach of the marketplace rules</option>
+              </select>
+            </label>
+            <label>
               Note
               <input name="resolution_note" placeholder="Optional moderation note" />
             </label>

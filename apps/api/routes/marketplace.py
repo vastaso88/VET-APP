@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, get_args
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -21,13 +21,19 @@ from packages.core.domain.geo.models import Coordinates
 from packages.core.domain.localization import translate
 from packages.core.domain.marketplace.content_review import ContentNotice
 from packages.core.domain.marketplace.models import (
+    LISTING_MAX_PRICE_CENTS,
     PRIVATE_SELLER_DECLARATION_REQUIRED,
     PRIVATE_SELLER_DECLARATION_VERSION,
-    ListingCategory,
     ListingCondition,
     ListingReportReason,
     ListingSpecies,
     MarketplaceListing,
+    PublishableCategory,
+)
+from packages.core.domain.marketplace.photos import (
+    PHOTO_LINK_MAX_LENGTH,
+    owner_links,
+    published_links,
 )
 from packages.core.domain.marketplace.visibility import limit_listing_row
 from packages.core.domain.territory.rules import (
@@ -60,6 +66,13 @@ def _public_row(listing: MarketplaceListing, requester_id: str) -> dict[str, obj
     )
     row = listing.model_dump(mode="json", exclude=hidden)
     row["is_mine"] = is_mine
+    # Other people are shown the copies made by the backend only.
+    base = get_container().marketplace_photo_base
+    row["photo_urls"] = (
+        owner_links(listing.photo_urls, listing.id, listing.owner_id, base)
+        if is_mine
+        else published_links(listing.photo_urls, listing.id, base)
+    )
     row["latitude"] = listing.location.latitude
     row["longitude"] = listing.location.longitude
     return row
@@ -76,7 +89,7 @@ def list_nearby_listings(
     longitude: Annotated[float, Query(ge=-180, le=180)],
     radius_km: Annotated[float, Query()],
     country: Annotated[str | None, Query(max_length=2)] = None,
-    category: ListingCategory | None = None,
+    category: PublishableCategory | None = None,
 ) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
@@ -112,11 +125,15 @@ class ListingPayload(BaseModel):
 
     title: str = Field(min_length=1, max_length=120)
     description: str | None = Field(default=None, max_length=2000)
-    category: ListingCategory
+    category: PublishableCategory
     condition: ListingCondition
-    price_cents: int | None = Field(default=None, ge=1)
-    photo_urls: list[str] = Field(default_factory=list, max_length=6)
-    target_species: list[ListingSpecies] = Field(default_factory=list)
+    price_cents: int | None = Field(default=None, ge=1, le=LISTING_MAX_PRICE_CENTS)
+    photo_urls: list[Annotated[str, Field(max_length=PHOTO_LINK_MAX_LENGTH)]] = Field(
+        default_factory=list, max_length=6
+    )
+    target_species: list[ListingSpecies] = Field(
+        default_factory=list, max_length=len(get_args(ListingSpecies))
+    )
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     city_label: str | None = Field(default=None, max_length=120)
@@ -232,20 +249,23 @@ def my_listings() -> dict[str, object]:
     rows = []
     for item in container.listing_review_service().own_listings(user.id):
         row = _public_row(item.listing, user.id)
-        review = item.review
-        # Only a removal is the seller's business: never the queue, the note or who
-        # decided. The words found say what the automatic check had noticed.
-        row["removal"] = None
-        if (
-            review is not None
-            and review.status == "removed"
-            and item.listing.status == "removed_policy"
-        ):
-            row["removal"] = {
-                "reason": review.removal_reason,
-                "decided_at": review.decided_at.isoformat() if review.decided_at else None,
-                "terms": review.terms,
+        hidden = item.hidden
+        # Why and since when: never the queue, the note, who decided or who reported. The
+        # day alone, so nobody can match it with a person.
+        row["removal"] = (
+            {
+                "kind": hidden.kind,
+                "reason": hidden.reason,
+                "decided_at": (
+                    hidden.since.isoformat()
+                    if hidden.kind == "team"
+                    else hidden.since.date().isoformat()
+                ),
+                "terms": hidden.terms,
             }
+            if hidden is not None
+            else None
+        )
         rows.append(row)
     return {"listings": rows}
 
@@ -268,6 +288,17 @@ def get_listing(listing_id: str) -> dict[str, object]:
         # The same fields as in the list (the distance is only in the list).
         return {"listing": limit_listing_row(row), "limited": True}
     return {"listing": row, "limited": False}
+
+
+# The seller deletes their own ad, in any state, with or without a plan: the row and its
+# photos, at once. Someone else's ad looks exactly like a missing one.
+@router.delete("/listings/{listing_id}")
+def delete_listing(listing_id: str) -> dict[str, object]:
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    if not container.delete_listing_service().execute(listing_id, user.id):
+        raise HTTPException(status_code=404, detail="Annuncio non trovato.")
+    return {"ok": True}
 
 
 class ReportListingRequest(BaseModel):

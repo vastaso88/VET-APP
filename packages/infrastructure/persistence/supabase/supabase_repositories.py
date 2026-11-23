@@ -958,6 +958,41 @@ class SupabaseMarketplaceListingRepository(MarketplaceListingRepository):
     def delete(self, listing_id: str) -> None:
         self._client.table(self._table).delete().eq("id", listing_id).execute()
 
+    def list_after(self, listing_id: str, limit: int) -> list[MarketplaceListing]:
+        response = (
+            self._client.table(self._table)
+            .select("*")
+            .gt("id", listing_id)
+            .order("id")
+            .limit(limit)
+            .execute()
+        )
+        return [_row_to_listing(cast(dict[str, Any], item)) for item in response.data or []]
+
+    def set_photos(self, listing_id: str, photo_urls: list[str]) -> None:
+        self._client.table(self._table).update({"photo_urls": photo_urls}).eq(
+            "id", listing_id
+        ).execute()
+
+    def list_hidden(self, limit: int) -> list[MarketplaceListing]:
+        response = (
+            self._client.table(self._table)
+            .select("*")
+            .in_("status", ["removed", "removed_policy"])
+            .order("updated_at")
+            .limit(limit)
+            .execute()
+        )
+        return [_row_to_listing(cast(dict[str, Any], item)) for item in response.data or []]
+
+    def record_reports(self, listing_id: str, count: int, *, hide: bool) -> None:
+        table = self._client.table(self._table)
+        table.update({"report_count": count}).eq("id", listing_id).execute()
+        if hide:
+            self._client.table(self._table).update({"status": "removed"}).eq("id", listing_id).in_(
+                "status", ["active", "reserved"]
+            ).execute()
+
     def list_by_ids(self, listing_ids: list[str]) -> list[MarketplaceListing]:
         ids = sorted(set(listing_ids))
         found: list[MarketplaceListing] = []
@@ -989,6 +1024,19 @@ class SupabaseListingReportRepository(ListingReportRepository):
             self._client.table(self._table).select("*").eq("listing_id", listing_id).execute()
         )
         return [ListingReport.model_validate(item) for item in response.data or []]
+
+    def list_by_listings(self, listing_ids: list[str]) -> list[ListingReport]:
+        ids = sorted(set(listing_ids))
+        found: list[ListingReport] = []
+        for start in range(0, len(ids), 100):
+            response = (
+                self._client.table(self._table)
+                .select("*")
+                .in_("listing_id", ids[start : start + 100])
+                .execute()
+            )
+            found.extend(ListingReport.model_validate(item) for item in response.data or [])
+        return found
 
 
 class SupabaseChatResponseReportRepository(ChatResponseReportRepository):

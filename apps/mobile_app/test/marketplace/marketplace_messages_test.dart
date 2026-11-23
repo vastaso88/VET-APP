@@ -536,7 +536,8 @@ void main() {
       expect(find.textContaining('non è parte di nessun accordo'), findsOneWidget);
       expect(find.textContaining("guarda l'oggetto prima di pagare"), findsOneWidget);
       await tester.scrollUntilVisible(find.textContaining('Termini di servizio'), 200);
-      expect(find.textContaining('segnalalo'), findsOneWidget);
+      expect(find.textContaining('scorretto, segnalalo'), findsOneWidget);
+      expect(find.textContaining('chiede conferma per cibo, integratori'), findsOneWidget);
     });
 
     testWidgets('without a plan an ad can still be reported, and says it is from a private',

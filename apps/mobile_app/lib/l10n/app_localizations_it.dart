@@ -622,7 +622,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get marketplaceLimitedNotice =>
-      'Stai vedendo solo oggetto, prezzo e foto. Con un piano vedi anche la descrizione e i dettagli e puoi pubblicare e segnalare annunci.';
+      'Stai vedendo solo oggetto, prezzo e foto. Con un piano vedi anche la descrizione e i dettagli e puoi pubblicare annunci. Puoi segnalare un annuncio anche senza piano.';
 
   @override
   String get marketplaceLimitedSeePlans => 'Vedi i piani';
@@ -1316,7 +1316,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'Annuncio non pubblicato: il testo nomina un farmaco o un prodotto con principi attivi (per esempio un collare o una pipetta antiparassitari, o uno shampoo medicato), che non sono ammessi nel Mercatino. Il controllo è automatico e può sbagliare.';
+      'Annuncio non pubblicato: il testo nomina un farmaco o un prodotto con principi attivi (per esempio un collare o una pipetta antiparassitari, o uno shampoo medicato), che non sono ammessi nel Mercatino.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -7539,7 +7539,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get marketplacePublishDisclaimer =>
-      'Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. Non controlliamo in anticipo gli annunci né gli oggetti: descrivi lo stato dell\'oggetto e i difetti in modo onesto e completo. Non si possono vendere animali né farmaci o medicinali, anche veterinari. Nel testo non scrivere telefoni o e-mail: ti si scrive con i messaggi.';
+      'Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. L\'app controlla il testo dell\'annuncio con un controllo automatico, che può sbagliare, e il team può guardare l\'annuncio dopo la pubblicazione; non verifichiamo che l\'annuncio e l\'oggetto siano esatti: descrivi lo stato dell\'oggetto e i difetti in modo onesto e completo. Non si possono vendere né regalare animali, cibo, mangimi, snack, integratori, farmaci o medicinali (anche veterinari) né prodotti con principi attivi. Nel testo non scrivere telefoni o e-mail: ti si scrive con i messaggi.';
 
   @override
   String get marketplaceDetailPrivateSeller =>
@@ -7574,7 +7574,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get marketplaceInfoForbidden =>
-      'Non si vendono animali né farmaci o medicinali, anche veterinari. L\'app blocca molti annunci che li nominano, non tutti: segnalali.';
+      'Non si vendono animali, cibo, mangimi, snack, integratori né farmaci o medicinali, anche veterinari. L\'app controlla il testo degli annunci: blocca i farmaci, chiede conferma per cibo, integratori e prodotti che potrebbero avere principi attivi e li fa controllare dal team dopo la pubblicazione, ma può sbagliare e non riconoscere tutto: se ne vedi uno, segnalalo.';
 
   @override
   String get marketplaceInfoPrivacy =>
@@ -7716,6 +7716,40 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get marketplaceRemovedReasonOther =>
       'altra violazione delle regole del Mercatino';
+
+  @override
+  String get marketplaceContentAutomatic =>
+      'Il controllo è automatico e può sbagliare.';
+
+  @override
+  String get marketplaceStatusHiddenPending =>
+      'Nascosto in attesa di controllo';
+
+  @override
+  String marketplaceHiddenAutoNotice(String date) {
+    return 'Annuncio nascosto il $date: è stato segnalato da più persone e l\'app lo nasconde in automatico, in attesa del controllo del team. Lo controlliamo appena possibile. La decisione è automatica e può sbagliare.';
+  }
+
+  @override
+  String marketplaceHiddenAnimalNotice(String date) {
+    return 'Annuncio nascosto il $date: il testo sembra offrire un animale, e nel Mercatino gli animali non si possono vendere, regalare né scambiare, in nessun paese. La decisione è automatica e può sbagliare.';
+  }
+
+  @override
+  String get marketplaceRemovedReasonSpam => 'spam';
+
+  @override
+  String get marketplaceRemovedReasonScam => 'sospetta truffa';
+
+  @override
+  String get marketplaceRemovedReasonProhibitedItem =>
+      'articolo non consentito';
+
+  @override
+  String get marketplaceRemovedReasonInappropriate => 'contenuto inappropriato';
+
+  @override
+  String get marketplaceRemovedReasonSellsAnimals => 'vendita di animali';
 
   @override
   String get marketplaceMyListings => 'I miei annunci';

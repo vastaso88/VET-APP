@@ -12,6 +12,7 @@ from packages.core.application.ports.marketplace_messaging_repository import (
 )
 from packages.core.application.services.create_listing import CreateListingService
 from packages.core.application.services.list_nearby_listings import ListNearbyListingsService
+from packages.core.application.services.listing_photos import DeleteListingService
 from packages.core.application.services.listing_review import ListingReviewService
 from packages.core.application.services.marketplace_messaging import (
     MarketplaceMessagingModerationService,
@@ -20,6 +21,7 @@ from packages.core.application.services.marketplace_messaging import (
 from packages.core.application.services.removed_listings import PruneRemovedListingsService
 from packages.core.application.services.report_listing import ReportListingService
 from packages.core.application.services.update_listing import UpdateListingService
+from packages.core.domain.marketplace.photos import photo_base
 from packages.infrastructure.persistence.in_memory_listing_reviews import (
     InMemoryListingReviewRepository,
 )
@@ -34,21 +36,33 @@ from packages.infrastructure.storage.listing_photo_vaults import InMemoryListing
 
 
 class MarketplaceWiring(ContainerState):
+    @property
+    def marketplace_photo_base(self) -> str:
+        return photo_base(self.settings.supabase_url)
+
     def create_listing_service(self) -> CreateListingService:
         return CreateListingService(
-            self.marketplace_listing_repository, self.listing_review_repository
+            self.marketplace_listing_repository,
+            self.listing_review_repository,
+            self.listing_photo_vault,
         )
 
     def update_listing_service(self) -> UpdateListingService:
         return UpdateListingService(
-            self.marketplace_listing_repository, self.listing_review_repository
+            self.marketplace_listing_repository,
+            self.listing_review_repository,
+            self.listing_photo_vault,
         )
+
+    def delete_listing_service(self) -> DeleteListingService:
+        return DeleteListingService(self.marketplace_listing_repository, self.listing_photo_vault)
 
     def listing_review_service(self) -> ListingReviewService:
         return ListingReviewService(
             self.marketplace_listing_repository,
             self.listing_review_repository,
             self.listing_photo_vault,
+            self.listing_report_repository,
         )
 
     def prune_removed_listings_service(self) -> PruneRemovedListingsService:
@@ -86,7 +100,9 @@ class MarketplaceWiring(ContainerState):
 
     def report_listing_service(self) -> ReportListingService:
         return ReportListingService(
-            self.marketplace_listing_repository, self.listing_report_repository
+            self.marketplace_listing_repository,
+            self.listing_report_repository,
+            self.listing_photo_vault,
         )
 
     def _build_marketplace_listing_repository(self) -> MarketplaceListingRepository:
@@ -133,12 +149,14 @@ class MarketplaceWiring(ContainerState):
                     SupabaseListingPhotoVault,
                 )
 
-                return SupabaseListingPhotoVault(build_supabase_client(self.settings))
+                return SupabaseListingPhotoVault(
+                    build_supabase_client(self.settings), self.marketplace_photo_base
+                )
             except ModuleNotFoundError:
                 if self.settings.environment != "production":
-                    return InMemoryListingPhotoVault()
+                    return InMemoryListingPhotoVault(self.marketplace_photo_base)
                 raise
-        return InMemoryListingPhotoVault()
+        return InMemoryListingPhotoVault(self.marketplace_photo_base)
 
     def _build_listing_review_repository(self) -> ListingReviewRepository:
         if self.settings.persistence_backend == "supabase":

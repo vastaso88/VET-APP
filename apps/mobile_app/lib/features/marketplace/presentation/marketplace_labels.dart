@@ -6,6 +6,7 @@ import '../../location/presentation/distance_label.dart';
 import '../../settings/data/unit_settings_store.dart';
 import '../../settings/domain/unit_conversion.dart';
 import '../../territory/domain/territory.dart';
+import '../domain/listing_content.dart';
 import '../domain/marketplace_listing.dart';
 
 String listingCategoryLabel(ListingCategory category) {
@@ -56,7 +57,15 @@ IconData listingCategoryIcon(ListingCategory category) {
 
 /// What the seller reads about their own ad.
 String listingStatusLabel(MarketplaceListing listing) {
-  if (listing.removal != null) return appL10n.marketplaceStatusRemovedByTeam;
+  switch (listing.removal?.kind) {
+    case ListingRemovalKind.team:
+      return appL10n.marketplaceStatusRemovedByTeam;
+    case ListingRemovalKind.reports:
+      return appL10n.marketplaceStatusHiddenPending;
+    case ListingRemovalKind.rule:
+    case null:
+      break;
+  }
   return listing.status == ListingStatus.active
       ? appL10n.marketplaceStatusPublished
       : appL10n.marketplaceStatusHidden;

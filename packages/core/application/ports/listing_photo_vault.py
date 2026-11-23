@@ -1,13 +1,39 @@
-from typing import Protocol
+from datetime import datetime
+from typing import NamedTuple, Protocol
+
+from packages.core.domain.marketplace.models import MarketplaceListing
+
+
+class PhotoUnusableError(Exception):
+    """An upload that is missing, too big or not a JPEG."""
+
+
+class StoredPhoto(NamedTuple):
+    path: str
+    created_at: datetime
 
 
 class ListingPhotoVault(Protocol):
-    """Where the photos of an ad the team took down wait for a review: out of the public
-    bucket, whose links work for anyone who has them."""
+    """The files of the ads: the sellers' uploads, the copies other people see and, for an
+    ad that is hidden, the private place where they wait for a review."""
 
-    def paths(self, owner_id: str, photo_urls: list[str]) -> list[str]:
-        """The stored files behind these links. A link outside the owner's own folder is
-        not theirs to move or delete, and is left out."""
+    @property
+    def base(self) -> str: ...
+
+    def publish(
+        self, listing_id: str, uploads: list[str], targets: list[str] | None = None
+    ) -> list[str]:
+        """Copies the uploads where no account can write, checked and without metadata;
+        the paths of the copies, in the same order ([targets] when given, replacing what
+        is there). All of them or none: on any failure nothing is left behind."""
+        ...
+
+    def paths(self, listing: MarketplaceListing) -> list[str]:
+        """The files behind the ad, and nothing that is not its own."""
+        ...
+
+    def discard(self, paths: list[str]) -> None:
+        """Deletes public files (uploads already copied, photos taken off an ad)."""
         ...
 
     def withhold(self, paths: list[str]) -> None:
@@ -18,11 +44,15 @@ class ListingPhotoVault(Protocol):
         """Private to public, after an accepted review. A file not held is skipped."""
         ...
 
+    def public_urls(self, paths: list[str]) -> list[str]: ...
+
     def signed_urls(self, paths: list[str]) -> list[str]:
         """Short links for the team to look at the files held."""
         ...
 
-    def held_paths(self) -> list[str]: ...
+    def public_files(self) -> list[StoredPhoto]: ...
+
+    def held_files(self) -> list[StoredPhoto]: ...
 
     def purge(self, paths: list[str]) -> int:
         """Deletes them for good, wherever they are; how many were asked for."""

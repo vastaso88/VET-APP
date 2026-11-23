@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:vet_app_mobile/features/location/domain/coordinates.dart';
 import 'package:vet_app_mobile/features/marketplace/data/marketplace_repository.dart';
+import 'package:vet_app_mobile/features/marketplace/domain/content_policy.dart';
 import 'package:vet_app_mobile/features/marketplace/domain/marketplace_listing.dart';
 import 'package:vet_app_mobile/features/marketplace/presentation/marketplace_labels.dart';
 import 'package:vet_app_mobile/shared/config/app_runtime_config.dart';
@@ -208,6 +209,52 @@ void main() {
           (e) => e.message,
           'message',
           'Only items for animals are sold on the marketplace, not animals.',
+        )),
+      );
+    });
+
+    test('a deletion goes through the backend, only for its author', () async {
+      final seen = <http.Request>[];
+      var status = 200;
+      final repository = _repository(MockClient((request) async {
+        seen.add(request);
+        return http.Response('{}', status);
+      }));
+
+      await repository.deleteListing(_listing(), requesterId: 'seller-1');
+      expect(seen.single.method, 'DELETE');
+      expect(seen.single.url.path, '/marketplace/listings/listing-1');
+
+      status = 404;
+      await expectLater(
+        repository.deleteListing(_listing(), requesterId: 'seller-1'),
+        throwsA(isA<ListingPermissionException>()),
+      );
+      status = 500;
+      await expectLater(
+        repository.deleteListing(_listing(), requesterId: 'seller-1'),
+        throwsA(isA<ListingBackendUnavailableException>()),
+      );
+      seen.clear();
+      await expectLater(
+        repository.deleteListing(_listing(), requesterId: 'intruder'),
+        throwsA(isA<ListingPermissionException>()),
+      );
+      expect(seen, isEmpty);
+    });
+
+    test('a refused photo is told in the language of the owner', () async {
+      final repository = _repository(MockClient((_) async => http.Response(
+            jsonEncode({'detail': 'Le foto di un annuncio', 'code': photoRefusedCode}),
+            400,
+          )));
+
+      await expectLater(
+        repository.createListing(_listing()),
+        throwsA(isA<ListingRejectedException>().having(
+          (error) => error.message,
+          'message',
+          isNot(contains('Le foto di un annuncio')),
         )),
       );
     });

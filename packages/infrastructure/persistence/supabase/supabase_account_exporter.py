@@ -14,6 +14,7 @@ from uuid import UUID
 
 from packages.core.application.ports.account_exporter import AccountExport, ExportedFile
 from packages.core.domain.feedback.pseudonym import reporter_ref
+from packages.core.domain.marketplace.photos import PUBLISHED, is_plain_name
 from packages.core.domain.radar_reports.models import contributor_pseudonym
 from packages.infrastructure.persistence.supabase.missing_table import (
     is_missing_table,
@@ -23,6 +24,7 @@ from packages.infrastructure.persistence.supabase.supabase_account_eraser import
     CHAT_REPORT_REF,
     HANDLED_ELSEWHERE,
     LEGACY_OWNER_TABLES,
+    MARKETPLACE_HELD_PHOTOS_BUCKET,
     MARKETPLACE_PARTICIPANT_COLUMNS,
     OWNER_TABLES,
     PET_PHOTOS_BUCKET,
@@ -240,6 +242,15 @@ class SupabaseAccountExporter:
         # The profile photo has no table row: it lives under <owner>/account/.
         for path in self._list_all(PET_PHOTOS_BUCKET, f"{owner_id}/account"):
             files.append(self._signed(PET_PHOTOS_BUCKET, path, "profile_photo", now))
+        # Photos of the owner's hidden ads: not behind the links of the row while they wait.
+        for row in data.get("marketplace_listings", []):
+            if not is_plain_name(row.get("id")):
+                continue  # no folder of ours has such a name
+            folder = f"{PUBLISHED}/{row['id']}"
+            for path in self._list_all(MARKETPLACE_HELD_PHOTOS_BUCKET, folder):
+                files.append(
+                    self._signed(MARKETPLACE_HELD_PHOTOS_BUCKET, path, "marketplace_photo", now)
+                )
         return files
 
     def _signed(self, bucket: str, path: str, kind: str, now: datetime) -> ExportedFile:

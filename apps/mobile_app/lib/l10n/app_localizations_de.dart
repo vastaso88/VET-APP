@@ -625,7 +625,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get marketplaceLimitedNotice =>
-      'Sie sehen nur Artikel, Preis und Fotos. Mit einem Tarif sehen Sie auch die Beschreibung und die Details und können Anzeigen einstellen und melden.';
+      'Sie sehen nur Artikel, Preis und Fotos. Mit einem Tarif sehen Sie auch die Beschreibung und die Details und können Anzeigen einstellen. Sie können eine Anzeige auch ohne Tarif melden.';
 
   @override
   String get marketplaceLimitedSeePlans => 'Tarife ansehen';
@@ -1322,7 +1322,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'Anzeige nicht veröffentlicht: Der Text nennt ein Arzneimittel oder ein Produkt mit Wirkstoffen (zum Beispiel ein Halsband oder eine Pipette gegen Parasiten oder ein medizinisches Shampoo), die auf dem Gebrauchtmarkt nicht erlaubt sind. Die Prüfung ist automatisch und kann sich irren.';
+      'Anzeige nicht veröffentlicht: Der Text nennt ein Arzneimittel oder ein Produkt mit Wirkstoffen (zum Beispiel ein Halsband oder eine Pipette gegen Parasiten oder ein medizinisches Shampoo), die auf dem Gebrauchtmarkt nicht erlaubt sind.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -7562,7 +7562,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get marketplacePublishDisclaimer =>
-      'Sie veröffentlichen eine Anzeige als Privatperson. Quokka bringt Menschen in Kontakt, ist aber nicht Partei des Kaufs: Vereinbarung, Bezahlung und Übergabe betreffen nur Sie und die kaufende Person, und Quokka haftet nicht dafür. Wir prüfen Anzeigen und Gegenstände nicht im Voraus: Beschreiben Sie Zustand und Mängel des Gegenstands ehrlich und vollständig. Tiere und Arzneimittel, auch Tierarzneimittel, dürfen nicht verkauft werden. Schreiben Sie keine Telefonnummern oder E-Mail-Adressen in den Text: Interessierte schreiben Ihnen über die Nachrichten.';
+      'Sie veröffentlichen eine Anzeige als Privatperson. Quokka bringt Menschen in Kontakt, ist aber nicht Partei des Kaufs: Vereinbarung, Bezahlung und Übergabe betreffen nur Sie und die kaufende Person, und Quokka haftet nicht dafür. Die App prüft den Text der Anzeige mit einer automatischen Prüfung, die sich irren kann, und das Team kann die Anzeige nach der Veröffentlichung ansehen; wir prüfen nicht, ob Anzeige und Gegenstand zutreffen: Beschreiben Sie Zustand und Mängel des Gegenstands ehrlich und vollständig. Tiere, Futter, Futtermittel, Snacks, Nahrungsergänzungsmittel, Arzneimittel (auch Tierarzneimittel) und Produkte mit Wirkstoffen dürfen weder verkauft noch verschenkt werden. Schreiben Sie keine Telefonnummern oder E-Mail-Adressen in den Text: Interessierte schreiben Ihnen über die Nachrichten.';
 
   @override
   String get marketplaceDetailPrivateSeller =>
@@ -7597,7 +7597,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get marketplaceInfoForbidden =>
-      'Tiere und Arzneimittel, auch Tierarzneimittel, dürfen nicht verkauft werden. Die App blockiert viele Anzeigen, die Tiere oder Arzneimittel nennen, aber nicht alle: Melden Sie sie.';
+      'Tiere, Futter, Futtermittel, Snacks, Nahrungsergänzungsmittel und Arzneimittel, auch Tierarzneimittel, dürfen nicht verkauft werden. Die App prüft den Text der Anzeigen: Sie blockiert Arzneimittel, verlangt eine Bestätigung bei Futter, Nahrungsergänzungsmitteln und Produkten, die Wirkstoffe enthalten könnten, und lässt sie nach der Veröffentlichung vom Team prüfen, kann sich aber irren und nicht alles erkennen: Wenn Sie eine solche Anzeige sehen, melden Sie sie.';
 
   @override
   String get marketplaceInfoPrivacy =>
@@ -7743,6 +7743,39 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get marketplaceRemovedReasonOther =>
       'anderer Verstoß gegen die Regeln des Gebrauchtmarkts';
+
+  @override
+  String get marketplaceContentAutomatic =>
+      'Die Prüfung ist automatisch und kann sich irren.';
+
+  @override
+  String get marketplaceStatusHiddenPending => 'Ausgeblendet bis zur Prüfung';
+
+  @override
+  String marketplaceHiddenAutoNotice(String date) {
+    return 'Die Anzeige wurde am $date ausgeblendet: Mehrere Personen haben sie gemeldet, und die App blendet sie automatisch aus, bis das Team sie prüft. Wir prüfen sie so bald wie möglich. Die Entscheidung ist automatisch und kann sich irren.';
+  }
+
+  @override
+  String marketplaceHiddenAnimalNotice(String date) {
+    return 'Die Anzeige wurde am $date ausgeblendet: Der Text scheint ein Tier anzubieten, und auf dem Gebrauchtmarkt dürfen Tiere in keinem Land verkauft, verschenkt oder getauscht werden. Die Entscheidung ist automatisch und kann sich irren.';
+  }
+
+  @override
+  String get marketplaceRemovedReasonSpam => 'Spam';
+
+  @override
+  String get marketplaceRemovedReasonScam => 'Betrugsverdacht';
+
+  @override
+  String get marketplaceRemovedReasonProhibitedItem =>
+      'nicht erlaubter Artikel';
+
+  @override
+  String get marketplaceRemovedReasonInappropriate => 'unangemessener Inhalt';
+
+  @override
+  String get marketplaceRemovedReasonSellsAnimals => 'Verkauf von Tieren';
 
   @override
   String get marketplaceMyListings => 'Meine Anzeigen';

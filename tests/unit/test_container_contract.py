@@ -133,7 +133,7 @@ FACTORIES_RETURNING_NONE_WITHOUT_CONFIGURATION = [
     "store_billing_service",
 ]
 FACTORIES_WITH_ARGUMENTS = ["cached_access", "owner_can_write_on_marketplace"]
-PROPERTIES = ["photo_reading_enabled"]
+PROPERTIES = ["marketplace_photo_base", "photo_reading_enabled"]
 
 PUBLIC_NAMES = [
     "account_deletion_service",
@@ -150,6 +150,7 @@ PUBLIC_NAMES = [
     "create_reminder_service",
     "delete_account_service",
     "delete_conversation_service",
+    "delete_listing_service",
     "edit_chat_message_service",
     "event_catalog_repository",
     "event_submission_repository",
@@ -170,6 +171,7 @@ PUBLIC_NAMES = [
     "mark_not_helpful_service",
     "marketplace_messaging_moderation_service",
     "marketplace_messaging_service",
+    "marketplace_photo_base",
     "owner_can_write_on_marketplace",
     "owner_limits_lookup",
     "pet_news_service",

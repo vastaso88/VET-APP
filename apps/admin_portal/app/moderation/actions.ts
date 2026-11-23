@@ -63,11 +63,13 @@ export async function resolveMarketplaceReport(formData: FormData): Promise<void
   if (!["remove_listing", "dismiss_report", "restore_listing", "reopen_report"].includes(action)) {
     throw new Error("Invalid Marketplace moderation action");
   }
+  const removalReason = String(formData.get("removal_reason") ?? "");
 
   await resolveMarketplaceModeration(
     reportId,
     action as "remove_listing" | "dismiss_report" | "restore_listing" | "reopen_report",
     note,
+    removalReason,
   );
   refreshModeration();
   revalidatePath(`/moderation/marketplace/${reportId}`);

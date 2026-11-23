@@ -55,6 +55,7 @@ from packages.shared.errors.base import (
     AgeRestrictedError,
     AuthenticationError,
     ConsentRequiredError,
+    ContentRefusedError,
     ConversationLimitError,
     MarketplaceRestrictedError,
     MarketplaceRulesRequiredError,
@@ -163,6 +164,14 @@ async def inject_access_token(
     finally:
         reset_access_token(context_token)
     return response
+
+
+@app.exception_handler(ContentRefusedError)
+async def handle_content_refused(_: Request, exc: ContentRefusedError) -> JSONResponse:
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc), "code": exc.code, "terms": exc.terms},
+    )
 
 
 @app.exception_handler(RequirementMissingError)

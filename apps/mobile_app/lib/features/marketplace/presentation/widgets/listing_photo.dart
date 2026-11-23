@@ -17,13 +17,18 @@ class ListingPhoto extends StatelessWidget {
     if (memory != null) {
       return Image.memory(memory, fit: fit, gaplessPlayback: true);
     }
-    return Image.network(
-      url,
-      fit: fit,
-      errorBuilder: (_, __, ___) => const ColoredBox(
+    // Only the app's own bucket.
+    if (!isListingPhotoUrl(url)) return const _NoPhoto();
+    return Image.network(url, fit: fit, errorBuilder: (_, __, ___) => const _NoPhoto());
+  }
+}
+
+class _NoPhoto extends StatelessWidget {
+  const _NoPhoto();
+
+  @override
+  Widget build(BuildContext context) => const ColoredBox(
         color: AppColors.surface,
         child: Center(child: Icon(Icons.broken_image_outlined, color: AppColors.mutedText)),
-      ),
-    );
-  }
+      );
 }

@@ -265,7 +265,13 @@ void main() {
 
   test('a refused medicine says it was automatic and how to ask for a review', () async {
     final repository = _repository(
-      MockClient((_) async => _json({'detail': medicinePolicyBackendMessage}, 400)),
+      MockClient(
+        (_) async => _json({
+          'detail': medicinePolicyBackendMessage,
+          'code': 'content_refused',
+          'terms': ['collare antipulci'],
+        }, 400),
+      ),
     );
     final now = DateTime(2026, 11, 23);
 
@@ -288,7 +294,10 @@ void main() {
           'message',
           allOf(
             contains('Annuncio non pubblicato'),
-            contains('Il controllo è automatico e può sbagliare'),
+            contains(
+              'Parole trovate nel testo: collare antipulci. '
+              'Il controllo è automatico e può sbagliare.',
+            ),
             contains('Impostazioni → Contattaci'),
           ),
         ),
@@ -342,6 +351,86 @@ void main() {
         );
       }
       expect(find.textContaining('In verifica'), findsNothing);
+    });
+
+    Future<void> pumpOne(WidgetTester tester, Map<String, Object?> removal) async {
+      await _tall(tester);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MyListingsPage(
+            repository: _repository(
+              MockClient(
+                (_) async => _json({
+                  'listings': [
+                    _row(
+                      'x',
+                      status: removal['kind'] == 'reports' ? 'removed' : 'removed_policy',
+                      removal: removal,
+                    ),
+                  ],
+                }, 200),
+              ),
+            ),
+            currentOwnerId: 'seller-1',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    Finder inNotice(String text) => find.descendant(
+          of: find.byKey(const ValueKey('listing-removal-notice')),
+          matching: find.textContaining(text),
+        );
+
+    testWidgets('an ad hidden after several reports waits for the team, with the date', (
+      tester,
+    ) async {
+      await pumpOne(tester, {
+        'kind': 'reports',
+        'reason': null,
+        'decided_at': '2026-11-23',
+        'terms': <String>[],
+      });
+
+      expect(find.textContaining('Nascosto in attesa di controllo'), findsOneWidget);
+      for (final part in [
+        'Annuncio nascosto il 23 nov 2026',
+        'segnalato da più persone',
+        'La decisione è automatica',
+        'Impostazioni → Contattaci',
+      ]) {
+        expect(inNotice(part), findsOneWidget, reason: part);
+      }
+      expect(inNotice('una persona del team'), findsNothing);
+    });
+
+    testWidgets('an ad taken down after a report says why, without words found', (tester) async {
+      await pumpOne(tester, {
+        'kind': 'team',
+        'reason': 'scam',
+        'decided_at': '2026-11-23T10:00:00Z',
+        'terms': <String>[],
+      });
+
+      expect(inNotice('Motivo: sospetta truffa'), findsOneWidget);
+      expect(inNotice('una persona del team'), findsOneWidget);
+      expect(inNotice('controllo automatico del testo'), findsNothing);
+    });
+
+    testWidgets('an ad hidden by the rule on animals says the rule', (tester) async {
+      await pumpOne(tester, {
+        'kind': 'rule',
+        'reason': 'sells_animals',
+        'decided_at': '2026-11-23',
+        'terms': <String>[],
+      });
+
+      expect(inNotice('Annuncio nascosto il 23 nov 2026'), findsOneWidget);
+      expect(inNotice('il testo sembra offrire un animale'), findsOneWidget);
+      expect(inNotice('La decisione è automatica'), findsOneWidget);
+      expect(inNotice('Impostazioni → Contattaci'), findsOneWidget);
+      expect(inNotice('una persona del team'), findsNothing);
     });
 
     testWidgets('it can be deleted but not edited', (tester) async {

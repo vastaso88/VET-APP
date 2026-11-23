@@ -1,17 +1,18 @@
 """The confirmation a seller gives for sensitive words (domain/marketplace/
 content_review.py) and the team's check of those ads, after they are published."""
 
-import logging
 from datetime import UTC, datetime
+from typing import Literal
 
 from pydantic import BaseModel
 
 from packages.core.application.ports.listing_photo_vault import ListingPhotoVault
+from packages.core.application.ports.listing_report_repository import ListingReportRepository
 from packages.core.application.ports.listing_review_repository import ListingReviewRepository
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
-from packages.core.application.services.removed_listings import withheld_paths
+from packages.core.application.services.removed_listings import HIDDEN, move_photos
 from packages.core.domain.localization import translate
 from packages.core.domain.marketplace.content_review import (
     CONTENT_CONFIRMATION_REQUIRED,
@@ -26,10 +27,13 @@ from packages.core.domain.marketplace.content_review import (
     notices_for,
     sensitive_terms,
 )
-from packages.core.domain.marketplace.models import MarketplaceListing
+from packages.core.domain.marketplace.models import (
+    REPORT_COUNT_AUTO_REMOVE_THRESHOLD,
+    ListingReport,
+    ListingStatus,
+    MarketplaceListing,
+)
 from packages.shared.errors.base import RequirementMissingError, VetAppError
-
-logger = logging.getLogger(__name__)
 
 MY_LISTINGS_LIMIT = 200
 QUEUE_LIMIT = 100
@@ -88,9 +92,31 @@ def new_review(listing: MarketplaceListing, terms: list[SensitiveTerm]) -> Listi
     )
 
 
+class HiddenNotice(BaseModel):
+    """Why the seller's own ad is not visible: never who reported it or who decided."""
+
+    # team: a person decided. reports: hidden on its own after enough reports, until the
+    # team looks. rule: the automatic rule on animals.
+    kind: Literal["team", "reports", "rule"]
+    reason: RemovalReason | None = None
+    since: datetime
+    terms: list[str] = []
+
+
 class OwnListing(BaseModel):
     listing: MarketplaceListing
-    review: ListingReview | None
+    hidden: HiddenNotice | None
+
+
+def _hidden_by_reports(listing: MarketplaceListing, reports: list[ListingReport]) -> HiddenNotice:
+    """Since the day the last needed report came in; what people wrote stays with the team."""
+    counted = [item for item in reports if item.status == "open"] or reports
+    first_by_reporter: dict[str, datetime] = {}
+    for item in sorted(counted, key=lambda report: report.created_at):
+        first_by_reporter.setdefault(item.reporter_owner_id, item.created_at)
+    needed = list(first_by_reporter.values())[:REPORT_COUNT_AUTO_REMOVE_THRESHOLD]
+    # Nobody left: the people who reported it have deleted their accounts.
+    return HiddenNotice(kind="reports", since=needed[-1] if needed else listing.updated_at)
 
 
 class ListingReviewService:
@@ -99,19 +125,46 @@ class ListingReviewService:
         listings: MarketplaceListingRepository,
         reviews: ListingReviewRepository,
         vault: ListingPhotoVault,
+        reports: ListingReportRepository,
     ) -> None:
         self._listings = listings
         self._reviews = reviews
         self._vault = vault
+        self._reports = reports
 
     def own_listings(self, owner_id: str) -> list[OwnListing]:
         """Every ad of the caller, whatever its state, newest first: the only place a
         seller finds an ad the team took down, with the reason."""
         latest = latest_by_listing(self._reviews.list_by_owner(owner_id))
+        mine = self._listings.list_by_owner(owner_id, MY_LISTINGS_LIMIT)
+        reported: dict[str, list[ListingReport]] = {}
+        hidden_ids = [item.id for item in mine if item.status == "removed"]
+        for report in self._reports.list_by_listings(hidden_ids) if hidden_ids else []:
+            reported.setdefault(report.listing_id, []).append(report)
         return [
-            OwnListing(listing=item, review=latest.get(item.id))
-            for item in self._listings.list_by_owner(owner_id, MY_LISTINGS_LIMIT)
+            OwnListing(
+                listing=item,
+                hidden=self._why_hidden(item, latest.get(item.id), reported.get(item.id, [])),
+            )
+            for item in mine
         ]
+
+    @staticmethod
+    def _why_hidden(
+        listing: MarketplaceListing, review: ListingReview | None, reports: list[ListingReport]
+    ) -> HiddenNotice | None:
+        if listing.status == "removed":
+            return _hidden_by_reports(listing, reports)
+        if listing.status != "removed_policy":
+            return None
+        if review is None or review.status != "removed" or review.decided_at is None:
+            return HiddenNotice(kind="rule", reason="sells_animals", since=listing.updated_at)
+        return HiddenNotice(
+            kind="team",
+            reason=review.removal_reason or "other",
+            since=review.decided_at,
+            terms=review.terms,
+        )
 
     # -- the team (admin check: apps/api/routes/admin_common.py) ----------------
 
@@ -138,6 +191,8 @@ class ListingReviewService:
             **self._row(review, listing),
             "description": listing.description,
             "photo_urls": self._photos_for_the_team(listing),
+            # Links to other sites are counted, never handed on.
+            "photos_not_shown": len(listing.photo_urls) - len(self._vault.paths(listing)),
             "price_cents": listing.price_cents,
             "city_label": listing.city_label,
             "confirmation_version": review.confirmation_version,
@@ -168,14 +223,12 @@ class ListingReviewService:
         now = datetime.now(UTC)
         # The register and the decision are written first: an ad never changes state
         # without them.
-        self._reviews.log_decision(
-            ListingDecision(
-                listing_id=listing.id,
-                outcome=outcome,
-                reason=(reason or "other") if outcome == "removed" else None,
-                admin_id=admin_id,
-                decided_at=now,
-            )
+        self._log(
+            listing.id,
+            outcome,
+            admin_id,
+            now,
+            (reason or "other") if outcome == "removed" else None,
         )
         self._reviews.save(
             review.model_copy(
@@ -190,32 +243,102 @@ class ListingReviewService:
         )
         if outcome == "checked":
             return listing
-        saved = self._listings.save(
-            listing.model_copy(
-                update={
-                    "status": "removed_policy" if outcome == "removed" else "active",
-                    "updated_at": now,
-                }
+        status: ListingStatus = "removed_policy" if outcome == "removed" else "active"
+        return self._set_status(listing, status, now)
+
+    def _photos_for_the_team(self, listing: MarketplaceListing) -> list[str]:
+        paths = self._vault.paths(listing)
+        return (
+            self._vault.signed_urls(paths)
+            if listing.status in HIDDEN
+            else self._vault.public_urls(paths)
+        )
+
+    # -- from the queue of reports (apps/api/routes/admin_moderation.py) ----------
+
+    def remove_reported(
+        self, listing_id: str, reason: RemovalReason, *, admin_id: str, note: str | None = None
+    ) -> MarketplaceListing:
+        """The same decision as from the queue of checks: reason and date for the seller,
+        register, photos, 6 months. Already taken down: nothing changes."""
+        listing = self._listings.get(listing_id)
+        if listing is None:
+            raise ListingReviewNotFoundError
+        if listing.status == "removed_policy":
+            return listing
+        now = datetime.now(UTC)
+        self._log(listing.id, "removed", admin_id, now, reason)
+        for review in self._reviews.list_by_listings([listing.id]):
+            if review.status == "open":
+                self._reviews.save(review.model_copy(update={"status": "superseded"}))
+        self._reviews.save(
+            ListingReview(
+                listing_id=listing.id,
+                owner_id=listing.owner_id,
+                status="removed",
+                origin="report",
+                title=listing.title,
+                description=listing.description,
+                category=listing.category,
+                photo_urls=listing.photo_urls,
+                confirmed_at=now,
+                confirmation_version="",
+                decided_at=now,
+                decided_by_admin_id=admin_id,
+                removal_reason=reason,
+                note=note.strip() if note and note.strip() else None,
+            )
+        )
+        return self._set_status(listing, "removed_policy", now)
+
+    def restore_reported(self, listing_id: str, *, admin_id: str) -> MarketplaceListing:
+        listing = self._listings.get(listing_id)
+        if listing is None:
+            raise ListingReviewNotFoundError
+        if listing.status not in HIDDEN:
+            return listing
+        now = datetime.now(UTC)
+        self._log(listing.id, "restored", admin_id, now)
+        latest = latest_by_listing(self._reviews.list_by_listings([listing.id])).get(listing.id)
+        if latest is not None and latest.status == "removed":
+            self._reviews.save(
+                latest.model_copy(
+                    update={
+                        "status": "checked",
+                        "decided_at": now,
+                        "decided_by_admin_id": admin_id,
+                        "removal_reason": None,
+                    }
+                )
+            )
+        return self._set_status(listing, "active", now)
+
+    def _log(
+        self,
+        listing_id: str,
+        outcome: DecisionOutcome,
+        admin_id: str,
+        now: datetime,
+        reason: RemovalReason | None = None,
+    ) -> None:
+        self._reviews.log_decision(
+            ListingDecision(
+                listing_id=listing_id,
+                outcome=outcome,
+                reason=reason,
+                admin_id=admin_id,
+                decided_at=now,
             )
         )
 
-        self._move_photos(saved)
+    def _set_status(
+        self, listing: MarketplaceListing, status: ListingStatus, now: datetime
+    ) -> MarketplaceListing:
+        saved = self._listings.save(
+            listing.model_copy(update={"status": status, "updated_at": now})
+        )
+        move_photos(saved, self._listings, self._vault)
         return saved
-
-    def _move_photos(self, listing: MarketplaceListing) -> None:
-        """The decision stands whatever the storage does: the hourly job tries again."""
-        try:
-            if listing.status == "removed_policy":
-                self._vault.withhold(withheld_paths(listing, self._listings, self._vault))
-            else:
-                self._vault.release(self._vault.paths(listing.owner_id, listing.photo_urls))
-        except Exception as exc:
-            logger.warning("listing photos not moved yet: %s", type(exc).__name__)
-
-    def _photos_for_the_team(self, listing: MarketplaceListing) -> list[str]:
-        if listing.status != "removed_policy":
-            return listing.photo_urls
-        return self._vault.signed_urls(self._vault.paths(listing.owner_id, listing.photo_urls))
 
     @staticmethod
     def _allowed(
@@ -242,6 +365,7 @@ class ListingReviewService:
             "category": listing.category,
             "listing_status": listing.status,
             "status": review.status,
+            "origin": review.origin,
             "terms": review.terms,
             "notices": review.notices,
             "confirmed_at": review.confirmed_at.isoformat(),

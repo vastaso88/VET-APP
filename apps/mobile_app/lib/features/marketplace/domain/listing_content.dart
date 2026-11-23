@@ -58,10 +58,19 @@ class ListingConfirmationRequiredException implements Exception {
   String toString() => appL10n.marketplaceSaveFailed;
 }
 
-/// The team took the ad down after checking it. Only the reason code, the date and
-/// the words the automatic check had found reach the app.
+/// Who hid the ad: a person of the team, the app after several reports (until the team
+/// looks), or the automatic rule on animals.
+enum ListingRemovalKind { team, reports, rule }
+
+/// Why the seller's own ad is not visible. Only a reason code, the date and the words the
+/// automatic check had found reach the app: never who reported it or who decided.
 class ListingRemoval {
-  const ListingRemoval({required this.reason, required this.decidedAt, this.words = const []});
+  const ListingRemoval({
+    required this.reason,
+    required this.decidedAt,
+    this.words = const [],
+    this.kind = ListingRemovalKind.team,
+  });
 
   static ListingRemoval? fromJson(Object? json) {
     if (json is! Map<String, dynamic>) return null;
@@ -71,23 +80,36 @@ class ListingRemoval {
       reason: (json['reason'] ?? 'other').toString(),
       decidedAt: decidedAt,
       words: (json['terms'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? const [],
+      kind: switch (json['kind']) {
+        'reports' => ListingRemovalKind.reports,
+        'rule' => ListingRemovalKind.rule,
+        _ => ListingRemovalKind.team,
+      },
     );
   }
 
   final String reason;
   final DateTime decidedAt;
   final List<String> words;
+  final ListingRemovalKind kind;
 
   /// What happened, why, that the detection was automatic, and how to ask for a
   /// review (DSA art. 17).
   String message([AppLocalizations? l10n]) {
     final strings = l10n ?? appL10n;
+    final date = formatAppDate(decidedAt.toLocal(), 'd MMM y');
     return [
-      strings.marketplaceRemovedNotice(
-        formatAppDate(decidedAt.toLocal(), 'd MMM y'),
-        _reasonLabel(strings),
-      ),
-      if (words.isNotEmpty) strings.marketplaceRemovedDetection(words.join(', ')),
+      ...switch (kind) {
+        ListingRemovalKind.team => [
+            strings.marketplaceRemovedNotice(date, _reasonLabel(strings)),
+            if (words.isNotEmpty) strings.marketplaceRemovedDetection(words.join(', ')),
+          ],
+        ListingRemovalKind.reports => [strings.marketplaceHiddenAutoNotice(date)],
+        ListingRemovalKind.rule => [
+            strings.marketplaceHiddenAnimalNotice(date),
+            if (words.isNotEmpty) '${strings.marketplaceContentFoundWords(words.join(', '))}.',
+          ],
+      },
       listingAppeal(strings),
     ].join(' ');
   }
@@ -96,9 +118,23 @@ class ListingRemoval {
         'food' => strings.marketplaceRemovedReasonFood,
         'supplement' => strings.marketplaceRemovedReasonSupplement,
         'medicine' => strings.marketplaceRemovedReasonMedicine,
+        'spam' => strings.marketplaceRemovedReasonSpam,
+        'scam' => strings.marketplaceRemovedReasonScam,
+        'prohibited_item' => strings.marketplaceRemovedReasonProhibitedItem,
+        'inappropriate' => strings.marketplaceRemovedReasonInappropriate,
+        'sells_animals' => strings.marketplaceRemovedReasonSellsAnimals,
         _ => strings.marketplaceRemovedReasonOther,
       };
 }
+
+/// A medicine or a product with active ingredients: what was found, that the check is
+/// automatic and can be wrong, how to ask for a review.
+String refusedMedicineMessage(AppLocalizations strings, List<String> words) => [
+      strings.marketplaceNoMedicinesMessage,
+      if (words.isNotEmpty) '${strings.marketplaceContentFoundWords(words.join(', '))}.',
+      strings.marketplaceContentAutomatic,
+      listingAppeal(strings),
+    ].join(' ');
 
 /// How to ask for a review: the "Contattaci" of the Settings.
 String listingAppeal(AppLocalizations strings) => strings.marketplaceRemovedAppeal(

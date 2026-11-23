@@ -35,14 +35,6 @@ EXCEPTIONS: dict[tuple[str, str], str] = {
     # attachment limit), not by a schema keyword.
     ("POST /chat-attachments", "body.file"): "file: bounded by the upload size check",
     ("POST /speech-to-text", "body.file"): "file: bounded by MAX_AUDIO_BYTES",
-    # The Mercatino listing body (price_cents, photo_urls, target_species) is being fixed by the
-    # Mercatino chat in the same round (K21); remove these three lines once it lands.
-    ("POST /marketplace/listings", "body.price_cents"): "Mercatino chat (K21)",
-    ("PUT /marketplace/listings/{listing_id}", "body.price_cents"): "Mercatino chat (K21)",
-    ("POST /marketplace/listings", "body.photo_urls"): "Mercatino chat (K21)",
-    ("PUT /marketplace/listings/{listing_id}", "body.photo_urls"): "Mercatino chat (K21)",
-    ("POST /marketplace/listings", "body.target_species"): "Mercatino chat (K21)",
-    ("PUT /marketplace/listings/{listing_id}", "body.target_species"): "Mercatino chat (K21)",
     # Operator-only (admin token) schedule payload: its keys are validated one by one by
     # `_validated_schedule_payload` before it is stored.
     ("POST /admin/schedules", "body.payload"): "admin only, validated key by key",

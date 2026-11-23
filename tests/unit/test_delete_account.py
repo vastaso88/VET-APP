@@ -175,6 +175,9 @@ def _seed(client: FakeSupabase, owner: str, *, tag: str) -> None:
     )
     client.buckets.setdefault("marketplace-photos", set()).add(f"{owner}/listing/1.jpg")
     client.buckets.setdefault("marketplace-photos-held", set()).add(f"{owner}/down/1.jpg")
+    # The copies of the photos are under the id of the ad.
+    for bucket in ("marketplace-photos", "marketplace-photos-held"):
+        client.buckets[bucket].add(f"published/{tag}-marketplace_listings/1.jpg")
 
 
 def _eraser(client: FakeSupabase, *, radar_key: str | None = RADAR_KEY) -> SupabaseAccountEraser:
@@ -234,6 +237,9 @@ def test_deleting_an_account_leaves_no_data_of_that_owner_and_none_of_others_tou
         not path.startswith("11111111-1111-4111-8111-111111111111/")
         for path in client.buckets["marketplace-photos-held"]
     )
+    for bucket in ("marketplace-photos", "marketplace-photos-held"):
+        copies = {path for path in client.buckets[bucket] if path.startswith("published/")}
+        assert copies == {"published/b-marketplace_listings/1.jpg"}
     assert "a-attachment-key" not in client.buckets[MEDIA_BUCKET]
 
     # Every row and file of user B and the shared catalogues is exactly as before.
@@ -244,7 +250,9 @@ def test_deleting_an_account_leaves_no_data_of_that_owner_and_none_of_others_tou
         assert client.buckets[bucket] == {
             p
             for p in paths
-            if "11111111-1111-4111-8111-111111111111" not in p and p != "a-attachment-key"
+            if "11111111-1111-4111-8111-111111111111" not in p
+            and p != "a-attachment-key"
+            and not p.startswith("published/a-")
         }
 
     assert client.auth.admin.deleted_users == ["11111111-1111-4111-8111-111111111111"]
@@ -252,7 +260,7 @@ def test_deleting_an_account_leaves_no_data_of_that_owner_and_none_of_others_tou
     # metadata: they go with the account, and the other owner's stay.
     assert list(client.auth.admin.accounts) == ["22222222-2222-4222-8222-222222222222"]
     assert client.auth.admin.accounts["22222222-2222-4222-8222-222222222222"]["phone"]
-    assert report.files_removed == 5
+    assert report.files_removed == 7
     assert report.rows_deleted["pet_profiles"] == 1
     assert report.rows_deleted["clinical_events"] == 1
 
@@ -280,7 +288,7 @@ def test_a_gallery_bigger_than_one_storage_page_is_fully_removed() -> None:
     assert client.buckets["pet-photos"] == {
         "22222222-2222-4222-8222-222222222222/pets/b-pet/keep.jpg"
     }
-    assert report.files_removed == 1 + 2 + 250 + 2
+    assert report.files_removed == 1 + 2 + 250 + 4
 
 
 def test_deleting_twice_is_harmless() -> None:
@@ -579,3 +587,22 @@ def test_the_plan_changes_made_by_the_team_for_the_erased_owner_go_and_others_st
 
     assert [row["id"] for row in client.db["admin_plan_changes"]] == [2]
     assert report.rows_deleted["admin_plan_changes"] == 2
+
+
+@pytest.mark.parametrize("listing_id", ["", ".", "..", "x/../b-marketplace_listings", "a/b"])
+def test_an_id_that_is_not_a_plain_name_removes_no_file(listing_id: str) -> None:
+    client = FakeSupabase()
+    _seed(client, "11111111-1111-4111-8111-111111111111", tag="a")
+    _seed(client, "22222222-2222-4222-8222-222222222222", tag="b")
+    client.db["marketplace_listings"].append(
+        {"id": listing_id, "owner_id": "11111111-1111-4111-8111-111111111111"}
+    )
+    others = {
+        bucket: {path for path in paths if "b-" in path or path.startswith("22222222")}
+        for bucket, paths in client.buckets.items()
+    }
+
+    _eraser(client).erase_data("11111111-1111-4111-8111-111111111111")
+
+    for bucket, paths in others.items():
+        assert paths <= client.buckets[bucket], bucket

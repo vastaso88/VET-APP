@@ -25,14 +25,30 @@ ListingCategory = Literal[
     "transport_carriers",
     "grooming",
 ]
+# What an ad can be published under: the database refuses the legacy values
+# (marketplace_listings_category_check), so a request that carries one is a bad request.
+PublishableCategory = Literal[
+    "kennels_carriers",
+    "leashes_collars",
+    "toys",
+    "clothing",
+    "feeding",
+    "hygiene_grooming",
+    "aquariums_terrariums",
+    "cages_aviaries",
+    "other",
+]
+# 100,000 in the seller's currency: far above any used pet item, far below the column's limit.
+LISTING_MAX_PRICE_CENTS = 10_000_000
 ListingCondition = Literal["new", "like_new", "good", "worn"]
 # "all" = generic item for every species; a listing never mixes it with others.
 ListingSpecies = Literal[
     "all", "dog", "cat", "small_mammal", "bird", "reptile_amphibian", "fish", "other"
 ]
-# "removed_policy": hidden because it offered an animal (animal_policy.py) or the team
-# took it down after the check (content_review.py); the row is kept, and only
-# "active" listings are ever served to others.
+# "removed": hidden on its own after enough reports, until the team decides.
+# "removed_policy": hidden because it offered an animal (animal_policy.py) or taken down
+# by the team (content_review.py). Either way the row is kept and only "active" listings
+# are ever served to others.
 ListingStatus = Literal["active", "reserved", "sold", "removed", "removed_policy"]
 ListingReportReason = Literal[
     "spam", "scam", "prohibited_item", "inappropriate", "sells_animals", "other"
@@ -84,9 +100,14 @@ class MarketplaceListing(BaseModel):
     updated_at: datetime = Field(default_factory=utc_now)
 
 
+ListingReportStatus = Literal["open", "resolved", "dismissed"]
+
+
 class ListingReport(BaseModel):
     id: str = Field(default_factory=new_id)
     listing_id: str
     reporter_owner_id: str
     reason: ListingReportReason
+    # Set by the team; an open one counts towards the automatic removal.
+    status: ListingReportStatus = "open"
     created_at: datetime = Field(default_factory=utc_now)

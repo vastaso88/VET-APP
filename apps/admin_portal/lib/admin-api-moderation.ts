@@ -94,6 +94,7 @@ export type ListingReviewItem = {
   category: string;
   listing_status: string;
   status: "open" | "checked" | "removed" | "superseded";
+  origin?: "confirmation" | "report";
   terms: string[];
   notices: string[];
   confirmed_at: string;
@@ -114,6 +115,7 @@ export type HighlightedPiece = { text: string; hit: boolean };
 
 export type ListingReviewDetail = ListingReviewItem & {
   photo_urls: string[];
+  photos_not_shown?: number;
   price_cents: number | null;
   city_label: string | null;
   confirmation_version: string;
@@ -227,6 +229,7 @@ export async function resolveMarketplaceModeration(
   reportId: string,
   action: "remove_listing" | "dismiss_report" | "restore_listing" | "reopen_report",
   resolutionNote?: string,
+  removalReason?: string,
 ): Promise<void> {
   await requireAdminSession();
   await authenticatedAdminRequest(
@@ -235,6 +238,7 @@ export async function resolveMarketplaceModeration(
       method: "POST",
       body: JSON.stringify({
         action,
+        removal_reason: action === "remove_listing" && removalReason ? removalReason : null,
         resolution_note: resolutionNote?.trim() || null,
       }),
     },

@@ -291,7 +291,7 @@
     }
   },
   "billingActionNeedsPlan": "Per farlo serve un piano. Scegline uno da Impostazioni → Abbonamento e pagamenti.",
-  "marketplaceLimitedNotice": "Stai vedendo solo oggetto, prezzo e foto. Con un piano vedi anche la descrizione e i dettagli e puoi pubblicare e segnalare annunci.",
+  "marketplaceLimitedNotice": "Stai vedendo solo oggetto, prezzo e foto. Con un piano vedi anche la descrizione e i dettagli e puoi pubblicare annunci. Puoi segnalare un annuncio anche senza piano.",
   "marketplaceLimitedSeePlans": "Vedi i piani",
   "eventsNeedsPlan": "Gli eventi sono compresi nei piani. Scegli un piano per vederli.",
   "billingPaywallBrowseMarketplace": "Sfoglia gli annunci del Mercatino",
@@ -609,7 +609,7 @@
   "marketplaceRules": "Sul Mercatino si trovano solo oggetti per animali. Gli animali non si possono vendere, regalare né scambiare, in nessun paese.",
   "marketplaceNoAnimalsMessage": "Sul Mercatino si vendono solo oggetti per animali, non animali.",
   "marketplaceNoContactsMessage": "Nell'annuncio non inserire telefoni, email, siti web o profili social.",
-  "marketplaceNoMedicinesMessage": "Annuncio non pubblicato: il testo nomina un farmaco o un prodotto con principi attivi (per esempio un collare o una pipetta antiparassitari, o uno shampoo medicato), che non sono ammessi nel Mercatino. Il controllo è automatico e può sbagliare.",
+  "marketplaceNoMedicinesMessage": "Annuncio non pubblicato: il testo nomina un farmaco o un prodotto con principi attivi (per esempio un collare o una pipetta antiparassitari, o uno shampoo medicato), che non sono ammessi nel Mercatino.",
   "marketplaceBackendUnavailable": "Il Mercatino non è raggiungibile in questo momento. Riprova tra poco.",
   "marketplaceEmptyFiltered": "Nessun annuncio con questi filtri per ora.",
   "marketplaceNeedsLocation": "Il Mercatino mostra solo gli annunci vicino a te. Imposta la tua posizione in Impostazioni → Località per vederli.",
@@ -4345,7 +4345,7 @@
   "placesBackendClaimVetOnly": "Si può segnalare solo per un veterinario.",
   "placesBackendClaimGroups": "Scegli almeno un gruppo di animali tra quelli proposti.",
   "placesBackendPlaceNotFound": "Struttura non trovata.",
-  "marketplacePublishDisclaimer": "Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. Non controlliamo in anticipo gli annunci né gli oggetti: descrivi lo stato dell'oggetto e i difetti in modo onesto e completo. Non si possono vendere animali né farmaci o medicinali, anche veterinari. Nel testo non scrivere telefoni o e-mail: ti si scrive con i messaggi.",
+  "marketplacePublishDisclaimer": "Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. L'app controlla il testo dell'annuncio con un controllo automatico, che può sbagliare, e il team può guardare l'annuncio dopo la pubblicazione; non verifichiamo che l'annuncio e l'oggetto siano esatti: descrivi lo stato dell'oggetto e i difetti in modo onesto e completo. Non si possono vendere né regalare animali, cibo, mangimi, snack, integratori, farmaci o medicinali (anche veterinari) né prodotti con principi attivi. Nel testo non scrivere telefoni o e-mail: ti si scrive con i messaggi.",
   "marketplaceDetailPrivateSeller": "Annuncio di un privato (lo dichiara chi vende): non valgono le garanzie previste per gli acquisti da professionisti.",
   "marketplaceInfoTitle": "Come funziona il Mercatino",
   "marketplaceInfoWhat": "Il Mercatino è solo per privati: persone che vendono o regalano oggetti usati per animali, senza farne un'attività commerciale o professionale. Lo dichiari a ogni annuncio. Quokka mette in contatto chi pubblica e chi cerca: non vende, non compra e non è parte di nessun accordo.",
@@ -4354,7 +4354,7 @@
   "marketplaceInfoPrivateSale": "Tra privati non valgono le garanzie e le tutele previste per gli acquisti da un professionista (come la garanzia legale di conformità e il recesso dei contratti a distanza): valgono le regole del codice civile sulla compravendita.",
   "marketplaceInfoContacts": "Se scegli di scambiare telefono, e-mail o altri contatti nei messaggi, lo fai sotto la tua responsabilità: condividi solo ciò che serve e solo con chi ti sembra affidabile. Non pagare in anticipo a chi non conosci.",
   "marketplaceInfoReports": "Annunci e messaggi sono scritti dagli utenti, che ne sono responsabili. Se un annuncio o una conversazione ti sembra scorretto, segnalalo: il nostro team valuta la segnalazione e può rimuovere l'annuncio, chiudere la conversazione o tenere una persona fuori dal Mercatino.",
-  "marketplaceInfoForbidden": "Non si vendono animali né farmaci o medicinali, anche veterinari. L'app blocca molti annunci che li nominano, non tutti: segnalali.",
+  "marketplaceInfoForbidden": "Non si vendono animali, cibo, mangimi, snack, integratori né farmaci o medicinali, anche veterinari. L'app controlla il testo degli annunci: blocca i farmaci, chiede conferma per cibo, integratori e prodotti che potrebbero avere principi attivi e li fa controllare dal team dopo la pubblicazione, ma può sbagliare e non riconoscere tutto: se ne vedi uno, segnalalo.",
   "marketplaceInfoPrivacy": "Le conversazioni sono private. Il team di Quokka legge una conversazione solo se una delle due persone la segnala, per valutare la segnalazione.",
   "marketplaceInfoTerms": "Dettagli nei Termini di servizio, sezione Mercatino.",
   "marketplaceRestrictedAppeal": "Se pensi sia un errore, scrivici da {place}.",
@@ -4431,6 +4431,29 @@
   "marketplaceRemovedReasonSupplement": "integratori",
   "marketplaceRemovedReasonMedicine": "farmaci o prodotti con principi attivi",
   "marketplaceRemovedReasonOther": "altra violazione delle regole del Mercatino",
+  "marketplaceContentAutomatic": "Il controllo è automatico e può sbagliare.",
+  "marketplaceStatusHiddenPending": "Nascosto in attesa di controllo",
+  "marketplaceHiddenAutoNotice": "Annuncio nascosto il {date}: è stato segnalato da più persone e l'app lo nasconde in automatico, in attesa del controllo del team. Lo controlliamo appena possibile. La decisione è automatica e può sbagliare.",
+  "@marketplaceHiddenAutoNotice": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceHiddenAnimalNotice": "Annuncio nascosto il {date}: il testo sembra offrire un animale, e nel Mercatino gli animali non si possono vendere, regalare né scambiare, in nessun paese. La decisione è automatica e può sbagliare.",
+  "@marketplaceHiddenAnimalNotice": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceRemovedReasonSpam": "spam",
+  "marketplaceRemovedReasonScam": "sospetta truffa",
+  "marketplaceRemovedReasonProhibitedItem": "articolo non consentito",
+  "marketplaceRemovedReasonInappropriate": "contenuto inappropriato",
+  "marketplaceRemovedReasonSellsAnimals": "vendita di animali",
   "marketplaceMyListings": "I miei annunci",
   "marketplaceMyListingsEmpty": "Non hai annunci.",
   "marketplaceStatusPublished": "Pubblicato",
