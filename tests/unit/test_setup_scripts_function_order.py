@@ -88,9 +88,13 @@ def test_set_updated_at_is_defined_in_both_places_with_the_same_body() -> None:
         start = sql.index("create or replace function public.set_updated_at()")
         return sql[start : sql.index("$$;", sql.index("$$", start) + 2) + 3]
 
-    assert body("scripts/setup/supabase_schema.sql") == body(
-        "scripts/setup/supabase_llm_sources_schema.sql"
-    )
+    definition = body("scripts/setup/supabase_schema.sql")
+    assert definition == body("scripts/setup/supabase_llm_sources_schema.sql")
+    # Re-running a setup script must not undo the pin of supabase_security_hardening.sql.
+    pin = "set search_path = pg_catalog, extensions"
+    hardening = Path("scripts/setup/supabase_security_hardening.sql").read_text(encoding="utf-8")
+    assert f"alter function public.set_updated_at() {pin};" in " ".join(hardening.split())
+    assert pin in definition
 
 
 def test_the_check_itself_catches_a_function_used_too_early() -> None:
