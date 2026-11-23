@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from packages.core.application.ports.media_storage import MediaStorage
+from packages.core.domain.conversation.media_type import detect_media_type
 
 if TYPE_CHECKING:
     from supabase import Client
@@ -21,7 +22,12 @@ class SupabaseMediaStorage(MediaStorage):
         self._bucket = bucket
 
     def save(self, key: str, content: bytes) -> None:
-        self._client.storage.from_(self._bucket).upload(key, content, {"upsert": "true"})
+        # Storage validates the MIME against the bucket allowlist. The SDK's
+        # text/plain default would reject supported photos and PDF documents.
+        content_type = detect_media_type(content) or "application/octet-stream"
+        self._client.storage.from_(self._bucket).upload(
+            key, content, {"upsert": "true", "content-type": content_type}
+        )
 
     def delete(self, key: str) -> None:
         try:
