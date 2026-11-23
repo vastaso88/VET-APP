@@ -93,9 +93,13 @@ def pause_account() -> dict[str, object]:
     """The owner puts the account aside, with nothing deleted: it becomes
     inactive (the session that asked is refused from now on, ads hidden) and the
     data is kept. Signing in again ends the pause. Starting it also clears the
-    120-day clock, like choosing a plan. Acts only on the caller's own id."""
+    120-day clock, like choosing a plan. Acts only on the caller's own id. Open also
+    while a mandatory consent is missing: whoever does not want to accept a new version
+    of the Terms can put the account aside instead (a paused or closed one is still
+    refused)."""
     container = get_container()
-    user = container.auth_provider.get_current_user()
+    with allow_missing_consent():
+        user = container.auth_provider.get_current_user()
     service = container.account_pause_service()
     pause = service.start(user.id)
     _forget_cached_answer(user.id)

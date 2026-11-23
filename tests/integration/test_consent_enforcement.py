@@ -101,6 +101,18 @@ def test_the_routes_to_accept_leave_or_look_stay_open(world: _World) -> None:
     assert client.get("/account/age").status_code == 200
 
 
+def test_whoever_declines_a_new_version_can_still_pause_or_cancel_a_deletion(
+    world: _World,
+) -> None:
+    client = TestClient(app)
+
+    assert client.get("/pets").status_code == 403
+    paused = client.post("/account/pause")
+    assert paused.status_code == 200 and paused.json()["paused"] is True
+    # The cancellation of a deletion was already open (the closed-account door).
+    assert client.post("/account/deletion/cancel").status_code != 403
+
+
 def test_accepting_through_the_consent_route_opens_everything_at_once(world: _World) -> None:
     client = TestClient(app)
     assert client.get("/pets").status_code == 403
