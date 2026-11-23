@@ -562,7 +562,7 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
     # Synthetic users round 2 (2026-11-16): the generic steps ("al caldo", no
     # food) went to bleeding, a blocked bladder and breathing trouble too, and no
     # reply said to press on a wound. A dog's or cat's own first gesture first;
-    # to be reviewed with the other fixed steps (docs/product/12). Exotic animals
+    # each step needs a published source (docs/product/12). Exotic animals
     # keep the steps that send them to a vet who knows the species.
     "triage_steps_bleeding": {
         "it": "1) premi subito sulla ferita con una garza o un panno pulito, con una pressione ferma e costante per almeno 5 minuti, senza sollevarlo per controllare: se si inzuppa, aggiungine un altro sopra;\n2) intanto chiama il tuo veterinario o un pronto soccorso veterinario e parti: se il sangue esce a fiotti o non si ferma con la pressione, è un'emergenza;\n3) fai muovere {pet_name} il meno possibile; niente lacci stretti, niente polveri, creme o disinfettanti dentro la ferita, niente farmaci.",
@@ -603,8 +603,8 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
     },
     # Round 3: the first gesture by species and picture, never a generic one that
     # is wrong (a chinchilla at 28 degrees was told to keep warm, an axolotl too, and no
-    # bird with a bleeding feather was told to press). To be reviewed by a vet with the
-    # other fixed steps (docs/product/12, group P).
+    # bird with a bleeding feather was told to press). Like the other fixed steps, each
+    # needs a published source (docs/product/12, group P).
     "triage_steps_exotic_cool": {
         "it": "1) contatta subito un veterinario esperto in animali esotici o un pronto soccorso veterinario: molti piccoli animali soffrono il caldo e peggiorano in fretta;\n2) intanto sposta {pet_name} nel punto più fresco della casa, all'ombra, con aria che circola;\n3) lascia acqua fresca a disposizione senza forzare, e niente farmaci senza indicazione del veterinario.",
         "en": "1) contact a vet experienced with exotic animals or an emergency clinic right away: many small animals cope badly with heat and get worse fast;\n2) meanwhile move {pet_name} to the coolest spot in the home, in the shade, with air moving;\n3) leave fresh water available without forcing, and no medication unless the vet says so.",

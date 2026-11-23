@@ -280,7 +280,7 @@ Fonte di verità: `packages/shared/config/settings.py`. Le principali per la cha
 | `SONNET_ESCALATION` | `false` | §9 |
 | `ANTHROPIC_EFFORT`, `ANTHROPIC_EFFORT_LIGHT` | `low` | ammessi `low`, `medium`, `high` |
 | `ANTHROPIC_INFERENCE_GEO` | `global` (`us` sul ramo di attivazione) | §7 |
-| `ANTHROPIC_THINKING_HEADROOM_TOKENS`, `ANTHROPIC_TIMEOUT_SECONDS` | 600, 30 | |
+| `ANTHROPIC_THINKING_HEADROOM_TOKENS`, `ANTHROPIC_TIMEOUT_SECONDS` | 1200, 30 | |
 | `URGENT_ANSWER_TIMEOUT_SECONDS` | 12 | 0 = solo testi fissi |
 | `LLM_API_KEY`, `LLM_MODEL`, `LLM_FALLBACK_MODELS`, `LLM_BASE_URL`, `LLM_MODEL_LIGHT` | | Groq: riserva, visione, dettatura |
 | `LLM_DAILY_BUDGET_EUR`, `LLM_USD_PER_EUR` | 1.0, 1.1165 | tetto di spesa giornaliero dei modelli a pagamento (Pricing) |

@@ -1,9 +1,11 @@
 import json
 import logging
 import re
+import time
 import zlib
 from collections.abc import Callable, Iterable
 from concurrent.futures import Future, ThreadPoolExecutor
+from contextvars import ContextVar
 from datetime import UTC, date, datetime, timedelta
 
 from pydantic import BaseModel, Field
@@ -85,6 +87,7 @@ from packages.core.domain.conversation.request_kind import (
     may_ask_before_answering,
 )
 from packages.core.domain.conversation.states import ConversationState
+from packages.core.domain.conversation.unfinished_text import close_at_last_sentence
 from packages.core.domain.knowledge.answer_validation import (
     has_phone_number,
     validate_answer,
@@ -92,6 +95,10 @@ from packages.core.domain.knowledge.answer_validation import (
     without_phone_numbers,
 )
 from packages.core.domain.knowledge.dose_in_answer import find_dosage, without_dose_sentences
+from packages.core.domain.knowledge.enclosure_size import (
+    unsourced_sizes,
+    without_unsourced_sizes,
+)
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.knowledge.relevance import relevant_sources, topic_terms
@@ -263,7 +270,9 @@ _DISSATISFIED = re.compile(
 # about 180; synthetic users round 3: with 200 here a third of the answers were
 # still above 180, up to 280).
 ANSWER_WORDS_LIMIT = 180
-SHORTEN_MAX_TOKENS = 400
+# 150 words of Italian are more than 400 tokens: 20 shortenings of 32 were cut there, and
+# the long answer went out (collaudo, 23/11/2026).
+SHORTEN_MAX_TOKENS = 800
 
 
 def _word_count(text: str) -> int:
@@ -861,6 +870,23 @@ MULTI_PET_INTERACTION_MARKERS: tuple[str, ...] = (
 # the provider adds its own reasoning headroom.
 _URGENT_ANSWER_MAX_TOKENS = 320
 
+# The owner waits 20 seconds at most (owner's rule). What a turn may still start is decided
+# on the time left, from its first line: a second writing after a reply the token budget
+# cut, and the severity check with its own second attempt (collaudo, wave 0, 23/11/2026).
+_TURN_SECONDS = 19.0
+_SECONDS_FOR_THE_CHECKS = 3.0
+_MIN_SECONDS_FOR_A_CALL = 3.0
+_MIN_SECONDS_FOR_A_SECOND_WRITING = 4.0
+# A reply closed at its last finished sentence shorter than this says nothing.
+_MIN_CLOSED_REPLY_CHARS = 40
+_turn_started: ContextVar[float | None] = ContextVar("turn_started", default=None)
+
+
+def _seconds_left() -> float:
+    """Of the owner's wait, for this turn (a path with no turn has all of it)."""
+    started = _turn_started.get()
+    return _TURN_SECONDS if started is None else _TURN_SECONDS - (time.monotonic() - started)
+
 
 class _Prefetch:
     """The light-model helpers and the literature search, started together
@@ -1185,6 +1211,7 @@ class ChatOrchestrator:
         self._history_last_reply_chars = max(self._history_message_chars, history_last_reply_chars)
 
     def answer(self, data: ChatOrchestratorInput) -> ChatOrchestratorResult:
+        _turn_started.set(time.monotonic())
         if data.photo_reading_off and not data.user_message.strip():
             # Only a photo, and photos cannot be read: the honest sentence.
             return ChatOrchestratorResult(
@@ -2003,7 +2030,8 @@ class ChatOrchestrator:
         except Exception:  # noqa: BLE001 - the fixed text alone is still a safe reply
             logger.warning("guard follow-up unavailable: the fixed text alone")
             return result
-        if response.finish_reason == "length" or not response.content.strip():
+        response = self._finished(response)
+        if not response.content.strip():
             return result
         if has_phone_number(response.content):
             response = response.model_copy(
@@ -2104,29 +2132,71 @@ class ChatOrchestrator:
         )
 
     def _severity_verdict(self, user_prompt: str) -> tuple[bool, bool, str] | None:
-        try:
-            checked = self._llm_client.generate(
-                LLMGenerationRequest(
-                    system_prompt=SEVERITY_CHECK_PROMPT,
-                    user_prompt=user_prompt,
-                    temperature=0.0,
-                    max_tokens=self._answer_max_tokens + 200,
-                    purpose="severity_check",
-                    model_class="main",
-                    json_mode=True,
+        # A check the token budget or the clock cut is asked once more with no reasoning:
+        # without it a serious case put off went out unchecked (collaudo, wave 0).
+        for without_reasoning in (False, True):
+            # With little time left the check goes straight to the quick way.
+            left = _seconds_left() - (0 if without_reasoning else _SECONDS_FOR_THE_CHECKS)
+            if left < _MIN_SECONDS_FOR_A_CALL:
+                continue
+            try:
+                checked = self._llm_client.generate(
+                    LLMGenerationRequest(
+                        system_prompt=SEVERITY_CHECK_PROMPT,
+                        user_prompt=user_prompt,
+                        temperature=0.0,
+                        max_tokens=self._answer_max_tokens + 200,
+                        purpose="severity_check",
+                        model_class="main",
+                        json_mode=True,
+                        without_reasoning=without_reasoning,
+                        timeout_seconds=int(left),
+                    )
                 )
-            )
-        except Exception:  # noqa: BLE001 - the reply as written is still a reply
-            logger.warning("severity check unavailable: the reply is kept")
-            return None
-        if checked.finish_reason == "length":
-            return None
-        return _parse_severity_check(checked.content)
+            except Exception as exc:  # noqa: BLE001 - the reply as written is still a reply
+                logger.warning("severity check: %s", type(exc).__name__)
+                continue
+            if checked.finish_reason == "length":
+                logger.warning("severity check: cut by the token budget")
+                continue
+            return _parse_severity_check(checked.content)
+        logger.warning("severity check unavailable: the reply is kept")
+        return None
+
+    def _finished(
+        self,
+        response: LLMResponse,
+        rewrite: Callable[[int], LLMResponse] | None = None,
+    ) -> LLMResponse:
+        """A reply the token budget cut never goes out as it is (collaudo, wave 0: five of
+        seventeen ended in the middle of a word). Written again at once, with no reasoning,
+        when the owner's wait allows it; otherwise closed at its last finished sentence.
+        Empty content when nothing of it is finished: the caller has its own fallback."""
+        if response.finish_reason != "length":
+            return response
+        seconds = _seconds_left() - _SECONDS_FOR_THE_CHECKS
+        if rewrite is not None and seconds >= _MIN_SECONDS_FOR_A_SECOND_WRITING:
+            try:
+                second = rewrite(int(seconds))
+            except Exception as exc:  # noqa: BLE001 - the cut reply can still be closed
+                logger.warning("unfinished reply: second writing failed (%s)", type(exc).__name__)
+            else:
+                if second.finish_reason != "length" and second.content.strip():
+                    logger.info("unfinished reply: written again")
+                    return second
+        closed = close_at_last_sentence(response.content)
+        logger.warning("unfinished reply: closed at the last finished sentence")
+        return response.model_copy(
+            update={"content": closed if len(closed) >= _MIN_CLOSED_REPLY_CHARS else ""}
+        )
 
     def _shortened(self, response: LLMResponse, words: int = 150) -> LLMResponse:
         """The same answer in fewer words (SHORTEN_PROMPT), by the light
         model: about 0.0002 EUR, only when an answer runs long. Whatever
         goes wrong, or a result that is not shorter, keeps the original."""
+        left = _seconds_left()
+        if left < _MIN_SECONDS_FOR_A_CALL:
+            return response
         try:
             short = self._llm_client.generate(
                 LLMGenerationRequest(
@@ -2135,6 +2205,7 @@ class ChatOrchestrator:
                     max_tokens=SHORTEN_MAX_TOKENS,
                     purpose="shorten",
                     model_class="light",
+                    timeout_seconds=int(left),
                 )
             )
         except Exception:  # noqa: BLE001 - the long answer is still a good answer
@@ -2769,7 +2840,7 @@ class ChatOrchestrator:
         exotic = species_family in _EXOTIC_FAMILIES or species_family == "axolotl"
         # Synthetic users round 3: the first gesture by species and picture. A case
         # these lines do not cover gets the neutral steps, never warmth or a fast
-        # of their own (to be reviewed by a vet, docs/product/12 group P).
+        # of their own (docs/product/12 group P: each step needs a published source).
         if category == "bird_fumes":
             steps_key = "triage_steps_bird_fumes"
         elif species_family == "axolotl":
@@ -2941,6 +3012,7 @@ class ChatOrchestrator:
         except Exception:  # noqa: BLE001 - an emergency reply never fails on a helper
             logger.exception("urgent answer: unexpected failure; the fixed steps go")
             return fixed
+        response = self._finished(response)
         text = clean_answer_text(response.content).strip()
         if not self._urgent_text_passes(text, species):
             logger.warning("urgent answer: the model's text failed the checks; the fixed steps go")
@@ -3898,7 +3970,7 @@ class ChatOrchestrator:
         may_ask = prompts.may_ask
         dose_part = prompts.dose_part
 
-        def generate(prompt: str, purpose: str = "answer") -> LLMResponse:
+        def ask(prompt: str, purpose: str, seconds: int | None = None) -> LLMResponse:
             return self._llm_client.generate(
                 LLMGenerationRequest(
                     system_prompt=prompt,
@@ -3907,8 +3979,18 @@ class ChatOrchestrator:
                     purpose=purpose,
                     model_class="strong" if escalated else "main",
                     cacheable_system_chars=prompts.cacheable_system_chars,
+                    without_reasoning=seconds is not None,
+                    timeout_seconds=seconds,
                 )
             )
+
+        def generate(prompt: str, purpose: str = "answer") -> LLMResponse:
+            written = self._finished(
+                ask(prompt, purpose), lambda seconds: ask(prompt, "answer_unfinished", seconds)
+            )
+            if written.finish_reason == "length" and not written.content.strip():
+                raise ProviderError("the reply was cut before its first finished sentence")
+            return written
 
         try:
             response = generate(system_prompt)
@@ -4017,6 +4099,30 @@ class ChatOrchestrator:
             if refuse or len(trimmed) < 120:
                 return self._dosage_rewritten_result(data.language, dosage)
             logger.warning("answer validator: a dose (%s) was cut from the reply", dosage)
+            response = response.model_copy(update={"content": trimmed})
+        # Collaudo, wave 0: a cage size no source given here states is not said. What was
+        # given: the reference material, the official passages, the owner's words in this
+        # conversation, the animal's profile and records.
+        given = " ".join(
+            [
+                evidence_block,
+                official,
+                message,
+                pet_block,
+                medical_context,
+                *(m.content for m in data.conversation_history if m.role == "user"),
+            ]
+        )
+        if sizes := unsourced_sizes(response.content, given):
+            logger.warning("answer validator: %d cage size(s) with no source cut", len(sizes))
+            trimmed = without_unsourced_sizes(response.content, given)
+            if len(trimmed) < 80:
+                return self._validation_failure_result(
+                    sources=sources,
+                    violations=["unsourced_enclosure_size"],
+                    mode="natural",
+                    response_locale=data.language,
+                )
             response = response.model_copy(update={"content": trimmed})
         # The habit the instructions do not fully remove: a closing
         # "consulta il veterinario" with no reason in it (build 29).

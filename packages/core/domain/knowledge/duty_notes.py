@@ -19,7 +19,7 @@ import re
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.safety.emergency_patterns import normalize_for_matching
 
-_DUTY_PREFIX = "Curated note, owner duties in Italy (pending vet review): "
+_DUTY_PREFIX = "Curated note, owner duties in Italy: "
 
 # Owner duties, Italy (stress test 2026-11-06): one short note per topic,
 # each under the 300 characters the prompt keeps of a snippet, so the

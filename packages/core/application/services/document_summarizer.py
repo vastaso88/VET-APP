@@ -1,5 +1,6 @@
 from packages.core.application.ports.llm_client import LLMClient, LLMGenerationRequest
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizationRequest, PiiAnonymizer
+from packages.core.application.services.finished_text import generate_finished_lines
 
 # Lets a test double (or EchoLLMClient) recognise this call, same idea as
 # EvidenceSynthesizer.SYNTHESIS_MARKER.
@@ -31,7 +32,8 @@ class DocumentSummarizer:
                 known_person_names=known_person_names or [],
             )
         ).anonymized_text
-        response = self._llm_client.generate(
+        return generate_finished_lines(
+            self._llm_client,
             LLMGenerationRequest(
                 system_prompt=(
                     f"You are a veterinary assistant {DOCUMENT_SUMMARY_MARKER} an owner "
@@ -57,6 +59,5 @@ class DocumentSummarizer:
                 ),
                 max_tokens=900,
                 purpose="document_summary",
-            )
+            ),
         )
-        return response.content.strip()

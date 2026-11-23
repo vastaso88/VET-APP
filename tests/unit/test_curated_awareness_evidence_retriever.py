@@ -23,7 +23,7 @@ def test_there_is_one_ethology_note_per_species_family_with_the_four_themes() ->
     for source in AWARENESS_CATALOG:
         assert source.tier == "D" and source.access_depth == "D"
         assert source.clinical_domain == "behavior"
-        assert "pending vet review" in source.title
+        assert "review" not in source.title
     for source in ethology:
         if source.species != "other":
             for theme in ("Ethology", "Needs", "Stress signs", "Common mistakes"):

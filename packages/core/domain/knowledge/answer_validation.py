@@ -65,7 +65,7 @@ _SENTENCES = re.compile(r"(?<=[.!?;])\s+")
 def without_absolute_claims(answer: str) -> str:
     """The answer without the sentences that overclaim, layout kept (plan 08, v2: one
     word must not leave the owner with no answer at all)."""
-    return _without_sentences(answer, lambda s: bool(absolute_claims(s)))
+    return without_sentences(answer, lambda s: bool(absolute_claims(s)))
 
 
 # Normativa doc 20 §20.13 (20/11): the model never writes a phone number, not even an
@@ -85,10 +85,10 @@ def has_phone_number(text: str) -> bool:
 
 def without_phone_numbers(answer: str) -> str:
     """The model's answer without the sentences that carry a phone number."""
-    return _without_sentences(answer, has_phone_number)
+    return without_sentences(answer, has_phone_number)
 
 
-def _without_sentences(answer: str, drop: Callable[[str], bool]) -> str:
+def without_sentences(answer: str, drop: Callable[[str], bool]) -> str:
     kept_lines: list[str] = []
     for line in answer.split("\n"):
         sentences = _SENTENCES.split(line)

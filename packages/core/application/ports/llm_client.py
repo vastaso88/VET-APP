@@ -26,6 +26,10 @@ class LLMGenerationRequest(BaseModel):
     # A deadline shorter than the provider's default, for calls that must
     # not hold the answer up (the urgency classifier). None = the default.
     timeout_seconds: int | None = None
+    # Write at once, with no reasoning first: a second attempt after a reply whose
+    # reasoning spent the token budget (collaudo, wave 0). A provider that cannot switch
+    # reasoning off ignores it.
+    without_reasoning: bool = False
     # The first N characters of system_prompt are the same for every owner
     # and every call of this kind: a provider with a prompt cache marks
     # them as the cacheable prefix. 0 = treat the whole prompt as stable.

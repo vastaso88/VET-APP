@@ -34,6 +34,7 @@ prompt, the user prompt the orchestrator already passed through
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any
 
 import anthropic
@@ -60,8 +61,23 @@ PROVIDER_NAME = "anthropic"
 # 1.1x the standard rate.
 # The value comes from settings.anthropic_inference_geo (default "us" on this
 # branch), the same one the spending guard prices with (pricing.py).
+# The least reasoning room an answer gets, whatever the environment says: at 600 the
+# reasoning cut 19 answers of 63 in the middle of a word, and spent the whole budget of
+# others before a single word (collaudo, 23/11/2026).
+MIN_THINKING_HEADROOM_TOKENS = 1200
+# Below this many seconds left of the caller's deadline, no second attempt is started.
+MIN_SECONDS_FOR_A_SECOND_WRITING = 3
 JSON_ONLY_INSTRUCTION = "\n\nReply with one JSON object only: no other text, no code fence."
 _FINISH_REASONS = {"end_turn": "stop", "stop_sequence": "stop", "max_tokens": "length"}
+
+
+class _BudgetSpentOnReasoning(ProviderError):
+    """The whole token budget went on reasoning: not a word to show the owner."""
+
+    def __init__(self, prompt_tokens: int, completion_tokens: int) -> None:
+        super().__init__("Anthropic spent the whole token budget before writing")
+        self.prompt_tokens = prompt_tokens
+        self.completion_tokens = completion_tokens
 
 
 def split_system_prompt(system_prompt: str, cacheable_chars: int) -> tuple[str, str]:
@@ -123,6 +139,37 @@ class AnthropicLLMClient(LLMClient):
             # Past its daily budget the model is left alone (QuotaExhausted):
             # the reserve, when there is one, takes the call.
             self._availability.order([self.model_for(req)])
+        started = time.monotonic()
+        try:
+            return self._generate(req)
+        except _BudgetSpentOnReasoning as spent:
+            # Written again at once with no reasoning: 13 answers of a round had gone to the
+            # reserve, after six seconds, for nothing more than this.
+            left = None
+            if req.timeout_seconds is not None:
+                left = int(req.timeout_seconds - (time.monotonic() - started))
+            no_time = left is not None and left < MIN_SECONDS_FOR_A_SECOND_WRITING
+            if req.without_reasoning or req.model_class == "light" or no_time:
+                raise
+            logger.warning(
+                "anthropic: the reasoning spent the token budget of a %s call; written again",
+                req.purpose,
+            )
+            second = self._generate(
+                req.model_copy(update={"without_reasoning": True, "timeout_seconds": left})
+            )
+            # Both calls were paid: the usage counts them together.
+            return second.model_copy(
+                update={
+                    "prompt_tokens": second.prompt_tokens + spent.prompt_tokens,
+                    "completion_tokens": second.completion_tokens + spent.completion_tokens,
+                    "token_count": second.token_count
+                    + spent.prompt_tokens
+                    + spent.completion_tokens,
+                }
+            )
+
+    def _generate(self, req: LLMGenerationRequest) -> LLMResponse:
         client = self._client
         if req.timeout_seconds is not None:
             client = client.with_options(timeout=req.timeout_seconds, max_retries=0)
@@ -150,6 +197,7 @@ class AnthropicLLMClient(LLMClient):
     def payload(self, req: LLMGenerationRequest, *, structured: bool) -> dict[str, Any]:
         settings = self._settings
         light = req.model_class == "light"
+        no_thinking = light or req.without_reasoning
         stable, variable = split_system_prompt(req.system_prompt, req.cacheable_system_chars)
         use_schema = bool(req.json_mode and structured and req.json_schema)
         if req.json_mode and not use_schema:
@@ -164,8 +212,9 @@ class AnthropicLLMClient(LLMClient):
             "model": self.model_for(req),
             "max_tokens": (
                 req.max_tokens
-                if light
-                else req.max_tokens + max(0, settings.anthropic_thinking_headroom_tokens)
+                if no_thinking
+                else req.max_tokens
+                + max(MIN_THINKING_HEADROOM_TOKENS, settings.anthropic_thinking_headroom_tokens)
             ),
             "messages": [{"role": "user", "content": req.user_prompt}],
             "output_config": output_config,
@@ -173,7 +222,7 @@ class AnthropicLLMClient(LLMClient):
         }
         if system:
             body["system"] = system
-        if light:
+        if no_thinking:
             # Accepted at effort high or below; never at xhigh/max
             # (settings.py keeps the light effort within that range).
             body["thinking"] = {"type": "disabled"}
@@ -198,9 +247,9 @@ class AnthropicLLMClient(LLMClient):
         completion_tokens = int(usage.output_tokens or 0)
         finish = _FINISH_REASONS.get(stop or "", stop)
         if not text and finish == "length":
-            # The whole budget went on reasoning: nothing to show the owner,
-            # and the reserve may still answer in time.
-            raise ProviderError("Anthropic spent the whole token budget before writing")
+            # Nothing to show the owner: written again with no reasoning (generate);
+            # failing that, the reserve may still answer in time.
+            raise _BudgetSpentOnReasoning(prompt_tokens, completion_tokens)
         return LLMResponse(
             content=text,
             provider=PROVIDER_NAME,

@@ -146,7 +146,7 @@ def test_an_answer_call_sends_no_sampling_parameter_and_caches_the_stable_prefix
     assert "temperature" not in body and "top_p" not in body and "top_k" not in body
     assert "thinking" not in body
     assert body["output_config"] == {"effort": "low"}
-    assert body["max_tokens"] == 450 + 600
+    assert body["max_tokens"] == 450 + 1200
     assert body["messages"] == [{"role": "user", "content": SECRET}]
     assert [block["text"] for block in body["system"]] == [STABLE, VARIABLE]
     assert all(block["cache_control"] == {"type": "ephemeral"} for block in body["system"])
@@ -272,10 +272,47 @@ def test_a_cut_answer_is_reported_as_length() -> None:
 
 
 def test_a_budget_spent_on_reasoning_alone_is_an_error_not_an_empty_reply() -> None:
-    fake = FakeAnthropic(_message("", stop="max_tokens"))
+    fake = FakeAnthropic(_message("", stop="max_tokens"), _message("", stop="max_tokens"))
 
     with pytest.raises(ProviderError):
         _client(fake).generate(ANSWER)
+
+    assert len(fake.calls) == 2  # asked again once, never a third time
+
+
+def test_a_budget_spent_on_reasoning_is_written_again_with_no_reasoning() -> None:
+    # collaudo, 23/11/2026: 13 answers of a round had gone to the reserve for this
+    fake = FakeAnthropic(
+        _message("", stop="max_tokens", input_tokens=100, output_tokens=1050),
+        _message("Ecco la risposta.", input_tokens=100, output_tokens=200),
+    )
+
+    response = _client(fake).generate(ANSWER)
+
+    assert response.content == "Ecco la risposta."
+    first, second = fake.calls
+    assert "thinking" not in first and second["thinking"] == {"type": "disabled"}
+    assert second["max_tokens"] == ANSWER.max_tokens
+    assert response.completion_tokens == 1250 and response.prompt_tokens == 200
+
+
+def test_with_no_time_left_the_second_writing_is_not_started() -> None:
+    fake = FakeAnthropic(_message("", stop="max_tokens"))
+
+    with pytest.raises(ProviderError):
+        _client(fake).generate(ANSWER.model_copy(update={"timeout_seconds": 2}))
+
+    assert len(fake.calls) == 1
+
+
+def test_an_old_low_headroom_in_the_environment_does_not_bring_the_cuts_back() -> None:
+    fake = FakeAnthropic(_message())
+    _client(fake, anthropic_thinking_headroom_tokens=600).generate(ANSWER)
+    assert fake.calls[0]["max_tokens"] == 450 + 1200
+
+    higher = FakeAnthropic(_message())
+    _client(higher, anthropic_thinking_headroom_tokens=1500).generate(ANSWER)
+    assert higher.calls[0]["max_tokens"] == 450 + 1500
 
 
 # --- refusals, errors, budget ------------------------------------------------------------------

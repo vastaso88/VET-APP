@@ -10,8 +10,8 @@ tangential.
 Access depth "D" and tier "D", like the husbandry notes: written from the
 positions of the bodies named in each note (ESVCE, AVSAB, ISFM/iCatCare,
 RWAF/RSPCA, FVE/FECAVA, WSAVA), not from a specific paper we can cite
-precisely, and marked "pending veterinary review" until the owner (a vet)
-has read them: then they become level B. Family level, not breed or
+precisely. Nobody reviews them (owner's rule: no vet review, ever): what
+anchors a note is the published position it names. Family level, not breed or
 species level: a budgerigar and a grey parrot share the bird note.
 """
 
@@ -23,7 +23,7 @@ from packages.core.domain.conversation.request_kind import is_duty_question
 from packages.core.domain.knowledge.duty_notes import DUTY_CATALOG
 from packages.core.domain.knowledge.models import EvidenceSource
 
-_PREFIX = "Curated awareness note (pending vet review): "
+_PREFIX = "Curated awareness note: "
 
 AWARENESS_CATALOG: list[EvidenceSource] = [
     EvidenceSource(

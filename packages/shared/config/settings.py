@@ -209,7 +209,7 @@ class Settings(BaseSettings):
     anthropic_effort: str = Field(default="low", alias="ANTHROPIC_EFFORT")
     anthropic_effort_light: str = Field(default="low", alias="ANTHROPIC_EFFORT_LIGHT")
     anthropic_thinking_headroom_tokens: int = Field(
-        default=600, ge=0, alias="ANTHROPIC_THINKING_HEADROOM_TOKENS"
+        default=1200, ge=0, alias="ANTHROPIC_THINKING_HEADROOM_TOKENS"
     )
     anthropic_timeout_seconds: int = Field(
         default=30, ge=1, le=120, alias="ANTHROPIC_TIMEOUT_SECONDS"

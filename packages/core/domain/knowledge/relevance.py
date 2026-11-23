@@ -50,6 +50,43 @@ _OTHER_FAMILY = re.compile(
     r"caprin\w*|pollame|polli)\b"
 )
 
+# A guinea pig is no pig.
+_GUINEA_PIG = re.compile(r"\bguinea pigs?\b")
+
+# The animals a title or a journal names, by species family (normalize_species).
+_NAMED_FAMILIES: dict[str, re.Pattern[str]] = {
+    "dog": re.compile(
+        r"\b(?:dogs?|canines?|pupp(?:y|ies)|can[ei]|cuccioli|perros?|hunde?|chiens?)\b"
+    ),
+    "cat": re.compile(r"\b(?:cats?|felines?|kittens?|gatt[oi]|gatos?|katzen?|chats?)\b"),
+    "small_mammal": re.compile(
+        r"\b(?:rabbits?|lagomorphs?|guinea pigs?|cav(?:y|ies)|hamsters?|gerbils?|chinchillas?|"
+        r"ferrets?|degus?|small mammals?|conigli\w*|cavi[ae]|furett[oi]|cricet[oi]|conejos?|"
+        r"kaninchen|meerschweinchen|lapins?|cobayes?)\b"
+    ),
+    "bird": re.compile(
+        r"\b(?:birds?|avian|parrots?|psittac\w*|budgerigars?|budgies?|cockatiels?|"
+        r"canar(?:y|ies)|uccell[oi]|pappagall\w*|aves|papageien?|oiseaux?)\b"
+    ),
+    "reptile_amphibian": re.compile(
+        r"\b(?:reptiles?|reptilian|geckos?|lizards?|snakes?|tortoises?|turtles?|chelonians?|"
+        r"chameleons?|iguanas?|bearded dragons?|amphibians?|frogs?|axolotls?|rettil[ei]|"
+        r"tartarugh?[ae]|anfibi\w*)\b"
+    ),
+    "fish": re.compile(r"\b(?:fish(?:es)?|goldfish|koi|teleosts?|pesc[ei]|peces|poissons?)\b"),
+    # owners' animals outside the families above share the code "other"
+    "other": re.compile(r"\b(?:horses?|equine|pon(?:y|ies)|donkeys?|cavall[oi]|asin[oi])\b"),
+}
+
+
+def names_only_other_animals(source: EvidenceSource, species: str) -> bool:
+    """The title or the journal names animals, and none is of this family: "Nutritional
+    Assessment Guidelines for Dogs and Cats" under a rabbit's answer (collaudo, wave 0)."""
+    text = _normalize(f"{source.title} {source.journal or ''}")
+    named = {family for family, words in _NAMED_FAMILIES.items() if words.search(text)}
+    return bool(named) and species not in named
+
+
 # A species word is not a topic.
 _SPECIES_WORDS = frozenset(
     """
@@ -236,8 +273,13 @@ def is_relevant(
     needs one. A source about another species never enters."""
     if species and source.species not in (species, "other", None, ""):
         return False
-    text_lower = _normalize(f"{source.title} {source.snippet or ''}")
-    if species and species != "other" and _OTHER_FAMILY.search(text_lower):
+    if species and names_only_other_animals(source, species):
+        return False
+    # A curated note is filed under its family by hand, and the small mammals' one names the
+    # guinea pig and the rat: it was dropped for the very animals it is about.
+    curated = source.tier == "D" and source.access_depth == "D" and source.species == species
+    text_lower = _GUINEA_PIG.sub(" ", _normalize(f"{source.title} {source.snippet or ''}"))
+    if species and species != "other" and not curated and _OTHER_FAMILY.search(text_lower):
         # Equine cytometry for a heartworm question, swine influenza for a
         # rabbit vaccine: a paper about farm or lab animals is not about
         # this pet, whatever words it shares.

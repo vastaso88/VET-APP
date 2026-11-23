@@ -19,6 +19,7 @@ from packages.core.application.ports.conversation_repository import Conversation
 from packages.core.application.ports.llm_client import LLMClient, LLMGenerationRequest
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizationRequest, PiiAnonymizer
+from packages.core.application.services.finished_text import generate_finished_lines
 from packages.core.application.services.llm_budget import LlmBudget, require_feature_allowance
 from packages.core.application.services.medical_record_context_retriever import italian_date
 from packages.core.application.services.send_chat_message import owner_names_for_anonymization
@@ -107,7 +108,8 @@ class VetSummaryService:
         )
         now = datetime.now(UTC)
 
-        response = self._llm_client.generate(
+        body = generate_finished_lines(
+            self._llm_client,
             LLMGenerationRequest(
                 system_prompt=self._system_prompt(data.language),
                 user_prompt=self._user_prompt(
@@ -119,9 +121,8 @@ class VetSummaryService:
                 temperature=0.1,
                 max_tokens=1200,
                 purpose="vet_summary",
-            )
+            ),
         )
-        body = response.content.strip()
         return VetSummaryOutput(
             summary=(
                 self._header(pet, conversation, now, data.language)

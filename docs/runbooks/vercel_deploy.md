@@ -59,7 +59,7 @@ automatic reserve and still serves vision and dictation, so keep the Groq variab
 - `ANTHROPIC_API_KEY` (a key of its own from the Anthropic console; never in the repository)
 - `ANTHROPIC_MODEL=claude-haiku-5-5` (default)
 - `ANTHROPIC_EFFORT=low` and `ANTHROPIC_EFFORT_LIGHT=low` (optional; `low`, `medium` or `high`)
-- `ANTHROPIC_THINKING_HEADROOM_TOKENS=600` and `ANTHROPIC_TIMEOUT_SECONDS=30` (optional)
+- `ANTHROPIC_THINKING_HEADROOM_TOKENS=1200` and `ANTHROPIC_TIMEOUT_SECONDS=30` (optional)
 - `URGENT_ANSWER_TIMEOUT_SECONDS=12` (optional; `0` = fixed first-aid texts only)
 - `LLM_API_KEY`, `LLM_MODEL`, `LLM_FALLBACK_MODELS`, `LLM_BASE_URL`: the Groq reserve
 - `LLM_DAILY_TOKEN_BUDGETS` may add `claude-haiku-5-5=<tokens>` to change the daily

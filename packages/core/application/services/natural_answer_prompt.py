@@ -35,7 +35,10 @@ from packages.core.domain.conversation.request_kind import RequestKind
 # Changes whenever the rules below change in a way that makes a stored
 # answer stale: part of the answer cache key (answer_cache.py), so a reply
 # written under the old prompt is never served under the new one.
-PROMPT_VERSION = "2026-11-01-consapevolezza"
+# Part of the key of the shared answers: raised on 23/11/2026, so that no stored answer
+# comes back cut in the middle, with a source of another species, with the old titles of
+# the notes or with a cage size no source gives (collaudo, wave 0).
+PROMPT_VERSION = "2026-11-23-collaudo-ondata0"
 
 _VOICE = (
     "You are the assistant inside an app that helps people who live with an animal "
@@ -645,6 +648,16 @@ _LANGUAGE_COUNTRY_PROFILE = (
     "word that agrees with it. When the owner says they are elderly, plain everyday words "
     "and no technical terms."
 )
+# Collaudo, wave 0 (23/11/2026): "a pen of at least 100 x 60 cm" for two guinea pigs, with no
+# source. The rule; the net is packages/core/domain/knowledge/enclosure_size.py.
+_SIZES_NEED_A_SOURCE = (
+    "SIZES NEED A SOURCE. Never give the measures of a cage, pen, hutch, aviary or terrarium "
+    "(centimetres, metres, square metres) unless the reference material or the official "
+    "sources given here state them for this species, or the owner wrote them. Otherwise say "
+    "what the space must allow (running, standing up straight, hiding, separate corners for "
+    "food, rest and toilet), that bigger is better, and that you give no exact minimum "
+    "because you have no source for it here."
+)
 # Prova 3 (22/11/2026): "no cold water, it narrows the vessels of the skin" came from the
 # model, not from a source. The green official source on heat (GOV.UK, "Keeping pets healthy
 # during hot weather", Cercafonti id gov-uk-keeping-pets-healthy-during-hot-weather) says
@@ -904,6 +917,7 @@ def build_system_prompt(
         parts.append(_SUPPLEMENTS_V2)
         parts.append(_LANGUAGE_COUNTRY_PROFILE)
         parts.append(_FIRST_AID_AS_GIVEN)
+        parts.append(_SIZES_NEED_A_SOURCE)
         parts.append(_CHECK_BEFORE_ALARM)
         if dose_only:
             parts.append(_DOSE_ONLY_V2)

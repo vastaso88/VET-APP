@@ -25,16 +25,15 @@ from packages.core.domain.knowledge.models import EvidenceSource
 # to a specific named publication/DOI we can't verify precisely — these
 # are synthesized from well-established, uncontroversial husbandry
 # consensus, honestly labeled as such rather than dressed up as a citation
-# we don't actually hold. They should be reviewed by an
-# exotics-experienced veterinarian before this catalog is ever backed by
-# real user traffic. Species tagging is at family level
+# we don't actually hold. Nobody reviews them (owner's rule: no vet review, ever):
+# what they need is a published source each. Species tagging is at family level
 # ("reptile_amphibian"), not exact species, so a leopard-gecko-specific and
 # a chameleon-specific note can both surface for either animal — a known
 # limitation of starting at this granularity, not fixed here.
 HUSBANDRY_CATALOG: list[EvidenceSource] = [
     EvidenceSource(
         title=(
-            "Curated husbandry note (pending vet review): UVB and thermal gradient "
+            "Curated husbandry note: UVB and thermal gradient "
             "for leopard geckos (Eublepharis macularius)"
         ),
         tier="D",
@@ -52,10 +51,7 @@ HUSBANDRY_CATALOG: list[EvidenceSource] = [
         ),
     ),
     EvidenceSource(
-        title=(
-            "Curated husbandry note (pending vet review): UVB requirement and sun "
-            "exposure risk for chameleons"
-        ),
+        title=("Curated husbandry note: UVB requirement and sun exposure risk for chameleons"),
         tier="D",
         access_depth="D",
         clinical_domain="husbandry",
@@ -73,8 +69,7 @@ HUSBANDRY_CATALOG: list[EvidenceSource] = [
     ),
     EvidenceSource(
         title=(
-            "Curated husbandry note (pending vet review): UVB and metabolic bone "
-            "disease in captive reptiles (general)"
+            "Curated husbandry note: UVB and metabolic bone disease in captive reptiles (general)"
         ),
         tier="D",
         access_depth="D",
@@ -102,10 +97,7 @@ HUSBANDRY_CATALOG: list[EvidenceSource] = [
     # correct the most common, well-documented sizing mistakes, not to
     # replace a species-specific care sheet.
     EvidenceSource(
-        title=(
-            "Curated husbandry note (pending vet review): minimum enclosure size "
-            "for common pet reptiles"
-        ),
+        title=("Curated husbandry note: minimum enclosure size for common pet reptiles"),
         tier="D",
         access_depth="D",
         clinical_domain="husbandry",
@@ -130,10 +122,7 @@ HUSBANDRY_CATALOG: list[EvidenceSource] = [
         ),
     ),
     EvidenceSource(
-        title=(
-            "Curated husbandry note (pending vet review): aquarium size relative to "
-            "fish species and growth"
-        ),
+        title=("Curated husbandry note: aquarium size relative to fish species and growth"),
         tier="D",
         access_depth="D",
         clinical_domain="husbandry",
@@ -168,10 +157,7 @@ HUSBANDRY_CATALOG: list[EvidenceSource] = [
         ),
     ),
     EvidenceSource(
-        title=(
-            "Curated husbandry note (pending vet review): nitrogen cycle in a new "
-            "freshwater aquarium"
-        ),
+        title=("Curated husbandry note: nitrogen cycle in a new freshwater aquarium"),
         tier="D",
         access_depth="D",
         clinical_domain="husbandry",
@@ -186,10 +172,7 @@ HUSBANDRY_CATALOG: list[EvidenceSource] = [
         ),
     ),
     EvidenceSource(
-        title=(
-            "Curated husbandry note (pending vet review): routine water quality "
-            "maintenance in freshwater aquariums"
-        ),
+        title=("Curated husbandry note: routine water quality maintenance in freshwater aquariums"),
         tier="D",
         access_depth="D",
         clinical_domain="husbandry",
@@ -209,10 +192,7 @@ HUSBANDRY_CATALOG: list[EvidenceSource] = [
     # bored?") had zero matching content — this catalog previously had no
     # bird entries at all.
     EvidenceSource(
-        title=(
-            "Curated husbandry note (pending vet review): cage size and enrichment "
-            "for companion parrots"
-        ),
+        title=("Curated husbandry note: cage size and enrichment for companion parrots"),
         tier="D",
         access_depth="D",
         clinical_domain="husbandry",
