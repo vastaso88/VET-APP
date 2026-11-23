@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart' as latlong;
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../shared/maps/map_tiles.dart';
 import '../../../location/domain/coordinates.dart';
 import '../radar_category.dart';
 import '../../../../l10n/l10n.dart';
@@ -67,10 +68,7 @@ class RadarMap extends StatelessWidget {
         ),
       ),
       children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.vetapp.mobile_app',
-        ),
+        quokkaTileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
         CircleLayer(
           circles: [
             CircleMarker(

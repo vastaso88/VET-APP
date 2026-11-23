@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 
 import '../../../design_system/tokens/app_colors.dart';
+import '../../../shared/maps/map_tiles.dart';
 import '../domain/coordinates.dart';
 
 /// A point picked by panning an OpenStreetMap map under a fixed pin at its
@@ -62,10 +63,7 @@ class _CenterPinMapPickerState extends State<CenterPinMapPicker> {
             ),
           ),
           children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.vetapp.mobile_app',
-            ),
+            quokkaTileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
             const RichAttributionWidget(
               attributions: [TextSourceAttribution(CenterPinMapPicker.attribution)],
             ),

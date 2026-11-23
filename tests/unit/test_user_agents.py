@@ -106,6 +106,21 @@ def test_no_program_reaches_a_site_without_a_name() -> None:
     assert not offenders, "\n".join(offenders)
 
 
+def test_every_map_of_the_app_asks_for_its_tiles_with_our_name() -> None:
+    """flutter_map would send "flutter_map (package)": the one place that builds a tile layer
+    sets our name (apps/mobile_app/test/shared/map_tiles_test.dart checks the header)."""
+    lib = ROOT / "apps" / "mobile_app" / "lib"
+    shared = lib / "shared" / "maps" / "map_tiles.dart"
+    name = re.search(r"kMapUserAgent = '([^']+)'", shared.read_text("utf-8"))
+    assert name and name.group(1).startswith("Quokka")
+    offenders = [
+        path.relative_to(ROOT).as_posix()
+        for path in lib.rglob("*.dart")
+        if path != shared and re.search(r"(?<![a-zA-Z])TileLayer[(]", path.read_text("utf-8"))
+    ]
+    assert not offenders, offenders
+
+
 def test_no_user_agent_borrows_a_browser_or_anthropic_name() -> None:
     offenders = []
     for path in _python_files():

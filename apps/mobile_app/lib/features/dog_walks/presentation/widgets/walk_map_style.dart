@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
 
 import '../../../../shared/config/app_runtime_config_loader.dart';
+import '../../../../shared/maps/map_tiles.dart';
 
 /// Which basemap to render for a walk's map (the live tracker in
 /// active_walk_page.dart and the history thumbnails in pet_detail_page.dart
@@ -28,19 +29,15 @@ TileLayer buildWalkTileLayer() {
     // the tiles must come through a server that adds it (not the API on
     // Vercel: a map view is dozens of tile requests, each one a function
     // run) - see docs/maps/README.md.
-    return TileLayer(
+    return quokkaTileLayer(
       urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
       subdomains: const ['a', 'b', 'c', 'd'],
-      userAgentPackageName: 'com.vetapp.mobile_app',
     );
   }
 
   // Official tile.openstreetmap.org: single host, no {s}/{r} placeholders
   // (it doesn't shard across subdomains or serve retina tiles).
-  return TileLayer(
-    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    userAgentPackageName: 'com.vetapp.mobile_app',
-  );
+  return quokkaTileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png');
 }
 
 Widget buildWalkMapAttribution() {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../shared/maps/map_tiles.dart';
 import '../../shared/widgets/pet_loader.dart';
 
 import 'package:flutter_map/flutter_map.dart';
@@ -65,9 +66,8 @@ class _MapsDemoPageState extends State<MapsDemoPage> {
                 child: FlutterMap(
                   options: const MapOptions(initialCenter: _milanCenter, initialZoom: 12.5),
                   children: [
-                    TileLayer(
+                    quokkaTileLayer(
                       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'com.vetapp.mobile_app',
                     ),
                     PolylineLayer(polylines: _walkPolylines(data.walks)),
                     MarkerLayer(markers: [
