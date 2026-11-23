@@ -19,6 +19,7 @@ from apps.api.routes.admin_pets import router as admin_pets_router
 from apps.api.routes.admin_user_actions import router as admin_user_actions_router
 from apps.api.routes.admin_users import router as admin_users_router
 from apps.api.routes.auth import router as auth_router
+from apps.api.routes.auth_pages import router as auth_pages_router
 from apps.api.routes.billing import router as billing_router
 from apps.api.routes.chat import router as chat_router
 from apps.api.routes.chat_attachments import router as chat_attachments_router
@@ -356,6 +357,7 @@ async def handle_unexpected_error(_: Request, exc: Exception) -> JSONResponse:
 
 
 app.include_router(health_router)
+app.include_router(auth_pages_router)
 app.include_router(admin_router)
 app.include_router(admin_age_router)
 app.include_router(admin_llm_usage_router)
