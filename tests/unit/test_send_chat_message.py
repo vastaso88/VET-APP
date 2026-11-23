@@ -217,6 +217,86 @@ def test_send_chat_message_folds_the_attachments_analysis_into_the_prompt() -> N
     assert linked.conversation_id == result.conversation.id
 
 
+class _ForeignKeyAttachments(InMemoryChatAttachmentRepository):
+    """Like the database: an attachment can only point at a conversation already stored."""
+
+    def __init__(self, conversations: InMemoryConversationRepository, failures: int = 0) -> None:
+        super().__init__()
+        self._conversations = conversations
+        self._failures = failures
+
+    def save(self, attachment: ChatAttachment) -> ChatAttachment:
+        if attachment.conversation_id is not None:
+            if self._conversations.get(attachment.conversation_id) is None:
+                raise RuntimeError("23503 foreign key violation")
+            if self._failures > 0:
+                self._failures -= 1
+                raise RuntimeError("database unavailable")
+        return super().save(attachment)
+
+
+def _chat_with_attachments(
+    failures: int = 0,
+) -> tuple[SendChatMessageService, _ForeignKeyAttachments]:
+    pets = InMemoryPetProfileRepository()
+    pets.save(PetProfile(id="pet-1", owner_id="user-1", name="Milo", species="dog"))
+    conversations = InMemoryConversationRepository()
+    attachments = _ForeignKeyAttachments(conversations, failures)
+    attachments.save(
+        ChatAttachment(
+            id="att-1",
+            owner_id="user-1",
+            pet_id="pet-1",
+            storage_key="att-1",
+            content_type="application/pdf",
+            original_filename="referto.pdf",
+            analysis="Referto di prova.",
+        )
+    )
+    service = SendChatMessageService(
+        conversations,
+        ChatOrchestrator(
+            EchoLLMClient(Settings()), InMemoryEvidenceRetriever(), NoopPiiAnonymizer()
+        ),
+        pets,
+        attachment_repository=attachments,
+    )
+    return service, attachments
+
+
+def _first_message_with_attachment(service: SendChatMessageService) -> str:
+    result = service.execute(
+        SendChatMessageInput(
+            owner_id="user-1", pet_id="pet-1", user_message="ciao", attachment_id="att-1"
+        )
+    )
+    assert result.reply.content
+    return result.conversation.id
+
+
+def test_a_new_chat_can_start_with_an_attachment() -> None:
+    # Round 1 of the test network (K22): the attachment was linked before the conversation's
+    # row existed, so the foreign key refused it and the first message answered 500.
+    service, attachments = _chat_with_attachments()
+    conversation_id = _first_message_with_attachment(service)
+    linked = attachments.get("att-1")
+    assert linked is not None and linked.conversation_id == conversation_id
+
+
+def test_a_link_that_fails_once_is_tried_again() -> None:
+    service, attachments = _chat_with_attachments(failures=1)
+    conversation_id = _first_message_with_attachment(service)
+    linked = attachments.get("att-1")
+    assert linked is not None and linked.conversation_id == conversation_id
+
+
+def test_a_link_that_keeps_failing_never_loses_the_answer() -> None:
+    service, attachments = _chat_with_attachments(failures=2)
+    _first_message_with_attachment(service)
+    unlinked = attachments.get("att-1")
+    assert unlinked is not None and unlinked.conversation_id is None
+
+
 def test_send_chat_message_rejects_an_attachment_belonging_to_a_different_pet() -> None:
     pet_repository = InMemoryPetProfileRepository()
     pet_repository.save(PetProfile(id="pet-1", owner_id="user-1", name="Milo", species="dog"))

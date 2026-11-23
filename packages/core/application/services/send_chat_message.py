@@ -1,3 +1,4 @@
+import logging
 from datetime import UTC, date, datetime, timedelta
 
 from pydantic import BaseModel
@@ -20,6 +21,7 @@ from packages.core.application.services.reminder_context_retriever import (
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.domain.age.models import AgeBand, band_for
 from packages.core.domain.common.language import normalize_language
+from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.models import (
     ChatMessage,
     Conversation,
@@ -53,6 +55,8 @@ from packages.core.domain.safety.first_aid import describes_fume_distress, descr
 from packages.core.domain.safety.triage_clarification import requires_immediate_escalation
 from packages.core.domain.subscription.limits import EMERGENCY_CHATS_ABOVE_PET_LIMIT, PlanLimits
 from packages.shared.errors.base import ConversationLimitError, ValidationError
+
+logger = logging.getLogger(__name__)
 
 # How many recent messages cross into the orchestrator (spec v3 §38: never
 # resend the entire history). SituationModelBuilder itself only looks at
@@ -336,7 +340,8 @@ class SendChatMessageService:
                 raise ValidationError("pet_profile not found")
         # Also covers an edited message (EditChatMessageService).
         ensure_not_in_memories(pet_profile)
-        photo_context = self._resolve_attachment(data, conversation, pet_profile)
+        attachment = self._resolve_attachment(data, pet_profile)
+        photo_context = attachment.analysis if attachment is not None else None
         user_message = ChatMessage(
             role="user",
             content=data.user_message.strip(),
@@ -476,6 +481,7 @@ class SendChatMessageService:
             stored_conversation = conversation
         else:
             stored_conversation = self._repository.save(conversation)
+            self._link_attachment(attachment, stored_conversation)
         return SendChatMessageOutput(
             conversation=stored_conversation,
             reply=reply,
@@ -537,17 +543,9 @@ class SendChatMessageService:
         return None
 
     def _resolve_attachment(
-        self,
-        data: SendChatMessageInput,
-        conversation: Conversation,
-        pet_profile: PetProfile,
-    ) -> str | None:
-        """Returns the attachment's cached visual analysis (or None if
-        there's no attachment), and links it to this conversation on
-        first use — an attachment can be uploaded before a conversation
-        officially exists yet (a brand new chat), so it starts scoped
-        only by pet_id (see UploadChatAttachmentService).
-        """
+        self, data: SendChatMessageInput, pet_profile: PetProfile
+    ) -> ChatAttachment | None:
+        """The attachment of this message (or None), checked against its owner and pet."""
         if not data.attachment_id:
             return None
         if self._attachment_repository is None:
@@ -557,11 +555,30 @@ class SendChatMessageService:
             raise ValidationError("attachment not found")
         if attachment.owner_id != data.owner_id or attachment.pet_id != pet_profile.id:
             raise ValidationError("attachment does not belong to this pet")
-        if attachment.conversation_id is None:
-            self._attachment_repository.save(
-                attachment.model_copy(update={"conversation_id": conversation.id})
-            )
-        return attachment.analysis
+        return attachment
+
+    def _link_attachment(
+        self, attachment: ChatAttachment | None, conversation: Conversation
+    ) -> None:
+        """Ties an attachment to the conversation it was first sent in. An attachment is
+        uploaded before a new chat officially exists, so it starts scoped only by pet (see
+        UploadChatAttachmentService) and is linked once the conversation's row is stored:
+        chat_attachments.conversation_id references it, and linking first made every new
+        chat that started with a photo or a PDF fail (round 1 of the test network, 23/11).
+        The answer is already stored here: a link that fails never loses it."""
+        if attachment is None or attachment.conversation_id is not None:
+            return
+        if self._attachment_repository is None:
+            return
+        linked = attachment.model_copy(update={"conversation_id": conversation.id})
+        # Twice: an attachment left without a conversation is cleaned up later as an orphan.
+        for last in (False, True):
+            try:
+                self._attachment_repository.save(linked)
+                return
+            except Exception:
+                if last:
+                    logger.warning("chat attachment not linked to its conversation")
 
     def _load_or_create_conversation(
         self, data: SendChatMessageInput, pet_profile: PetProfile | None = None
