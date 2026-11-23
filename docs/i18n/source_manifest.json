@@ -21283,5 +21283,86 @@
       "de": "2333c486d4f3cab7cf1d75ffd7ae346ff7f88a8e78477e33ae875f90333ab22d",
       "fr": "f711318c1416a1af3c53d3441ec9c46ebe69dcccfb42e7bf99d5633cb4ce319a"
     }
+  },
+  "backend:input_too_long": {
+    "source": "b81dc636ae5fad12f8455d0bc96407bcf5b1d4c36baf205b1c8dc3dbcc96d3fd",
+    "targets": {
+      "en": "16aed38a5ce40159c3ae43c2eb1af2fb48181e7f015d7f0e7223aefaae9323e5",
+      "es": "da348cc16b6c592ced492571b084d711414eeae999c9e7974f2037679d786bfe",
+      "de": "4ade6931606ae5cd08590f002bc2857546faa753dfa28d6859ab0114e7e361b3",
+      "fr": "155657000d2fc0373bda51ab3101d60d161489f93075ad5dadce3d92f9cfffb9"
+    }
+  },
+  "backend:input_too_short": {
+    "source": "8fa9d9d12f544408f6d9f7b702128fe46548e1872b855f2ee1a4ab271c2a1858",
+    "targets": {
+      "en": "fe719434d28e4409302ba8a17d7a68052c303c3a6975eea619be89f66aca4d23",
+      "es": "98dd4199f6e0d45c711bf31768c0b725ea685d0b105871f6e1181424280f11ca",
+      "de": "7a4f49363ebe0e68d4a3d0c49f76a56d7ff71c32d273b36e187d18862f7a83ea",
+      "fr": "23cacbfa86a8640454eb922e3214ec682a119cad760cda4776795035df4e2d14"
+    }
+  },
+  "backend:input_too_many_items": {
+    "source": "65b32affb73ff12e6678134f8938adcd7bd2dac629393d93f56ef7ee46faffbc",
+    "targets": {
+      "en": "4de0ec60e83d33df66072ec8071765fcf0596761481dea38b2dd7c6fb054107c",
+      "es": "1cd40d98a9e5867633fd99f2994739b5f0d9d1e09d0d2e14e2072244a1846a06",
+      "de": "10dc3f7260e7e3d2a68d61d0856c5a20b799c40256a2ee155bf4c5979735ef8f",
+      "fr": "5a4cd04a977682fcea506f5d5e368476fc8c6fb4a44b419ed52c1030bebeb2cc"
+    }
+  },
+  "backend:input_number_too_large": {
+    "source": "2789f061c986c62b168d63702a3d6f1717559ec42450565417157d157cbc7402",
+    "targets": {
+      "en": "cb163b5aca90b00224b26c26b4a4ce3d67ca910c92ef52d424b0014de3418303",
+      "es": "3869f95500fa866e18c323721c1beb9eed56a08108d50ab06af83e9f9273e018",
+      "de": "0a6e5745945ce22fac2f43892e5d06432ecaa73300ade1dcf31d15fa76988c71",
+      "fr": "21399517a3c4c2dc2d2ae5f9dcac645c2237109c9176043a2973bcdb84ac10fc"
+    }
+  },
+  "backend:input_number_too_small": {
+    "source": "0dce2a4b96048eace85e53adce25f02fcf95ccc4152c7749b3de74d86fd1f0e1",
+    "targets": {
+      "en": "6e629a8c8f917fd5b73272ed219f6d4b00590c4ce0dac10302c267f9192bd26c",
+      "es": "0d01be40c7bc5229889812fe1fb3abd0761395b79de635201885f28204e104bc",
+      "de": "4cdb13c3ee5598b75d3cf325515f4ec09c0dd5c2346040efe702916995eece32",
+      "fr": "40a477a0db6d677358de32dad3beeeabce6f9891a95115e2e4afe68fa845d1b1"
+    }
+  },
+  "backend:input_missing": {
+    "source": "47d589185f9c1d52aa53585cfd1374f721cd6aa7b5fd615197e1b8d761ceef98",
+    "targets": {
+      "en": "ca794dc2439c7e5201ca7887ccbeb516f4c8241d2d493911f0094cb3896123d3",
+      "es": "04e7be587c5e0d57d3b04b3787725b79bec91c6b6db02b0e07dd787fd65acb14",
+      "de": "a53cbe428a6a5135fad89c5fea80d35c0b261dde76d04658689b5b4949f15d47",
+      "fr": "e5c027ff9ef777c7e1e640193fd11da86e9523f9ddee36a8bbc349d155ccdf0a"
+    }
+  },
+  "backend:input_bad_date": {
+    "source": "3a325bf9f32612dfc3fd0fd57907a6ac7d1bdb1ac0b3e9a97da03ead4dfa3ae4",
+    "targets": {
+      "en": "e1d3f72893f00e4280b016eef728fa8fa734a895c217c2aa855c4e73f397bb08",
+      "es": "72c305460f4fe8b8ba321f1fe824b458fcc149f661b0c86153676547b92d4768",
+      "de": "db3945f9da6d1fdf103102a49aad4f4b995609e568095b1c2ddc1bc33e09bf94",
+      "fr": "bb0c2365317222d0d72bc82821fd3e71058c1c3937efe729ceb9178c1545f7af"
+    }
+  },
+  "backend:input_invalid": {
+    "source": "f998d6670ddbfc1920b2c00da11ed1e498997b9835f5e20d2ce7badea56d0b3a",
+    "targets": {
+      "en": "75a989f45ce070db4d2c40843427df67bfe9068ce341ac038f954090b6f374fb",
+      "es": "b8e4682e8e245f1149327c60ad2646ce14e35de782c523e3c94889b514174519",
+      "de": "05163b4d79a6025be2db160caac33cf9835ee48e21540726260900fa99b565f8",
+      "fr": "d9587c9257002c3bdfd4589881ccee51d49a113ad10ddd5e9d1bee2062ea2504"
+    }
+  },
+  "backend:not_found": {
+    "source": "bc2c531e1395c7185fc04c3d954dac6b1846fe602f3bc977a18c313fed0ffb9e",
+    "targets": {
+      "en": "a4847fe444cb166d3a5e570e730fe932f64b0b8041f3338c93ac0e42759c0d4b",
+      "es": "08bf6f5e007e5ae5765a65bab1883f325640e9b6f174b94ca4609cb00b9482fa",
+      "de": "e4fe72d3cab4abfd6ef36a84f40697e76c25c54696d389ca20595e1be8ca4391",
+      "fr": "b28541b0e1c9271fda256c64b9a0fadb2a7448ef112abfbfcf85ad5afd685ea8"
+    }
   }
 }
