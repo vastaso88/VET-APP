@@ -156,17 +156,19 @@ alter table public.conversations
 -- table is also where the Flutter medical_records feature already writes
 -- (as `clinical_events`); pet_id is nullable/additive so existing rows
 -- written without it keep working, but the chat integration only reads
--- rows that do have a pet_id set.
+-- rows that do have a pet_id set. (2026-11-23: the live table has pet_id NOT NULL,
+-- like the other three columns the app always writes: see the alignment block
+-- below.)
 create table if not exists public.clinical_events (
     id text primary key,
-    pet_id text references public.pet_profiles(id) on delete cascade,
+    pet_id text not null references public.pet_profiles(id) on delete cascade,
     pet_name text not null,
     title text not null,
     subtitle text,
     meta text,
     badge text,
     detail_source text,
-    created_at text not null default now()::text
+    created_at timestamptz not null default now()
 );
 
 -- Links an uploaded referto (medical_records feature) to its real file,
@@ -224,6 +226,61 @@ update public.clinical_events
 alter table public.clinical_events alter column category set default 'document';
 alter table public.clinical_events alter column category set not null;
 
+-- Allineamento alla produzione (2026-11-23, confronto con information_schema.columns di ywbuz).
+-- In produzione clinical_events ha owner_id, pet_id, event_type ed event_date NOT NULL e
+-- created_at di tipo timestamptz (default now()). Gli script qui sopra le lasciavano
+-- facoltative e created_at era text: un database costruito dagli script (il gemello di
+-- collaudo) accettava righe che la produzione rifiuta. Ogni percorso che scrive la tabella
+-- (medical_records_repository.dart: saveRecord, updateRecordDetails) valorizza tutti e
+-- quattro i campi; il backend Python la legge soltanto. Idempotente e senza perdere righe:
+-- prima si converte e si riempie, poi si impone NOT NULL.
+create or replace function pg_temp.try_timestamptz(text_value text)
+returns timestamptz language plpgsql as $$
+begin
+    return text_value::timestamptz;
+exception when others then
+    return null;
+end;
+$$;
+do $$
+begin
+    if exists (
+        select 1 from information_schema.columns
+         where table_schema = 'public' and table_name = 'clinical_events'
+           and column_name = 'created_at' and data_type = 'text'
+    ) then
+        -- Il default text (now()::text) non si converte da solo: via e poi di nuovo.
+        alter table public.clinical_events alter column created_at drop default;
+        alter table public.clinical_events alter column created_at type timestamptz
+            using coalesce(pg_temp.try_timestamptz(created_at), now());
+    end if;
+end;
+$$;
+alter table public.clinical_events alter column created_at set default now();
+alter table public.clinical_events alter column created_at set not null;
+-- Righe scritte prima che i campi fossero obbligatori: si ricavano, non si cancellano.
+update public.clinical_events e
+    set owner_id = p.owner_id
+    from public.pet_profiles p
+    where e.owner_id is null and e.pet_id = p.id;
+update public.clinical_events set event_type = 'document' where event_type is null;
+update public.clinical_events set event_date = created_at::date where event_date is null;
+do $$
+declare
+    missing bigint;
+begin
+    select count(*) into missing from public.clinical_events
+     where owner_id is null or pet_id is null;
+    if missing > 0 then
+        raise exception 'clinical_events: % rows have no owner or no pet (the live table does not allow them): fix or remove them by hand, then run this script again', missing;
+    end if;
+end;
+$$;
+alter table public.clinical_events alter column owner_id set not null;
+alter table public.clinical_events alter column pet_id set not null;
+alter table public.clinical_events alter column event_type set not null;
+alter table public.clinical_events alter column event_date set not null;
+
 -- Patologie (2026-10-14): one row per illness of a pet. `status` is
 -- 'ongoing' or 'resolved'; `ended_on` only when resolved. An optional file
 -- goes through the same chat-attachments upload as the referti.
@@ -256,7 +313,13 @@ create table if not exists public.reminders (
 -- column if not exists" pattern as 9d6522f, found missing 2026-09-29 when
 -- saveReminder's upsert was failing silently against this table.
 alter table public.reminders add column if not exists pet_name text;
-alter table public.reminders add column if not exists kind text;
+-- kind is NOT NULL with default 'custom' on the live table (2026-11-23): a row saved without
+-- it gets 'custom'. An explicit null is refused, so writers leave the key out when they have
+-- no value (SupabaseReminderRepository.save); the Flutter app always sends one.
+alter table public.reminders add column if not exists kind text not null default 'custom';
+update public.reminders set kind = 'custom' where kind is null;
+alter table public.reminders alter column kind set default 'custom';
+alter table public.reminders alter column kind set not null;
 alter table public.reminders add column if not exists due_at timestamptz;
 alter table public.reminders add column if not exists interval_unit text;
 alter table public.reminders add column if not exists interval_value integer;

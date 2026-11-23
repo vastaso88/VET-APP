@@ -51,7 +51,8 @@ class AgeGateService:
 
     def declare(self, owner_id: str, birth_date: date, now: datetime | None = None) -> AgeStatus:
         """Stores the date once. An age under the minimum is stored too: it
-        is what keeps the account closed (and lets the 30-day review find it)."""
+        is what keeps the account closed (and lets the 30-day review find it).
+        The same date again returns the status; a different one is refused."""
         now = now or utc_now()
         age = age_on(birth_date, now.date())
         if age < 0 or age > OLDEST_PLAUSIBLE_AGE:
@@ -60,6 +61,11 @@ class AgeGateService:
             AccountAge(owner_id=owner_id, birth_date=birth_date, declared_at=now)
         )
         if not created:
+            existing = self._repository.get(owner_id)
+            if existing is not None and existing.birth_date == birth_date:
+                # The same confirmation again (a retry, a second tap, a second device): nothing
+                # changes and nothing is refused. Only a DIFFERENT date is 409, as before.
+                return self.status(owner_id, now.date())
             raise AgeRestrictedError("age_already_declared")
         return self.status(owner_id, now.date())
 

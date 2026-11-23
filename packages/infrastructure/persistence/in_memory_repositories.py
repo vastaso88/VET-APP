@@ -57,7 +57,10 @@ from packages.core.domain.marketplace.models import (
 )
 from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
 from packages.core.domain.pet_profile.models import PetProfile
-from packages.core.domain.pet_profile.weight_measurement import WeightMeasurement
+from packages.core.domain.pet_profile.weight_measurement import (
+    WeightMeasurement,
+    latest_allowed_date,
+)
 from packages.core.domain.radar_places.competences import RadarCompetenceClaim
 from packages.core.domain.radar_places.models import (
     RadarCountryCoverage,
@@ -178,6 +181,7 @@ class InMemoryWeightMeasurementRepository(WeightMeasurementRepository):
             for owner, measurement in self._items
             if owner == owner_id
             and measurement.pet_id == pet_id
+            and measurement.measured_at <= latest_allowed_date()
             and (not with_body_condition or measurement.body_condition is not None)
         ]
         if not own:

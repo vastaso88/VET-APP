@@ -779,5 +779,5 @@ def test_not_helpful_flow_on_a_health_answer() -> None:
     assert "escalate_next_health" not in stored
 
     missing = client.post(f"/conversations/{conversation_id}/messages/nope/not-helpful")
-    assert missing.status_code == 400
+    assert missing.status_code == 404
     assert "not found" in missing.json()["detail"]

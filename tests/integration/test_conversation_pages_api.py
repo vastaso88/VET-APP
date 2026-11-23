@@ -160,8 +160,9 @@ def test_user_b_sees_none_of_user_as_chats(as_user: Callable[[str], None]) -> No
     assert cursor is None
     stolen = client.get(f"/conversations/{mine.id}")
     missing = client.get("/conversations/does-not-exist")
-    assert stolen.status_code == missing.status_code == 400
-    assert stolen.json() == {"detail": "conversation not found"} == missing.json()
+    assert stolen.status_code == missing.status_code == 404
+    assert stolen.json() == missing.json()  # not yours and not there: the same answer
+    assert missing.json()["detail"] == "conversation not found"
 
 
 def test_the_detail_returns_the_messages_of_the_owners_chat_without_internals(

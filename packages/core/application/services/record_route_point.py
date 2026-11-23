@@ -27,10 +27,9 @@ class RecordRoutePointService:
 
     def execute(self, data: RecordRoutePointInput) -> RecordRoutePointOutput:
         walk = self._repository.get(data.walk_id)
-        if walk is None:
+        # Someone else's walk answers exactly like one that does not exist (K28).
+        if walk is None or walk.owner_id != data.owner_id:
             raise ValidationError("walk not found")
-        if walk.owner_id != data.owner_id:
-            raise ValidationError("walk does not belong to owner")
         if walk.status != "in_progress":
             raise ValidationError("cannot record a point on a walk that isn't in progress")
 

@@ -1,12 +1,15 @@
 import logging
+import re
 import uuid
 from collections.abc import Awaitable, Callable
 
 from fastapi import FastAPI, Request, Response
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from apps.api.rate_limit import SlidingWindowLimiter, build_middleware
+from apps.api.request_errors import request_error_body
 from apps.api.request_language import request_language
 from apps.api.routes.account import router as account_router
 from apps.api.routes.account_age import router as account_age_router
@@ -181,8 +184,33 @@ async def handle_pet_input_error(request: Request, exc: PetInputError) -> JSONRe
     )
 
 
+@app.exception_handler(RequestValidationError)
+async def handle_request_validation(request: Request, exc: RequestValidationError) -> JSONResponse:
+    """A body or a parameter that does not fit its schema: 422, as before, with the list the
+    apps read (`type`, `loc`) but a short sentence in the owner's language instead of FastAPI's
+    technical English, and never the text the owner typed (K08)."""
+    return JSONResponse(
+        status_code=422,
+        content=request_error_body(exc.errors(), request_language(request)),
+    )
+
+
+# "<thing> not found" (also "message not found in this conversation"): a thing that is not there,
+# or is not the caller's, answers 404 with the same `detail` the apps already map to a sentence.
+_NOT_FOUND = re.compile(r"^[a-z_]+ not found( in this conversation)?$")
+
+
 @app.exception_handler(ValidationError)
-async def handle_validation_error(_: Request, exc: ValidationError) -> JSONResponse:
+async def handle_validation_error(request: Request, exc: ValidationError) -> JSONResponse:
+    if _NOT_FOUND.match(str(exc)):
+        return JSONResponse(
+            status_code=404,
+            content={
+                "detail": str(exc),
+                "code": "not_found",
+                "message": translate("not_found", request_language(request)),
+            },
+        )
     return JSONResponse(status_code=400, content={"detail": str(exc)})
 
 

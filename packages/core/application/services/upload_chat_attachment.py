@@ -120,10 +120,9 @@ class UploadChatAttachmentService:
 
     def _execute(self, data: UploadChatAttachmentInput) -> UploadChatAttachmentOutput:
         pet_profile = self._pet_profile_repository.get(data.pet_id)
-        if pet_profile is None:
+        # Someone else's pet answers exactly like one that does not exist (K28).
+        if pet_profile is None or pet_profile.owner_id != data.owner_id:
             raise ValidationError("pet_profile not found")
-        if pet_profile.owner_id != data.owner_id:
-            raise ValidationError("pet_profile does not belong to this owner")
         ensure_not_in_memories(pet_profile)
         if len(data.file_bytes) > self._max_bytes:
             raise ValidationError(

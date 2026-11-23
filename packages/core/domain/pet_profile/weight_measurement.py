@@ -4,7 +4,7 @@ The chat reads the latest one instead of the free-text weight of the profile,
 with its date, so it can tell how recent the figure is ("23 kg al 14 ottobre").
 """
 
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 
 from pydantic import BaseModel
 
@@ -22,6 +22,17 @@ _MONTHS_IT = (
     "novembre",
     "dicembre",
 )
+
+
+# A weighing dated after today is not a weighing: refused when written (the database trigger in
+# scripts/setup/weight_no_future_dates.sql) and ignored when read. One day of tolerance, for the
+# phones whose time zone is ahead of the server's.
+FUTURE_TOLERANCE_DAYS = 1
+
+
+def latest_allowed_date(now: datetime | None = None) -> date:
+    """The last date a weighing may carry: tomorrow in UTC."""
+    return ((now or datetime.now(UTC)).date()) + timedelta(days=FUTURE_TOLERANCE_DAYS)
 
 
 class WeightMeasurement(BaseModel):

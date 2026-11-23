@@ -182,3 +182,160 @@ def test_the_repository_schema_file_parses_and_declares_the_clinical_event_colum
         assert columns[name].has_default, name
     assert not columns["pet_name"].not_null
     assert "pet_profiles" in declared.tables and "reminders" in declared.tables
+
+
+# -- type, default and NOT NULL (2026-11-23): the names alone let production and the twin drift --
+
+
+def _columns_rows(*rows: tuple[str, str, str, str, str | None]) -> list[dict[str, object]]:
+    """Rows shaped like `columns_query()`: table, column, data_type, is_nullable, default."""
+    return [
+        {
+            "table_name": table,
+            "column_name": column,
+            "data_type": data_type,
+            "is_nullable": nullable,
+            "column_default": default,
+            "is_identity": "NO",
+            "is_generated": "NEVER",
+        }
+        for table, column, data_type, nullable, default in rows
+    ]
+
+
+def test_an_alter_column_type_is_read_by_the_declared_schema() -> None:
+    declared = check_schema.parse_declared_schema(
+        "create table public.t (id text primary key, at text not null default now()::text);\n"
+        "alter table public.t alter column at drop default;\n"
+        "alter table public.t alter column at type timestamptz using at::timestamptz;\n"
+        "alter table public.t alter column at set default now();\n"
+        "alter table public.t add column n integer;\n"
+        "alter table public.t alter column n set data type bigint;\n"
+    )
+
+    columns = declared.tables["t"]
+    assert columns["at"].type == "timestamp with time zone"
+    assert columns["at"].has_default and columns["at"].not_null
+    assert columns["n"].type == "bigint"
+
+
+def test_the_exact_shape_reports_type_default_and_not_null_separately() -> None:
+    declared = check_schema.parse_declared_schema(
+        "create table public.t (\n"
+        "  id text primary key,\n"
+        "  a text,\n"
+        "  b text not null,\n"
+        "  c text not null default 'x',\n"
+        "  d text,\n"
+        "  tags text[],\n"
+        "  v extensions.vector(3)\n"
+        ");"
+    )
+    live = check_schema.parse_live_columns(
+        _columns_rows(
+            ("t", "id", "text", "NO", None),
+            ("t", "a", "text", "NO", None),  # NOT NULL there, optional here
+            ("t", "b", "text", "NO", None),  # same
+            ("t", "c", "text", "NO", None),  # no default there
+            ("t", "d", "timestamp with time zone", "YES", "now()"),  # type and default
+            ("t", "tags", "ARRAY", "YES", None),  # arrays and extension types: family only
+            ("t", "v", "USER-DEFINED", "YES", None),
+        )
+    )
+
+    report = check_schema.compare(declared, live)
+    shape = "\n".join(report.shape)
+
+    assert "t.a: NOT NULL sì nel database, no nel nostro schema" in shape
+    assert "t.c: predefinito no nel database, sì nel nostro schema" in shape
+    assert "t.d: tipo 'timestamp with time zone' nel database, 'text' nel nostro schema" in shape
+    assert "t.d: predefinito sì nel database, no nel nostro schema" in shape
+    for agreeing in ("t.id", "t.b", "t.tags", "t.v"):
+        assert agreeing not in shape, agreeing
+
+
+def test_identity_and_generated_columns_count_as_having_a_default() -> None:
+    declared = check_schema.parse_declared_schema(
+        "create table public.t (id bigint generated always as identity primary key);"
+    )
+    rows = _columns_rows(("t", "id", "bigint", "NO", None))
+    rows[0]["is_identity"] = "YES"
+
+    assert check_schema.compare(declared, check_schema.parse_live_columns(rows)).shape == []
+
+
+def test_the_rest_description_only_judges_what_it_can_see() -> None:
+    # A NOT NULL column that has a default is not in `required`: the REST description cannot
+    # tell it from an optional one, so no NOT NULL difference is reported for it.
+    declared = check_schema.parse_declared_schema(
+        "create table public.t (id text primary key, k text not null default 'x', o text);"
+    )
+    live = check_schema.parse_live_schema(
+        {
+            "definitions": {
+                "t": {
+                    "required": ["id"],
+                    "properties": {
+                        "id": {"format": "text"},
+                        "k": {"format": "text", "default": "x"},
+                        "o": {"format": "text"},
+                    },
+                }
+            }
+        }
+    )
+
+    assert check_schema.compare(declared, live).shape == []
+
+
+# The six columns that production had and the scripts did not (read by the Orchestrator from
+# information_schema.columns of the live project, 2026-11-23).
+PRODUCTION_SIX = _columns_rows(
+    ("clinical_events", "owner_id", "text", "NO", "(auth.uid())::text"),
+    ("clinical_events", "pet_id", "text", "NO", None),
+    ("clinical_events", "event_type", "text", "NO", "'document'::text"),
+    ("clinical_events", "event_date", "date", "NO", "CURRENT_DATE"),
+    ("clinical_events", "created_at", "timestamp with time zone", "NO", "now()"),
+    ("reminders", "kind", "text", "NO", "'custom'::text"),
+)
+
+
+def _repository_shape_of_the_six(sql: str) -> list[str]:
+    declared = check_schema.parse_declared_schema(sql)
+    live = check_schema.parse_live_columns(PRODUCTION_SIX)
+    found: list[str] = []
+    for table, columns in live.tables.items():
+        for name, column in columns.items():
+            ours = declared.tables[table][name]
+            found += check_schema._shape_differences(table, name, ours, column)
+    return found
+
+
+def test_the_repository_scripts_have_the_shape_production_has_for_the_six_columns() -> None:
+    sql = check_schema.SCHEMA_FILE.read_text(encoding="utf-8")
+
+    assert _repository_shape_of_the_six(sql) == []
+
+
+def test_the_check_notices_when_one_of_the_six_goes_back_to_the_old_shape() -> None:
+    sql = check_schema.SCHEMA_FILE.read_text(encoding="utf-8")
+    kind_declared = "add column if not exists kind text not null default 'custom';"
+    kind_old = "add column if not exists kind text;"
+    for statement, fragment in (
+        ("alter table public.clinical_events alter column event_date set not null;", "event_date"),
+        ("alter table public.clinical_events alter column owner_id set not null;", "owner_id"),
+        ("alter table public.reminders alter column kind set not null;", "kind"),
+    ):
+        assert statement in sql, statement
+        broken_sql = sql.replace(statement, "")
+        if fragment == "kind":  # the add-column line says it too: back to the old line
+            assert kind_declared in sql
+            broken_sql = broken_sql.replace(kind_declared, kind_old)
+        broken = _repository_shape_of_the_six(broken_sql)
+        assert any(fragment in line and "NOT NULL" in line for line in broken), statement
+    old_created_at = sql.replace(
+        "alter table public.clinical_events alter column created_at type timestamptz",
+        "alter table public.clinical_events alter column created_at type text",
+    )
+    assert old_created_at != sql
+    assert any("created_at: tipo" in line for line in _repository_shape_of_the_six(old_created_at))

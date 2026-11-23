@@ -305,6 +305,6 @@ def test_the_route_edits_through_the_api() -> None:
             f"/conversations/{conversation_id}/messages/nope",
             json={"user_message": "x", "client_message_id": "c2"},
         )
-        assert missing.status_code == 400
+        assert missing.status_code == 404
     finally:
         reset_container()

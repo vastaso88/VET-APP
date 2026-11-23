@@ -21,12 +21,23 @@ What it reports, per table of the `public` schema:
 - live NOT NULL columns without a default that our schema does not
   declare, or declares as optional (nobody fills them: inserts fail);
 - live columns and tables our schema does not know (informational);
-- column types that differ (informational).
+- the shape of the columns both have: type, default (yes/no) and NOT NULL
+  (QK-schema 2026-11-23: until then only the names were compared, and a
+  database built from these scripts, the collaudo twin, accepted rows that
+  production refuses).
+
+How exact the shape is depends on the source. The REST description of the API
+shows the type exactly, a default only when it is not json/array, and NOT NULL
+only for columns without a default. For an exact answer on every column run
+`columns_query()` (printed at the end of the report) in the Supabase SQL editor,
+save the rows as JSON and pass the file: `--columns-file columns.json`. No
+request is made then.
 
 Triggers are not visible through the REST API: the script prints a query
 to paste in the Supabase SQL editor that lists the ones that are not ours.
 
-Exit status: 1 when something that breaks writes was found, 0 otherwise.
+Exit status: 1 when something that breaks writes or a shape difference was
+found, 0 otherwise.
 SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are read from the environment
 or the local .env and never printed.
 """
@@ -76,6 +87,9 @@ class Column:
     has_default: bool = False
     # False when the source cannot tell whether the column has a default.
     default_is_known: bool = True
+    # False when the source cannot tell whether the column is NOT NULL (the REST
+    # description lists only the NOT NULL columns that have no default).
+    not_null_is_known: bool = True
 
     @property
     def must_be_supplied(self) -> bool:
@@ -92,6 +106,8 @@ class Schema:
 class Report:
     blocking: list[str] = field(default_factory=list)
     informational: list[str] = field(default_factory=list)
+    # type / default / NOT NULL of a column that both sides have, and that differ.
+    shape: list[str] = field(default_factory=list)
 
 
 def _strip_comments(sql: str) -> str:
@@ -187,6 +203,12 @@ def parse_declared_schema(sql: str) -> Schema:
                 target.not_null = False
             elif change.startswith("set not null"):
                 target.not_null = True
+            elif change.startswith(("type ", "set data type ")):
+                words = change.split()
+                start = 1 if words[0] == "type" else 3
+                target.type = _normalize_type(
+                    re.split(r"\s+using\s+", " ".join(words[start:]), maxsplit=1)[0]
+                )
 
     schema.triggers = {
         name.lower()
@@ -215,14 +237,39 @@ def parse_live_schema(openapi: dict[str, Any]) -> Schema:
         required = set(definition.get("required") or [])
         columns: dict[str, Column] = {}
         for name, spec in (definition.get("properties") or {}).items():
+            has_default = "default" in spec
+            default_is_known = not _hides_default(spec)
             columns[name.lower()] = Column(
                 name=name.lower(),
                 type=_normalize_type(str(spec.get("format") or spec.get("type") or "")),
                 not_null=name in required,
-                has_default="default" in spec,
-                default_is_known=not _hides_default(spec),
+                has_default=has_default,
+                default_is_known=default_is_known,
+                # Listed as required: NOT NULL. Not listed and no (visible) default: nullable.
+                # Not listed with a default: it can be either.
+                not_null_is_known=name in required or (default_is_known and not has_default),
             )
         schema.tables[table.lower()] = columns
+    return schema
+
+
+def parse_live_columns(rows: list[dict[str, Any]]) -> Schema:
+    """The exact shape, from the rows of `columns_query()` (information_schema.columns)."""
+    schema = Schema()
+    for row in rows:
+        table = str(row["table_name"]).lower()
+        name = str(row["column_name"]).lower()
+        has_default = (
+            row.get("column_default") is not None
+            or str(row.get("is_identity") or "").upper() == "YES"
+            or str(row.get("is_generated") or "").upper() == "ALWAYS"
+        )
+        schema.tables.setdefault(table, {})[name] = Column(
+            name=name,
+            type=_normalize_type(str(row.get("data_type") or "")),
+            not_null=str(row.get("is_nullable") or "").upper() == "NO",
+            has_default=has_default,
+        )
     return schema
 
 
@@ -266,16 +313,52 @@ def compare(declared: Schema, live: Schema) -> Report:
                     "facoltativa o ha un default (se il codice non la valorizza, "
                     "l'inserimento fallisce)"
                 )
-            if column.type and ours[name].type and column.type != ours[name].type:
-                report.informational.append(
-                    f"{table}.{name}: tipo '{column.type}' nel database, "
-                    f"'{ours[name].type}' nel nostro schema"
-                )
+            report.shape.extend(_shape_differences(table, name, ours[name], column))
     for table in sorted(live.tables.keys() - declared.tables.keys()):
         report.informational.append(
             f"{table}: tabella presente nel database, non nel nostro schema"
         )
     return report
+
+
+def _same_type(live: str, ours: str) -> bool:
+    if not live or not ours or live == ours:
+        return True
+    # information_schema names an array "ARRAY" and an extension or enum type
+    # "USER-DEFINED": the exact name is not there, so only the family is compared.
+    if live == "array":
+        return ours.endswith("[]")
+    return live == "user-defined"
+
+
+def _shape_differences(table: str, name: str, ours: Column, live: Column) -> list[str]:
+    """Type, default and NOT NULL of a column both sides have."""
+    found: list[str] = []
+    where = f"{table}.{name}"
+    if not _same_type(live.type, ours.type):
+        found.append(f"{where}: tipo '{live.type}' nel database, '{ours.type}' nel nostro schema")
+    if live.not_null_is_known and live.not_null != ours.not_null:
+        found.append(
+            f"{where}: NOT NULL {'sì' if live.not_null else 'no'} nel database, "
+            f"{'sì' if ours.not_null else 'no'} nel nostro schema"
+        )
+    if live.default_is_known and ours.default_is_known and live.has_default != ours.has_default:
+        found.append(
+            f"{where}: predefinito {'sì' if live.has_default else 'no'} nel database, "
+            f"{'sì' if ours.has_default else 'no'} nel nostro schema"
+        )
+    return found
+
+
+def columns_query() -> str:
+    """Type, default and NOT NULL of every column, exactly (the REST description hides some)."""
+    return (
+        "select table_name, column_name, data_type, is_nullable, column_default,\n"
+        "       is_identity, is_generated\n"
+        "from information_schema.columns\n"
+        "where table_schema = 'public'\n"
+        "order by 1, 2;"
+    )
 
 
 def not_null_query() -> str:
@@ -361,6 +444,11 @@ def main() -> int:
     parser.add_argument(
         "--table", action="append", default=[], help="limita il controllo a questa tabella"
     )
+    parser.add_argument(
+        "--columns-file",
+        help="JSON con le righe di columns_query(): tipo, predefinito e NOT NULL esatti, "
+        "senza interrogare il database",
+    )
     arguments = parser.parse_args()
 
     # The messages are Italian: a Windows console would garble the accents.
@@ -370,7 +458,11 @@ def main() -> int:
 
     _use_system_certificates()
     declared = parse_declared_schema(SCHEMA_FILE.read_text(encoding="utf-8"))
-    live = parse_live_schema(fetch_live_description())
+    if arguments.columns_file:
+        rows = json.loads(Path(arguments.columns_file).read_text(encoding="utf-8"))
+        live = parse_live_columns(rows)
+    else:
+        live = parse_live_schema(fetch_live_description())
     if arguments.table:
         wanted = {name.lower() for name in arguments.table}
         declared.tables = {k: v for k, v in declared.tables.items() if k in wanted}
@@ -380,6 +472,9 @@ def main() -> int:
     print(f"Tabelle dichiarate: {len(declared.tables)} - tabelle nel database: {len(live.tables)}")
     print(f"\nDA CORREGGERE ({len(report.blocking)})")
     for line in report.blocking or ["  nessuna differenza che blocchi i salvataggi"]:
+        print(f"  {line.strip()}")
+    print(f"\nFORMA: TIPO, PREDEFINITO, NOT NULL ({len(report.shape)})")
+    for line in report.shape or ["  nessuna differenza"]:
         print(f"  {line.strip()}")
     print(f"\nPER INFORMAZIONE ({len(report.informational)})")
     for line in report.informational or ["  niente da segnalare"]:
@@ -395,7 +490,13 @@ def main() -> int:
         "valorizzare si ottiene con:\n"
     )
     print(not_null_query())
-    return 1 if report.blocking else 0
+    print(
+        "\nFORMA ESATTA: per tipo, predefinito e NOT NULL di ogni colonna (anche quelle che la "
+        "descrizione REST nasconde) incolla questa query, salva il risultato come JSON e "
+        "rilancia con --columns-file:\n"
+    )
+    print(columns_query())
+    return 1 if report.blocking or report.shape else 0
 
 
 if __name__ == "__main__":

@@ -39,10 +39,10 @@ def get_age_status() -> dict[str, object]:
 
 @router.post("/age")
 def declare_age(request: DeclareAgeRequest) -> dict[str, object]:
-    """Records the declared date of birth, once. 409 `age_already_declared`
-    afterwards: a correction goes through support (right to rectification),
-    otherwise a minor could simply type another date. A date under the
-    minimum is kept too, because it is what keeps the account closed."""
+    """Records the declared date of birth, once. The SAME date again is answered like the
+    first time (nothing changes); a DIFFERENT one is 409 `age_already_declared`: a correction
+    goes through support (right to rectification), otherwise a minor could simply type another
+    date. A date under the minimum is kept too, because it is what keeps the account closed."""
     container = get_container()
     with allow_closed_account():
         user = container.auth_provider.get_current_user()

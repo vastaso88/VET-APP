@@ -717,10 +717,14 @@ class SendChatMessageService:
         if self._attachment_repository is None:
             raise ValidationError("attachments are not enabled for this deployment")
         attachment = self._attachment_repository.get(data.attachment_id)
-        if attachment is None:
+        # An attachment of another owner (or of another pet of this owner) answers exactly like
+        # one that does not exist (K28).
+        if (
+            attachment is None
+            or attachment.owner_id != data.owner_id
+            or attachment.pet_id != pet_profile.id
+        ):
             raise ValidationError("attachment not found")
-        if attachment.owner_id != data.owner_id or attachment.pet_id != pet_profile.id:
-            raise ValidationError("attachment does not belong to this pet")
         return attachment
 
     def _link_attachment(

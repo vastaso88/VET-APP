@@ -57,7 +57,10 @@ from packages.core.domain.marketplace.models import (
 )
 from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
 from packages.core.domain.pet_profile.models import PetProfile
-from packages.core.domain.pet_profile.weight_measurement import WeightMeasurement
+from packages.core.domain.pet_profile.weight_measurement import (
+    WeightMeasurement,
+    latest_allowed_date,
+)
 from packages.core.domain.radar_places.competences import RadarCompetenceClaim
 from packages.core.domain.radar_places.models import (
     OSM_SOURCE_NAME,
@@ -265,6 +268,11 @@ class SupabaseReminderRepository(ReminderRepository):
 
     def save(self, reminder: Reminder) -> Reminder:
         payload = _serialize_payload(reminder.model_dump(mode="json"))
+        if payload.get("kind") is None:
+            # reminders.kind is NOT NULL with the default 'custom' on the live table: a missing
+            # key takes the default, an explicit null is refused (a reminder created through
+            # the API, which has no kind, would not save).
+            payload.pop("kind", None)
         self._client.table(self._table).upsert(payload).execute()
         return reminder
 
@@ -826,6 +834,8 @@ class SupabaseWeightMeasurementRepository(WeightMeasurementRepository):
                 .select("pet_id,measured_at,weight_kg,body_condition")
                 .eq("owner_id", owner_id)
                 .eq("pet_id", pet_id)
+                # Never a weighing dated in the future (a row written around the app's checks).
+                .lte("measured_at", latest_allowed_date().isoformat())
             )
             if with_body_condition:
                 # The column holds 1..5 or null: "> 0" keeps only the filled ones.

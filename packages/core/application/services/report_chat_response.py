@@ -53,10 +53,10 @@ class ReportChatResponseService:
 
     def execute(self, data: ReportChatResponseInput) -> ReportChatResponseOutput:
         conversation = self._conversation_repository.get(data.conversation_id)
-        if conversation is None:
+        # Someone else's chat answers exactly like one that does not exist (K28): the reply never
+        # confirms that an id belongs to another account.
+        if conversation is None or conversation.owner_id != data.reporter_owner_id:
             raise ValidationError("conversation not found")
-        if conversation.owner_id != data.reporter_owner_id:
-            raise ValidationError("conversation does not belong to this owner")
 
         message = next((m for m in conversation.messages if m.id == data.message_id), None)
         if message is None:

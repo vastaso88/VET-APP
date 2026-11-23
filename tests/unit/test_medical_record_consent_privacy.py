@@ -235,7 +235,7 @@ def test_get_consent_reports_a_v1_decision_as_needing_a_new_one() -> None:
         assert after["needs_decision"] is False
         assert after["recorded_version"] == CURRENT_VERSION
 
-        assert client.get("/pets/not-mine/medical-record-consent").status_code == 400
+        assert client.get("/pets/not-mine/medical-record-consent").status_code == 404
     finally:
         reset_container()
 
