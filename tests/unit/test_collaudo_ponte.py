@@ -7,6 +7,7 @@ from __future__ import annotations
 import functools
 import json
 import threading
+import urllib.error
 import urllib.request
 from collections.abc import Iterator
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -110,6 +111,30 @@ def test_api_calls_reach_the_twin_with_the_code_and_pages_get_the_app(web_server
     assert echoed == {"method": "POST", "path": "/chat?x=1", "body": '{"a":1}', "bypass": "codice"}
     with urllib.request.urlopen(web_server + "/home-shell", timeout=10) as response:
         assert response.read() == b"<html>app</html>"
+
+
+def test_external_sites_can_be_shut_out(tmp_path: Path) -> None:
+    (tmp_path / "index.html").write_text("<html></html>", "utf-8")
+    handler = functools.partial(
+        servi_web._handler(TWIN, blocca_esterni=True), directory=str(tmp_path)
+    )
+    server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        with urllib.request.urlopen(base + "/", timeout=10) as response:
+            policy = response.headers["Content-Security-Policy"]
+        with urllib.request.urlopen(base + servi_web.PAGINA_NUOVA, timeout=10) as response:
+            assert "storage" in response.headers["Clear-Site-Data"]
+            assert b"url=/" in response.read()
+        with pytest.raises(urllib.error.HTTPError) as refused:
+            urllib.request.urlopen(base + "/api/local-services/places?lat=1", timeout=10)
+    finally:
+        server.shutdown()
+    assert refused.value.code == 503
+    assert TWIN.supabase_url in policy and "openstreetmap" not in policy
+    assert servi_web.rotta_sospesa("/geocoding?q=x")
+    assert not servi_web.rotta_sospesa("/local-services/sources")
 
 
 def test_the_server_listens_on_this_computer_only() -> None:
