@@ -7574,6 +7574,18 @@ abstract class AppLocalizations {
   /// **'Data non valida (gg/mm/aaaa).'**
   String get remindersDateInvalid;
 
+  /// No description provided for @remindersDatePast.
+  ///
+  /// In it, this message translates to:
+  /// **'Questa data è già passata: scegli oggi o un giorno futuro.'**
+  String get remindersDatePast;
+
+  /// No description provided for @remindersTimePast.
+  ///
+  /// In it, this message translates to:
+  /// **'Quest'ora è già passata: scegli un orario più tardi.'**
+  String get remindersTimePast;
+
   /// No description provided for @remindersFormKind.
   ///
   /// In it, this message translates to:

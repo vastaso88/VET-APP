@@ -2720,6 +2720,8 @@
   "remindersDosePickerHelp": "Orario della dose",
   "remindersDateRequired": "Inserisci una data.",
   "remindersDateInvalid": "Data non valida (gg/mm/aaaa).",
+  "remindersDatePast": "Questa data è già passata: scegli oggi o un giorno futuro.",
+  "remindersTimePast": "Quest'ora è già passata: scegli un orario più tardi.",
   "remindersFormKind": "Tipo",
   "remindersFormTitleLabel": "Titolo",
   "remindersFormTitleHint": "Es. Richiamo vaccinale",

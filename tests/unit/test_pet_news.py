@@ -146,6 +146,25 @@ def test_no_snapshot_and_no_feed_gives_an_empty_answer() -> None:
     assert result.updated_at is None
 
 
+def test_first_failed_read_with_no_copy_is_repeated_within_seconds_not_minutes() -> None:
+    # The first request after a cold start found the feeds down: the Home must not
+    # stay without headlines for the five minutes meant for a copy that exists.
+    clock, reader = _Clock(), _Reader([_raw("Il cane corre")], fail=True)
+    service, _ = _service(reader, clock)
+
+    assert service.get(categories=["Cane"]).categories == {}
+    assert reader.calls == 1
+    clock.now = NOW + timedelta(seconds=5)
+    service.get()
+    assert reader.calls == 1  # still inside the short pause: no request storm
+
+    reader.fail = False
+    clock.now = NOW + timedelta(seconds=25)
+    result = service.get(categories=["Cane"])
+    assert reader.calls == 2
+    assert [i.title for i in result.categories["Cane"]] == ["Il cane corre"]
+
+
 def test_useless_refresh_keeps_old_snapshot() -> None:
     clock, reader = _Clock(), _Reader([_raw("Il cane corre")])
     service, _ = _service(reader, clock)

@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -67,7 +69,11 @@ def test_chat_and_reminder_flow() -> None:
 
     reminder_create = client.post(
         "/reminders",
-        json={"pet_id": pet_id, "title": "Vaccino", "due_date": "2026-04-01"},
+        json={
+            "pet_id": pet_id,
+            "title": "Vaccino",
+            "due_date": (date.today() + timedelta(days=30)).isoformat(),
+        },
     )
     assert reminder_create.status_code == 200
 

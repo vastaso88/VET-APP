@@ -4607,6 +4607,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String get remindersDateInvalid => 'Ungültiges Datum (TT/MM/JJJJ).';
 
   @override
+  String get remindersDatePast =>
+      'Dieses Datum liegt in der Vergangenheit: Wählen Sie heute oder einen späteren Tag.';
+
+  @override
+  String get remindersTimePast =>
+      'Diese Uhrzeit ist schon vorbei: Wählen Sie eine spätere Uhrzeit.';
+
+  @override
   String get remindersFormKind => 'Art';
 
   @override

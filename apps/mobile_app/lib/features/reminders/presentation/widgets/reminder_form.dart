@@ -131,7 +131,10 @@ class _ReminderFormState extends State<ReminderForm> {
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
-      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      // A new reminder starts today or later; one being edited may keep a past date.
+      firstDate: widget.initial == null
+          ? DateTime.now()
+          : DateTime.now().subtract(const Duration(days: 365)),
       lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
       // Typing already happens in the field next to this icon (with its
       // gg/mm/aaaa slashes); the dialog only needs to offer the calendar.
@@ -186,6 +189,26 @@ class _ReminderFormState extends State<ReminderForm> {
     final raw = (value ?? '').trim();
     if (raw.isEmpty) return context.l10n.remindersDateRequired;
     if (parseStrictDate(raw) == null) return appDateInputText(context.l10n.remindersDateInvalid);
+    return null;
+  }
+
+  /// The first (or only) date of a reminder. A NEW reminder cannot start in the past:
+  /// the day is checked against today, and a spot or recurring one against the
+  /// chosen time too (today at an hour already gone). Editing an existing one is
+  /// not checked: an overdue reminder stays editable, and a recurring one moves
+  /// forward on its own. Dates are the phone's own, so time zones need no care.
+  String? _validateStartDate(String? value) {
+    final invalid = _validateDate(value);
+    if (invalid != null) return invalid;
+    if (widget.initial != null) return null;
+    final day = parseStrictDate(value!.trim())!;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    if (day.isBefore(today)) return context.l10n.remindersDatePast;
+    if (_kind != EventKind.course &&
+        _combine(day).isBefore(now.subtract(const Duration(minutes: 1)))) {
+      return context.l10n.remindersTimePast;
+    }
     return null;
   }
 
@@ -292,7 +315,7 @@ class _ReminderFormState extends State<ReminderForm> {
                     },
                     controller: _dateController,
                     onPick: _pickDate,
-                    validator: _validateDate,
+                    validator: _validateStartDate,
                   ),
                 ),
                 // A course is notified at its dose times instead.

@@ -2720,6 +2720,8 @@
   "remindersDosePickerHelp": "Hora de la dosis",
   "remindersDateRequired": "Introduce una fecha.",
   "remindersDateInvalid": "Fecha no válida (dd/mm/aaaa).",
+  "remindersDatePast": "Esta fecha ya ha pasado: elige hoy o un día posterior.",
+  "remindersTimePast": "Esta hora ya ha pasado: elige una hora posterior.",
   "remindersFormKind": "Tipo",
   "remindersFormTitleLabel": "Título",
   "remindersFormTitleHint": "Ej. Refuerzo de vacuna",

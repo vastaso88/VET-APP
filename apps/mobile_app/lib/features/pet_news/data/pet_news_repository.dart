@@ -92,8 +92,18 @@ class BackendPetNewsRepository implements PetNewsRepository {
   // (a few seconds, more on a slow line): a patient wait and one more try
   // beat a section that stays "unavailable" until the app restarts.
   static const _timeout = Duration(seconds: 25);
-  static const _attempts = 2;
-  /// Wait before the second try. Tests set it to zero (no timer is left behind).
+
+  /// The tries after the first are shorter: the server has been woken by then.
+  static const _retryTimeout = Duration(seconds: 10);
+
+  /// Up to four asks: a cold server may answer "no headlines yet" (its feeds are
+  /// read on the first request after a quiet spell and a failed read is not
+  /// repeated at once), and a section that says "unavailable" on the very first
+  /// opening is worse than a few more seconds of loader.
+  static const _attempts = 4;
+
+  /// Wait before the second try; it grows with each one (2, 4, 6 s). Tests set it
+  /// to zero (no timer is left behind).
   @visibleForTesting
   static Duration retryPause = const Duration(seconds: 2);
   static const _itemsPerCategory = 12;
@@ -147,26 +157,31 @@ class BackendPetNewsRepository implements PetNewsRepository {
 
   Future<Map<String, List<PetNewsItem>>?> _fetchAll() async {
     for (var attempt = 0; attempt < _attempts; attempt++) {
-      if (attempt > 0 && retryPause > Duration.zero) await Future<void>.delayed(retryPause);
-      final result = await _fetchOnce();
+      if (attempt > 0 && retryPause > Duration.zero) {
+        await Future<void>.delayed(retryPause * attempt);
+      }
+      final result = await _fetchOnce(attempt == 0 ? _timeout : _retryTimeout);
       if (result != null) return result;
     }
     return null;
   }
 
-  Future<Map<String, List<PetNewsItem>>?> _fetchOnce() async {
+  /// The headlines of one ask, or null when it gave none worth showing: a failed
+  /// request, an unreadable body, or an answer with no headline at all (what a
+  /// server that has not read its feeds yet sends). Null is tried again and never
+  /// kept as the shared answer, so an empty first reply cannot hide the news for
+  /// the next 20 minutes.
+  Future<Map<String, List<PetNewsItem>>?> _fetchOnce(Duration timeout) async {
     final baseUrl = _configLoader.load().apiBaseUrl;
     try {
       final response = await _client
           .get(Uri.parse('$baseUrl/news').replace(queryParameters: {'limit': '$_itemsPerCategory'}))
-          .timeout(_timeout);
+          .timeout(timeout);
       if (response.statusCode != 200) return null;
 
       final parsed = _parse(response.body);
-      // Only an answer with at least one headline is worth keeping for later.
-      if (parsed != null && parsed.values.any((items) => items.isNotEmpty)) {
-        unawaited(_disk.save(response.body, DateTime.now()));
-      }
+      if (parsed == null || !parsed.values.any((items) => items.isNotEmpty)) return null;
+      unawaited(_disk.save(response.body, DateTime.now()));
       return parsed;
     } catch (_) {
       return null;

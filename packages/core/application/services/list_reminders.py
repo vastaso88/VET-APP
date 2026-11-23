@@ -17,4 +17,9 @@ class ListRemindersService:
         self._repository = repository
 
     def execute(self, data: ListRemindersInput) -> ListRemindersOutput:
-        return ListRemindersOutput(reminders=self._repository.list_by_owner(data.owner_id))
+        # Soonest first, as the app shows them; the id breaks ties so the order is stable.
+        reminders = sorted(
+            self._repository.list_by_owner(data.owner_id),
+            key=lambda reminder: (reminder.due_date, reminder.id),
+        )
+        return ListRemindersOutput(reminders=reminders)

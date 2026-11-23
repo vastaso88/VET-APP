@@ -4616,6 +4616,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get remindersDateInvalid => 'Date non valide (jj/mm/aaaa).';
 
   @override
+  String get remindersDatePast =>
+      'Cette date est déjà passée : choisissez aujourd\'hui ou un jour à venir.';
+
+  @override
+  String get remindersTimePast =>
+      'Cette heure est déjà passée : choisissez une heure plus tardive.';
+
+  @override
   String get remindersFormKind => 'Type';
 
   @override

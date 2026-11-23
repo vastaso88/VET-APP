@@ -2720,6 +2720,8 @@
   "remindersDosePickerHelp": "Uhrzeit der Dosis",
   "remindersDateRequired": "Geben Sie ein Datum ein.",
   "remindersDateInvalid": "Ungültiges Datum (TT/MM/JJJJ).",
+  "remindersDatePast": "Dieses Datum liegt in der Vergangenheit: Wählen Sie heute oder einen späteren Tag.",
+  "remindersTimePast": "Diese Uhrzeit ist schon vorbei: Wählen Sie eine spätere Uhrzeit.",
   "remindersFormKind": "Art",
   "remindersFormTitleLabel": "Titel",
   "remindersFormTitleHint": "z. B. Auffrischimpfung",

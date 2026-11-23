@@ -2720,6 +2720,8 @@
   "remindersDosePickerHelp": "Dose time",
   "remindersDateRequired": "Enter a date.",
   "remindersDateInvalid": "Invalid date (dd/mm/yyyy).",
+  "remindersDatePast": "This date has already passed: pick today or a later day.",
+  "remindersTimePast": "This time has already passed: pick a later time.",
   "remindersFormKind": "Type",
   "remindersFormTitleLabel": "Title",
   "remindersFormTitleHint": "E.g. Vaccine booster",

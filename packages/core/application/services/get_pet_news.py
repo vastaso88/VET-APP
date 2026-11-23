@@ -30,6 +30,10 @@ DEFAULT_AUDIENCE = "it"
 # After a failed read of the feeds, do not try again for this long: a dead
 # source must not make every request wait for its timeout.
 _RETRY_AFTER_FAILURE = timedelta(minutes=5)
+# With no copy at all to serve (the first request after a cold start, or after the
+# cache was emptied) a failed read is repeated much sooner: five minutes of empty
+# answers is five minutes of an empty "Curiosità" section on the Home.
+_RETRY_AFTER_FAILURE_NO_COPY = timedelta(seconds=20)
 
 
 @dataclass(frozen=True)
@@ -102,7 +106,8 @@ class GetPetNewsService:
         if snapshot is not None and now - snapshot.fetched_at < self._ttl:
             return snapshot, False
         failed_at = self._last_failure.get(audience)
-        if failed_at is not None and now - failed_at < _RETRY_AFTER_FAILURE:
+        pause = _RETRY_AFTER_FAILURE if snapshot is not None else _RETRY_AFTER_FAILURE_NO_COPY
+        if failed_at is not None and now - failed_at < pause:
             return snapshot, snapshot is not None
 
         with self._lock:
