@@ -78,7 +78,7 @@ def test_overpass_source_posts_query_and_maps_osm_elements(
         OVERPASS_BASE_URL="https://overpass.example/api/interpreter",
         OVERPASS_TIMEOUT_SECONDS=25,
         OVERPASS_MAX_RADIUS_KM=10,
-        OVERPASS_USER_AGENT="VET-APP-test/1.0",
+        OVERPASS_USER_AGENT="Quokka-test/1.0",
     )
     source = OverpassRadarPlacesSource(settings)
 
@@ -98,7 +98,7 @@ def test_overpass_source_posts_query_and_maps_osm_elements(
 
     assert http_request.full_url == "https://overpass.example/api/interpreter"
     assert http_request.get_method() == "POST"
-    assert http_request.get_header("User-agent") == "VET-APP-test/1.0"
+    assert http_request.get_header("User-agent") == "Quokka-test/1.0"
     assert captured["timeout"] == 20
     assert "around:10000,45.464200,9.189900" in overpass_query
     assert '["amenity"="veterinary"]' in overpass_query

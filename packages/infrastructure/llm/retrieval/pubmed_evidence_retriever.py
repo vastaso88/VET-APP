@@ -10,6 +10,7 @@ from packages.core.application.ports.evidence_retriever import (
 from packages.core.application.services.evidence_query_planner import EvidenceQueryPlanner
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.infrastructure.llm.retrieval.intent_domain import domain_from_intent
+from packages.shared.http_identity import USER_AGENT
 
 ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 ESUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
@@ -44,7 +45,9 @@ def _tier_from_pub_types(pub_types: list[str]) -> str:
 
 
 def _default_fetcher(url: str, *, timeout_seconds: int) -> bytes:
-    http_request = request.Request(url, headers={"Accept": "application/json"})
+    http_request = request.Request(
+        url, headers={"Accept": "application/json", "User-Agent": USER_AGENT}
+    )
     with request.urlopen(http_request, timeout=timeout_seconds) as response:
         body: bytes = response.read()
         return body

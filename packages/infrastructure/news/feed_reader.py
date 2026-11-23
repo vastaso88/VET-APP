@@ -14,7 +14,7 @@ from packages.infrastructure.news.rss import MAX_FEED_BYTES, FeedError, parse_fe
 logger = logging.getLogger(__name__)
 
 # Identifies us to the publishers so they can tell what is reading their feed.
-USER_AGENT = "VetApp-NewsReader/1.0 (+headlines and links only; https://vet-app.vercel.app)"
+USER_AGENT = "QuokkaNews/1.0 (+headlines and links only; https://quokkapet.net)"
 _TIMEOUT_SECONDS = 6
 _MAX_ENTRIES_PER_FEED = 40
 

@@ -49,7 +49,7 @@ tabella `pet_news_snapshots` (una riga per pubblico, oggi `it`). L'app legge sol
 
 Termini: nessuno dei siti dichiara nel feed una licenza restrittiva; i feed sono pubblicati
 per la ripresa dei titoli. Usiamo il minimo (titolo + link + nome fonte, riconoscibile) con
-un'identificazione chiara (`User-Agent: VetApp-NewsReader/1.0`). I termini d'uso completi dei
+un'identificazione chiara (`User-Agent: QuokkaNews/1.0`). I termini d'uso completi dei
 singoli siti non sono stati letti uno per uno: **rischio residuo basso e gestibile**
 (`NEWS_DISABLED_FEEDS` + eventuale richiesta di rimozione). Non sono incluse ANSA (la
 categoria animali non ha un feed dedicato), LifeGate (`/feed/` vietato dal robots.txt),

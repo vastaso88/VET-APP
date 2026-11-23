@@ -6,6 +6,7 @@ from urllib import error, request
 from packages.core.application.ports.speech_to_text_provider import SpeechToTextProvider
 from packages.shared.config.settings import Settings
 from packages.shared.errors.base import ProviderError
+from packages.shared.http_identity import USER_AGENT
 
 # Extension by content type, so the part sent upstream carries a name we
 # chose rather than whatever the client typed.
@@ -62,7 +63,7 @@ class GroqSpeechToTextProvider(SpeechToTextProvider):
                 "Authorization": f"Bearer {self._settings.llm_api_key}",
                 # See GroqLLMClient for why: Cloudflare blocks urllib's
                 # default user agent outright.
-                "User-Agent": "VetApp/1.0",
+                "User-Agent": USER_AGENT,
             },
             method="POST",
         )

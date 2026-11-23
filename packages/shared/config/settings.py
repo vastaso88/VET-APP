@@ -7,6 +7,7 @@ from pydantic import BeforeValidator, Field, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 from packages.shared.config.groq_models import is_groq_production_model, production_models_only
+from packages.shared.http_identity import USER_AGENT
 
 _logger = logging.getLogger(__name__)
 
@@ -380,20 +381,15 @@ class Settings(BaseSettings):
         default=70.0, gt=0, le=100, alias="OVERPASS_MAX_RADIUS_KM"
     )
     # Overpass usage policy asks for an identifying User-Agent with a way
-    # to reach the operator: set OVERPASS_USER_AGENT in production to
-    # include a real technical contact.
-    overpass_user_agent: str = Field(
-        default="VET-APP/1.0 (+https://vet-app-psi-nine.vercel.app)", alias="OVERPASS_USER_AGENT"
-    )
+    # to reach the operator: our name and our site.
+    overpass_user_agent: str = Field(default=USER_AGENT, alias="OVERPASS_USER_AGENT")
     # Address <-> position for the app (Località, Segnala!), called from
     # the backend so the user's address and IP never reach the provider
     # (security audit APP-6). Same identification rule as Overpass.
     nominatim_base_url: str = Field(
         default="https://nominatim.openstreetmap.org", alias="NOMINATIM_BASE_URL"
     )
-    nominatim_user_agent: str = Field(
-        default="VET-APP/1.0 (+https://vet-app-psi-nine.vercel.app)", alias="NOMINATIM_USER_AGENT"
-    )
+    nominatim_user_agent: str = Field(default=USER_AGENT, alias="NOMINATIM_USER_AGENT")
     # "Segnala!" (community reports on the radar). The pseudonym key
     # turns account ids into the stand-ins stored with reports and votes;
     # it must live only here (environment), never in the database. When

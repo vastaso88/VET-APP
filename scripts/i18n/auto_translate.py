@@ -155,6 +155,7 @@ def deepl(message: str, language: str) -> str:
         headers={
             "Authorization": "DeepL-Auth-Key " + key,
             "Content-Type": "application/json",
+            "User-Agent": "QuokkaTranslations/1.0",
         },
     )
     try:

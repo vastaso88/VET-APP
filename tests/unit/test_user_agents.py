@@ -13,6 +13,8 @@ from pathlib import Path
 
 import pytest
 
+from packages.shared.config.settings import Settings
+
 ROOT = Path(__file__).resolve().parents[2]
 FOLDERS = ("scripts", "packages", "apps/api", ".local/chat_eval", ".local/synthetic_users")
 FORBIDDEN = re.compile(r"mozilla|claude", re.IGNORECASE)
@@ -20,7 +22,7 @@ FORBIDDEN = re.compile(r"mozilla|claude", re.IGNORECASE)
 # a literal User-Agent header, a UA constant, or a *_user_agent setting default
 _HEADER = re.compile(r"""["']User-Agent["']\s*:\s*(?:f?["']([^"']+)["'])""", re.IGNORECASE)
 _CONSTANT = re.compile(
-    r"""^\s*(?:UA\w*|USER_AGENT\w*|\w*_UA)\s*(?::\s*str\s*)?=\s*\(?\s*f?["']([^"']+)["']""",
+    r"""^\s*(?:UA\w*|\w*USER_AGENT\w*|\w*_UA)\s*(?::\s*str\s*)?=\s*\(?\s*f?["']([^"']+)["']""",
     re.MULTILINE,
 )
 _SETTING = re.compile(
@@ -42,20 +44,20 @@ def user_agents(text: str) -> list[str]:
     return [m.group(1) for rx in (_HEADER, _CONSTANT, _SETTING) for m in rx.finditer(text)]
 
 
-# The evaluation and research tools must name themselves "Quokka..." (Normativa 20/11): this
-# covers every borrowed name (Googlebot, Chrome, Safari, other companies), not only two.
+# Everything of ours that reaches a site names itself "Quokka..." (Normativa 20/11, CLAUDE.md
+# "Richieste a siti esterni"): this covers every borrowed name (Googlebot, Chrome, Safari,
+# other companies), not only two. Product code included since 23/11/2026.
 QUOKKA_FOLDERS = (
-    "scripts/eval",
-    "scripts/collaudo",
-    "scripts/security",
-    "scripts/sources",
+    "scripts",
+    "packages",
+    "apps/api",
     ".local/chat_eval",
     ".local/synthetic_users",
     ".local/cercafonti",
 )
 
 
-def test_eval_and_research_tools_name_themselves_quokka() -> None:
+def test_everything_that_reaches_a_site_names_itself_quokka() -> None:
     offenders = []
     for folder in QUOKKA_FOLDERS:
         base = ROOT / folder
@@ -65,6 +67,42 @@ def test_eval_and_research_tools_name_themselves_quokka() -> None:
             for agent in user_agents(path.read_text("utf-8", errors="replace")):
                 if not agent.startswith("Quokka"):
                     offenders.append(f"{path.relative_to(ROOT)}: {agent}")
+    assert not offenders, "\n".join(offenders)
+
+
+def test_the_configurable_names_start_with_quokka_by_default() -> None:
+    defaults = {
+        name: field.default
+        for name, field in Settings.model_fields.items()
+        if name.endswith("user_agent")
+    }
+    assert defaults, "no *_user_agent setting found"
+    assert all(str(value).startswith("Quokka") for value in defaults.values()), defaults
+
+
+# Programs that only reach our own Supabase project or this computer.
+OWN_HOSTS_ONLY = {
+    "apps/api/routes/admin_users.py",
+    "scripts/eval/synthetic_users/client.py",
+    "scripts/setup/check_schema.py",
+    "scripts/setup/seed_demo_supabase.py",
+    "scripts/setup/seed_source_registry.py",
+}
+_OUTGOING = re.compile(r"urlopen\(|httpx\.(?:Client|AsyncClient|get|post|put|stream)\(")
+_NAMES_ITSELF = re.compile(r"User-Agent", re.IGNORECASE)
+
+
+def test_no_program_reaches_a_site_without_a_name() -> None:
+    """A request without a User-Agent leaves as "Python-urllib" or "python-httpx"."""
+    offenders = []
+    for folder in ("scripts", "packages", "apps/api"):
+        for path in (ROOT / folder).rglob("*.py"):
+            relative = path.relative_to(ROOT).as_posix()
+            text = path.read_text("utf-8", errors="replace")
+            if relative in OWN_HOSTS_ONLY or not _OUTGOING.search(text):
+                continue
+            if not _NAMES_ITSELF.search(text):
+                offenders.append(relative)
     assert not offenders, "\n".join(offenders)
 
 
