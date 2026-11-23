@@ -74,5 +74,12 @@ massimo 3 account per giro; se gli orfani superano 5 o il 10% degli account non 
 Gli account in pausa esistono ancora, quindi non sono orfani; Ricordi, registro delle cancellazioni e
 conversazioni tenute seguono le regole della cancellazione di sempre.
 
-**Regola per tutti, da subito: un account non si elimina mai dalla dashboard di Supabase.** Si usa l'app
-o la rotta di cancellazione.
+**Regola per tutti, da subito: un account non si elimina mai dalla dashboard di Supabase, nemmeno un
+account di prova.** Si usa la nostra cancellazione:
+
+- **in produzione**: si entra nell'app con quell'account e si sceglie «Elimina subito». Se la password non
+  c'è più, prima si recupera con l'e-mail; se nemmeno l'e-mail è raggiungibile, non si tocca nulla e si
+  avvisa l'Orchestratore. Nessuna chat chiede o consiglia di farlo dalla dashboard;
+- **sul gemello**: `gemello.py azzera`, che usa la stessa cancellazione;
+- gli account di prova in produzione sono già esclusi dalle regole (`CLAUDE.md`): se ne esiste ancora uno
+  vecchio, si elimina come sopra e si annota nel registro interno.

@@ -21,7 +21,7 @@ Conseguenze:
 
 > Quokka non gestisce le urgenze: in emergenza rivolgiti subito a un veterinario, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Non aspettare la risposta dell'app.
 
-**Riga fissa sotto il campo di scrittura** (proposta, in attesa del sì del proprietario: il suo «ok, serve» del 22 novembre copre clausola, schermata e Termini; sostituisce quella del [20](20_biblioteca_testi_originali_diritti_licenze_e_lettere.md) §20.11):
+**Riga fissa sotto il campo di scrittura** (approvata dal proprietario il 23 novembre, «approvo», riferito dall'Orchestratore; sostituisce quella del [20](20_biblioteca_testi_originali_diritti_licenze_e_lettere.md) §20.11):
 
 > Risponde un'IA e può sbagliare. Non gestisce le urgenze: nel dubbio, chiama il veterinario.
 

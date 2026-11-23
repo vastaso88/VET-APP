@@ -38,7 +38,8 @@ messaggio di rilascio o nel PR.
 ### Database (Supabase)
 - [ ] Fotografia dei nomi di produzione rifatta (`scripts/security/production_tables.json`,
       query in `13_righe_orfane.md` §3) e `test_production_tables_covered.py` verde; parte 1 di
-      `scripts/maintenance/erase_orphan_rows.sql` a zero. Nessun account eliminato dalla dashboard.
+      `scripts/maintenance/erase_orphan_rows.sql` a zero. Nessun account, nemmeno di prova, eliminato dalla dashboard:
+      si usa la nostra cancellazione (`13_righe_orfane.md` §4).
 - [ ] Ogni tabella nuova in `scripts/setup/*.sql` ha `enable row level
       security` e policy `*_own` oppure un commento che spiega perché è
       pubblica o solo backend.
