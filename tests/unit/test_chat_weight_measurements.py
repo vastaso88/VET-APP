@@ -11,10 +11,13 @@ from packages.core.application.services.send_chat_message import (
     SendChatMessageInput,
     SendChatMessageService,
 )
+from packages.core.domain.medical_record.consent_text import CURRENT_VERSION
+from packages.core.domain.medical_record.models import MedicalRecordConsentRecord
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.pet_profile.weight_measurement import (
     WeightMeasurement,
     format_weight_kg,
+    weight_history_for_prompt,
     weight_label_with_date,
 )
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
@@ -329,3 +332,139 @@ def test_chat_reads_a_body_condition_only_for_species_with_a_guide(
     _ask(_service_with_profile_condition(client, weights, "thin", species=species, breed=breed))
 
     assert bool(_condition_lines(client)) is has_condition
+
+
+# --- the history of the weighings (collaudo F06) ------------------------------------------------
+
+
+def _ferret_diary(weights: InMemoryWeightMeasurementRepository, owner: str = "owner-1") -> None:
+    for day, kg in (
+        (date(THIS_YEAR, 10, 4), 1.42),
+        (date(THIS_YEAR, 10, 14), 1.38),
+        (date(THIS_YEAR, 10, 24), 1.30),
+        (date(THIS_YEAR, 11, 5), 1.25),
+        (date(THIS_YEAR, 11, 14), 1.16),
+        (date(THIS_YEAR, 11, 22), 1.10),
+    ):
+        weights.add(owner, _measurement(day, kg))
+
+
+def _history_prompt(
+    weights: InMemoryWeightMeasurementRepository, *, consent: bool | None, owner: str = "owner-1"
+) -> str:
+    client = RecordingLLMClient()
+    pets = InMemoryPetProfileRepository()
+    pets.save(
+        PetProfile(
+            id="pet-1",
+            owner_id=owner,
+            name="Zorro",
+            species="Altro",
+            breed="Furetto",
+            medical_record_consent=(
+                None
+                if consent is None
+                else MedicalRecordConsentRecord(granted=consent, version=CURRENT_VERSION)
+            ),
+        )
+    )
+    service = SendChatMessageService(
+        InMemoryConversationRepository(),
+        ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer()),
+        pets,
+        weight_measurement_repository=weights,
+    )
+    service.execute(
+        SendChatMessageInput(
+            owner_id=owner, pet_id="pet-1", user_message="Elencami le pesate di Zorro"
+        )
+    )
+    return client.requests[-1].user_prompt
+
+
+def test_the_chat_reads_every_weighing_and_the_change_between_them() -> None:
+    weights = InMemoryWeightMeasurementRepository()
+    _ferret_diary(weights)
+
+    prompt = _history_prompt(weights, consent=True)
+
+    assert "Weighings the owner recorded: 1,42 kg (4 ottobre)" in prompt
+    for kg in ("1,42 kg", "1,38 kg", "1,3 kg", "1,25 kg", "1,16 kg", "1,1 kg"):
+        assert kg in prompt, kg
+    assert "From the first to the last: -320 g (-23%) in 49 days" in prompt
+
+
+@pytest.mark.parametrize("consent", [False, None])
+def test_without_the_record_consent_only_the_latest_weighing_is_read(consent: bool | None) -> None:
+    weights = InMemoryWeightMeasurementRepository()
+    _ferret_diary(weights)
+
+    prompt = _history_prompt(weights, consent=consent)
+
+    assert "Weight: 1,1 kg" in prompt
+    assert "Weighings the owner recorded" not in prompt and "1,42" not in prompt
+
+
+@pytest.mark.parametrize("consent", [False, None])
+def test_without_the_consent_a_question_on_the_weighings_is_told_why_they_are_not_read(
+    consent: bool | None,
+) -> None:
+    # Live, 24/11/2026: with the consent off the chat said "there is only one weighing".
+    weights = InMemoryWeightMeasurementRepository()
+    _ferret_diary(weights)
+
+    prompt = _history_prompt(weights, consent=consent)
+
+    assert "Only the latest weighing is readable here" in prompt
+    assert "never say there is only one weighing" in prompt
+    assert "1,42" not in prompt
+
+
+def test_the_line_on_the_weighings_comes_only_when_they_are_asked_and_the_consent_is_off() -> None:
+    weights = InMemoryWeightMeasurementRepository()
+    _ferret_diary(weights)
+    with_consent = _history_prompt(weights, consent=True)
+    assert "Only the latest weighing is readable here" not in with_consent
+
+
+def test_another_owners_weighings_never_reach_the_prompt() -> None:
+    weights = InMemoryWeightMeasurementRepository()
+    _ferret_diary(weights, owner="owner-2")
+
+    prompt = _history_prompt(weights, consent=True)
+
+    assert "Weighings the owner recorded" not in prompt and "1,42" not in prompt
+
+
+def test_a_single_weighing_has_no_history() -> None:
+    weights = InMemoryWeightMeasurementRepository()
+    weights.add("owner-1", _measurement(date(THIS_YEAR, 10, 4), 1.42))
+
+    assert "Weighings the owner recorded" not in _history_prompt(weights, consent=True)
+
+
+def test_the_history_counts_days_and_keeps_the_later_of_two_weighings_of_a_day() -> None:
+    text = weight_history_for_prompt(
+        [
+            _measurement(date(2026, 10, 1), 4),
+            _measurement(date(2026, 10, 20), 5),
+            _measurement(date(2026, 10, 20), 4.4),
+        ],
+        today=date(2026, 10, 25),
+    )
+    assert text == (
+        "4 kg (1 ottobre); 4,4 kg (20 ottobre). "
+        "From the first to the last: +400 g (+10%) in 19 days"
+    )
+
+
+def test_the_repository_gives_the_last_ones_oldest_first_and_never_the_future() -> None:
+    repository = InMemoryWeightMeasurementRepository()
+    for day in (1, 2, 3, 4, 5):
+        repository.add("owner-1", _measurement(date(2026, 9, day), 10 + day))
+    repository.add("owner-1", _measurement(date(2099, 1, 1), 99))
+    repository.add("owner-2", _measurement(date(2026, 9, 6), 77))
+
+    recent = repository.recent_for_pet("owner-1", "pet-1", 3)
+
+    assert [m.weight_kg for m in recent] == [13, 14, 15]

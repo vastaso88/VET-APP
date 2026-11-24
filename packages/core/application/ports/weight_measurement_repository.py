@@ -13,3 +13,7 @@ class WeightMeasurementRepository(Protocol):
     ) -> WeightMeasurement | None:
         """The most recent weighing that recorded a body condition, or None."""
         ...
+
+    def recent_for_pet(self, owner_id: str, pet_id: str, limit: int) -> list[WeightMeasurement]:
+        """The last [limit] weighings of this owner's pet, oldest first."""
+        ...

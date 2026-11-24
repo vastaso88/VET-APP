@@ -159,7 +159,7 @@ class _Query:
         self.calls = calls
 
     def __getattr__(self, name: str) -> Any:
-        def record(*args: Any) -> _Query:
+        def record(*args: Any, **_: Any) -> _Query:
             self.calls.append((name, args))
             return self
 
@@ -180,6 +180,21 @@ def test_the_supabase_read_asks_only_for_weighings_up_to_tomorrow() -> None:
     SupabaseWeightMeasurementRepository(client).latest_for_pet(OWNER, "pet-1")
 
     assert ("lte", ("measured_at", latest_allowed_date().isoformat())) in calls
+
+
+def test_the_supabase_history_is_the_owners_own_pet_newest_limited_and_never_the_future() -> None:
+    calls: list[tuple[str, tuple[Any, ...]]] = []
+
+    class _Client:
+        def table(self, _name: str) -> _Query:
+            return _Query(calls)
+
+    client: Any = _Client()
+    assert SupabaseWeightMeasurementRepository(client).recent_for_pet(OWNER, "pet-1", 12) == []
+
+    assert ("eq", ("owner_id", OWNER)) in calls and ("eq", ("pet_id", "pet-1")) in calls
+    assert ("lte", ("measured_at", latest_allowed_date().isoformat())) in calls
+    assert ("limit", (12,)) in calls
 
 
 def test_the_database_script_refuses_future_weighings_with_a_day_of_tolerance() -> None:

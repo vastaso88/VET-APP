@@ -852,6 +852,26 @@ class SupabaseWeightMeasurementRepository(WeightMeasurementRepository):
     ) -> WeightMeasurement | None:
         return self._latest(owner_id, pet_id, with_body_condition=True)
 
+    def recent_for_pet(self, owner_id: str, pet_id: str, limit: int) -> list[WeightMeasurement]:
+        try:
+            response = (
+                self._client.table(self._table)
+                .select("pet_id,measured_at,weight_kg,body_condition")
+                .eq("owner_id", owner_id)
+                .eq("pet_id", pet_id)
+                # Never a weighing dated in the future (a row written around the app's checks).
+                .lte("measured_at", latest_allowed_date().isoformat())
+                .order("measured_at", desc=True)
+                .order("created_at", desc=True)
+                .limit(limit)
+                .execute()
+            )
+            rows = [WeightMeasurement.model_validate(row) for row in response.data or []]
+            return list(reversed(rows))
+        except Exception:
+            _logger.warning("weight measurements unavailable: pet_weight_measurements not read")
+            return []
+
     def _latest(
         self, owner_id: str, pet_id: str, *, with_body_condition: bool
     ) -> WeightMeasurement | None:

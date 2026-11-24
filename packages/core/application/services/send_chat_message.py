@@ -52,6 +52,7 @@ from packages.core.domain.pet_profile.memorial import ensure_not_in_memories
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.pet_profile.weight_measurement import (
     format_date_it,
+    weight_history_for_prompt,
     weight_label_with_date,
 )
 from packages.core.domain.subscription.limits import PlanLimits
@@ -70,6 +71,9 @@ MAX_HISTORY_MESSAGES = 12
 _UNANSWERED_MODELS = frozenset({"natural-answer-guard", "evidence-guard"})
 # Except this one: the sources were searched and none was about the question.
 _ANSWERED_STATES = frozenset({ConversationState.INSUFFICIENT_EVIDENCE})
+# The weighings the chat reads (oldest first): about a year of monthly ones.
+_WEIGHINGS_FOR_THE_CHAT = 12
+
 _UNANSWERED_MODES = frozenset({"quota_exhausted", "user_limit_reached"})
 
 
@@ -366,6 +370,21 @@ class SendChatMessageService:
                 return weight_label_with_date(latest, today)
         return pet_profile.weight_label
 
+    def _weight_history(self, owner_id: str, pet_profile: PetProfile, today: date) -> str | None:
+        """The last weighings, oldest first, with the change between them (F06). The caller asks
+        for it only with the record consent: the chat knows the latest weight without it."""
+        if self._weight_measurement_repository is None:
+            return None
+        try:
+            return weight_history_for_prompt(
+                self._weight_measurement_repository.recent_for_pet(
+                    owner_id, pet_profile.id, _WEIGHINGS_FOR_THE_CHAT
+                ),
+                today,
+            )
+        except Exception:
+            return None
+
     def _body_condition_context(
         self, owner_id: str, pet_profile: PetProfile, today: date
     ) -> tuple[str | None, str | None]:
@@ -547,6 +566,11 @@ class SendChatMessageService:
                 birth_date_label=pet_profile.birth_date_label,
                 sex=pet_profile.sex,
                 weight_label=self._weight_label(data.owner_id, pet_profile, today),
+                weight_history=(
+                    self._weight_history(data.owner_id, pet_profile, today)
+                    if record_allowed
+                    else None
+                ),
                 dog_size_category=pet_profile.dog_size_category,
                 is_sterilized=pet_profile.is_sterilized,
                 body_condition=body_condition,
@@ -554,6 +578,9 @@ class SendChatMessageService:
                 activity_level=pet_profile.activity_level,
                 reminders_context=reminders_context,
                 reminders_withheld=reminders_withheld,
+                weighings_withheld=(
+                    not record_allowed and self._weight_measurement_repository is not None
+                ),
                 language=normalize_language(data.language),
                 owner_id=data.owner_id,
                 owner_is_minor=self._owner_is_minor(data.owner_id, today),

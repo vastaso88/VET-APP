@@ -314,6 +314,18 @@ _NOW_WORD = re.compile(
 _ABOUT_REMINDERS = re.compile(
     r"\b(?:promemoria|reminders?|recordatorios?|erinnerung\w*|rappels?)\b"
 )
+# F06: the same for the weighings: without the consent only the latest is read, and the chat
+# said "there is only one".
+_ABOUT_WEIGHT = re.compile(
+    r"\b(?:pesat\w*|pes[oi]|pesa\w*|weigh\w*|weights?|gewicht\w*|wieg\w*|pesaje\w*|poids|"
+    r"pese\w*)\b"
+)
+_WEIGHINGS_WITHHELD = (
+    "\n\nOnly the latest weighing is readable here: earlier ones, if the owner recorded any, are "
+    "not, because the owner has not allowed the chat to read the medical record. If the message "
+    "is about them, say exactly that and that the permission can be given from the menu of this "
+    "chat or in Settings; never say there is only one weighing or that there is no trend."
+)
 _REMINDERS_WITHHELD = (
     "\n\nThe reminders the owner may have set for this pet are not readable here, because the "
     "owner has not allowed the chat to read the medical record. If the message is about them, "
@@ -1016,6 +1028,10 @@ class ChatOrchestratorInput(BaseModel):
     birth_date_label: str | None = None
     sex: str | None = None
     weight_label: str | None = None
+    # The recorded weighings and their change (F06), only with the record consent.
+    weight_history: str | None = None
+    # Without it, the earlier weighings are not read: only the latest is.
+    weighings_withheld: bool = False
     dog_size_category: str | None = None
     # Optional profile details (2026-10-14), sent as profile facts only; the
     # microchip number and coat colour are deliberately not part of the input.
@@ -4075,6 +4091,13 @@ class ChatOrchestrator:
             and _ABOUT_REMINDERS.search(normalize_for_matching(message))
         ):
             reminders_context = _REMINDERS_WITHHELD
+        if (
+            data.weighings_withheld
+            and not generic_context
+            and not other_animal
+            and _ABOUT_WEIGHT.search(normalize_for_matching(message))
+        ):
+            reminders_context += _WEIGHINGS_WITHHELD
         today = data.today or datetime.now(UTC).date()
         # Variant 2 of the verification (plan 08): official passages read before writing.
         official = self._official_sources_block(data)
@@ -4686,6 +4709,8 @@ class ChatOrchestrator:
             lines.append(f"Sex: {data.sex}")
         if data.weight_label and has_weight(data.species, data.breed):
             lines.append(f"Weight: {data.weight_label}")
+            if data.weight_history:
+                lines.append(f"Weighings the owner recorded: {data.weight_history}")
         if data.dog_size_category and pet_kind(data.species, data.breed) is PetKind.DOG:
             lines.append(f"Size category: {data.dog_size_category}")
         lines.extend(

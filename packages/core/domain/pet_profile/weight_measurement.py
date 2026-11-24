@@ -63,3 +63,29 @@ def weight_label_with_date(measurement: WeightMeasurement, today: date) -> str:
     `SendChatMessageService._body_condition_context`."""
     when = format_date_it(measurement.measured_at, today)
     return f"{format_weight_kg(measurement.weight_kg)} al {when}"
+
+
+def weight_history_for_prompt(measurements: list[WeightMeasurement], today: date) -> str | None:
+    """The recorded weighings, oldest first, and the change from the first to the last (collaudo
+    F06: the chat knew only the latest one and missed a fall of 22% in seven weeks). The sums are
+    done here, not by the model: it only gets figures. None with fewer than two weighings.
+
+    Two weighings of the same day: the later of the two (the repository keeps the order)."""
+    by_day: dict[date, WeightMeasurement] = {}
+    for measurement in measurements:
+        by_day[measurement.measured_at] = measurement
+    ordered = [by_day[day] for day in sorted(by_day)]
+    if len(ordered) < 2:
+        return None
+    listed = "; ".join(
+        f"{format_weight_kg(m.weight_kg)} ({format_date_it(m.measured_at, today)})" for m in ordered
+    )
+    first, last = ordered[0], ordered[-1]
+    change = last.weight_kg - first.weight_kg
+    percent = 100 * change / first.weight_kg
+    days = (last.measured_at - first.measured_at).days
+    sign = "+" if change > 0 else "-" if change < 0 else ""
+    return (
+        f"{listed}. From the first to the last: {sign}{format_weight_kg(abs(change))} "
+        f"({sign}{abs(percent):.0f}%) in {days} days"
+    )

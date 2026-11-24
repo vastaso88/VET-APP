@@ -173,6 +173,17 @@ class InMemoryWeightMeasurementRepository(WeightMeasurementRepository):
     ) -> WeightMeasurement | None:
         return self._latest(owner_id, pet_id, with_body_condition=True)
 
+    def recent_for_pet(self, owner_id: str, pet_id: str, limit: int) -> list[WeightMeasurement]:
+        own = [
+            measurement
+            for owner, measurement in self._items
+            if owner == owner_id
+            and measurement.pet_id == pet_id
+            and measurement.measured_at <= latest_allowed_date()
+        ]
+        # a stable sort keeps the order of the same day
+        return sorted(own, key=lambda measurement: measurement.measured_at)[-limit:]
+
     def _latest(
         self, owner_id: str, pet_id: str, *, with_body_condition: bool
     ) -> WeightMeasurement | None:
