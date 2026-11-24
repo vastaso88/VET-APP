@@ -51,7 +51,7 @@ def test_the_wait_that_is_left_is_told_not_the_whole_window() -> None:
         ("en", "Too many requests: try again in 10 minutes."),
         ("es", "Demasiadas solicitudes: inténtalo de nuevo dentro de 10 minutos."),
         ("de", "Zu viele Anfragen: Versuchen Sie es in 10 Minuten erneut."),
-        ("fr", "Trop de demandes : réessayez dans 10 minutes."),
+        ("fr", "Trop de demandes\u00a0: réessayez dans 10 minutes."),
     ],
 )
 def test_the_refusal_speaks_the_callers_language(language: str, expected: str) -> None:

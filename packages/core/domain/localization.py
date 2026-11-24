@@ -454,7 +454,7 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "en": "Too many requests: try again in {wait}.",
         "es": "Demasiadas solicitudes: inténtalo de nuevo dentro de {wait}.",
         "de": "Zu viele Anfragen: Versuchen Sie es in {wait} erneut.",
-        "fr": "Trop de demandes : réessayez dans {wait}.",
+        "fr": "Trop de demandes : réessayez dans {wait}.",
     },
     "weight_marker": {
         "it": "manca il peso",
@@ -727,7 +727,7 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "en": "You already have {limit} chats open for {pet_name}: to start a new one, delete a chat from the list.",
         "es": "Ya tienes {limit} chats abiertos para {pet_name}: para empezar uno nuevo, elimina un chat de la lista.",
         "de": "Sie haben schon {limit} offene Chats für {pet_name}: Um einen neuen zu beginnen, löschen Sie einen Chat aus der Liste.",
-        "fr": "Vous avez déjà {limit} conversations ouvertes pour {pet_name} : pour en commencer une nouvelle, supprimez une conversation de la liste.",
+        "fr": "Vous avez déjà {limit} conversations ouvertes pour {pet_name} : pour en commencer une nouvelle, supprimez une conversation de la liste.",
     },
     # The plan's number of pets (POST /pets refused, 403 plan_limit_reached): the
     # first when there is a plan above to suggest, the second when there is not.
