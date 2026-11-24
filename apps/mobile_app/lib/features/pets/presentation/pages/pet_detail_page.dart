@@ -84,6 +84,22 @@ class _PetDetailPageState extends State<PetDetailPage> {
   void initState() {
     super.initState();
     _pet = widget.pet ?? PetDemoStore.instance.list().firstOrNull;
+    PetDemoStore.changes.addListener(_refresh);
+  }
+
+  @override
+  void dispose() {
+    PetDemoStore.changes.removeListener(_refresh);
+    super.dispose();
+  }
+
+  /// The pet as it is now: a weighing rewrites its weight while the page is open, and
+  /// "Modifica" started from the old copy would have put the old weight back.
+  void _refresh() {
+    final pet = _pet;
+    final updated = pet == null ? null : PetDemoStore.instance.byId(pet.id);
+    if (!mounted || updated == null || identical(updated, pet)) return;
+    setState(() => _pet = updated);
   }
 
   // Remembered while open, so it can be reopened on the same card (restoration).

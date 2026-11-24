@@ -6,8 +6,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vet_app_mobile/features/medical_records/presentation/pet_medical_records_tab.dart';
 import 'package:vet_app_mobile/features/monitoring/data/weight_measurements_repository.dart';
 import 'package:vet_app_mobile/features/monitoring/presentation/pages/monitoring_tab.dart';
+import 'package:vet_app_mobile/features/pets/data/pet_demo_store.dart';
 import 'package:vet_app_mobile/features/pets/domain/pet_models.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/pet_detail_page.dart';
+import 'package:vet_app_mobile/features/pets/presentation/pages/pet_edit_page.dart';
 import 'package:vet_app_mobile/features/settings/data/unit_settings_store.dart';
 
 PetProfile _pet(String species, {List<FishStock> stock = const []}) =>
@@ -69,6 +71,24 @@ void main() {
     expect(find.byType(MonitoringTab), findsOneWidget);
     expect(find.byKey(const ValueKey('monitoring-add')), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a weighing changes the page at once, and Modifica starts from it',
+      (tester) async {
+    final pet = _pet('Cane').copyWith(weightLabel: '4 kg');
+    await PetDemoStore.instance.upsert(pet);
+    addTearDown(() => PetDemoStore.instance.delete(pet.id));
+    await open(tester, pet);
+    expect(find.textContaining('4 kg'), findsWidgets);
+
+    await PetDemoStore.instance.upsert(pet.copyWith(weightLabel: '4,6 kg'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('4,6 kg'), findsWidgets);
+    expect(find.textContaining('4 kg'), findsNothing);
+
+    await tester.tap(find.byIcon(Icons.edit_outlined));
+    await tester.pumpAndSettle();
+    expect(tester.widget<PetEditPage>(find.byType(PetEditPage)).pet.weightLabel, '4,6 kg');
   });
 
   testWidgets('a dog has five tabs, the bar scrolls on a small phone',
