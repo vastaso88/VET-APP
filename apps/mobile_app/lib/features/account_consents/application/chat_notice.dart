@@ -89,7 +89,9 @@ class ChatNotice {
   static Future<AccountConsentsSnapshot?> _read(AccountConsentsRemoteDataSource source) async {
     try {
       final result = await source.fetch().timeout(serverWait);
-      return result.fold(onSuccess: (value) => value, onFailure: (_) => null);
+      final AccountConsentsSnapshot? snapshot =
+          result.fold(onSuccess: (value) => value, onFailure: (_) => null);
+      return snapshot;
     } catch (_) {
       return null;
     }
