@@ -151,6 +151,7 @@ from packages.core.domain.safety.dosage_request import (
     asks_an_amount,
     is_dosage_request,
     names_a_medicine,
+    without_water_amounts,
 )
 from packages.core.domain.safety.emergency_patterns import normalize_for_matching
 from packages.core.domain.safety.exposure import (
@@ -3269,7 +3270,8 @@ class ChatOrchestrator:
     def _is_dosage_request(message: str) -> bool:
         # The fixed phrases, plus the general rule (dosage_request.py):
         # the phrases alone stopped 6 of 15 realistic requests (2026-10-14).
-        return any(marker in message for marker in DOSAGE_REQUEST_MARKERS) or (
+        text = without_water_amounts(message)
+        return any(marker in text for marker in DOSAGE_REQUEST_MARKERS) or (
             is_dosage_request(message)
         )
 

@@ -142,6 +142,26 @@ _NOT_MEDICINE_DROPS = re.compile(
     r"(?:acqua|water|agua|wasser|eau|sangue|blood|sangre|blut|sang)\b"
 )
 
+# "How many mls of water in the dish", "quanti ml di acqua", "quanto latte di capra do" ask for
+# water or milk, not for a medicine (collaudo F37: the answer opened with the refusal of doses,
+# then gave the figure). Only the amount bound to the word is taken out: a medicine asked in the
+# same message is still found. Never "acqua ossigenata" and the like.
+_WATER_OR_MILK_AMOUNT = re.compile(
+    r"\b(?:quant[oaie]|wie ?viel\w*|welche menge|combien|quelle quantite|how much|how many|"
+    r"what amount|cuant[oa]s?|que cantidad)"
+    r"(?:\s+(?:di|de|d|of|von|mls?|millilitr\w*|milliliter\w*|cl|litr\w*|liters?|litres?|"
+    r"mililitr\w*|litros?))*"
+    r"\s+(?:di |of |de |d'|von |du |de la |de l'|l')?"
+    r"(?:acqua|water|agua|wasser|eau|latte|milk|leche|milch|lait)\b"
+    r"(?!\s+(?:ossigenat|oxigenad|oxygen|boric|di mare|salat))"
+)
+
+
+def without_water_amounts(text: str) -> str:
+    """The normalized text without the amounts of water or milk it asks for."""
+    return _WATER_OR_MILK_AMOUNT.sub(" ", text)
+
+
 _ASKS_AN_AMOUNT = re.compile(
     rf"\b(?:{_HOW_MUCH_WORDS}) (?:{_ARTICLES})?(?:{_MEDICINE_WORDS})\b"
     rf"|\b(?:{_HOW_MUCH_WORDS}|{_HOW_OFTEN_WORDS})(?: \w+){{0,4}} {_GIVE}\b"
@@ -189,7 +209,7 @@ def asks_an_amount(message: str) -> bool:
     # A pharmaceutical form alone ("the antibiotic drops for the water") is
     # not a question about an amount (synthetic users 2026-11-07, P6).
     text = _NOT_ASKING_A_DOSE.sub(" ", normalize_for_matching(message))
-    text = _NOT_MEDICINE_DROPS.sub(" ", text)
+    text = without_water_amounts(_NOT_MEDICINE_DROPS.sub(" ", text))
     return bool(_ASKS_AN_AMOUNT.search(text))
 
 
@@ -261,7 +281,7 @@ def _a_food_portion(text: str) -> bool:
 
 def is_dosage_request(message: str) -> bool:
     text = _NOT_ASKING_A_DOSE.sub(" ", normalize_for_matching(message))
-    text = _NOT_MEDICINE_DROPS.sub(" ", text)
+    text = without_water_amounts(_NOT_MEDICINE_DROPS.sub(" ", text))
     if _a_food_portion(text):
         return False
     if _VACCINE.search(text) and not _VACCINE_EXCEPTION.search(text):
