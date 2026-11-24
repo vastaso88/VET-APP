@@ -1,8 +1,11 @@
 # Consent switch (`CONSENT_ENFORCEMENT_ENABLED`): what it covers and what it does not
 
 Off by default. When on, every backend route answers 403 `consent_required` while the
-Terms or the Privacy notice (or the emergency notice) are not accepted **at the current
-version** (`CURRENT_VERSIONS` in `packages/core/domain/consent/account_consent_text.py`).
+Terms or the Privacy notice are not accepted **at the current version** (`CURRENT_VERSIONS`
+in `packages/core/domain/consent/account_consent_text.py`). The emergency notice is a
+condition of the **chat only** (owner decision, 24 Nov 2026): it is asked at the first chat
+and checked by the routes inside `require_chat_notice()` (sending and editing a message, the
+summary, the attachments), never by the rest of the app.
 Checked in `AgeGuardedAuthProvider.get_current_user`, looked up at most once a minute per
 account; a failed lookup lets the caller through (an outage must not lock everybody out).
 
