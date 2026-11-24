@@ -94,12 +94,19 @@ from scenarios_awareness import (  # noqa: E402
     AWARENESS_SCENARIOS,
     FORBIDDEN_WORDS,
 )
+from scenarios_cancello import CANCELLO_PETS, CANCELLO_SCENARIOS  # noqa: E402
 from scenarios_everyday import EXTRA_PETS, EXTRA_SCENARIOS  # noqa: E402
 from scenarios_giro3 import GIRO3_PETS, GIRO3_SCENARIOS  # noqa: E402
 from scenarios_stress import STRESS_SCENARIOS  # noqa: E402
 from scenarios_wide import WIDE_SCENARIOS  # noqa: E402
 
-PETS: dict[str, Pet] = {**BASE_PETS, **EXTRA_PETS, **AWARENESS_PETS, **GIRO3_PETS}
+PETS: dict[str, Pet] = {
+    **BASE_PETS,
+    **EXTRA_PETS,
+    **AWARENESS_PETS,
+    **GIRO3_PETS,
+    **CANCELLO_PETS,
+}
 SCENARIOS: tuple[Scenario, ...] = (
     BASE_SCENARIOS
     + EXTRA_SCENARIOS
@@ -107,6 +114,7 @@ SCENARIOS: tuple[Scenario, ...] = (
     + STRESS_SCENARIOS
     + WIDE_SCENARIOS
     + GIRO3_SCENARIOS
+    + CANCELLO_SCENARIOS
 )
 
 from packages.bootstrap.container import ApplicationContainer  # noqa: E402

@@ -68,11 +68,12 @@ from packages.core.application.services.urgency_classifier import (
     UrgencyVerdict,
 )
 from packages.core.domain.common.language import (
+    DEFAULT_LANGUAGE,
     LANGUAGE_NAMES,
     normalize_language,
     response_language_instruction,
 )
-from packages.core.domain.common.text_language import is_in_another_language
+from packages.core.domain.common.text_language import is_in_another_language, language_of
 from packages.core.domain.conversation.answer_cache import (
     cache_key,
     is_cacheable_question,
@@ -98,6 +99,7 @@ from packages.core.domain.knowledge.answer_validation import (
     validate_answer,
     without_absolute_claims,
     without_phone_numbers,
+    without_sentences,
 )
 from packages.core.domain.knowledge.dose_in_answer import find_dosage, without_dose_sentences
 from packages.core.domain.knowledge.duty_claims import (
@@ -111,7 +113,12 @@ from packages.core.domain.knowledge.enclosure_size import (
     without_unsourced_sizes,
 )
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
+from packages.core.domain.knowledge.invented_symptoms import invented_symptoms
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.core.domain.knowledge.quantities import (
+    unsourced_quantities,
+    without_unsourced_quantities,
+)
 from packages.core.domain.knowledge.relevance import relevant_sources, topic_terms
 from packages.core.domain.localization import has_translation, translate
 from packages.core.domain.pet_profile.details import describe_for_prompt
@@ -218,6 +225,7 @@ from packages.core.domain.safety.triage_clarification import (
 from packages.core.domain.safety.triage_clarification import (
     classify_severity as classify_safety_severity,
 )
+from packages.core.domain.safety.waiting_small_mammal import without_a_waiting_day
 from packages.core.domain.situation.coverage import (
     DEFAULT_COVERAGE_WEIGHTS,
     CoverageWeights,
@@ -750,6 +758,22 @@ FOREIGN_SMALL_TALK_MESSAGES: frozenset[str] = frozenset(
         "thanks",
         "what can you do",
         "who are you",
+        # German and French (K24: the four other languages had none)
+        "hallo",
+        "guten morgen",
+        "guten tag",
+        "guten abend",
+        "danke",
+        "vielen dank",
+        "wer bist du",
+        "was kannst du",
+        "bonjour",
+        "bonsoir",
+        "salut",
+        "merci",
+        "merci beaucoup",
+        "qui es-tu",
+        "que peux-tu faire",
     }
 )
 
@@ -2051,7 +2075,7 @@ class ChatOrchestrator:
         except Exception:  # noqa: BLE001 - the fixed text alone is still a safe reply
             logger.warning("guard follow-up unavailable: the fixed text alone")
             return result
-        response = self._in_language(self._finished(response), data.language)
+        response = self._in_language(self._finished(response), data.language, data.user_message)
         if not response.content.strip():
             return result
         if has_phone_number(response.content):
@@ -2211,13 +2235,20 @@ class ChatOrchestrator:
             update={"content": closed if len(closed) >= _MIN_CLOSED_REPLY_CHARS else ""}
         )
 
-    def _in_language(self, response: LLMResponse, language: str) -> LLMResponse:
+    def _in_language(self, response: LLMResponse, language: str, message: str = "") -> LLMResponse:
         """The reply in the account's language (collaudo, wave 1: five answers of eleven for
         an English account came out in Italian, whatever wrote them). Translated as it is by
         the light model; when that fails or there is no time, the reply stays as written."""
         expected = normalize_language(language)
         if not is_in_another_language(response.content, expected):
             return response
+        if expected == DEFAULT_LANGUAGE:
+            # An Italian account writing in another language is answered in that language, as
+            # it always has been (only the other accounts have a fixed one); a message too
+            # short to tell keeps the reply as it is.
+            written_in = language_of(message)
+            if written_in is None or not is_in_another_language(response.content, written_in):
+                return response
         left = _seconds_left()
         if left < _MIN_SECONDS_FOR_A_CALL:
             return response
@@ -2246,6 +2277,55 @@ class ChatOrchestrator:
         if not text or fixed.finish_reason == "length" or is_in_another_language(text, expected):
             return response
         return response.model_copy(update={"content": text})
+
+    def _without_invented_symptoms(
+        self, response: LLMResponse, *, known_text: str, data: ChatOrchestratorInput
+    ) -> LLMResponse:
+        """The reply without a sign of the animal's that nobody told (collaudo, wave 2: "seit
+        zwei Tagen erbricht"): rewritten by the light model, which keeps the rest; without
+        it the sentence goes, unless it carries the visit to the vet. What is in the
+        conversation afterwards is the cleaned text, so an invented sign is not told again."""
+        bad = invented_symptoms(response.content, known_text, data.pet_name)
+        if not bad:
+            return response
+        logger.warning("answer validator: %d invented sign(s) in the reply", len(bad))
+        left = _seconds_left()
+        if left >= _MIN_SECONDS_FOR_A_CALL:
+            try:
+                fixed = self._llm_client.generate(
+                    LLMGenerationRequest(
+                        system_prompt=(
+                            "You edit a chat answer to a pet owner. These sentences state, as a "
+                            "fact about the animal, a sign the owner never wrote: "
+                            + " | ".join(bad)
+                            + ". Rewrite the answer without any of those signs: remove the sign "
+                            "or the statement, keep the rest, the same language, layout and "
+                            "advice (in particular any call to see the vet now). Add nothing. "
+                            "Reply with the answer only."
+                        ),
+                        user_prompt=response.content,
+                        max_tokens=900,
+                        purpose="symptom_fix",
+                        model_class="light",
+                        timeout_seconds=int(left),
+                    )
+                )
+                text = fixed.content.strip()
+                if (
+                    text
+                    and fixed.finish_reason != "length"
+                    and not invented_symptoms(text, known_text, data.pet_name)
+                ):
+                    return response.model_copy(update={"content": text})
+            except Exception as exc:  # noqa: BLE001 - the sentence can still be cut
+                logger.warning("symptom fix: %s", type(exc).__name__)
+        trimmed = without_sentences(
+            response.content,
+            lambda s: (
+                normalize_for_matching(s) in bad and not _NOW_WORD.search(normalize_for_matching(s))
+            ),
+        )
+        return response.model_copy(update={"content": trimmed}) if len(trimmed) >= 80 else response
 
     def _shortened(self, response: LLMResponse, words: int = 150) -> LLMResponse:
         """The same answer in fewer words (SHORTEN_PROMPT), by the light
@@ -2426,7 +2506,34 @@ class ChatOrchestrator:
         "come funzioni",
         "cosa puoi fare",
     )
-    _SMALL_TALK_GREETINGS = ("ciao", "buongiorno", "buonasera", "buondì", "salve", "hey")
+    _SMALL_TALK_FILLERS = frozenset(
+        "ok okay va bene bene molto molte mille assai davvero scusa scusami allora "
+        "ciao hello hi hey buongiorno buonasera buondi salve grazie thanks thank you "
+        "perfetto capito yes si no certo please per favore gracias hola merci danke bitte "
+        "gut guten tag morgen abend hallo bonjour bonsoir salut good morning evening "
+        "buenas buenos dias tardes noches mille quindi e a di del la il lo un una the "
+        "come va oggi stai tutto how are you today is it wie geht gehts es dir ihnen heute "
+        "comment vas tu vous allez cava como estas esta que tal hoy".split()
+    )
+    _SMALL_TALK_THANKS = ("grazie", "thanks", "thank you", "gracias", "danke", "merci")
+    _SMALL_TALK_GREETINGS = (
+        "ciao",
+        "buongiorno",
+        "buonasera",
+        "buondì",
+        "salve",
+        "hey",
+        "hello",
+        "hi",
+        "hola",
+        "buenos",
+        "buenas",
+        "hallo",
+        "guten",
+        "bonjour",
+        "bonsoir",
+        "salut",
+    )
     # {name} is the pet's name. Unknown languages fall back to Italian
     # (normalize_language), like every other fixed reply today.
     _SMALL_TALK_TEXTS: dict[str, dict[str, str]] = {
@@ -2508,7 +2615,7 @@ class ChatOrchestrator:
         normalized = lowered.strip().rstrip("!.?").strip()
         if any(marker in normalized for marker in cls._SMALL_TALK_IDENTITY):
             kind = "identity"
-        elif "grazie" in normalized:
+        elif any(word in normalized for word in cls._SMALL_TALK_THANKS):
             kind = "thanks"
         elif normalized.startswith(cls._SMALL_TALK_GREETINGS):
             kind = "greeting"
@@ -3042,7 +3149,7 @@ class ChatOrchestrator:
         except Exception:  # noqa: BLE001 - an emergency reply never fails on a helper
             logger.exception("urgent answer: unexpected failure; the fixed steps go")
             return fixed
-        response = self._in_language(self._finished(response), data.language)
+        response = self._in_language(self._finished(response), data.language, data.user_message)
         text = clean_answer_text(response.content).strip()
         if not self._urgent_text_passes(text, species):
             logger.warning("urgent answer: the model's text failed the checks; the fixed steps go")
@@ -4036,7 +4143,7 @@ class ChatOrchestrator:
 
         try:
             response = generate(system_prompt)
-            response = self._in_language(response, data.language)
+            response = self._in_language(response, data.language, data.user_message)
             if not may_ask and is_question_only(response.content):
                 # The owner asked for something explicit, said to stop, or
                 # has already answered two rounds of questions: a reply of
@@ -4088,7 +4195,7 @@ class ChatOrchestrator:
                 # the rewrite adds the "now" sentence: shortened again, which keeps every
                 # mention of the vet with its reason (SHORTEN_PROMPT)
                 checked = self._shortened(checked, words=max(90, min(150, budget - 30)))
-            response = self._in_language(checked, data.language)
+            response = self._in_language(checked, data.language, data.user_message)
 
         validation = validate_answer(response.content, sources_count=len(sources))
         if (
@@ -4171,6 +4278,41 @@ class ChatOrchestrator:
                 medical_context,
                 *(m.content for m in data.conversation_history if m.role == "user"),
             ]
+        )
+        # The species the message is about, not only the profile's: a question on a rabbit asked
+        # with a dog's profile open is about the rabbit.
+        response = response.model_copy(
+            update={
+                "content": without_a_waiting_day(
+                    response.content,
+                    "small_mammal"
+                    if "small_mammal"
+                    in (normalize_species(data.species), normalize_species(effective_species))
+                    else "",
+                )
+            }
+        )
+        if quantities := unsourced_quantities(response.content, given):
+            logger.warning("answer validator: %d quantit(ies) with no source cut", len(quantities))
+            trimmed = without_unsourced_quantities(response.content, given)
+            if len(trimmed) < 80:
+                return self._validation_failure_result(
+                    sources=sources,
+                    violations=["unsourced_quantity"],
+                    mode="natural",
+                    response_locale=data.language,
+                )
+            response = response.model_copy(update={"content": trimmed})
+        response = self._without_invented_symptoms(
+            response,
+            known_text=" ".join(
+                [
+                    given,
+                    reminders_context,
+                    *(m.content for m in data.recent_other_chats if m.role == "user"),
+                ]
+            ),
+            data=data,
         )
         if sizes := unsourced_sizes(response.content, given):
             logger.warning("answer validator: %d cage size(s) with no source cut", len(sizes))
@@ -4596,6 +4738,18 @@ class ChatOrchestrator:
             lines.append(f"Aquarium stock: {stock_text}")
         return "\n".join(lines)
 
+    @classmethod
+    def _is_only_small_talk(cls, normalized: str) -> bool:
+        """ "ok and the wheel size" is not small talk: what is left once the greetings,
+        thanks and acknowledgements (and the words around them) are taken away is the
+        question."""
+        rest = normalized
+        for marker in sorted(
+            SMALL_TALK_MESSAGES | FOREIGN_SMALL_TALK_MESSAGES, key=len, reverse=True
+        ):
+            rest = re.sub(rf"(?<!\w){re.escape(marker)}(?!\w)", " ", rest)
+        return all(word in cls._SMALL_TALK_FILLERS for word in re.findall(r"\w+", rest))
+
     @staticmethod
     def _classify_intent(message: str) -> str:
         for intent, keywords in EVIDENCE_KEYWORDS.items():
@@ -4610,9 +4764,16 @@ class ChatOrchestrator:
         # dargli il farmaco?" as small talk. Genuine greetings/thanks are
         # short; a message long enough to describe an actual case never
         # is, regardless of which words it happens to contain.
-        if len(normalized) <= 30 and (
-            any(marker in normalized for marker in SMALL_TALK_MESSAGES)
-            or any(_starts_a_word(marker, normalized) for marker in FOREIGN_SMALL_TALK_MESSAGES)
+        # Collaudo, wave 2 (K24): "ok and the wheel size?" was answered by a fixed line and
+        # the question was lost: small talk is what is ONLY a greeting, thanks or an ok, in
+        # any of the five languages. A question about the assistant itself stays.
+        if (
+            len(normalized) <= 30
+            and ChatOrchestrator._is_only_small_talk(normalized)
+            and (
+                any(marker in normalized for marker in SMALL_TALK_MESSAGES)
+                or any(_starts_a_word(marker, normalized) for marker in FOREIGN_SMALL_TALK_MESSAGES)
+            )
         ):
             return "general_info"
         # Repositioning (docs/product/11 §4, 2.1): a sentence with no

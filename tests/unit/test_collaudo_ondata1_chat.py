@@ -70,7 +70,21 @@ def test_the_language_of_a_reply_is_recognised(text: str, code: str) -> None:
     assert language_of(text) == code
 
 
-@pytest.mark.parametrize("text", ["Sì.", "Briciola, Ombra, Micio, Rex e poi basta.", ""])
+@pytest.mark.parametrize(
+    ("message", "code"),
+    [
+        ("Il tape sur la balle en plastique et il la fait rouler sous le frigo.", "fr"),
+        ("Hola, tengo un pothos muy bonito en el salón y no sé si es peligroso.", "es"),
+        ("Und zum Schluss: welches Spielzeug mag eine Farbratte am liebsten?", "de"),
+        ("Posso darle un pezzo di mela, o è meglio di no?", "it"),
+        ("Can I give her some apple, or is it better not to?", "en"),
+    ],
+)
+def test_the_language_of_a_short_colloquial_message_is_recognised(message: str, code: str) -> None:
+    assert language_of(message) == code
+
+
+@pytest.mark.parametrize("text", ["Sì.", "Briciola, Ombra, Micio, Rex.", ""])
 def test_a_short_or_unclear_text_says_nothing(text: str) -> None:
     assert language_of(text) is None
 
@@ -83,6 +97,31 @@ def test_an_italian_reply_for_an_english_account_is_translated(v2: bool) -> None
     assert "basking spot at 33 degrees" in result.answer
     (request,) = client.of("language_fix")
     assert "English" in request.system_prompt and request.model_class == "light"
+
+
+def test_an_italian_account_writing_in_another_language_is_not_translated() -> None:
+    fr = (
+        "Le gecko a besoin d'une zone chaude et d'une zone fraîche. Vous devez noter le poids "
+        "dans un carnet et parler avec votre vétérinaire si la baisse continue."
+    )
+    long_message = (
+        "Bonjour, mon gecko léopard a perdu du poids dans les dernières semaines et je ne sais "
+        "pas si c'est normal pour lui, que dois-je faire avec le terrarium ?"
+    )
+    for message in (long_message, "c'est normal ?"):
+        client = CuttingClient(answer=[(fr, "stop")])
+        result = _ask(client, message, name="Mango", species="Rettili e anfibi")
+        assert "zone chaude" in result.answer and client.of("language_fix") == []
+
+
+def test_an_italian_message_with_a_foreign_reply_is_translated_for_an_italian_account() -> None:
+    client = CuttingClient(answer=[(_EN_REPLY, "stop")], language_fix=[(_IT_REPLY, "stop")])
+    message = (
+        "Buongiorno, il mio geco ha perso peso nelle ultime settimane e non so se è normale per "
+        "lui, che cosa devo controllare nel terrario?"
+    )
+    result = _ask(client, message, name="Mango", species="Rettili e anfibi")
+    assert "struttura" in result.answer and len(client.of("language_fix")) == 1
 
 
 def test_a_reply_in_the_right_language_is_not_touched() -> None:
