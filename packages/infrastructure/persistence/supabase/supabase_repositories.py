@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import re
 import time
@@ -39,7 +40,7 @@ from packages.core.application.ports.user_location_repository import UserLocatio
 from packages.core.application.ports.weight_measurement_repository import (
     WeightMeasurementRepository,
 )
-from packages.core.domain.consent.models import AccountConsents
+from packages.core.domain.consent.models import AccountConsents, ConsentRecord
 from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.models import INTERNAL_CONVERSATION_FIELDS, Conversation
 from packages.core.domain.coverage.models import RadarCoverage
@@ -77,6 +78,7 @@ from packages.core.domain.radar_reports.models import (
 )
 from packages.core.domain.reminders.models import Reminder
 from packages.core.domain.subscription.models import Subscription
+from packages.infrastructure.persistence.supabase.missing_table import is_missing_function
 
 if TYPE_CHECKING:
     from supabase import Client
@@ -318,6 +320,31 @@ class SupabaseAccountConsentsRepository(AccountConsentsRepository):
         payload = _serialize_payload(account_consents.model_dump(mode="json"))
         self._client.table(self._table).upsert(payload).execute()
         return account_consents
+
+    def record(self, owner_id: str, consent_key: str, decision: ConsentRecord) -> AccountConsents:
+        # One command in the database: reading the row, adding a key and writing it all back
+        # kept one consent of the three an app sends at sign-up (collaudo, 24/11/2026).
+        try:
+            response = self._client.rpc(
+                "account_consent_record",
+                {
+                    "p_owner_id": owner_id,
+                    "p_key": consent_key,
+                    "p_record": json.loads(decision.model_dump_json()),
+                },
+            ).execute()
+        except Exception as exc:  # noqa: BLE001 - only "no such function" is handled
+            if not is_missing_function(exc):
+                raise
+            _logger.warning(
+                "account_consent_record not found (scripts/setup/account_consents_merge.sql not "
+                "run): consents sent together may overwrite each other"
+            )
+            known = self.get(owner_id) or AccountConsents(owner_id=owner_id)
+            return self.save(
+                known.model_copy(update={"consents": {**known.consents, consent_key: decision}})
+            )
+        return AccountConsents.model_validate({"owner_id": owner_id, "consents": response.data})
 
 
 class SupabaseSubscriptionRepository(SubscriptionRepository):

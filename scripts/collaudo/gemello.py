@@ -58,6 +58,8 @@ ORDINE_SCHEMA: tuple[str, ...] = (
     # K13: giving back an allowance the owner did not receive. Without it the twin's refund call
     # fails (logged, harmless) and the counters stay where the failed request left them.
     "scripts/setup/chat_usage_refund.sql",
+    # T06: the consents of a sign-up, sent together, all stay.
+    "scripts/setup/account_consents_merge.sql",
     # PESO: a weighing dated after tomorrow is refused by the database.
     "scripts/setup/weight_no_future_dates.sql",
 )

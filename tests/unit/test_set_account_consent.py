@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 import pytest
 
 from packages.core.application.services.set_account_consent import (
@@ -5,9 +7,12 @@ from packages.core.application.services.set_account_consent import (
     SetAccountConsentService,
 )
 from packages.core.domain.consent.account_consent_text import CURRENT_VERSIONS
-from packages.core.domain.consent.models import AccountConsentType
+from packages.core.domain.consent.models import AccountConsentType, ConsentRecord
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryAccountConsentsRepository,
+)
+from packages.infrastructure.persistence.supabase.supabase_repositories import (
+    SupabaseAccountConsentsRepository,
 )
 from packages.shared.errors.base import ValidationError
 
@@ -192,3 +197,113 @@ def test_an_adult_or_an_undeclared_age_is_not_blocked_here(years: int | None) ->
         )
     )
     assert result.account_consents.consents[AccountConsentType.MARKETING_EMAIL].granted is True
+
+
+# --- consents sent together (collaudo, 24/11/2026) -----------------------------------------
+
+
+class _Rpc:
+    def __init__(self, data: object = None, error: Exception | None = None) -> None:
+        self.data, self.error = data, error
+
+    def execute(self) -> "_Rpc":
+        if self.error is not None:
+            raise self.error
+        return self
+
+
+class _Client:
+    """Only what the repository asks: one function call, or the table when it is missing."""
+
+    def __init__(self, rpc: _Rpc) -> None:
+        self._rpc = rpc
+        self.rpc_calls: list[tuple[str, dict[str, object]]] = []
+        self.rows: list[dict[str, object]] = []
+        self.written: list[dict[str, object]] = []
+
+    def rpc(self, name: str, params: dict[str, object]) -> _Rpc:
+        self.rpc_calls.append((name, params))
+        return self._rpc
+
+    def table(self, name: str) -> "_Client":
+        assert name == "account_consents"
+        return self
+
+    def select(self, _: str) -> "_Client":
+        return self
+
+    def eq(self, *_: object) -> "_Client":
+        return self
+
+    def limit(self, _: int) -> "_Client":
+        return self
+
+    def upsert(self, payload: dict[str, object]) -> "_Client":
+        self.written.append(payload)
+        return self
+
+    def execute(self) -> "_Rpc":
+        return _Rpc(self.rows)
+
+
+class _DbError(Exception):
+    def __init__(self, code: str) -> None:
+        super().__init__(code)
+        self.code = code
+
+
+_DECISION = ConsentRecord(granted=True, version="v1")
+
+
+def test_the_database_merges_the_decision_and_the_row_is_never_rewritten() -> None:
+    both = {"a": _DECISION.model_dump(mode="json"), "b": _DECISION.model_dump(mode="json")}
+    client = _Client(_Rpc(both))
+
+    saved = SupabaseAccountConsentsRepository(client).record("user-1", "b", _DECISION)  # type: ignore[arg-type]
+
+    ((name, params),) = client.rpc_calls
+    assert name == "account_consent_record"
+    assert params["p_owner_id"] == "user-1" and params["p_key"] == "b"
+    assert set(saved.consents) == {"a", "b"} and client.written == []
+
+
+@pytest.mark.parametrize("code", ["42883", "PGRST202"])
+def test_without_the_function_the_decision_is_stored_as_before(code: str) -> None:
+    client = _Client(_Rpc(error=_DbError(code)))
+    client.rows = [{"owner_id": "user-1", "consents": {"a": _DECISION.model_dump(mode="json")}}]
+
+    saved = SupabaseAccountConsentsRepository(client).record("user-1", "b", _DECISION)  # type: ignore[arg-type]
+
+    assert set(saved.consents) == {"a", "b"}
+    assert len(client.written) == 1
+
+
+def test_any_other_database_error_is_not_hidden() -> None:
+    client = _Client(_Rpc(error=_DbError("42501")))
+
+    with pytest.raises(_DbError):
+        SupabaseAccountConsentsRepository(client).record("user-1", "b", _DECISION)  # type: ignore[arg-type]
+    assert client.written == []
+
+
+def test_the_three_consents_of_a_sign_up_sent_together_all_stay() -> None:
+    repository = InMemoryAccountConsentsRepository()
+    service = SetAccountConsentService(repository)
+    keys = [
+        AccountConsentType.TERMS_OF_SERVICE,
+        AccountConsentType.PRIVACY_POLICY,
+        AccountConsentType.MARKETING_EMAIL,
+    ]
+
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        list(
+            pool.map(
+                lambda key: service.execute(
+                    SetAccountConsentInput(owner_id="user-1", consent_key=key, granted=True)
+                ),
+                keys * 5,
+            )
+        )
+
+    stored = repository.get("user-1")
+    assert stored is not None and set(stored.consents) == set(keys)

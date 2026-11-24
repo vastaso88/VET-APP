@@ -11,10 +11,17 @@ from __future__ import annotations
 # 42P01: PostgreSQL undefined_table. PGRST205: PostgREST "table not found in
 # the schema cache".
 MISSING_TABLE_CODES = frozenset({"42P01", "PGRST205"})
+# 42883: PostgreSQL undefined_function. PGRST202: PostgREST "function not found in the
+# schema cache".
+MISSING_FUNCTION_CODES = frozenset({"42883", "PGRST202"})
 
 
 def is_missing_table(error: BaseException) -> bool:
     return getattr(error, "code", None) in MISSING_TABLE_CODES
+
+
+def is_missing_function(error: BaseException) -> bool:
+    return getattr(error, "code", None) in MISSING_FUNCTION_CODES
 
 
 def missing_table_note(table: str) -> str:

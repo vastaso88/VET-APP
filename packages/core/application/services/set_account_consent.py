@@ -68,18 +68,11 @@ class SetAccountConsentService:
             # it. Declining or revoking is always allowed.
             raise AgeRestrictedError("consent_not_for_minors")
 
-        existing = self._repository.get(data.owner_id) or AccountConsents(owner_id=data.owner_id)
-        updated = existing.model_copy(
-            update={
-                "consents": {
-                    **existing.consents,
-                    data.consent_key: ConsentRecord(
-                        granted=data.granted, version=CURRENT_VERSIONS[data.consent_key]
-                    ),
-                }
-            }
+        saved = self._repository.record(
+            data.owner_id,
+            data.consent_key,
+            ConsentRecord(granted=data.granted, version=CURRENT_VERSIONS[data.consent_key]),
         )
-        saved = self._repository.save(updated)
         return SetAccountConsentOutput(
             account_consents=saved, catalog=build_consent_catalog(data.language)
         )

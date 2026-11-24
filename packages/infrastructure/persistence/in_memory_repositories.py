@@ -39,7 +39,7 @@ from packages.core.application.ports.user_location_repository import UserLocatio
 from packages.core.application.ports.weight_measurement_repository import (
     WeightMeasurementRepository,
 )
-from packages.core.domain.consent.models import AccountConsents
+from packages.core.domain.consent.models import AccountConsents, ConsentRecord
 from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.models import Conversation
 from packages.core.domain.coverage.models import RadarCoverage
@@ -218,6 +218,7 @@ class InMemoryPetConditionRepository(PetConditionRepository):
 class InMemoryAccountConsentsRepository(AccountConsentsRepository):
     def __init__(self) -> None:
         self._items: dict[str, AccountConsents] = {}
+        self._lock = threading.Lock()
 
     def get(self, owner_id: str) -> AccountConsents | None:
         return self._items.get(owner_id)
@@ -225,6 +226,15 @@ class InMemoryAccountConsentsRepository(AccountConsentsRepository):
     def save(self, account_consents: AccountConsents) -> AccountConsents:
         self._items[account_consents.owner_id] = account_consents
         return account_consents
+
+    def record(self, owner_id: str, consent_key: str, decision: ConsentRecord) -> AccountConsents:
+        with self._lock:
+            known = self._items.get(owner_id) or AccountConsents(owner_id=owner_id)
+            updated = known.model_copy(
+                update={"consents": {**known.consents, consent_key: decision}}
+            )
+            self._items[owner_id] = updated
+            return updated
 
 
 class InMemorySubscriptionRepository(SubscriptionRepository):
