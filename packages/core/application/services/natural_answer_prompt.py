@@ -376,6 +376,13 @@ _SHORT_ANSWER = (
     "no extra advice. If a vet is needed now, that comes first, with its reason: the limit "
     "never cuts it."
 )
+# Reproduced 24/11/2026: "mange plus depuis 10 jours" was read as "eats more".
+_SPOKEN_FRENCH = (
+    "SPOKEN FRENCH. The message says a verb followed by 'plus' without 'ne' ('mange plus depuis "
+    "10 jours', 'bouge plus'): in spoken French the 'ne' is dropped, so it means it NO LONGER does "
+    "it (it has stopped eating, moving...), not that it does it more. Treat it so. If the sense is "
+    "still open, say first what you understood and ask."
+)
 _FUTURE_ANIMAL = (
     "A FUTURE ANIMAL. The question is about an animal the owner does not have yet: do not "
     "use the name, species or data of the pet in the profile; speak of 'the dog', 'the "
@@ -837,6 +844,7 @@ def build_system_prompt(
     long_message: bool = False,
     forced_yes_no: bool = False,
     short_words: int | None = None,
+    spoken_french: bool = False,
     future_animal: bool = False,
     visit_today: bool = False,
     plant_diet: bool = False,
@@ -898,6 +906,8 @@ def build_system_prompt(
         parts.append(_FORCED_YES_NO)
     if short_words is not None:
         parts.append(_SHORT_ANSWER.format(words=short_words))
+    if spoken_french:
+        parts.append(_SPOKEN_FRENCH)
     if future_animal:
         parts.append(_FUTURE_ANIMAL)
     if visit_today:
