@@ -178,7 +178,10 @@ void main() {
     testWidgets('a 429 is explained and not retried', (tester) async {
       final source = _FakeSource(
         Result.failure(
-          const AppNetworkError(code: accountExportRateLimitedCode, message: 'x'),
+          const AppNetworkError(
+            code: accountExportRateLimitedCode,
+            message: 'Troppe richieste: riprova tra 7 minuti.',
+          ),
         ),
       );
       var saves = 0;
@@ -190,7 +193,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('export-data-button')));
       await tester.pumpAndSettle();
 
-      expect(find.text('Hai già richiesto i dati da poco: riprova tra qualche minuto'), findsOneWidget);
+      expect(find.text('Troppe richieste: riprova tra 7 minuti.'), findsOneWidget);
       expect(source.calls, 1, reason: 'no automatic retry');
       expect(saves, 0);
       // The button is available again for a later, deliberate request.
@@ -498,6 +501,19 @@ void main() {
 
       expect(result.fold<String>(onSuccess: (_) => '', onFailure: (e) => e.code),
           accountExportRateLimitedCode);
+      // An older server says no time, and always in Italian: the app's own text.
+      expect(result.fold<String>(onSuccess: (_) => '', onFailure: (e) => e.message),
+          'Hai già richiesto i dati da poco: riprova tra qualche minuto');
+    });
+
+    test('a server that says how long is quoted', () async {
+      final result = await source(MockClient((_) async => http.Response.bytes(
+            utf8.encode('{"detail":"Trop de demandes : réessayez dans 7 minutes."}'),
+            429,
+          ))).fetch();
+
+      expect(result.fold<String>(onSuccess: (_) => '', onFailure: (e) => e.message),
+          'Trop de demandes : réessayez dans 7 minutes.');
     });
 
     test('401, 500 and a network error are plain failures, never a file', () async {

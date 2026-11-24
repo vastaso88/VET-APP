@@ -21616,5 +21616,32 @@
       "de": "e96efa62fd625adc3f28056c99b1ec83737777aa097361bb4fc2c9e91bf78366",
       "fr": "2f010b5ad06ebabe85502a5d5ed55c30f9468eb2c427e0ebc8b6d4f69e28c3b6"
     }
+  },
+  "ui:monitoringFieldWeightG": {
+    "source": "469a430f04ba6115a5c77c33c65ba72b28c12c42b33080c8f612bd2f73a8e99a",
+    "targets": {
+      "en": "5f8460c55dbafa917842c5ef2a4c19ae4ca8c957649affd8d05b4a9c0d78fa49",
+      "es": "3bc2724f230aa1bfb50409607f91d3b0e276fe9f885a2008318c70feb840bc77",
+      "de": "d78917128d00dc253fa5e06a50f071dab49f08af9615e45e2a6f659d6cbee52b",
+      "fr": "d7ebbbb5741b27f5b60a27d73380da36a96cf5ca130030f378f3381fa2def926"
+    }
+  },
+  "ui:monitoringFieldWeightOz": {
+    "source": "7ce8b48f93849d54a3008f85f746d8f00e092a333f949acc2983c900674f00ad",
+    "targets": {
+      "en": "debfa29e7a0821db22713ca8d599ef61bf09f525066b4715b8bd913ce677a63f",
+      "es": "9f5d0918d522011fa6a703a6e7f9fbd9a15b8fc541ff32e983a87d55f2263dac",
+      "de": "9153cc6acb944baeebc8c6cd713bbd5c2e48a443f60d6df4193430933b9b6ec8",
+      "fr": "cb79212ff03d2cf9c5ee1e89d039ccf12f961d13277a82cc0c3e73914601535a"
+    }
+  },
+  "ui:monitoringWeightJump": {
+    "source": "fb17eb0ad652e8b89c5f3bdc4eb2b6cf26a5adfa2dabe8792fc4cc75273a7b72",
+    "targets": {
+      "en": "2da792fcd88b36c5af3af3bc14297358b4ec8a18a3ee5a9560e3ce55f0f7dc65",
+      "es": "7b77c6ed5d2fe525a6778f382b4888efadd00871cf46681f4b6fcedbd3a9cfdc",
+      "de": "6e38a3fe04eb5362b8ee4abb1cf7d93b1173bf748ea00f97550d5ddc9a380f13",
+      "fr": "03b4a9ac68270a78d95a68caa1709d8aa42675d859b7a1bf5f1b691da9273ff5"
+    }
   }
 }

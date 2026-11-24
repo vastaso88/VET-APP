@@ -51,6 +51,22 @@ void main() {
       }
     });
 
+    test('a light animal is typed in grams or ounces', () {
+      expect(parseWeightInput('385', UnitSystem.metric, small: true), 0.385);
+      expect(parseWeightInput('4', UnitSystem.us, small: true), closeTo(0.113, 0.001));
+      expect(weightInputText(0.385, UnitSystem.metric, small: true), '385');
+      expect(isShownInSmallUnit(0.38, UnitSystem.metric), isTrue);
+      expect(isShownInSmallUnit(0.9999, UnitSystem.metric), isFalse);
+      expect(isShownInSmallUnit(1, UnitSystem.metric), isFalse);
+    });
+
+    test('twenty times the known weight is a likely slip, a growing puppy is not', () {
+      expect(isWeightJump(385, 0.38), isTrue);
+      expect(isWeightJump(0.012, 12), isTrue);
+      expect(isWeightJump(8, 0.9), isFalse);
+      expect(isWeightJump(8, 0), isFalse);
+    });
+
     test('the chart is drawn in the small unit for a tiny pet', () {
       expect(weightChartUnit(23, UnitSystem.metric), WeightUnit.kg);
       expect(weightChartUnit(0.05, UnitSystem.metric), WeightUnit.g);

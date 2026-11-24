@@ -388,23 +388,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
 
   bool get _isAquariumProfile => _species == 'Pesce' && _isAquarium;
 
-  /// The animal as far as the species and the chosen breed/species tell.
-  PetKind get _kind => petKindOf(_species, _breed);
-
-  /// Birds, small mammals, reptiles, amphibians and invertebrates are weighed
-  /// in grams (a budgerigar is 35 g, not 0,035 kg). Rabbits, dogs, cats and
-  /// the larger animals stay in kg, and imperial owners keep their pounds.
-  bool get _weighsInGrams =>
-      !_units.usesPounds &&
-      switch (_kind) {
-        PetKind.bird ||
-        PetKind.smallMammal ||
-        PetKind.reptile ||
-        PetKind.amphibian ||
-        PetKind.invertebrate =>
-          true,
-        _ => false,
-      };
+  bool get _weighsInGrams => !_units.usesPounds && isWeighedInGrams(_species, _breed);
 
   /// The species changed (dropdown or chip): breed, size and aquarium choices
   /// belonged to the previous one. Sex is kept: fish simply never use it.

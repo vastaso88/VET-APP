@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
@@ -8,6 +9,7 @@ import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
+import '../../chat/data/chat_remote_data_source.dart' show detailOf;
 
 /// What `GET /account/export` returned, ready to be saved as a file.
 class AccountExportFile {
@@ -49,6 +51,11 @@ class HttpAccountExportRemoteDataSource implements AccountExportRemoteDataSource
   /// The server takes a few seconds on an account with many files.
   static const _timeout = Duration(seconds: 60);
 
+  static String? _howLong(Uint8List body) {
+    final detail = detailOf(utf8.decode(body, allowMalformed: true));
+    return detail != null && detail.contains(RegExp(r'\d')) ? detail : null;
+  }
+
   @override
   Future<Result<AccountExportFile>> fetch() async {
     final token = _tokenProvider();
@@ -66,7 +73,9 @@ class HttpAccountExportRemoteDataSource implements AccountExportRemoteDataSource
         return Result.failure(
           AppNetworkError(
             code: accountExportRateLimitedCode,
-            message: appL10n.accountExportRateLimited,
+            // The server says how long, in the owner's language ("riprova tra 7
+            // minuti"); an older one only says "in a moment", always in Italian.
+            message: _howLong(response.bodyBytes) ?? appL10n.accountExportRateLimited,
           ),
         );
       }

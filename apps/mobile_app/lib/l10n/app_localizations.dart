@@ -10964,17 +10964,23 @@ abstract class AppLocalizations {
   /// **'Peso (lb)'**
   String get monitoringFieldWeightLb;
 
+  /// No description provided for @monitoringFieldWeightG.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso (g)'**
+  String get monitoringFieldWeightG;
+
+  /// No description provided for @monitoringFieldWeightOz.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso (oz)'**
+  String get monitoringFieldWeightOz;
+
   /// No description provided for @monitoringFieldWeightHintKg.
   ///
   /// In it, this message translates to:
   /// **'Es. 10,5'**
   String get monitoringFieldWeightHintKg;
-
-  /// No description provided for @monitoringFieldWeightHintSmallKg.
-  ///
-  /// In it, this message translates to:
-  /// **'Es. 0,385 (cioè 385 g)'**
-  String get monitoringFieldWeightHintSmallKg;
 
   /// No description provided for @monitoringFieldWeightHintLb.
   ///
@@ -10993,6 +10999,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Inserisci un peso valido, maggiore di zero.'**
   String get monitoringErrorWeight;
+
+  /// No description provided for @monitoringWeightJump.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai scritto {weight}; l\'ultimo peso era {last}. È giusto?'**
+  String monitoringWeightJump(String weight, String last);
 
   /// No description provided for @monitoringErrorDateFuture.
   ///

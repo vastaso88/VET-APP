@@ -82,6 +82,7 @@ class _ExportDataPageState extends State<ExportDataPage> {
 
   _Step _step = _Step.idle;
   _Outcome _outcome = _Outcome.none;
+  String? _rateLimitedMessage;
   int _missingCount = 0;
 
   // What the server sent, kept in memory until it is saved or the page closes.
@@ -114,6 +115,8 @@ class _ExportDataPageState extends State<ExportDataPage> {
       final code = result.fold<String>(onSuccess: (_) => '', onFailure: (error) => error.code);
       setState(() {
         _step = _Step.idle;
+        _rateLimitedMessage =
+            result.fold<String?>(onSuccess: (_) => null, onFailure: (error) => error.message);
         _outcome = code == accountExportRateLimitedCode ? _Outcome.rateLimited : _Outcome.failed;
       });
       return;
@@ -266,7 +269,10 @@ class _ExportDataPageState extends State<ExportDataPage> {
       _Outcome.saved => (l10n.accountExportDone, AppColors.successStrong),
       _Outcome.savedWithMissing => (l10n.accountExportZipDoneMissing(_missingCount), AppColors.warningStrong),
       _Outcome.cancelled => (l10n.accountExportCancelled, AppColors.secondaryText),
-      _Outcome.rateLimited => (l10n.accountExportRateLimited, AppColors.warningStrong),
+      _Outcome.rateLimited => (
+          _rateLimitedMessage ?? l10n.accountExportRateLimited,
+          AppColors.warningStrong,
+        ),
       _Outcome.failed => (l10n.accountExportFailed, AppColors.danger),
       _Outcome.saveFailed => (l10n.accountExportSaveFailed, AppColors.danger),
     };

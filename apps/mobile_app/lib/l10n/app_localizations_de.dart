@@ -6621,10 +6621,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get monitoringFieldWeightLb => 'Gewicht (lb)';
 
   @override
-  String get monitoringFieldWeightHintKg => 'z. B. 10,5';
+  String get monitoringFieldWeightG => 'Gewicht (g)';
 
   @override
-  String get monitoringFieldWeightHintSmallKg => 'z. B. 0,385 (also 385 g)';
+  String get monitoringFieldWeightOz => 'Gewicht (oz)';
+
+  @override
+  String get monitoringFieldWeightHintKg => 'z. B. 10,5';
 
   @override
   String get monitoringFieldWeightHintLb => 'z. B. 22,5';
@@ -6635,6 +6638,11 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get monitoringErrorWeight =>
       'Geben Sie ein gültiges Gewicht größer als null ein.';
+
+  @override
+  String monitoringWeightJump(String weight, String last) {
+    return 'Sie haben $weight eingegeben; das letzte Gewicht war $last. Stimmt das?';
+  }
 
   @override
   String get monitoringErrorDateFuture =>

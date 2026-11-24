@@ -191,6 +191,19 @@ bool speciesHasVaccines(String? species, {String? breed}) {
 /// A weight is asked for every animal except fish (see `supportsWeightMonitoring`).
 bool speciesHasWeight(String? species) => species != 'Pesce';
 
+/// Birds, small mammals, reptiles, amphibians and invertebrates are weighed
+/// in grams (a budgerigar is 35 g, not 0,035 kg). Rabbits, dogs, cats and
+/// the larger animals stay in kg; imperial owners keep their pounds.
+bool isWeighedInGrams(String? species, [String? breed]) => switch (petKindOf(species, breed)) {
+      PetKind.bird ||
+      PetKind.smallMammal ||
+      PetKind.reptile ||
+      PetKind.amphibian ||
+      PetKind.invertebrate =>
+        true,
+      _ => false,
+    };
+
 /// A coat colour is asked for everything but fish.
 bool speciesHasCoatColor(String? species) => species != 'Pesce';
 

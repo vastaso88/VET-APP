@@ -9,6 +9,7 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/formatters/date_input_formatter.dart';
 import '../../../../shared/widgets/typed_date_field.dart';
+import '../../../pets/domain/pet_details.dart';
 import '../../../pets/domain/pet_format.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../../settings/domain/unit_system.dart';
@@ -90,11 +91,15 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
   /// The body condition is asked only for species with a published guide.
   BodyConditionGuideKind? get _guide => bodyConditionGuideFor(widget.pet);
 
-  /// The animal's weight is under one kilo (shown in grams elsewhere).
-  bool get _isSmallPet {
-    final kg = widget.initial?.weightKg ?? parseWeightLabelKg(widget.pet.weightLabel);
-    return kg != null && kg > 0 && kg < 1;
-  }
+  /// The weight the animal is known to have, in kilos (0 when it has none).
+  double get _knownKg =>
+      widget.initial?.weightKg ?? parseWeightLabelKg(widget.pet.weightLabel) ?? 0;
+
+  /// The weight is typed in the unit it is shown in: grams (or ounces) for a light animal, so
+  /// "385" is never 385 kg. With no weight yet, the species decides, as in the profile.
+  late final bool _small = _knownKg > 0
+      ? isShownInSmallUnit(_knownKg, widget.system)
+      : !widget.system.usesPounds && isWeighedInGrams(widget.pet.species, widget.pet.breed);
 
   /// The birth date, only when it is a full date (day, month, year).
   DateTime? get _birthDate => parsePetBirthdayLabel(widget.pet.birthDateLabel);
@@ -109,7 +114,7 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
     _weightController = TextEditingController(
       text: initial == null
           ? ''
-          : weightInputText(initial.weightKg, widget.system),
+          : weightInputText(initial.weightKg, widget.system, small: _small),
     );
     _noteController = TextEditingController(text: initial?.note ?? '');
     _bodyCondition = initial?.bodyCondition;
@@ -150,16 +155,44 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
   }
 
   String? _validateWeight(String? value) =>
-      parseWeightInput(value ?? '', widget.system) == null
+      parseWeightInput(value ?? '', widget.system, small: _small) == null
           ? context.l10n.monitoringErrorWeight
           : null;
 
-  void _save() {
+  /// Twenty times more (or less) than the known weight is almost always a slip of the unit.
+  Future<bool> _confirmJump(double typedKg) async {
+    final l10n = context.l10n;
+    final sure = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        content: Text(l10n.monitoringWeightJump(
+          formatMeasuredWeight(typedKg, widget.system),
+          formatMeasuredWeight(_knownKg, widget.system),
+        )),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.commonEdit),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.commonSave),
+          ),
+        ],
+      ),
+    );
+    return sure ?? false;
+  }
+
+  Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    final weightKg = parseWeightInput(_weightController.text, widget.system, small: _small)!;
+    if (isWeightJump(weightKg, _knownKg) && !await _confirmJump(weightKg)) return;
+    if (!mounted) return;
     Navigator.of(context).pop(
       MeasurementDraft(
         measuredOn: parseStrictDate(_dateController.text)!,
-        weightKg: parseWeightInput(_weightController.text, widget.system)!,
+        weightKg: weightKg,
         bodyCondition: _guide == null ? null : _bodyCondition,
         note: _noteController.text.trim(),
       ),
@@ -190,7 +223,6 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final pounds = widget.system.usesPounds;
     return Padding(
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -242,16 +274,17 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
                 ],
                 validator: _validateWeight,
                 decoration: _decoration(
-                  pounds
-                      ? l10n.monitoringFieldWeightLb
-                      : l10n.monitoringFieldWeightKg,
-                  hint: pounds
-                      ? l10n.monitoringFieldWeightHintLb
-                      // The card shows a light animal in grams ("380 g") but the
-                      // field is in kilos: the hint says how a gram weight is typed.
-                      : _isSmallPet
-                          ? l10n.monitoringFieldWeightHintSmallKg
-                          : l10n.monitoringFieldWeightHintKg,
+                  switch (weightEntryUnit(widget.system, small: _small)) {
+                    WeightUnit.kg => l10n.monitoringFieldWeightKg,
+                    WeightUnit.lb => l10n.monitoringFieldWeightLb,
+                    WeightUnit.g => l10n.monitoringFieldWeightG,
+                    WeightUnit.oz => l10n.monitoringFieldWeightOz,
+                  },
+                  hint: switch (weightEntryUnit(widget.system, small: _small)) {
+                    WeightUnit.kg => l10n.monitoringFieldWeightHintKg,
+                    WeightUnit.lb => l10n.monitoringFieldWeightHintLb,
+                    WeightUnit.g || WeightUnit.oz => l10n.petsFormWeightHintG,
+                  },
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),

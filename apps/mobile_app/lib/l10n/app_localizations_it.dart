@@ -6603,10 +6603,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String get monitoringFieldWeightLb => 'Peso (lb)';
 
   @override
-  String get monitoringFieldWeightHintKg => 'Es. 10,5';
+  String get monitoringFieldWeightG => 'Peso (g)';
 
   @override
-  String get monitoringFieldWeightHintSmallKg => 'Es. 0,385 (cioè 385 g)';
+  String get monitoringFieldWeightOz => 'Peso (oz)';
+
+  @override
+  String get monitoringFieldWeightHintKg => 'Es. 10,5';
 
   @override
   String get monitoringFieldWeightHintLb => 'Es. 22,5';
@@ -6617,6 +6620,11 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get monitoringErrorWeight =>
       'Inserisci un peso valido, maggiore di zero.';
+
+  @override
+  String monitoringWeightJump(String weight, String last) {
+    return 'Hai scritto $weight; l\'ultimo peso era $last. È giusto?';
+  }
 
   @override
   String get monitoringErrorDateFuture => 'La data non può essere nel futuro.';

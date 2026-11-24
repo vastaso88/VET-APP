@@ -3810,11 +3810,23 @@
   "monitoringFieldDate": "Date",
   "monitoringFieldWeightKg": "Poids (kg)",
   "monitoringFieldWeightLb": "Poids (lb)",
+  "monitoringFieldWeightG": "Poids (g)",
+  "monitoringFieldWeightOz": "Poids (oz)",
   "monitoringFieldWeightHintKg": "Ex. 10,5",
-  "monitoringFieldWeightHintSmallKg": "Ex. 0,385 (soit 385 g)",
   "monitoringFieldWeightHintLb": "Ex. 22,5",
   "monitoringFieldNote": "Note (facultative)",
   "monitoringErrorWeight": "Saisissez un poids valide, supérieur à zéro.",
+  "monitoringWeightJump": "Vous avez saisi {weight} ; le dernier poids était de {last}. Est-ce exact ?",
+  "@monitoringWeightJump": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
   "monitoringErrorDateFuture": "La date ne peut pas être dans le futur.",
   "monitoringErrorDateBirth": "La date est antérieure à la naissance de {petName}.",
   "@monitoringErrorDateBirth": {
