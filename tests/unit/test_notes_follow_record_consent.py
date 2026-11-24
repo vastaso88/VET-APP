@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
+import pytest
 from llm_fakes import RecordingLLMClient
 
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
@@ -61,7 +62,9 @@ def _pet(consent: MedicalRecordConsentRecord | None) -> PetProfile:
     )
 
 
-def _chat(consent: MedicalRecordConsentRecord | None) -> str:
+def _chat(
+    consent: MedicalRecordConsentRecord | None, message: str = "Rex ha le feci molli da ieri"
+) -> str:
     """The prompt the model receives for one ordinary message."""
     client = RecordingLLMClient()
     pets = InMemoryPetProfileRepository()
@@ -84,11 +87,7 @@ def _chat(consent: MedicalRecordConsentRecord | None) -> str:
         pets,
         reminder_context_retriever=ReminderContextRetriever(reminders),
     )
-    service.execute(
-        SendChatMessageInput(
-            owner_id="owner-1", pet_id="pet-1", user_message="Rex ha le feci molli da ieri"
-        )
-    )
+    service.execute(SendChatMessageInput(owner_id="owner-1", pet_id="pet-1", user_message=message))
     return client.requests[-1].user_prompt
 
 
@@ -117,6 +116,37 @@ def test_a_decision_under_an_older_text_does_not_count() -> None:
     prompt = _chat(_consent(True, version="v2"))
 
     assert NOTES not in prompt and THERAPY not in prompt
+
+
+_NOT_READABLE = "not readable here"
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "Il promemoria che ho messo per Rex: la chat lo vede?",
+        "Can you see the reminder I set for Rex?",
+        "¿Ves el recordatorio que puse para Rex?",
+        "Siehst du die Erinnerung, die ich für Rex angelegt habe?",
+        "Tu vois le rappel que j'ai mis pour Rex ?",
+    ],
+)
+def test_without_the_consent_a_question_about_reminders_is_not_answered_with_none(
+    message: str,
+) -> None:
+    # F35 of the collaudo: "non vedo promemoria: crealo di nuovo".
+    prompt = _chat(_consent(False), message)
+
+    assert _NOT_READABLE in prompt and "never say there are none" in prompt
+    assert THERAPY not in prompt and NOTES not in prompt
+
+
+def test_the_line_comes_only_with_the_consent_off_and_the_reminders_asked() -> None:
+    reminder_question = "Il promemoria che ho messo per Rex: la chat lo vede?"
+    assert _NOT_READABLE not in _chat(_consent(False))  # another question
+    assert _NOT_READABLE in _chat(None, reminder_question)  # no decision yet: not readable
+    with_consent = _chat(_consent(True), reminder_question)
+    assert _NOT_READABLE not in with_consent and THERAPY in with_consent
 
 
 def test_with_the_consent_granted_notes_and_reminders_travel() -> None:

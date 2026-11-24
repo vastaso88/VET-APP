@@ -533,6 +533,7 @@ class SendChatMessageService:
             if record_allowed and self._reminder_context_retriever is not None
             else None
         )
+        reminders_withheld = not record_allowed and self._reminder_context_retriever is not None
 
         orchestrator_result = self._orchestrator.answer(
             ChatOrchestratorInput(
@@ -552,6 +553,7 @@ class SendChatMessageService:
                 body_condition_as_of=body_condition_as_of,
                 activity_level=pet_profile.activity_level,
                 reminders_context=reminders_context,
+                reminders_withheld=reminders_withheld,
                 language=normalize_language(data.language),
                 owner_id=data.owner_id,
                 owner_is_minor=self._owner_is_minor(data.owner_id, today),

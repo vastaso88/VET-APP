@@ -38,7 +38,7 @@ from packages.core.domain.conversation.request_kind import RequestKind
 # Part of the key of the shared answers: raised on 23/11/2026, so that no stored answer
 # comes back cut in the middle, with a source of another species, with the old titles of
 # the notes or with a cage size no source gives (collaudo, wave 0).
-PROMPT_VERSION = "2026-11-23-collaudo-ondata0"
+PROMPT_VERSION = "2026-11-24-controllo"
 
 _VOICE = (
     "You are the assistant inside an app that helps people who live with an animal "
@@ -613,8 +613,7 @@ SEVERITY_CHECK_PROMPT = (
     "rewrite it by putting first one or two sentences on that case (call the vet or go now, "
     "with no condition, and why, in a few words), then the reply as it was. A first "
     "sentence that names the case but goes only on a condition ('if it ate the leaves and "
-    "keeps vomiting') also delays. A case an earlier reply of this conversation already "
-    "raised is not raised again, unless the owner writes about it or reports a new sign. "
+    "keeps vomiting') also delays. "
     "The reason uses only what was written about that case, "
     "for that animal: no sign, time or event that was not written, nothing that happened "
     "to another animal or person.\n"

@@ -300,6 +300,18 @@ _NOW_WORD = re.compile(
     r"\b(?:adesso|subito|ora|now|right away|straight away|ahora|ya mismo|enseguida|jetzt|"
     r"sofort|maintenant|tout de suite|immediatement)\b"
 )
+# F35 of the collaudo: a question about the reminders with the medical record consent off.
+# Only the fixed line below enters the prompt: no reminder, no number of them.
+_ABOUT_REMINDERS = re.compile(
+    r"\b(?:promemoria|reminders?|recordatorios?|erinnerung\w*|rappels?)\b"
+)
+_REMINDERS_WITHHELD = (
+    "\n\nThe reminders the owner may have set for this pet are not readable here, because the "
+    "owner has not allowed the chat to read the medical record. If the message is about them, "
+    "say exactly that and that the permission can be given from the menu of this chat or in "
+    "Settings; "
+    "never say there are none, and never suggest creating them again."
+)
 # Fixed guard replies a v2 answer continues with what to do now (round 4b, 21/11): a dose
 # change, a human medicine, euthanasia at home. Not self-harm, a hurt person, a child.
 _GUARDS_WITH_FOLLOW_UP = frozenset({"dosage-guard", "toxin-intent-guard", "harmful-request-guard"})
@@ -991,6 +1003,9 @@ class ChatOrchestratorInput(BaseModel):
     # The pet's active, relevant reminders as plain text (see
     # ReminderContextRetriever) — e.g. an ongoing therapy course.
     reminders_context: str | None = None
+    # The reminders are not read because the owner has not allowed the medical record (F35 of
+    # the collaudo: the chat said it saw none and to create them again).
+    reminders_withheld: bool = False
     # The owner's own name(s) when known from their account, so they can be
     # replaced wherever they appear in text sent to the LLM provider.
     owner_names: list[str] = Field(default_factory=list)
@@ -3944,6 +3959,13 @@ class ChatOrchestrator:
                     "reminders", self._anonymize_for_provider(data.reminders_context, data)
                 )
             )
+        elif (
+            data.reminders_withheld
+            and not generic_context
+            and not other_animal
+            and _ABOUT_REMINDERS.search(normalize_for_matching(message))
+        ):
+            reminders_context = _REMINDERS_WITHHELD
         today = data.today or datetime.now(UTC).date()
         # Variant 2 of the verification (plan 08): official passages read before writing.
         official = self._official_sources_block(data)

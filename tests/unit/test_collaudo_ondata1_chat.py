@@ -153,8 +153,13 @@ def test_another_conversation_travels_only_with_the_first_reply_of_a_new_one() -
     assert "CIOCCOLATO" not in two.user_prompt and "OTHER RECENT" not in two.system_prompt
 
 
-def test_the_check_does_not_raise_again_what_this_conversation_already_raised() -> None:
-    assert "is not raised again" in SEVERITY_CHECK_PROMPT
+def test_the_check_raises_an_open_case_again_whatever_the_conversation_said() -> None:
+    # Measured on 24/11/2026 (23 serious cases, two generations, two blind judges): with «is not
+    # raised again» one generation in 46 lost the urgency (E008-1) and 3 of 14 of E040-2 did;
+    # without it none. The repeated alarms did not increase (9 openings in 18 turns with it, 4
+    # in 18 without).
+    assert "is not raised again" not in SEVERITY_CHECK_PROMPT
+    assert "leaves an open case unsaid" in SEVERITY_CHECK_PROMPT
 
 
 # --- 8. a legal obligation needs a note ---------------------------------------------------------
