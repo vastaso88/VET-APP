@@ -341,7 +341,8 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
                   backgroundColor: canSend ? AppColors.primary : AppColors.border,
                   disabledBackgroundColor: AppColors.border,
                   foregroundColor: AppColors.onPrimary,
-                  disabledForegroundColor: AppColors.onPrimary,
+                  // Beige on beige was all but invisible (X05).
+                  disabledForegroundColor: AppColors.secondaryText,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
               ),

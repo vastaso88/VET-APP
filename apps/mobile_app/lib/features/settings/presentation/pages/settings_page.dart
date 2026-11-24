@@ -16,6 +16,7 @@ import '../../../../l10n/date_formats.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_owner.dart';
 import '../../../../shared/auth/current_user.dart';
+import '../../../../shared/widgets/min_tap_target.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
 import '../../../account_consents/data/account_consents_remote_data_source.dart';
 import '../../../account_consents/domain/account_consent_models.dart';
@@ -1354,24 +1355,33 @@ class _ChoicePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: selected ? AppColors.primary : AppColors.surface,
-      borderRadius: BorderRadius.circular(AppRadii.pill),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.pill),
+    // Spoken as one choice of a group, with whether it is the one in use (A01).
+    return Semantics(
+      container: true,
+      button: true,
+      selected: selected,
+      inMutuallyExclusiveGroup: true,
+      child: MinTapTarget(
         onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 6),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
+        child: Material(
+          color: selected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+          child: InkWell(
             borderRadius: BorderRadius.circular(AppRadii.pill),
-            border: Border.all(color: selected ? AppColors.primary : AppColors.border),
-          ),
-          child: Text(
-            label,
-            style: AppTextStyles.caption.copyWith(
-              color: selected ? AppColors.onPrimary : AppColors.text,
-              fontWeight: FontWeight.w700,
+            onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppRadii.pill),
+                border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+              ),
+              child: Text(
+                label,
+                style: AppTextStyles.caption.copyWith(
+                  color: selected ? AppColors.onPrimary : AppColors.text,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
         ),
