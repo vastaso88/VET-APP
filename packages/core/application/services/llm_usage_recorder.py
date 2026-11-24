@@ -21,7 +21,7 @@ from packages.core.application.ports.llm_client import (
 from packages.core.application.ports.llm_usage_repository import LlmUsageRepository
 from packages.core.application.services.llm_budget import LlmBudget
 from packages.core.domain.llm_usage.models import LlmUsageEvent, estimate_tokens
-from packages.shared.errors.base import ProviderError
+from packages.shared.errors.base import PaidCall, ProviderError
 
 logger = logging.getLogger("vetgpt.llm_usage")
 
@@ -43,6 +43,7 @@ class InstrumentedLLMClient(LLMClient):
         try:
             response = self.inner.generate(request)
         except ProviderError as exc:
+            self._record_paid(exc.paid_calls, request)
             self._record(
                 LlmUsageEvent(
                     model=f"({request.model_class})",
@@ -53,6 +54,7 @@ class InstrumentedLLMClient(LLMClient):
                 )
             )
             raise
+        self._record_paid(response.paid_before, request)
         prompt_tokens = response.prompt_tokens or estimate_tokens(
             request.system_prompt + request.user_prompt
         )
@@ -81,6 +83,33 @@ class InstrumentedLLMClient(LLMClient):
             )
         self._record(event)
         return response
+
+    def _record_paid(self, calls: tuple[PaidCall, ...], request: LLMGenerationRequest) -> None:
+        """Calls that were paid and gave nothing: the euro limit counts them as well."""
+        for call in calls:
+            total = call.prompt_tokens + call.completion_tokens
+            if self._budget is not None:
+                self._budget.note_usage(
+                    call.model,
+                    total,
+                    prompt_tokens=call.prompt_tokens,
+                    completion_tokens=call.completion_tokens,
+                    cached_prompt_tokens=call.cached_prompt_tokens,
+                    cache_write_tokens=call.cache_write_tokens,
+                )
+            self._record(
+                LlmUsageEvent(
+                    model=call.model,
+                    model_class=request.model_class,
+                    purpose=request.purpose,
+                    prompt_tokens=call.prompt_tokens,
+                    completion_tokens=call.completion_tokens,
+                    cached_prompt_tokens=call.cached_prompt_tokens,
+                    cache_write_tokens=call.cache_write_tokens,
+                    total_tokens=total,
+                    outcome="length",
+                )
+            )
 
     def _record(self, event: LlmUsageEvent) -> None:
         # Counts and names only: never the prompt or the reply.

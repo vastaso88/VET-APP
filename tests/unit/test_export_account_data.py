@@ -341,3 +341,25 @@ def test_plan_changes_made_by_the_team_are_exported_for_the_owner_only_without_t
     ]
     assert all("admin_id" not in row for row in rows)
     assert OWNER_B not in str(rows) and "team-" not in str(rows)
+
+
+def test_old_adoption_requests_are_exported_without_the_people_who_wrote() -> None:
+    client = _SigningFake()
+    _seed(client, OWNER_A, tag="a")
+    client.db["adoption_contact_requests"] = [
+        {
+            "id": "req-1",
+            "owner_id": OWNER_A,
+            "listing_id": "ad-1",
+            "status": "new",
+            "requester_name": "Someone Else",
+            "requester_email": "someone@example.com",
+            "requester_phone": "000",
+            "message": "I would like to meet the cat",
+        }
+    ]
+
+    (row,) = _exporter(client).export_data(OWNER_A).data["adoption_contact_requests"]
+
+    assert row["listing_id"] == "ad-1" and row["status"] == "new"
+    assert not {"requester_name", "requester_email", "requester_phone", "message"} & row.keys()

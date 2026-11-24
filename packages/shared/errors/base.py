@@ -1,3 +1,16 @@
+from typing import NamedTuple
+
+
+class PaidCall(NamedTuple):
+    """A model call the provider was paid for although nothing came of it."""
+
+    model: str
+    prompt_tokens: int
+    completion_tokens: int
+    cached_prompt_tokens: int = 0
+    cache_write_tokens: int = 0
+
+
 class VetAppError(Exception):
     """Base application error."""
 
@@ -55,6 +68,9 @@ class ConversationLimitError(ValidationError):
 
 class ProviderError(VetAppError):
     """Raised when an external provider fails."""
+
+    # The calls already paid when it failed: the spending guard counts them too.
+    paid_calls: tuple[PaidCall, ...] = ()
 
 
 class SubscriptionRequiredError(VetAppError):

@@ -53,6 +53,14 @@ _INTERNAL_COLUMNS = frozenset(
     }
 )
 
+# What other people wrote to the owner of an old adoption ad, with their name and contacts:
+# theirs, not the owner's data (GDPR art. 15(4) and 20(4)). The rows stay, without them.
+_OTHER_PEOPLE_COLUMNS: dict[str, frozenset[str]] = {
+    "adoption_contact_requests": frozenset(
+        {"requester_name", "requester_email", "requester_phone", "requester_id", "message"}
+    ),
+}
+
 # The tables the export reads, derived from the eraser's lists so a table
 # added to one side shows up missing on the other in the alignment test.
 EXPORTED_TABLES: frozenset[str] = frozenset(
@@ -150,6 +158,7 @@ class SupabaseAccountExporter:
                     key: value
                     for key, value in row.items()
                     if key not in _INTERNAL_COLUMNS
+                    and key not in _OTHER_PEOPLE_COLUMNS.get(table, frozenset())
                     and not (table == "admin_user_actions" and key in {"note", "case_id"})
                     and not (table == "marketplace_listing_reviews" and key == "note")
                 }

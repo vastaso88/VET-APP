@@ -63,7 +63,7 @@ CHAT_SUMMARY_MAX = 1600
 FORBIDDEN = tuple(
     re.compile(pattern, re.IGNORECASE)
     for pattern in (
-        r"(?<!in )(?<!nel )(?<!del )cors[oi]",
+        r"(?<!\bin )(?<!\bnel )(?<!\bdel )\bcors[oi]\b",
         r"\bformazione\b",
         r"\blezion[ei]\b",
         r"\battestat\w*",

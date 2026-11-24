@@ -2,7 +2,7 @@ from typing import Any, Protocol
 
 from pydantic import BaseModel
 
-from packages.shared.errors.base import ProviderError
+from packages.shared.errors.base import PaidCall, ProviderError
 
 
 class LLMGenerationRequest(BaseModel):
@@ -53,6 +53,9 @@ class LLMResponse(BaseModel):
     # The part of prompt_tokens written to the provider's prompt cache (Claude
     # reports it; priced above plain input, so the spending guard needs it).
     cache_write_tokens: int = 0
+    # Calls paid before this answer with nothing to show for them (the primary spent its
+    # tokens and the reserve answered): counted on their own model.
+    paid_before: tuple[PaidCall, ...] = ()
 
 
 class LLMRefusal(ProviderError):

@@ -47,7 +47,7 @@ from packages.core.application.ports.llm_client import (
 )
 from packages.infrastructure.llm.providers.groq_chat_api import ModelAvailability
 from packages.shared.config.settings import Settings
-from packages.shared.errors.base import ProviderError
+from packages.shared.errors.base import PaidCall, ProviderError
 
 logger = logging.getLogger("vetgpt.llm.anthropic")
 
@@ -74,10 +74,9 @@ _FINISH_REASONS = {"end_turn": "stop", "stop_sequence": "stop", "max_tokens": "l
 class _BudgetSpentOnReasoning(ProviderError):
     """The whole token budget went on reasoning: not a word to show the owner."""
 
-    def __init__(self, prompt_tokens: int, completion_tokens: int) -> None:
+    def __init__(self, paid: PaidCall) -> None:
         super().__init__("Anthropic spent the whole token budget before writing")
-        self.prompt_tokens = prompt_tokens
-        self.completion_tokens = completion_tokens
+        self.paid_calls = (paid,)
 
 
 def split_system_prompt(system_prompt: str, cacheable_chars: int) -> tuple[str, str]:
@@ -155,17 +154,25 @@ class AnthropicLLMClient(LLMClient):
                 "anthropic: the reasoning spent the token budget of a %s call; written again",
                 req.purpose,
             )
-            second = self._generate(
-                req.model_copy(update={"without_reasoning": True, "timeout_seconds": left})
-            )
+            try:
+                second = self._generate(
+                    req.model_copy(update={"without_reasoning": True, "timeout_seconds": left})
+                )
+            except ProviderError as failed:
+                failed.paid_calls = spent.paid_calls + failed.paid_calls
+                raise
             # Both calls were paid: the usage counts them together.
+            first = spent.paid_calls[0]
             return second.model_copy(
                 update={
-                    "prompt_tokens": second.prompt_tokens + spent.prompt_tokens,
-                    "completion_tokens": second.completion_tokens + spent.completion_tokens,
+                    "prompt_tokens": second.prompt_tokens + first.prompt_tokens,
+                    "completion_tokens": second.completion_tokens + first.completion_tokens,
+                    "cached_prompt_tokens": second.cached_prompt_tokens
+                    + first.cached_prompt_tokens,
+                    "cache_write_tokens": second.cache_write_tokens + first.cache_write_tokens,
                     "token_count": second.token_count
-                    + spent.prompt_tokens
-                    + spent.completion_tokens,
+                    + first.prompt_tokens
+                    + first.completion_tokens,
                 }
             )
 
@@ -249,7 +256,15 @@ class AnthropicLLMClient(LLMClient):
         if not text and finish == "length":
             # Nothing to show the owner: written again with no reasoning (generate);
             # failing that, the reserve may still answer in time.
-            raise _BudgetSpentOnReasoning(prompt_tokens, completion_tokens)
+            raise _BudgetSpentOnReasoning(
+                PaidCall(
+                    model=str(getattr(message, "model", "") or self.model_for(req)),
+                    prompt_tokens=prompt_tokens,
+                    completion_tokens=completion_tokens,
+                    cached_prompt_tokens=cache_read,
+                    cache_write_tokens=cache_creation,
+                )
+            )
         return LLMResponse(
             content=text,
             provider=PROVIDER_NAME,

@@ -305,6 +305,61 @@ def test_with_no_time_left_the_second_writing_is_not_started() -> None:
     assert len(fake.calls) == 1
 
 
+class _Reserve:
+    def __init__(self, *, fails: bool = False) -> None:
+        self.fails = fails
+
+    def generate(self, request: LLMGenerationRequest) -> LLMResponse:
+        if self.fails:
+            raise ProviderError("the reserve is down too")
+        return LLMResponse(content="dalla riserva", provider="groq", model="r", token_count=10)
+
+
+def _measured(fake: FakeAnthropic, reserve: _Reserve) -> tuple[InstrumentedLLMClient, LlmBudget]:
+    repository = InMemoryLlmUsageRepository()
+    budget = LlmBudget(repository, budgets={MODEL: 4_000_000}, default_budget=200_000)
+    inner = ReserveLLMClient(_client(fake), reserve)
+    return InstrumentedLLMClient(inner, repository=repository, budget=budget), budget
+
+
+def _spent(*, input_tokens: int, output_tokens: int) -> Any:
+    return _message("", stop="max_tokens", input_tokens=input_tokens, output_tokens=output_tokens)
+
+
+def test_what_the_primary_was_paid_for_is_counted_when_the_reserve_answers() -> None:
+    fake = FakeAnthropic(
+        _spent(input_tokens=100, output_tokens=1050), _spent(input_tokens=100, output_tokens=450)
+    )
+    client, budget = _measured(fake, _Reserve())
+
+    answer = client.generate(ANSWER)
+
+    assert answer.content == "dalla riserva"
+    assert budget.used_today(MODEL) == 1700  # both attempts, on the model that spent them
+    assert budget.used_today("r") == 10
+
+
+def test_what_the_primary_was_paid_for_is_counted_when_nobody_answers() -> None:
+    fake = FakeAnthropic(
+        _spent(input_tokens=100, output_tokens=1050), _spent(input_tokens=100, output_tokens=450)
+    )
+    client, budget = _measured(fake, _Reserve(fails=True))
+
+    with pytest.raises(ProviderError):
+        client.generate(ANSWER)
+
+    assert budget.used_today(MODEL) == 1700
+
+
+def test_the_prompt_cache_of_both_writings_is_counted() -> None:
+    fake = FakeAnthropic(
+        _message("", stop="max_tokens", input_tokens=10, cache_read=500, output_tokens=1050),
+        _message("Ecco.", input_tokens=10, cache_read=500, output_tokens=20),
+    )
+
+    assert _client(fake).generate(ANSWER).cached_prompt_tokens == 1000
+
+
 def test_an_old_low_headroom_in_the_environment_does_not_bring_the_cuts_back() -> None:
     fake = FakeAnthropic(_message())
     _client(fake, anthropic_thinking_headroom_tokens=600).generate(ANSWER)

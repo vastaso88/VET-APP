@@ -71,6 +71,13 @@ class ReserveLLMClient(LLMClient):
                 exc,
                 self._reserve_name,
             )
-            if remaining is None:
-                return self.reserve.generate(request)
-            return self.reserve.generate(request.model_copy(update={"timeout_seconds": remaining}))
+            if remaining is not None:
+                request = request.model_copy(update={"timeout_seconds": remaining})
+            try:
+                answer = self.reserve.generate(request)
+            except ProviderError as failed:
+                failed.paid_calls = exc.paid_calls + failed.paid_calls
+                raise
+            if not exc.paid_calls:
+                return answer
+            return answer.model_copy(update={"paid_before": exc.paid_calls + answer.paid_before})

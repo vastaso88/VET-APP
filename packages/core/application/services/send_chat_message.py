@@ -73,13 +73,17 @@ MAX_HISTORY_MESSAGES = 12
 # What the orchestrator answers when it could not answer: the provider failed (the text says
 # so and the model is a guard, not a model), or the day's quota ended mid-turn.
 _UNANSWERED_MODELS = frozenset({"natural-answer-guard", "evidence-guard"})
+# Except this one: the sources were searched and none was about the question.
+_ANSWERED_STATES = frozenset({ConversationState.INSUFFICIENT_EVIDENCE})
 _UNANSWERED_MODES = frozenset({"quota_exhausted", "user_limit_reached"})
 
 
 def not_answered(result: ChatOrchestratorResult) -> bool:
     """True for a result that is an apology or a refusal rather than an answer: only what the
     owner actually received counts against their daily questions."""
-    return result.model in _UNANSWERED_MODELS or result.mode in _UNANSWERED_MODES
+    if result.mode in _UNANSWERED_MODES:
+        return True
+    return result.model in _UNANSWERED_MODELS and result.state not in _ANSWERED_STATES
 
 
 def owner_names_for_anonymization(display_name: str | None, *, pet_name: str) -> list[str]:
