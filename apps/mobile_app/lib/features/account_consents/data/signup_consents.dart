@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../domain/account_consent_models.dart';
 import 'account_consents_remote_data_source.dart';
 
-/// The Terms, the Privacy Policy and the emergency notice accepted while signing up.
+/// The Terms and the Privacy Policy accepted while signing up.
 ///
 /// They are sent ONE AFTER THE OTHER: the server keeps the consents of an
 /// account in one row, and two calls at the same time overwrote each other
@@ -18,7 +18,6 @@ class SignUpConsents {
   static const keys = [
     AccountConsentKeys.termsOfService,
     AccountConsentKeys.privacyPolicy,
-    AccountConsentKeys.emergencyNotice,
   ];
 
   /// Sends [pending] (all [keys] by default), in order. Returns the keys that

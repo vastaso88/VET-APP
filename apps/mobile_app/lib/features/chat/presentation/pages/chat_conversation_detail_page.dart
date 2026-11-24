@@ -15,6 +15,7 @@ import '../../../../shared/widgets/pet_loader.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../account_consents/application/chat_notice.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../data/chat_demo_store.dart';
@@ -37,6 +38,7 @@ class ChatConversationDetailPage extends StatefulWidget {
     this.state = ChatScreenState.success,
     this.onRetry,
     this.serverConfigured,
+    this.noticeGate = ChatNotice.ensure,
   });
 
   final String conversationId;
@@ -49,6 +51,9 @@ class ChatConversationDetailPage extends StatefulWidget {
   /// sample conversation stands in. Overridable for tests.
   final bool? serverConfigured;
 
+  /// Asks, once, that Quokka does not handle emergencies; overridable for tests.
+  final Future<bool> Function(BuildContext context) noticeGate;
+
   @override
   State<ChatConversationDetailPage> createState() =>
       _ChatConversationDetailPageState();
@@ -59,6 +64,10 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
   final ScrollController _scrollController = ScrollController();
 
   bool _isSending = false;
+
+  /// False until the notice has been accepted (at once when it already was): nothing of the
+  /// chat can be used before. With no server (the demo) there is nothing to ask.
+  late bool _noticeAccepted = !_serverConfigured;
   int _lastRenderedMessageCount = 0;
 
   bool get _serverConfigured =>
@@ -83,15 +92,24 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
     // Deferred to after this frame: marking the conversation as opened
     // notifies ChatDemoStore listeners, which must not happen while this
     // page itself is still being built during a route transition.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // With a server, an id nobody knows is "not found": nothing is invented in the
-      // store and the first-use notice has no chat to belong to.
-      if (mounted && (_known != null || !_serverConfigured)) {
-        _store.openConversation(widget.conversationId, fallback: widget.initialConversation);
-        // First opening of the chat: an AI answers, and where the questions go.
-        unawaited(showShortNoticeOnce(context, ShortNotice.chatAi));
-      }
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_open()));
+  }
+
+  Future<void> _open() async {
+    // With a server, an id nobody knows is "not found": nothing is invented in the
+    // store and the first-use notice has no chat to belong to.
+    if (!mounted || (_known == null && _serverConfigured)) return;
+    final accepted = await widget.noticeGate(context);
+    if (!mounted) return;
+    if (!accepted) {
+      // Not accepted: only the chat closes, the rest of the app stays available.
+      await Navigator.of(context).maybePop();
+      return;
+    }
+    setState(() => _noticeAccepted = true);
+    _store.openConversation(widget.conversationId, fallback: widget.initialConversation);
+    // First opening of the chat: an AI answers, and where the questions go.
+    unawaited(showShortNoticeOnce(context, ShortNotice.chatAi));
   }
 
   @override
@@ -124,6 +142,7 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
           builder: (context, _) {
             final known = _known;
             if (known == null && _serverConfigured) return const _ConversationNotFound();
+            if (!_noticeAccepted) return const Center(child: PetLoader.small());
             final conversation = known ?? ChatSeedData.detail;
 
             return Column(

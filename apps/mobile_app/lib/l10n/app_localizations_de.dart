@@ -8236,15 +8236,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get emergencyNoticeDeclineTitle =>
-      'Ohne diese Bestätigung können Sie Quokka nicht nutzen';
-
-  @override
-  String get emergencyNoticeDeclineBody =>
-      'Sie können Ihre Daten herunterladen, das Konto löschen oder sich abmelden. Wenn Sie es sich anders überlegen, werden Sie bei der nächsten Anmeldung erneut um die Bestätigung gebeten.';
-
-  @override
-  String get emergencyNoticeRequired =>
-      'Bestätigen Sie für die Registrierung, dass Sie verstanden haben, dass Quokka nicht für Notfälle zuständig ist.';
+      'Ohne diese Bestätigung können Sie den Chat nicht nutzen. Der Rest der App bleibt verfügbar.';
 
   @override
   String get chatFixedLine =>

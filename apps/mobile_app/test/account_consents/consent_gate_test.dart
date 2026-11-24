@@ -5,7 +5,6 @@ import 'package:vet_app_mobile/features/account_consents/application/consent_gat
 import 'package:vet_app_mobile/features/account_consents/data/account_consents_remote_data_source.dart';
 import 'package:vet_app_mobile/features/account_consents/domain/account_consent_models.dart';
 import 'package:vet_app_mobile/features/account_consents/presentation/pages/consent_gate_page.dart';
-import 'package:vet_app_mobile/features/account_consents/presentation/pages/emergency_notice_gate_page.dart';
 import 'package:vet_app_mobile/l10n/l10n.dart';
 import 'package:vet_app_mobile/shared/errors/app_network_error.dart';
 import 'package:vet_app_mobile/shared/types/result.dart';
@@ -78,8 +77,13 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   group('which accounts are asked', () {
-    test('the mandatory keys are the three the server enforces', () {
-      expect(AccountConsentKeys.mandatory, [_terms, _privacy, _emergency]);
+    test('the mandatory keys are the Terms and the Privacy Policy; the notice is the chat\'s', () {
+      expect(AccountConsentKeys.mandatory, [_terms, _privacy]);
+    });
+
+    test('a text the server does not know is never asked for (builds 42 and 43)', () {
+      const older = AccountConsentsSnapshot(decisions: {}, catalog: {});
+      expect(missingMandatoryKeys(older), isEmpty);
     });
 
     test('nothing recorded, one missing, or an older version: asked', () {
@@ -95,14 +99,14 @@ void main() {
       );
     });
 
-    test('an existing account (Terms v1, no emergency notice) is asked for both', () {
+    test('an existing account (Terms v1, no emergency notice) is asked for the Terms only', () {
       final snapshot = _snapshot({_terms: _decision('v1'), _privacy: _decision('v3')});
-      expect(missingMandatoryKeys(snapshot), [_terms, _emergency]);
+      expect(missingMandatoryKeys(snapshot), [_terms]);
     });
 
-    test('the emergency notice at an older version is asked again, alone', () {
-      final snapshot = _snapshot({..._all, _emergency: _decision('v0')});
-      expect(missingMandatoryKeys(snapshot), [_emergency]);
+    test('a missing or old emergency notice never blocks the app', () {
+      expect(missingMandatoryKeys(_snapshot({..._all}..remove(_emergency))), isEmpty);
+      expect(missingMandatoryKeys(_snapshot({..._all, _emergency: _decision('v0')})), isEmpty);
     });
 
     test('everything accepted at the current version: not asked', () {
@@ -111,9 +115,7 @@ void main() {
   });
 
   group('the blocking pages', () {
-    testWidgets('Terms and Privacy first, then the emergency notice on its own page', (
-      tester,
-    ) async {
+    testWidgets('only the Terms and the Privacy Policy are asked at the start', (tester) async {
       final backend = _Backend(_snapshot({}));
       bool? accepted;
       await tester.pumpWidget(_starter(backend, (value) => accepted = value));
@@ -121,31 +123,20 @@ void main() {
       await tester.tap(find.text('go'));
       await tester.pumpAndSettle();
 
-      // Step 1: Terms and Privacy.
       expect(find.text('Prima di continuare'), findsOneWidget);
-      var button = tester.widget<FilledButton>(find.byType(FilledButton));
+      final button = tester.widget<FilledButton>(find.byType(FilledButton));
       expect(button.onPressed, isNull); // not ticked yet
       await tester.tap(find.byType(CheckboxListTile));
       await tester.pump();
       await tester.tap(find.byType(FilledButton));
       await tester.pumpAndSettle();
+
       expect(backend.set, [_terms, _privacy]);
-
-      // Step 2: the clause, with its own box.
-      expect(find.text('Quokka non gestisce le urgenze'), findsOneWidget);
-      button = tester.widget<FilledButton>(find.byType(FilledButton));
-      expect(button.onPressed, isNull);
-      await tester.tap(find.byType(CheckboxListTile));
-      await tester.pump();
-      await tester.tap(find.byType(FilledButton));
-      await tester.pumpAndSettle();
-
-      expect(backend.set, [_terms, _privacy, _emergency]);
       expect(accepted, isTrue);
       expect(find.text('Quokka non gestisce le urgenze'), findsNothing);
     });
 
-    testWidgets('an account that only lacks the clause sees only its page', (tester) async {
+    testWidgets('an account that only lacks the notice goes straight in', (tester) async {
       final backend = _Backend(_snapshot({..._all}..remove(_emergency)));
       bool? accepted;
       await tester.pumpWidget(_starter(backend, (value) => accepted = value));
@@ -153,15 +144,9 @@ void main() {
       await tester.tap(find.text('go'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Prima di continuare'), findsNothing);
-      expect(find.text('Quokka non gestisce le urgenze'), findsOneWidget);
-      await tester.tap(find.byType(CheckboxListTile));
-      await tester.pump();
-      await tester.tap(find.byType(FilledButton));
-      await tester.pumpAndSettle();
-
-      expect(backend.set, [_emergency]); // only what was missing
-      expect(accepted, isTrue);
+      expect(accepted, isFalse); // nothing was asked
+      expect(find.byType(CheckboxListTile), findsNothing);
+      expect(backend.set, isEmpty);
     });
 
     testWidgets('an owner who already accepted everything is never asked', (tester) async {
@@ -204,60 +189,6 @@ void main() {
       await tester.pump();
 
       expect(left, 1);
-    });
-  });
-
-  group('the emergency-notice page (docs/compliance/22 §5)', () {
-    testWidgets('title, short text in view, box NOT pre-ticked, Continue off', (tester) async {
-      await tester.pumpWidget(
-        _app((_) => EmergencyNoticeGatePage(dataSource: _Backend(_snapshot({})))),
-      );
-
-      expect(find.text('Quokka non gestisce le urgenze'), findsOneWidget);
-      // The short version is on the page itself, not behind a link.
-      expect(find.textContaining('Non aspettare la risposta dell'), findsOneWidget);
-      final box = tester.widget<CheckboxListTile>(find.byType(CheckboxListTile));
-      expect(box.value, isFalse);
-      expect(tester.widget<FilledButton>(find.byType(FilledButton)).onPressed, isNull);
-      expect(
-          find.text(
-              'Ho capito che Quokka non gestisce le urgenze e non lo uso in caso di emergenza.'),
-          findsOneWidget);
-      expect(find.text('Leggi il testo completo nei Termini di Servizio'), findsOneWidget);
-    });
-
-    testWidgets('"Non accetto" is as big as "Continua" and leads to the alternatives', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _app((_) => EmergencyNoticeGatePage(dataSource: _Backend(_snapshot({})))),
-      );
-
-      final continueSize = tester.getSize(find.byType(FilledButton));
-      final declineSize = tester.getSize(find.byType(OutlinedButton));
-      expect(declineSize.width, continueSize.width);
-      expect(declineSize.height, continueSize.height);
-
-      await tester.tap(find.text('Non accetto'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Senza questa conferma non puoi usare Quokka'), findsOneWidget);
-      expect(find.text('Scarica i miei dati'), findsOneWidget);
-      expect(find.text('Elimina account'), findsOneWidget);
-      expect(find.text('Esci'), findsOneWidget);
-    });
-
-    testWidgets('a failed recording says so and stays', (tester) async {
-      final backend = _Backend(_snapshot({}), failSet: true);
-      await tester.pumpWidget(_app((_) => EmergencyNoticeGatePage(dataSource: backend)));
-
-      await tester.tap(find.byType(CheckboxListTile));
-      await tester.pump();
-      await tester.tap(find.byType(FilledButton));
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('Non siamo riusciti a registrare'), findsOneWidget);
-      expect(find.text('Quokka non gestisce le urgenze'), findsOneWidget);
     });
   });
 }

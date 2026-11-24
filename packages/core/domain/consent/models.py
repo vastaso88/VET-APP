@@ -37,16 +37,20 @@ class AccountConsentType:
     # the Mercatino, not a GDPR consent; never a gate on the app itself.
     MARKETPLACE_RULES = "marketplace_rules"
     # Acknowledgement that Quokka does not handle emergencies (docs/compliance/22):
-    # a separate box, never pre-ticked, asked at registration and again to every
-    # existing account when its version rises. Not a GDPR consent: it is a
-    # disclosure acceptance, so it gates the app like the Terms do.
+    # a separate box, never pre-ticked. Not a GDPR consent: a disclosure acceptance. Owner
+    # decision of 24 November 2026: it is a condition of the CHAT only, asked when the first
+    # chat is opened; the rest of the app never waits for it.
     EMERGENCY_NOTICE = "emergency_notice"
 
-    MANDATORY = frozenset({TERMS_OF_SERVICE, PRIVACY_POLICY, EMERGENCY_NOTICE})
+    MANDATORY = frozenset({TERMS_OF_SERVICE, PRIVACY_POLICY})
+    # Asked before the first chat and required by the routes that make the chat answer.
+    CHAT_REQUIRED = frozenset({EMERGENCY_NOTICE})
+    # A record of what was accepted: never turned off by a switch.
+    NOT_REVOCABLE = MANDATORY | CHAT_REQUIRED
     OPTIONAL = frozenset(
         {MARKETING_EMAIL, ANALYTICS, DIAGNOSTICS, CONTRIBUTION_RULES, MARKETPLACE_RULES}
     )
-    ALL = MANDATORY | OPTIONAL
+    ALL = MANDATORY | CHAT_REQUIRED | OPTIONAL
 
 
 class AccountConsents(BaseModel):

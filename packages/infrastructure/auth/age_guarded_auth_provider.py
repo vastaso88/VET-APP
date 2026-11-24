@@ -58,6 +58,21 @@ def allow_missing_consent() -> Iterator[None]:
         _allow_missing_consent.reset(token)
 
 
+_chat_route: ContextVar[bool] = ContextVar("chat_route", default=False)
+
+
+@contextmanager
+def require_chat_notice() -> Iterator[None]:
+    """For the routes that make the chat answer: besides the Terms and the Privacy notice,
+    the owner must have acknowledged that Quokka does not handle emergencies (asked when
+    the first chat is opened, docs/compliance/22). No other route needs it."""
+    token = _chat_route.set(True)
+    try:
+        yield
+    finally:
+        _chat_route.reset(token)
+
+
 def forget_gate_cache(provider: object, owner_id: str) -> None:
     """Drops what the guard remembers about an owner (after a consent changed)."""
     if isinstance(provider, AgeGuardedAuthProvider):
@@ -94,7 +109,7 @@ class AgeGuardedAuthProvider(AuthProvider):
         self._pauses = pauses
         self._consents = consents
         self._enforce_consent = enforce_consent
-        self._consent_missing: dict[str, tuple[bool, float]] = {}
+        self._consent_missing: dict[str, tuple[frozenset[str], float]] = {}
         self._ttl = ttl_seconds
         self._clock = clock
         self._blocked: dict[str, tuple[str | None, float]] = {}
@@ -115,17 +130,20 @@ class AgeGuardedAuthProvider(AuthProvider):
                 not _allow_missing_consent.get()
                 and self._enforce_consent is not None
                 and self._enforce_consent()
-                and self._consent_missing_for(user.id)
             ):
-                raise ConsentRequiredError("consent_required")
+                needed = AccountConsentType.MANDATORY
+                if _chat_route.get():
+                    needed = needed | AccountConsentType.CHAT_REQUIRED
+                if self._consents_missing_for(user.id) & needed:
+                    raise ConsentRequiredError("consent_required")
         return user
 
-    def _consent_missing_for(self, owner_id: str) -> bool:
-        """True when the Terms or the Privacy notice are not accepted at the current
+    def _consents_missing_for(self, owner_id: str) -> frozenset[str]:
+        """The texts (Terms, Privacy notice, emergency notice) not accepted at the current
         version. Looked up at most once a minute per account; a failed lookup lets the
         caller through (an outage must not lock everybody out)."""
         if self._consents is None:
-            return False
+            return frozenset()
         now = self._clock()
         cached = self._consent_missing.get(owner_id)
         if cached is not None and cached[1] > now:
@@ -133,17 +151,18 @@ class AgeGuardedAuthProvider(AuthProvider):
         try:
             record = self._consents().get(owner_id)
             given = record.consents if record is not None else {}
-            missing = any(
-                not (
+            missing = frozenset(
+                key
+                for key in AccountConsentType.NOT_REVOCABLE
+                if not (
                     key in given
                     and given[key].granted
                     and given[key].version == CURRENT_VERSIONS[key]
                 )
-                for key in sorted(AccountConsentType.MANDATORY)
             )
         except Exception:  # noqa: BLE001 - fail open
             logger.warning("could not read the consent gate", exc_info=False)
-            return False
+            return frozenset()
         self._consent_missing[owner_id] = (missing, now + self._ttl)
         return missing
 

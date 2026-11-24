@@ -8243,15 +8243,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get emergencyNoticeDeclineTitle =>
-      'Sans cette confirmation, vous ne pouvez pas utiliser Quokka';
-
-  @override
-  String get emergencyNoticeDeclineBody =>
-      'Vous pouvez télécharger vos données, supprimer le compte ou vous déconnecter. Si vous changez d\'avis, la confirmation vous sera demandée à nouveau à votre prochaine connexion.';
-
-  @override
-  String get emergencyNoticeRequired =>
-      'Pour vous inscrire, confirmez que vous avez compris que Quokka ne gère pas les urgences.';
+      'Sans cette confirmation, vous ne pouvez pas utiliser le chat. Le reste de l\'application reste disponible.';
 
   @override
   String get chatFixedLine =>

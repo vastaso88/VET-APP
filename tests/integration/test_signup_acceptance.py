@@ -53,12 +53,15 @@ def test_signup_without_the_acceptance_is_refused_and_creates_nothing(
 def test_the_terms_alone_do_not_imply_the_emergency_notice(
     consents: InMemoryAccountConsentsRepository,
 ) -> None:
-    """Its own box: accepting the Terms never records, or stands in for, the clause."""
+    """Its own box, asked before the first chat: accepting the Terms never records, or
+    stands in for, the clause, and an account is created without it."""
     response = TestClient(app).post("/auth/signup", json={**BODY, "accept_terms": True})
 
-    assert response.status_code in (400, 422)
-    assert "accept_emergency_notice_required" in response.text
-    assert consents.get(get_container().settings.bootstrap_user_id) is None
+    assert response.status_code == 200
+    stored = consents.get(get_container().settings.bootstrap_user_id)
+    assert stored is not None
+    assert AccountConsentType.EMERGENCY_NOTICE not in stored.consents
+    assert AccountConsentType.TERMS_OF_SERVICE in stored.consents
 
     only_notice = TestClient(app).post(
         "/auth/signup", json={**BODY, "accept_emergency_notice": True}

@@ -127,17 +127,39 @@ def test_accepting_through_the_consent_route_opens_everything_at_once(world: _Wo
 def test_only_some_of_the_mandatory_consents_is_not_enough(world: _World) -> None:
     client = TestClient(app)
     _consent(client, AccountConsentType.TERMS_OF_SERVICE)
+    assert client.get("/pets").status_code == 403  # the Privacy notice is still missing
     _consent(client, AccountConsentType.PRIVACY_POLICY)
-    assert client.get("/pets").status_code == 403  # the emergency notice is still missing
-    _consent(client, AccountConsentType.EMERGENCY_NOTICE)
     assert client.get("/pets").status_code == 200
+
+
+def test_the_emergency_notice_closes_the_chat_and_nothing_else(world: _World) -> None:
+    """Owner, 24/11/2026: the clause is a condition of the chat, never of the app."""
+    _accept(USER_A, without=(AccountConsentType.EMERGENCY_NOTICE,))
+    client = TestClient(app)
+    message = {"pet_id": "nobody", "user_message": "ciao"}
+
+    for path in ("/pets", "/conversations", "/reminders", "/account/session"):
+        assert client.get(path).status_code != 403, path
+    refused = client.post("/chat", json=message)
+    assert refused.status_code == 403 and refused.json()["code"] == "consent_required"
+    edited = client.put("/conversations/x/messages/y", json={"user_message": "ciao"})
+    assert edited.status_code == 403
+    assert client.get("/conversations/x/summary").status_code == 403
+    upload = client.post(
+        "/chat-attachments", data={"pet_id": "x"}, files={"file": ("a.jpg", b"x", "image/jpeg")}
+    )
+    assert upload.status_code == 403
+
+    _consent(client, AccountConsentType.EMERGENCY_NOTICE)
+    # Whatever it answers now (there is no such pet), it is not the gate any more.
+    assert client.post("/chat", json=message).status_code != 403
 
 
 def test_an_account_that_accepted_terms_v1_before_the_clause_is_asked_again(
     world: _World,
 ) -> None:
     """Existing accounts: Terms at the old version and no emergency notice. Everyone
-    must accept the new Terms and the dedicated box before going on."""
+    must accept the new Terms before going on (the dedicated box comes with the chat)."""
     _accept(
         USER_A,
         version_of={AccountConsentType.TERMS_OF_SERVICE: "v1"},
@@ -146,14 +168,18 @@ def test_an_account_that_accepted_terms_v1_before_the_clause_is_asked_again(
     client = TestClient(app)
     assert client.get("/pets").status_code == 403
 
-    for key in (AccountConsentType.TERMS_OF_SERVICE, AccountConsentType.EMERGENCY_NOTICE):
-        _consent(client, key)
+    _consent(client, AccountConsentType.TERMS_OF_SERVICE)
     assert client.get("/pets").status_code == 200
 
 
-def test_an_older_version_of_the_emergency_notice_asks_again(world: _World) -> None:
+def test_an_older_version_of_the_emergency_notice_asks_again_before_the_chat(
+    world: _World,
+) -> None:
     _accept(USER_A, version_of={AccountConsentType.EMERGENCY_NOTICE: "an-older-version"})
-    assert TestClient(app).get("/pets").status_code == 403
+    client = TestClient(app)
+    assert client.get("/pets").status_code == 200
+    refused = client.post("/chat", json={"pet_id": "nobody", "user_message": "ciao"})
+    assert refused.status_code == 403
 
 
 def test_the_emergency_notice_cannot_be_declined_or_revoked(world: _World) -> None:

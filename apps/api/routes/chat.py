@@ -6,6 +6,7 @@ from apps.api.schemas.chat import SendChatMessageRequest
 from packages.core.application.services.send_chat_message import SendChatMessageInput
 from packages.core.domain.common.language import resolve_language
 from packages.core.domain.conversation.models import public_message
+from packages.infrastructure.auth.age_guarded_auth_provider import require_chat_notice
 from packages.shared.errors.base import AuthenticationError
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -17,7 +18,8 @@ def send_chat_message(
     accept_language: str | None = Header(default=None),
 ) -> dict[str, object]:
     container = get_container()
-    user = container.auth_provider.get_current_user()
+    with require_chat_notice():
+        user = container.auth_provider.get_current_user()
     fields = request.model_dump(exclude={"language", "response_locale"})
     result = container.send_chat_message_service().execute(
         SendChatMessageInput(

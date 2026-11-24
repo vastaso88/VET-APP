@@ -43,11 +43,21 @@ def test_the_apps_mandatory_keys_are_the_servers() -> None:
     assert {constants[name] for name in names} == set(AccountConsentType.MANDATORY)
 
 
-def test_the_emergency_notice_is_mandatory_and_versioned() -> None:
-    assert AccountConsentType.EMERGENCY_NOTICE in AccountConsentType.MANDATORY
+def test_the_emergency_notice_is_required_by_the_chat_only_and_versioned() -> None:
+    assert AccountConsentType.EMERGENCY_NOTICE not in AccountConsentType.MANDATORY
+    assert frozenset({AccountConsentType.EMERGENCY_NOTICE}) == AccountConsentType.CHAT_REQUIRED
+    assert AccountConsentType.EMERGENCY_NOTICE in AccountConsentType.NOT_REVOCABLE
     assert AccountConsentType.EMERGENCY_NOTICE in CURRENT_VERSIONS
     # The Terms version rose when the clause joined them.
     assert CURRENT_VERSIONS[AccountConsentType.TERMS_OF_SERVICE] != "v1"
+
+
+def test_the_app_remembers_the_version_the_server_pins() -> None:
+    source = (APP / "lib/features/account_consents/domain/account_consent_models.dart").read_text(
+        encoding="utf-8"
+    )
+    found = re.search(r"static const emergencyNoticeVersion = '(\w+)';", source)
+    assert found and found.group(1) == CURRENT_VERSIONS[AccountConsentType.EMERGENCY_NOTICE]
 
 
 @pytest.mark.parametrize("lang", LANGUAGES)

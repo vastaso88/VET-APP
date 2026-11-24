@@ -7,6 +7,7 @@ from apps.api.dependencies.container import get_container
 from apps.api.dependencies.subscription import allowlist_email, require_active_subscription
 from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentInput
 from packages.core.domain.common.language import resolve_language
+from packages.infrastructure.auth.age_guarded_auth_provider import require_chat_notice
 
 router = APIRouter(prefix="/chat-attachments", tags=["chat-attachments"])
 
@@ -18,7 +19,8 @@ async def upload_attachment(
     accept_language: str | None = Header(default=None),
 ) -> dict[str, object]:
     container = get_container()
-    user = container.auth_provider.get_current_user()
+    with require_chat_notice():
+        user = container.auth_provider.get_current_user()
     file_bytes = await file.read()
     result = container.upload_chat_attachment_service().execute(
         UploadChatAttachmentInput(

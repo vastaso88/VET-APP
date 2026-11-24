@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../account_consents/application/chat_notice.dart';
 import '../../../settings/data/unit_settings_store.dart';
 import '../../../settings/domain/unit_conversion.dart';
 import '../../../../shared/widgets/pet_loader.dart';
@@ -808,11 +809,13 @@ class _ChatTabState extends State<_ChatTab> {
     );
   }
 
-  void _startConversation(BuildContext context) {
+  Future<void> _startConversation(BuildContext context) async {
     if (!_store.canStartConversation(widget.pet.id)) {
       _showLimitDialog(context);
       return;
     }
+    // Before the chat exists: declining must not leave an empty one in the list.
+    if (!await ChatNotice.ensure(context) || !context.mounted) return;
 
     final conversation = _store.startConversation(
       petId: widget.pet.id,

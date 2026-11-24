@@ -13,46 +13,18 @@ Widget _app() {
   );
 }
 
-/// docs/compliance/22 §5: registration asks for the acknowledgement that Quokka does
-/// not handle emergencies in a box of its own, never pre-ticked, with the short
-/// version in front of the eyes.
+/// Owner decision of 24 November 2026: the acknowledgement that Quokka does not handle
+/// emergencies is a condition of the chat only, asked when the first chat is opened
+/// (chat_notice_test.dart); registration asks for the Terms and the Privacy Policy alone.
 void main() {
-  Future<void> reveal(WidgetTester tester, Finder finder) async {
-    await tester.scrollUntilVisible(finder, 200, scrollable: find.byType(Scrollable).first);
-  }
-
-  testWidgets('the short version is on the page and the box is not pre-ticked', (tester) async {
+  testWidgets('registration asks for the Terms alone', (tester) async {
     await tester.binding.setSurfaceSize(const Size(400, 2000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(_app());
     await tester.pump();
 
-    final short = find.byKey(const ValueKey('emergency-notice-short'));
-    await reveal(tester, short);
-    expect(short, findsOneWidget);
-    expect(
-      find.textContaining('Non aspettare la risposta dell'),
-      findsOneWidget,
-    );
-
-    final box =
-        tester.widget<SwitchListTile>(find.byKey(const ValueKey('emergency-notice-switch')));
-    expect(box.value, isFalse);
-  });
-
-  testWidgets('it is a box of its own: ticking the Terms does not tick it', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(400, 2000));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(_app());
-    await tester.pump();
-
-    final switches = find.byType(SwitchListTile);
-    expect(switches, findsNWidgets(2)); // the Terms and the emergency notice
-    await tester.tap(switches.first);
-    await tester.pump();
-
-    final notice =
-        tester.widget<SwitchListTile>(find.byKey(const ValueKey('emergency-notice-switch')));
-    expect(notice.value, isFalse);
+    expect(find.byType(SwitchListTile), findsOneWidget);
+    expect(find.byKey(const ValueKey('emergency-notice-switch')), findsNothing);
+    expect(find.byKey(const ValueKey('emergency-notice-short')), findsNothing);
   });
 }

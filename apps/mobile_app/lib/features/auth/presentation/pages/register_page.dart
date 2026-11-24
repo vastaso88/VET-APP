@@ -117,8 +117,6 @@ class _RegisterPageState extends State<RegisterPage> {
   /// exists, so a child's date is never sent anywhere.
   late DateTime? _birthDate = widget.initialBirthDate;
   bool _acceptTerms = false;
-  /// "Quokka does not handle emergencies": its own box, never pre-ticked.
-  bool _acceptEmergency = false;
   bool _isLoading = false;
   AuthBannerStatus? _status;
   String Function(AppLocalizations) _title = (_) => '';
@@ -142,15 +140,13 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> _submit() async {
     setState(() => _hasValidated = true);
     final isValid = _formKey.currentState?.validate() ?? false;
-    if (!isValid || !_acceptTerms || !_acceptEmergency) {
+    if (!isValid || !_acceptTerms) {
       setState(() {
         _status = AuthBannerStatus.error;
         _title = (l10n) => l10n.authRegisterCheckTitle;
         _message = (l10n) => !_acceptTerms
             ? l10n.authRegisterTermsRequired
-            : !_acceptEmergency
-                ? l10n.emergencyNoticeRequired
-                : l10n.authRegisterFieldsInvalid;
+            : l10n.authRegisterFieldsInvalid;
       });
       return;
     }
@@ -424,35 +420,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   onPrivacyTap: () => _openLegal(
                     AccountConsentKeys.privacyPolicy,
                     context.l10n.authPrivacyPolicyLabel,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            // Its own acceptance, with the short version in front of the eyes (not
-            // behind a link) and the full text one tap away.
-            Text(
-              context.l10n.emergencyNoticeShort,
-              key: const ValueKey('emergency-notice-short'),
-              style: const TextStyle(
-                fontSize: 13,
-                height: 1.35,
-                color: AppColors.secondaryText,
-              ),
-            ),
-            Material(
-              color: Colors.transparent,
-              child: SwitchListTile.adaptive(
-                key: const ValueKey('emergency-notice-switch'),
-                contentPadding: EdgeInsets.zero,
-                value: _acceptEmergency,
-                onChanged: (value) => setState(() => _acceptEmergency = value),
-                title: Text(
-                  context.l10n.emergencyNoticeCheckbox,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.text,
                   ),
                 ),
               ),

@@ -8,7 +8,6 @@ import 'package:vet_app_mobile/shared/types/result.dart';
 
 const _terms = AccountConsentKeys.termsOfService;
 const _privacy = AccountConsentKeys.privacyPolicy;
-const _notice = AccountConsentKeys.emergencyNotice;
 
 const _empty = AccountConsentsSnapshot(decisions: {}, catalog: {});
 
@@ -47,24 +46,24 @@ class _Backend implements AccountConsentsRemoteDataSource {
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  test('the three keys are sent, one after the other (never overlapping)', () async {
+  test('both keys are sent, one after the other (never overlapping)', () async {
     final backend = _Backend();
     final failed = await SignUpConsents.send(backend);
     expect(failed, isEmpty);
-    expect(backend.calls, [_terms, _privacy, _notice]);
+    expect(backend.calls, [_terms, _privacy]);
     expect(backend.overlapped, isFalse);
   });
 
   test('a failed call is retried once and the sign-up goes on', () async {
     final backend = _Backend(failures: {_terms: 1});
     expect(await SignUpConsents.send(backend), isEmpty);
-    expect(backend.calls, [_terms, _terms, _privacy, _notice]);
+    expect(backend.calls, [_terms, _terms, _privacy]);
   });
 
   test('a key that fails twice is kept and sent again at the next start', () async {
     final backend = _Backend(failures: {_privacy: 2});
     expect(await SignUpConsents.send(backend), [_privacy]);
-    expect(backend.calls, [_terms, _privacy, _privacy, _notice]);
+    expect(backend.calls, [_terms, _privacy, _privacy]);
 
     final later = _Backend();
     await SignUpConsents.submitPending(later);

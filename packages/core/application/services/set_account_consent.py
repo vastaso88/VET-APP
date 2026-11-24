@@ -52,7 +52,7 @@ class SetAccountConsentService:
     def execute(self, data: SetAccountConsentInput) -> SetAccountConsentOutput:
         if data.consent_key not in AccountConsentType.ALL:
             raise ValidationError(f"unknown consent_key: {data.consent_key}")
-        if data.consent_key in AccountConsentType.MANDATORY and not data.granted:
+        if data.consent_key in AccountConsentType.NOT_REVOCABLE and not data.granted:
             raise ValidationError(
                 "i termini di servizio e l'informativa privacy non sono revocabili da qui"
             )

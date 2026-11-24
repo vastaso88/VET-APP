@@ -13595,20 +13595,8 @@ abstract class AppLocalizations {
   /// No description provided for @emergencyNoticeDeclineTitle.
   ///
   /// In it, this message translates to:
-  /// **'Senza questa conferma non puoi usare Quokka'**
+  /// **'Senza questa conferma non puoi usare la chat. Il resto dell\'app resta disponibile.'**
   String get emergencyNoticeDeclineTitle;
-
-  /// No description provided for @emergencyNoticeDeclineBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Puoi scaricare i tuoi dati, eliminare l\'account oppure uscire. Se cambi idea, la conferma ti viene chiesta di nuovo al prossimo accesso.'**
-  String get emergencyNoticeDeclineBody;
-
-  /// No description provided for @emergencyNoticeRequired.
-  ///
-  /// In it, this message translates to:
-  /// **'Per iscriverti conferma di aver capito che Quokka non gestisce le urgenze.'**
-  String get emergencyNoticeRequired;
 
   /// No description provided for @chatFixedLine.
   ///

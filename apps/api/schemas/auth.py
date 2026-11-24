@@ -13,6 +13,7 @@ class SignUpRequest(AuthCredentialsRequest):
     state it, and the server records it with the version and the date."""
 
     accept_terms: bool = False
-    # "Quokka does not handle emergencies" (docs/compliance/22): a box of its own,
-    # never implied by `accept_terms`.
+    # "Quokka does not handle emergencies" (docs/compliance/22): a box of its own, never
+    # implied by `accept_terms`. Not required to sign up: it is a condition of the chat
+    # only, asked when the first chat is opened (owner, 24 November 2026).
     accept_emergency_notice: bool = False

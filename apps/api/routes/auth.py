@@ -22,9 +22,6 @@ def sign_up(
     # (docs/compliance/04): an API client must say so, the app ticks the box.
     if not request.accept_terms:
         raise ValidationError("accept_terms_required")
-    # ... and, separately, that Quokka does not handle emergencies.
-    if not request.accept_emergency_notice:
-        raise ValidationError("accept_emergency_notice_required")
     container = get_container()
     try:
         result = container.auth_provider.sign_up(request.email, request.password)
@@ -42,21 +39,24 @@ def sign_up(
             "detail": "Signup completed. Confirm email if required by Supabase.",
             "consents_recorded": False,
         }
-    recorded = _record_acceptance(result.user.id, resolve_language(None, accept_language))
+    recorded = _record_acceptance(
+        result.user.id,
+        resolve_language(None, accept_language),
+        emergency_notice=request.accept_emergency_notice,
+    )
     return {**result.model_dump(), "consents_recorded": recorded}
 
 
-def _record_acceptance(owner_id: str, language: str) -> bool:
-    """Terms, Privacy and the emergency notice, with the current version and the date. The account
-    exists already, so a failure is logged (no personal data) and reported in the
-    answer; the client then records them itself."""
+def _record_acceptance(owner_id: str, language: str, *, emergency_notice: bool) -> bool:
+    """Terms and Privacy (and the emergency notice for a client that shows it here), with the
+    current version and the date. The account exists already, so a failure is logged (no
+    personal data) and reported in the answer; the client then records them itself."""
     try:
         service = get_container().set_account_consent_service()
-        for key in (
-            AccountConsentType.TERMS_OF_SERVICE,
-            AccountConsentType.PRIVACY_POLICY,
-            AccountConsentType.EMERGENCY_NOTICE,
-        ):
+        keys = [AccountConsentType.TERMS_OF_SERVICE, AccountConsentType.PRIVACY_POLICY]
+        if emergency_notice:
+            keys.append(AccountConsentType.EMERGENCY_NOTICE)
+        for key in keys:
             service.execute(
                 SetAccountConsentInput(
                     owner_id=owner_id, consent_key=key, granted=True, language=language
