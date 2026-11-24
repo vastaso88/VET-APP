@@ -45,7 +45,11 @@ class ListingRejectedException implements Exception {
 /// decides is unreachable. Ads of others are never read from the database
 /// directly, so there is no fallback.
 class ListingBackendUnavailableException implements Exception {
-  const ListingBackendUnavailableException();
+  const ListingBackendUnavailableException({this.answered = false});
+
+  /// The server answered, only not with this (an older one, an error of its own): the
+  /// connection is fine and must not be blamed.
+  final bool answered;
 
   @override
   String toString() => appL10n.marketplaceBackendUnavailable;
@@ -180,7 +184,7 @@ class MarketplaceRepository {
         return _parseRows(json['listings'] as List<dynamic>? ?? const []);
       }
       if (response != null || _resolveClient() != null) {
-        throw const ListingBackendUnavailableException();
+        throw ListingBackendUnavailableException(answered: response != null);
       }
     }
     return _local.where((listing) => canManageListing(listing, requesterId)).toList();

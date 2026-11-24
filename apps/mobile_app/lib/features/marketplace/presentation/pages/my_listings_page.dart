@@ -31,6 +31,9 @@ class _MyListingsPageState extends State<MyListingsPage> {
   late final MarketplaceRepository _repository = widget.repository ?? MarketplaceRepository();
   List<MarketplaceListing>? _listings;
   bool _failed = false;
+
+  /// The server answered without the ads: the connection is not the reason.
+  bool _serverWithoutAds = false;
   bool _changed = false;
 
   @override
@@ -49,8 +52,12 @@ class _MyListingsPageState extends State<MyListingsPage> {
         _listings = listings;
         _failed = false;
       });
-    } on Exception {
-      if (mounted) setState(() => _failed = _listings == null);
+    } on Exception catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _failed = _listings == null;
+        _serverWithoutAds = error is ListingBackendUnavailableException && error.answered;
+      });
     }
   }
 
@@ -104,7 +111,11 @@ class _MyListingsPageState extends State<MyListingsPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                _failed ? context.l10n.marketplaceLoadError : context.l10n.marketplaceMyListingsEmpty,
+                !_failed
+                    ? context.l10n.marketplaceMyListingsEmpty
+                    : _serverWithoutAds
+                        ? context.l10n.marketplaceBackendUnavailable
+                        : context.l10n.marketplaceLoadError,
                 style: AppTextStyles.bodySmall,
                 textAlign: TextAlign.center,
               ),

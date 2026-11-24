@@ -466,6 +466,24 @@ void main() {
       expect(find.text('Riprova'), findsOneWidget);
     });
 
+    testWidgets('a server without this list does not blame the connection', (tester) async {
+      // Build 45 against the production server (24/11/2026): 404.
+      for (final status in [404, 405, 500]) {
+        await tester.pumpWidget(
+          MaterialApp(
+            key: ValueKey(status),
+            home: MyListingsPage(
+              repository: _repository(MockClient((_) async => http.Response('', status))),
+              currentOwnerId: 'seller-1',
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.textContaining('Controlla la connessione'), findsNothing);
+        expect(find.textContaining('non è raggiungibile in questo momento'), findsOneWidget);
+      }
+    });
+
     test('without a backend each owner sees only their own ads', () async {
       final now = DateTime(2026, 11, 23);
       MarketplaceListing ad(String id, String owner) => MarketplaceListing(
