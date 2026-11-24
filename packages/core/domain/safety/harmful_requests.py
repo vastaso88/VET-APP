@@ -1551,32 +1551,27 @@ LIMIT_UPGRADE_TEXTS: dict[str, str] = {
     ),
 }
 
+# One calm text for every message when the models' daily quota is gone (owner: the app does not
+# handle urgencies); the reviewed sentence, without the alarm it opened with. {name} is not used.
 QUOTA_TEXTS: dict[str, str] = {
     "it": (
-        "Se {name} sta male adesso, non aspettare: un caso grave non aspetta, chiama subito il "
-        "veterinario o un pronto soccorso veterinario. In questo momento l'assistente è molto "
-        "richiesto e ha esaurito le risposte di oggi: riprova tra circa {wait}."
+        "In questo momento l'assistente è molto richiesto e ha esaurito le risposte di oggi: "
+        "riprova tra circa {wait}."
     ),
     "en": (
-        "If {name} is unwell right now, do not wait: a serious case does not wait, call your "
-        "vet or an emergency clinic straight away. The assistant is in high demand and has used "
-        "up today's answers: try again in about {wait}."
+        "The assistant is in high demand and has used up today's answers: try again in about "
+        "{wait}."
     ),
     "es": (
-        "Si {name} está mal ahora, no esperes: un caso grave no espera, llama ahora mismo al "
-        "veterinario o a urgencias veterinarias. El asistente tiene mucha demanda y ha agotado "
-        "las respuestas de hoy: vuelve a intentarlo dentro de unos {wait}."
+        "El asistente tiene mucha demanda y ha agotado las respuestas de hoy: vuelve a "
+        "intentarlo dentro de unos {wait}."
     ),
     "de": (
-        "Wenn es {name} gerade schlecht geht, warten Sie nicht: Ein ernster Fall wartet nicht, "
-        "rufen Sie sofort Ihre Tierarztpraxis oder einen Notdienst an. Der Assistent ist gerade "
-        "stark gefragt und hat die Antworten für heute aufgebraucht: Versuchen Sie es in "
-        "{wait} noch einmal."
+        "Der Assistent ist gerade stark gefragt und hat die Antworten für heute aufgebraucht: "
+        "Versuchen Sie es in {wait} noch einmal."
     ),
     "fr": (
-        "Si {name} va mal en ce moment, n'attendez pas : un cas grave n'attend pas, appelez "
-        "tout de suite votre vétérinaire ou un service d'urgences. L'assistant est très "
-        "sollicité et a épuisé les réponses du jour : réessayez dans {wait}."
+        "L'assistant est très sollicité et a épuisé les réponses du jour : réessayez dans {wait}."
     ),
 }
 

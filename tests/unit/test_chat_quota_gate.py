@@ -4,8 +4,10 @@ answered by fixed text that uses no model)."""
 
 from __future__ import annotations
 
+import re
 from datetime import UTC, datetime
 
+import pytest
 from llm_fakes import RecordingLLMClient
 
 from packages.core.application.services.chat_orchestrator import (
@@ -13,6 +15,7 @@ from packages.core.application.services.chat_orchestrator import (
     ChatOrchestratorInput,
 )
 from packages.core.application.services.llm_budget import LlmBudget, QuotaExhausted
+from packages.core.domain.safety.harmful_requests import QUOTA_TEXTS
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
 )
@@ -118,3 +121,18 @@ def test_a_quota_refusal_from_the_provider_mid_turn_gets_the_same_kind_reply() -
     assert result.mode == "quota_exhausted"  # type: ignore[attr-defined]
     assert "1 ora" in result.answer  # type: ignore[attr-defined]
     assert "non disponibile" not in result.answer  # type: ignore[attr-defined]
+
+
+@pytest.mark.parametrize("language", ["it", "en", "es", "de", "fr"])
+def test_the_text_of_the_models_quota_is_calm_and_the_same_for_every_message(language: str) -> None:
+    # 24/11/2026: the alarm that opened it is gone (the app does not handle urgencies).
+    text = QUOTA_TEXTS[language]
+    assert "{wait}" in text and "{name}" not in text and "!" not in text
+    assert not re.search(r"\+?\d{3,}", text)
+    lowered = text.lower()
+    for alarm in (
+        *("grave", "subito", "non aspettare", "serious", "straight away", "do not wait"),
+        *("no esperes", "urgencias", "warten sie nicht", "sofort"),
+        *("n'attendez pas", "tout de suite"),
+    ):
+        assert alarm not in lowered, alarm
