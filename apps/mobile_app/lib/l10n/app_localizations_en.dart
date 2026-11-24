@@ -4496,7 +4496,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get remindersCreateButton => 'Create';
 
   @override
-  String get remindersChoosePet => 'For which animal?';
+  String get remindersChoosePet => 'Which animal is it for?';
 
   @override
   String get remindersNeedPetFirst =>

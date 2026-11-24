@@ -2700,7 +2700,7 @@
   "remindersTitle": "Reminders",
   "remindersSubtitle": "Vaccines, treatments and visits to keep track of.",
   "remindersCreateButton": "Create",
-  "remindersChoosePet": "For which animal?",
+  "remindersChoosePet": "Which animal is it for?",
   "remindersNeedPetFirst": "Add an animal first: every reminder belongs to one of them.",
   "remindersLoadingTitle": "Loading reminders",
   "remindersLoadingBody": "Reading dates, recurrences and owner notes.",

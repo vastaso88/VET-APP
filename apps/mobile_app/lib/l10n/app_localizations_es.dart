@@ -40,7 +40,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonBack => 'Atrás';
 
   @override
-  String get commonOpenCalendar => 'Apri il calendario';
+  String get commonOpenCalendar => 'Abrir el calendario';
 
   @override
   String get commonNext => 'Siguiente';
@@ -4525,11 +4525,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get remindersCreateButton => 'Crear';
 
   @override
-  String get remindersChoosePet => 'Per quale animale?';
+  String get remindersChoosePet => '¿Para qué animal?';
 
   @override
   String get remindersNeedPetFirst =>
-      'Aggiungi prima un animale: ogni promemoria è legato a uno di loro.';
+      'Añade primero un animal: cada recordatorio está vinculado a uno de ellos.';
 
   @override
   String get remindersLoadingTitle => 'Cargando recordatorios';
@@ -6582,7 +6582,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get monitoringFieldWeightHintKg => 'Ej. 10,5';
 
   @override
-  String get monitoringFieldWeightHintSmallKg => 'Es. 0,385 (cioè 385 g)';
+  String get monitoringFieldWeightHintSmallKg => 'Ej. 0,385 (es decir, 385 g)';
 
   @override
   String get monitoringFieldWeightHintLb => 'Ej. 22,5';
@@ -6827,7 +6827,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noticeChatPhoto =>
-      'La foto resta nel tuo account. Quando l\'analisi delle foto è attiva, va a un servizio esterno (oggi Groq, negli Stati Uniti) che la descrive. Il filtro che toglie i dati personali lavora sul testo, non sulle immagini: evita di inquadrare nomi, indirizzi o numeri di microchip.';
+      'La foto se queda en tu cuenta. Cuando el análisis de fotos está activado, va a un servicio externo (hoy Groq, en Estados Unidos) que la describe. El filtro que quita los datos personales trabaja sobre el texto, no sobre las imágenes: evita enfocar nombres, direcciones o números de microchip.';
 
   @override
   String get noticeRecordDocument =>
@@ -7222,18 +7222,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get remindersDoneTooltip => 'Marcar como hecho';
 
   @override
-  String get remindersPreviousMonth => 'Mese precedente';
+  String get remindersPreviousMonth => 'Mes anterior';
 
   @override
-  String get remindersNextMonth => 'Mese successivo';
+  String get remindersNextMonth => 'Mes siguiente';
 
   @override
   String remindersDayActivities(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count promemoria',
-      one: '1 promemoria',
+      other: '$count recordatorios',
+      one: '1 recordatorio',
     );
     return '$_temp0';
   }

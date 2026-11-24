@@ -40,7 +40,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get commonBack => 'Zurück';
 
   @override
-  String get commonOpenCalendar => 'Apri il calendario';
+  String get commonOpenCalendar => 'Kalender öffnen';
 
   @override
   String get commonNext => 'Weiter';
@@ -4549,11 +4549,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get remindersCreateButton => 'Neu';
 
   @override
-  String get remindersChoosePet => 'Per quale animale?';
+  String get remindersChoosePet => 'Für welches Tier?';
 
   @override
   String get remindersNeedPetFirst =>
-      'Aggiungi prima un animale: ogni promemoria è legato a uno di loro.';
+      'Fügen Sie zuerst ein Tier hinzu: Jede Erinnerung gehört zu einem Ihrer Tiere.';
 
   @override
   String get remindersLoadingTitle => 'Erinnerungen werden geladen';
@@ -6605,7 +6605,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get monitoringFieldWeightHintKg => 'z. B. 10,5';
 
   @override
-  String get monitoringFieldWeightHintSmallKg => 'Es. 0,385 (cioè 385 g)';
+  String get monitoringFieldWeightHintSmallKg => 'z. B. 0,385 (also 385 g)';
 
   @override
   String get monitoringFieldWeightHintLb => 'z. B. 22,5';
@@ -6851,7 +6851,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get noticeChatPhoto =>
-      'La foto resta nel tuo account. Quando l\'analisi delle foto è attiva, va a un servizio esterno (oggi Groq, negli Stati Uniti) che la descrive. Il filtro che toglie i dati personali lavora sul testo, non sulle immagini: evita di inquadrare nomi, indirizzi o numeri di microchip.';
+      'Das Foto bleibt in Ihrem Konto. Wenn die Fotoanalyse aktiviert ist, geht es an einen externen Dienst (heute Groq, in den USA), der es beschreibt. Der Filter, der persönliche Daten entfernt, arbeitet mit Text, nicht mit Bildern: Halten Sie Namen, Adressen oder Mikrochipnummern lieber nicht ins Bild.';
 
   @override
   String get noticeRecordDocument =>
@@ -7245,18 +7245,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get remindersDoneTooltip => 'Als erledigt markieren';
 
   @override
-  String get remindersPreviousMonth => 'Mese precedente';
+  String get remindersPreviousMonth => 'Vorheriger Monat';
 
   @override
-  String get remindersNextMonth => 'Mese successivo';
+  String get remindersNextMonth => 'Nächster Monat';
 
   @override
   String remindersDayActivities(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count promemoria',
-      one: '1 promemoria',
+      other: '$count Erinnerungen',
+      one: '1 Erinnerung',
     );
     return '$_temp0';
   }
