@@ -160,9 +160,86 @@ create trigger ricordi_10_read_only
 before insert or update on public.pet_photos
 for each row execute function public.ricordi_child_read_only();
 
+-- ---------------------------------------------------------------------------
+-- Data della perdita: mai nel futuro (collaudo, scheda RICORDI F41)
+-- ---------------------------------------------------------------------------
+-- Il selettore di data dell'app non va oltre oggi, ma l'app scrive il profilo
+-- direttamente nel database e una scrittura che la aggira salvava «15 mar 2031»
+-- come giorno in cui l'animale non c'e' piu'. La data e' un testo nel formato
+-- dell'app («15 mar 2031», «mar 2031» o «2031», mesi in italiano): qui si legge
+-- allo stesso modo e si rifiuta se e' oltre domani (UTC: un giorno di tolleranza
+-- per i telefoni con il fuso orario avanti). Un testo che non si riesce a leggere
+-- non viene giudicato (come fa l'app, che in quel caso non mostra nessuna data), e
+-- un testo non cambiato non viene riesaminato: le righe che ci sono gia' restano
+-- come sono. Vale per ogni scrittura (app, backend, SQL Editor).
+-- Il nome ricordi_05_... passa prima di ricordi_10_... (e dopo plan_access_10_gate).
+create or replace function public.ricordi_loss_date_not_in_future()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+declare
+    parts text[];
+    part_count integer;
+    month_number integer := 1;
+    loss date;
+begin
+    if new.memorial_date_label is null or btrim(new.memorial_date_label) = '' then
+        return new;
+    end if;
+    -- IF annidati: OLD si legge solo in una modifica, mai in un inserimento.
+    if tg_op = 'UPDATE' then
+        if new.memorial_date_label is not distinct from old.memorial_date_label then
+            return new;
+        end if;
+    end if;
+    parts := regexp_split_to_array(btrim(new.memorial_date_label), '\s+');
+    part_count := array_length(parts, 1);
+    if part_count > 3 or parts[part_count] !~ '^[0-9]{4}$' then
+        return new;
+    end if;
+    if part_count >= 2 then
+        month_number := array_position(
+            array['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'],
+            lower(parts[part_count - 1])
+        );
+        if month_number is null then
+            return new;
+        end if;
+    end if;
+    begin
+        loss := make_date(
+            parts[part_count]::integer,
+            month_number,
+            case when part_count = 3 then parts[1]::integer else 1 end
+        );
+    exception when others then
+        return new;
+    end;
+    -- Un'etichetta con il solo mese o il solo anno vale dal primo giorno: non si
+    -- rifiuta mai a torto un mese o un anno in corso.
+    if loss > (now() at time zone 'utc')::date + 1 then
+        raise exception 'memorial_date_in_future'
+            using errcode = 'check_violation',
+                  hint = 'The date of the loss cannot be after tomorrow (UTC).';
+    end if;
+    return new;
+end;
+$$;
+
+revoke all on function public.ricordi_loss_date_not_in_future() from public, anon, authenticated;
+
+drop trigger if exists ricordi_05_loss_date_not_future on public.pet_profiles;
+create trigger ricordi_05_loss_date_not_future
+before insert or update on public.pet_profiles
+for each row execute function public.ricordi_loss_date_not_in_future();
+
 -- Per annullare la sola lettura (le colonne restano):
 --   drop trigger if exists ricordi_10_profile_read_only on public.pet_profiles;
 --   drop trigger if exists ricordi_10_read_only on public.<tabella>;  (le 6 sopra)
+-- Per annullare il rifiuto della data futura:
+--   drop trigger if exists ricordi_05_loss_date_not_future on public.pet_profiles;
+--   drop function if exists public.ricordi_loss_date_not_in_future();
 
 -- Lo schema in cache di PostgREST deve vedere subito le colonne nuove.
 notify pgrst, 'reload schema';

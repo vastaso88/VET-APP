@@ -1308,6 +1308,21 @@ on conflict (id) do nothing;
 -- anything that bypasses it. Photos are ~0.3-0.6 MB.
 update storage.buckets set file_size_limit = 20000000 where id = 'pet-photos';
 
+-- Types the bucket accepts (collaudo F34: a text file named .jpg was stored). These are
+-- exactly the Content-Types the app and the maintenance scripts send: photos and thumbnails
+-- are always compressed to image/jpeg (png and webp: the metadata clean-up of old objects),
+-- videos are video/mp4 or video/quicktime (pet_video_rules.dart: mp4, m4v, mov).
+-- WHAT THIS DOES NOT DO: Supabase Storage compares the Content-Type the client DECLARES, it
+-- never reads the file. A text file uploaded as image/jpeg still passes, so the real check of
+-- the bytes (the file signature) cannot happen at this door while the app writes straight to
+-- Storage; it needs the upload to go through the backend (like chat attachments, which check
+-- the signature in upload_chat_attachment.py) or a periodic server-side audit of the bucket.
+update storage.buckets
+set allowed_mime_types = array[
+    'image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime'
+]
+where id = 'pet-photos';
+
 drop policy if exists pet_photos_objects_select_own on storage.objects;
 create policy pet_photos_objects_select_own on storage.objects
 for select using (bucket_id = 'pet-photos' and (storage.foldername(name))[1] = auth.uid()::text);

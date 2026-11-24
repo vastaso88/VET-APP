@@ -62,6 +62,8 @@ ORDINE_SCHEMA: tuple[str, ...] = (
     "scripts/setup/account_consents_merge.sql",
     # PESO: a weighing dated after tomorrow is refused by the database.
     "scripts/setup/weight_no_future_dates.sql",
+    # PROMEM: a reminder with an empty title is refused by the database.
+    "scripts/setup/reminder_title_not_blank.sql",
 )
 MIGRATIONS_DIR = "supabase/migrations"
 PIANO_COLLAUDO = "pro"

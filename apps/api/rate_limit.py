@@ -17,6 +17,7 @@ client address. Vercel puts the real client in `X-Forwarded-For`
 from __future__ import annotations
 
 import hashlib
+import math
 import threading
 import time
 from collections import deque
@@ -25,6 +26,10 @@ from dataclasses import dataclass
 
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
+
+from apps.api.request_language import request_language
+from packages.core.application.services.llm_budget import format_wait
+from packages.core.domain.localization import translate
 
 
 @dataclass(frozen=True)
@@ -116,6 +121,16 @@ class SlidingWindowLimiter:
                     del self._hits[k]
             return True
 
+    def wait_seconds(self, rule: RateLimitRule, key: str) -> int:
+        """Whole seconds until the caller's oldest counted request leaves the window, i.e.
+        until a new one is allowed again (the whole window when nothing is counted)."""
+        now = self._clock()
+        with self._lock:
+            bucket = self._hits.get((rule.bucket or rule.prefix, key))
+            if not bucket:
+                return max(1, math.ceil(rule.window_seconds))
+            return max(1, math.ceil(rule.window_seconds - (now - bucket[0])))
+
 
 def client_key(request: Request) -> str:
     auth_header = request.headers.get("Authorization", "")
@@ -137,12 +152,22 @@ def build_middleware(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         rule = limiter.rule_for(request.method, request.url.path)
-        if rule is not None and not limiter.allow(rule, client_key(request)):
-            return JSONResponse(
-                status_code=429,
-                content={"detail": "Troppe richieste: riprova tra poco."},
-                headers={"Retry-After": str(int(rule.window_seconds))},
-            )
+        if rule is not None:
+            key = client_key(request)
+            if not limiter.allow(rule, key):
+                # Says how long, in the caller's language (collaudo F44: "in a moment" left
+                # whoever asked for their data twice guessing). Retry-After is the exact wait.
+                wait = limiter.wait_seconds(rule, key)
+                language = request_language(request)
+                return JSONResponse(
+                    status_code=429,
+                    content={
+                        "detail": translate(
+                            "too_many_requests", language, wait=format_wait(wait, language)
+                        )
+                    },
+                    headers={"Retry-After": str(wait)},
+                )
         return await call_next(request)
 
     return middleware

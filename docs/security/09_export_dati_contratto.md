@@ -13,7 +13,7 @@ UI/UX; questo documento descrive cosa riceve.
 | Metodo e percorso | `GET /account/export` |
 | Autenticazione | `Authorization: Bearer <token Supabase>` (obbligatoria; il token identifica l'utente, non si può chiedere l'export di un altro id) |
 | Parametri | nessuno |
-| Limite | **1 richiesta ogni 10 minuti per utente** (chiave: hash del token; in assenza, indirizzo del client). Oltre: `429` con `Retry-After: 600` e `{"detail": "Troppe richieste: riprova tra poco."}`. Il contatore vive nella memoria dell'istanza serverless (best effort). |
+| Limite | **1 richiesta ogni 10 minuti per utente** (chiave: hash del token; in assenza, indirizzo del client). Oltre: `429` con `Retry-After` = i secondi che mancano davvero (al massimo 600) e `{"detail": "Troppe richieste: riprova tra 7 minuti."}` (il tempo è quello rimasto, nella lingua di `Accept-Language`; sotto i 3 minuti dice «pochi minuti»). Il contatore vive nella memoria dell'istanza serverless (best effort). |
 | Tempo di risposta | pochi secondi; cresce con il numero di conversazioni e file. L'app mostri un'attesa e non ritenti in automatico. |
 
 ## Risposta `200` (JSON, `application/json`)

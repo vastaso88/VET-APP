@@ -54,6 +54,34 @@ def test_a_weight_label_is_read_in_kilograms(label: str, kilograms: float) -> No
     assert parse_weight_kg(label) == pytest.approx(kilograms)
 
 
+@pytest.mark.parametrize(
+    ("label", "kilograms"),
+    [
+        ("4 chili", 4.0),
+        ("4 kg circa", 4.0),
+        ("1 chilo", 1.0),
+        ("circa 4 chili", 4.0),
+        ("Circa 4,5 kg", 4.5),
+        ("ca. 4 kg", 4.0),
+        ("~4kg", 4.0),
+        ("450 grammi", 0.45),
+        ("450 gr", 0.45),
+        ("2 kilos", 2.0),
+        ("9 pounds", 9 * 0.45359237),
+        ("4 kilograms", 4.0),
+    ],
+)
+def test_a_weight_written_in_words_is_read(label: str, kilograms: float) -> None:
+    assert parse_weight_kg(label) == pytest.approx(kilograms)
+
+
+@pytest.mark.parametrize(
+    "label", ["4 chili di troppo", "circa", "circa tanto", "4 metri", "chili 4", "circa circa 4"]
+)
+def test_a_weight_with_other_words_is_not_read(label: str) -> None:
+    assert parse_weight_kg(label) is None
+
+
 @pytest.mark.parametrize("label", ["-19 kg", "-5 g", "tanto", "kg", "", "1e3 kg"])
 def test_a_weight_label_that_is_negative_or_unreadable_is_not_read(label: str) -> None:
     assert parse_weight_kg(label) is None

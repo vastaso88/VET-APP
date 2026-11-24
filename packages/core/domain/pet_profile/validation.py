@@ -37,8 +37,27 @@ _MAX_WEIGHT_KG = {
     "other": 2000,
 }
 
-_UNIT_TO_KG = {"kg": 1.0, "g": 0.001, "lb": 0.45359237, "lbs": 0.45359237, "oz": 0.0283495231}
-_WEIGHT_RE = re.compile(r"^\s*(\d+(?:[.,]\d+)?)\s*(kg|g|lbs|lb|oz)?\s*$", re.IGNORECASE)
+_KG = 1.0
+_GRAM = 0.001
+_POUND = 0.45359237
+# The units as people write them, in the app's languages ("4 chili", "450 grammi", "9 pounds"):
+# a weight said in words used to be refused and blocked the whole update (collaudo F39).
+_UNIT_TO_KG = {
+    **dict.fromkeys(
+        ("kg", "kgs", "kilo", "kilos", "kili", "chilo", "chili", "chilogrammo", "chilogrammi"), _KG
+    ),
+    **dict.fromkeys(("kilogram", "kilograms", "kilogramme", "kilogrammes", "kilogramm"), _KG),
+    **dict.fromkeys(("g", "gr", "grammo", "grammi", "gram", "grams", "gramme", "grammes"), _GRAM),
+    **dict.fromkeys(("lb", "lbs", "libbra", "libbre", "pound", "pounds"), _POUND),
+    **dict.fromkeys(("oz", "ounce", "ounces", "oncia", "once"), 0.0283495231),
+}
+_UNITS = "|".join(sorted(_UNIT_TO_KG, key=len, reverse=True))
+# "circa 4 chili", "ca. 4 kg", "~4 kg": the approximation is dropped, the number is kept.
+_APPROXIMATELY = r"(?:circa|ca\.?|about|approx\.?|environ|etwa|~)"
+_WEIGHT_RE = re.compile(
+    rf"^\s*(?:{_APPROXIMATELY}\s*)?(\d+(?:[.,]\d+)?)\s*({_UNITS})?(?:\s*(?:circa|ca\.?))?\s*$",
+    re.IGNORECASE,
+)
 
 
 def max_age_years(species: str) -> int:
@@ -50,8 +69,9 @@ def max_weight_kg(species: str) -> int:
 
 
 def parse_weight_kg(label: str) -> float | None:
-    """The weight in kilograms of a label like "23 kg", "17,8 kg", "450 g" or "12 lb"
-    (no unit means kg); None when it cannot be read (including any negative number)."""
+    """The weight in kilograms of a label like "23 kg", "17,8 kg", "450 g", "12 lb", "4 chili"
+    or "circa 4 kg" (no unit means kg); None when it cannot be read (including any negative
+    number)."""
     match = _WEIGHT_RE.match(label)
     if match is None:
         return None

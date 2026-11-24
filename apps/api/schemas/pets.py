@@ -1,4 +1,7 @@
-from pydantic import BaseModel, Field
+from typing import Any
+
+from pydantic import BaseModel, Field, model_validator
+from pydantic_core import PydanticCustomError
 
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails
 
@@ -28,7 +31,26 @@ class FishStockRequest(FishStock):
     female_count: int = Field(default=0, ge=0, le=MAX_FISH_PER_SEX)
 
 
+def _refuse_ricordi_fields(data: Any) -> Any:
+    """Moving a pet to Ricordi (or touching the date of the loss) is written by the app
+    straight to the database, never through this route: a body that carries those fields
+    used to answer 200 and change nothing (collaudo F41), which looks like a save. Now it
+    is a 422 (`memorial_not_via_api`), so nobody believes the pet was moved."""
+    if isinstance(data, dict):
+        for key in data:
+            if key == "is_memorial" or str(key).startswith("memorial_"):
+                raise PydanticCustomError(
+                    "memorial_not_via_api", "Ricordi is changed in the app, not through this route"
+                )
+    return data
+
+
 class CreatePetProfileRequest(BaseModel):
+    @model_validator(mode="before")
+    @classmethod
+    def _no_ricordi_fields(cls, data: Any) -> Any:
+        return _refuse_ricordi_fields(data)
+
     # Upper bounds keep a single request from storing arbitrarily large
     # rows (and from feeding unbounded text to the chat prompt).
     name: str = Field(max_length=80)
@@ -56,6 +78,11 @@ class CreatePetProfileRequest(BaseModel):
 class UpdatePetProfileRequest(BaseModel):
     """A partial update: send only what changes. A field left out keeps its value;
     an explicit `null` clears an optional one."""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _no_ricordi_fields(cls, data: Any) -> Any:
+        return _refuse_ricordi_fields(data)
 
     name: str | None = Field(default=None, max_length=80)
     species: str | None = Field(default=None, max_length=60)
