@@ -73,6 +73,10 @@ from packages.core.domain.common.language import (
     normalize_language,
     response_language_instruction,
 )
+from packages.core.domain.common.spoken_french import (
+    IF_IT_NO_LONGER_DRINKS_OR_URINATES,
+    urgent_reading_missing,
+)
 from packages.core.domain.common.text_language import is_in_another_language, language_of
 from packages.core.domain.conversation.answer_cache import (
     cache_key,
@@ -4345,6 +4349,13 @@ class ChatOrchestrator:
             ),
             data=data,
         )
+        if language_of(response.content) == "fr" and urgent_reading_missing(
+            message, response.content
+        ):
+            logger.info("spoken French: the urgent reading was missing and is said")
+            response = response.model_copy(
+                update={"content": IF_IT_NO_LONGER_DRINKS_OR_URINATES + response.content}
+            )
         if sizes := unsourced_sizes(response.content, given):
             logger.warning("answer validator: %d cage size(s) with no source cut", len(sizes))
             trimmed = without_unsourced_sizes(response.content, given)

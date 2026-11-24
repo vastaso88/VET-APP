@@ -378,10 +378,13 @@ _SHORT_ANSWER = (
 )
 # Reproduced 24/11/2026: "mange plus depuis 10 jours" was read as "eats more".
 _SPOKEN_FRENCH = (
-    "SPOKEN FRENCH. The message says a verb followed by 'plus' without 'ne' ('mange plus depuis "
-    "10 jours', 'bouge plus'): in spoken French the 'ne' is dropped, so it means it NO LONGER does "
-    "it (it has stopped eating, moving...), not that it does it more. Treat it so. If the sense is "
-    "still open, say first what you understood and ask."
+    "SPOKEN FRENCH. The message says a verb followed by 'plus' (or 'pu') without 'ne' ('mange "
+    "plus depuis 10 jours', 'bouge plus'): in spoken French the 'ne' is dropped, so it means it "
+    "NO LONGER does it (it has stopped eating, moving...), not that it does it more. Treat it so. "
+    "Drinking and urinating are the exception ('boit plus', 'urine plus'): both senses are "
+    "common. Name both, the worse first: if it no longer drinks or urinates, the vet now; if "
+    "it does it more, a visit soon; and ask which one. If any other sense is still open, say "
+    "first what you understood and ask."
 )
 _FUTURE_ANIMAL = (
     "A FUTURE ANIMAL. The question is about an animal the owner does not have yet: do not "
