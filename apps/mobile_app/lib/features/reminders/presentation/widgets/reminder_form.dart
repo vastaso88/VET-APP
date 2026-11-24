@@ -126,7 +126,12 @@ class _ReminderFormState extends State<ReminderForm> {
     return initial;
   }
 
+  /// Closing a picker hands the focus back to the field that had it, which
+  /// reopened the keyboard over the Save button: no field keeps it.
+  void _dropFocus() => FocusManager.instance.primaryFocus?.unfocus();
+
   Future<void> _pickDate() async {
+    _dropFocus();
     final initialDate = parseStrictDate(_dateController.text) ?? DateTime.now();
     final picked = await showDatePicker(
       context: context,
@@ -146,6 +151,7 @@ class _ReminderFormState extends State<ReminderForm> {
   }
 
   Future<void> _pickTime() async {
+    _dropFocus();
     final picked = await showTimePicker(
       context: context,
       initialTime: _time,
@@ -156,6 +162,7 @@ class _ReminderFormState extends State<ReminderForm> {
   }
 
   Future<void> _addDoseTime() async {
+    _dropFocus();
     final picked = await showTimePicker(
       context: context,
       initialTime: _doseTimes.isEmpty
@@ -172,6 +179,7 @@ class _ReminderFormState extends State<ReminderForm> {
   }
 
   Future<void> _pickRecurrenceEndDate() async {
+    _dropFocus();
     final initialDate = parseStrictDate(_recurrenceEndDateController.text) ?? DateTime.now();
     final picked = await showDatePicker(
       context: context,

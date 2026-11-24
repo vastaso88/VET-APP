@@ -40,6 +40,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get commonBack => 'Zurück';
 
   @override
+  String get commonOpenCalendar => 'Apri il calendario';
+
+  @override
   String get commonNext => 'Weiter';
 
   @override
@@ -2823,10 +2826,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'other':
-          'Wenn der Mikrochip von $name in einem Heimtierregister eingetragen war, muss der Tod in der Regel gemeldet werden: Ihre Tierärztin bzw. Ihr Tierarzt oder die Stelle, die in Ihrem Land das Register führt (in Italien die ASL oder die Gemeinde), sagt Ihnen, wie und bis wann.',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'other':
+            'Wenn der Mikrochip von $name in einem Heimtierregister eingetragen war, muss der Tod in der Regel gemeldet werden: Ihre Tierärztin bzw. Ihr Tierarzt oder die Stelle, die in Ihrem Land das Register führt (in Italien die ASL oder die Gemeinde), sagt Ihnen, wie und bis wann.',
+      },
+    );
     return '$_temp0';
   }
 
@@ -2852,9 +2858,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'other': 'Versehentlich verschoben? Zurück zu den Tieren',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'other': 'Versehentlich verschoben? Zurück zu den Tieren',
+      },
+    );
     return '$_temp0';
   }
 
@@ -4538,6 +4547,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get remindersCreateButton => 'Neu';
+
+  @override
+  String get remindersChoosePet => 'Per quale animale?';
+
+  @override
+  String get remindersNeedPetFirst =>
+      'Aggiungi prima un animale: ogni promemoria è legato a uno di loro.';
 
   @override
   String get remindersLoadingTitle => 'Erinnerungen werden geladen';
@@ -6589,6 +6605,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get monitoringFieldWeightHintKg => 'z. B. 10,5';
 
   @override
+  String get monitoringFieldWeightHintSmallKg => 'Es. 0,385 (cioè 385 g)';
+
+  @override
   String get monitoringFieldWeightHintLb => 'z. B. 22,5';
 
   @override
@@ -6829,6 +6848,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get noticeChatMedia =>
       'Ihre Sprachaufnahme geht an einen externen Dienst (heute Groq, in den USA), der sie transkribiert. Der Filter, der persönliche Daten entfernt, arbeitet mit Text, nicht mit Audio: Nennen Sie Ihren Namen, Ihre Adresse und Ihre Mikrochipnummer lieber nicht.';
+
+  @override
+  String get noticeChatPhoto =>
+      'La foto resta nel tuo account. Quando l\'analisi delle foto è attiva, va a un servizio esterno (oggi Groq, negli Stati Uniti) che la descrive. Il filtro che toglie i dati personali lavora sul testo, non sulle immagini: evita di inquadrare nomi, indirizzi o numeri di microchip.';
 
   @override
   String get noticeRecordDocument =>
@@ -7220,6 +7243,23 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get remindersDoneTooltip => 'Als erledigt markieren';
+
+  @override
+  String get remindersPreviousMonth => 'Mese precedente';
+
+  @override
+  String get remindersNextMonth => 'Mese successivo';
+
+  @override
+  String remindersDayActivities(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count promemoria',
+      one: '1 promemoria',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get remindersNotifOffBanner =>

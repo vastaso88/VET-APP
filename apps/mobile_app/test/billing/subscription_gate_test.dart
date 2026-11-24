@@ -140,6 +140,23 @@ void main() {
     expect(DeviceRegistry.takePendingNotice(), isFalse, reason: 'the notice shows once');
   });
 
+  test('the notice stays readable (a second sign-in page) until a place is held again', () async {
+    final gate = SubscriptionGate(
+      dataSource: _FakeSubscriptionSource(_status(hasAccess: true)),
+      deviceRegistry: _FakeRegistry(active: false),
+      signOut: () async {},
+    );
+    await gate.resolveDestination();
+    expect(DeviceRegistry.pendingNotice, isTrue);
+    expect(DeviceRegistry.pendingNotice, isTrue, reason: 'reading it does not consume it');
+
+    await SubscriptionGate(
+      dataSource: _FakeSubscriptionSource(_status(hasAccess: true)),
+      deviceRegistry: _FakeRegistry(active: true),
+    ).resolveDestination(afterSignIn: true);
+    expect(DeviceRegistry.pendingNotice, isFalse);
+  });
+
   test('an unreachable subscription service never locks the owner out', () async {
     final gate = SubscriptionGate(
       dataSource: _FakeSubscriptionSource(null),

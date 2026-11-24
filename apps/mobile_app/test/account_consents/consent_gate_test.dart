@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vet_app_mobile/features/account_consents/application/consent_gate.dart';
 import 'package:vet_app_mobile/features/account_consents/data/account_consents_remote_data_source.dart';
 import 'package:vet_app_mobile/features/account_consents/domain/account_consent_models.dart';
@@ -73,6 +74,9 @@ Widget _starter(AccountConsentsRemoteDataSource backend, void Function(bool?) on
 }
 
 void main() {
+  // The gate first sends what a failed sign-up left on the phone.
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   group('which accounts are asked', () {
     test('the mandatory keys are the three the server enforces', () {
       expect(AccountConsentKeys.mandatory, [_terms, _privacy, _emergency]);

@@ -365,7 +365,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
 
   Future<void> _pickAndUploadImage() async {
     // First photo: the personal-data filter does not look at images.
-    if (!await showShortNoticeOnce(context, ShortNotice.chatMedia)) return;
+    if (!await showShortNoticeOnce(context, ShortNotice.chatPhoto)) return;
     if (!mounted) return;
     final picked = await FilePicker.platform.pickFiles(
       type: FileType.image,

@@ -711,18 +711,24 @@ class PetDemoStore {
 
   /// Reads this pet's consent from its Supabase row (the same data the backend
   /// stores in `pet_profiles.medical_record_consent`). Null when unavailable.
-  Future<bool?> fetchMedicalRecordConsent(String petId) async {
+  Future<bool?> fetchMedicalRecordConsent(String petId) async =>
+      (await readMedicalRecordConsent(petId)).granted;
+
+  /// Same read, but telling "the server answered, no decision yet" (`reachable`
+  /// true, `granted` null) from "could not read it" (`reachable` false): the
+  /// first used to be shown as a connection problem.
+  Future<({bool reachable, bool? granted})> readMedicalRecordConsent(String petId) async {
     final client = _resolveClient();
-    if (client == null) return null;
+    if (client == null) return (reachable: false, granted: null);
     try {
       final row = await client
           .from('pet_profiles')
           .select('medical_record_consent')
           .eq('id', petId)
           .maybeSingle();
-      return _grantedFromConsentJson(row?['medical_record_consent']);
+      return (reachable: true, granted: _grantedFromConsentJson(row?['medical_record_consent']));
     } catch (_) {
-      return null;
+      return (reachable: false, granted: null);
     }
   }
 

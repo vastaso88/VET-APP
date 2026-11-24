@@ -15,12 +15,15 @@ import '../../domain/pet_models.dart';
 /// Off means the chat sees neither titles nor contents. Read from the pet row
 /// on open, written with PUT, and applied locally at once on success.
 class MedicalRecordConsentCard extends StatefulWidget {
-  const MedicalRecordConsentCard({required this.pet, this.remote, super.key});
+  const MedicalRecordConsentCard({required this.pet, this.remote, this.readConsent, super.key});
 
   final PetProfile pet;
 
   /// Overridable for tests.
   final MedicalRecordConsentRemoteDataSource? remote;
+
+  /// Overridable for tests: how the stored decision is read.
+  final Future<({bool reachable, bool? granted})> Function(String petId)? readConsent;
 
   @override
   State<MedicalRecordConsentCard> createState() => _MedicalRecordConsentCardState();
@@ -50,11 +53,16 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
   }
 
   Future<void> _refreshFromServer() async {
-    final remote = await PetDemoStore.instance.fetchMedicalRecordConsent(widget.pet.id);
+    final read = await (widget.readConsent ?? PetDemoStore.instance.readMedicalRecordConsent)(
+      widget.pet.id,
+    );
     if (!mounted) return;
+    final remote = read.granted;
     setState(() {
-      if (remote == null && _granted == null) _status = _CardStatus.readError;
-      if (remote != null) {
+      // Only a read that did not reach the server is a connection problem; an
+      // answer without a decision just means the owner has not decided yet.
+      if (!read.reachable && _granted == null) _status = _CardStatus.readError;
+      if (read.reachable) {
         _granted = remote;
         _status = _CardStatus.none;
       }

@@ -11,8 +11,12 @@ enum ShortNotice {
   /// First opening of the chat: an AI answers, who receives the questions.
   chatAi('chat_ai'),
 
-  /// First photo or voice message: the personal-data filter does not see them.
+  /// First voice message: the personal-data filter does not hear it.
   chatMedia('chat_media'),
+
+  /// First photo sent to the chat: the filter does not see images either
+  /// (its own text: the voice notice talks about transcription).
+  chatPhoto('chat_photo'),
 
   /// A document added to a medical record.
   recordDocument('record_document'),
@@ -33,6 +37,7 @@ enum ShortNotice {
     return switch (this) {
       chatAi => l10n.noticeChatAi,
       chatMedia => l10n.noticeChatMedia,
+      chatPhoto => l10n.noticeChatPhoto,
       recordDocument => l10n.noticeRecordDocument,
       firstWalk => l10n.noticeFirstWalk,
       marketplace => l10n.noticeMarketplace,
@@ -49,7 +54,7 @@ enum ShortNotice {
 
   /// A notice that comes BEFORE an action the owner may still give up on
   /// ("Continua" / "Annulla") rather than just acknowledge ("Ho capito").
-  bool get asksToContinue => this == chatMedia;
+  bool get asksToContinue => this == chatMedia || this == chatPhoto;
 }
 
 /// Remembers, on this phone, which notices were already acknowledged. Emptied

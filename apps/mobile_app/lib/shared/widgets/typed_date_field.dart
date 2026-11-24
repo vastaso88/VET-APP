@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/l10n.dart';
 import '../formatters/date_input_formatter.dart';
 
 /// A hand-typed `gg/mm/aaaa` field (digits format themselves, "/" is inserted
@@ -88,7 +89,11 @@ class _TypedDateFieldState extends State<TypedDateField> {
       validator: widget.validator,
       style: widget.style,
       decoration: widget.decoration.copyWith(
-        suffixIcon: IconButton(onPressed: _pick, icon: widget.pickIcon),
+        suffixIcon: IconButton(
+          tooltip: context.l10n.commonOpenCalendar,
+          onPressed: _pick,
+          icon: widget.pickIcon,
+        ),
       ),
       onChanged: (value) {
         _ownerChoseValue = true;

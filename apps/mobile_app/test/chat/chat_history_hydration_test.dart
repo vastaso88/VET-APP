@@ -67,6 +67,7 @@ class _FakeRemote implements ChatRemoteDataSource {
             role: 'assistant',
             content: 'Da quando?',
             createdAt: DateTime.utc(2021, 1, 1, 0, 1),
+            aiGenerated: true,
           ),
         ],
       ),
@@ -167,6 +168,9 @@ void main() {
     expect(detail.messages.map((m) => m.text), ['Mangia poco', 'Da quando?']);
     expect(detail.messages.last.author, ChatMessageAuthor.assistant);
     expect(store.conversations.first.unreadCount, 0);
+    // The "Generato da IA" mark survives a reload (stored ai_generated flag).
+    expect(detail.messages.last.aiGenerated, isTrue);
+    expect(detail.messages.first.aiGenerated, isFalse);
   });
 
   test('hydrates once per owner and retries after a failure', () async {

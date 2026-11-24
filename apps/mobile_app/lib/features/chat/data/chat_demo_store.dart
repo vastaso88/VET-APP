@@ -271,6 +271,7 @@ class ChatDemoStore extends ChangeNotifier {
             serverId: message.id.isEmpty ? null : message.id,
             healthAnswer: message.healthAnswer,
             notHelpful: message.notHelpful,
+            aiGenerated: message.aiGenerated,
           ),
       ];
 

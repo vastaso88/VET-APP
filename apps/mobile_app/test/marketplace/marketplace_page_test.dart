@@ -310,6 +310,16 @@ void main() {
     expect(find.widgetWithText(TextButton, 'Mappa'), findsOneWidget);
   });
 
+  testWidgets('the map button is in the body, not in the app bar that holds the title',
+      (tester) async {
+    await _pumpPage(tester, reference: _me);
+    final map = find.widgetWithText(TextButton, 'Mappa');
+    expect(map, findsOneWidget);
+    expect(find.descendant(of: find.byType(AppBar), matching: map), findsNothing);
+    expect(find.descendant(of: find.byType(AppBar), matching: find.byIcon(Icons.map_outlined)),
+        findsNothing);
+  });
+
   group('listing detail', () {
     Future<MarketplaceRepository> pumpDetail(WidgetTester tester, String currentOwnerId) async {
       final listing = _listing('Pallina', ListingCategory.toys, kmNorth: 1, ownerId: 'seller');

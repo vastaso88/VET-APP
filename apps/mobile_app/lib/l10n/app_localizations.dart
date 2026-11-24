@@ -164,6 +164,12 @@ abstract class AppLocalizations {
   /// **'Indietro'**
   String get commonBack;
 
+  /// No description provided for @commonOpenCalendar.
+  ///
+  /// In it, this message translates to:
+  /// **'Apri il calendario'**
+  String get commonOpenCalendar;
+
   /// No description provided for @commonNext.
   ///
   /// In it, this message translates to:
@@ -7448,6 +7454,18 @@ abstract class AppLocalizations {
   /// **'Crea'**
   String get remindersCreateButton;
 
+  /// No description provided for @remindersChoosePet.
+  ///
+  /// In it, this message translates to:
+  /// **'Per quale animale?'**
+  String get remindersChoosePet;
+
+  /// No description provided for @remindersNeedPetFirst.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi prima un animale: ogni promemoria è legato a uno di loro.'**
+  String get remindersNeedPetFirst;
+
   /// No description provided for @remindersLoadingTitle.
   ///
   /// In it, this message translates to:
@@ -10916,6 +10934,12 @@ abstract class AppLocalizations {
   /// **'Es. 10,5'**
   String get monitoringFieldWeightHintKg;
 
+  /// No description provided for @monitoringFieldWeightHintSmallKg.
+  ///
+  /// In it, this message translates to:
+  /// **'Es. 0,385 (cioè 385 g)'**
+  String get monitoringFieldWeightHintSmallKg;
+
   /// No description provided for @monitoringFieldWeightHintLb.
   ///
   /// In it, this message translates to:
@@ -11305,6 +11329,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'La voce va a un servizio esterno (oggi Groq, negli Stati Uniti) che la trascrive. Il filtro che toglie i dati personali lavora sul testo, non sulla voce: evita di dire nome, indirizzo e numero di microchip.'**
   String get noticeChatMedia;
+
+  /// No description provided for @noticeChatPhoto.
+  ///
+  /// In it, this message translates to:
+  /// **'La foto resta nel tuo account. Quando l\'analisi delle foto è attiva, va a un servizio esterno (oggi Groq, negli Stati Uniti) che la descrive. Il filtro che toglie i dati personali lavora sul testo, non sulle immagini: evita di inquadrare nomi, indirizzi o numeri di microchip.'**
+  String get noticeChatPhoto;
 
   /// No description provided for @noticeRecordDocument.
   ///
@@ -11977,6 +12007,24 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Segna come fatto'**
   String get remindersDoneTooltip;
+
+  /// No description provided for @remindersPreviousMonth.
+  ///
+  /// In it, this message translates to:
+  /// **'Mese precedente'**
+  String get remindersPreviousMonth;
+
+  /// No description provided for @remindersNextMonth.
+  ///
+  /// In it, this message translates to:
+  /// **'Mese successivo'**
+  String get remindersNextMonth;
+
+  /// No description provided for @remindersDayActivities.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 promemoria} other{{count} promemoria}}'**
+  String remindersDayActivities(int count);
 
   /// No description provided for @remindersNotifOffBanner.
   ///

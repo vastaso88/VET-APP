@@ -56,6 +56,7 @@ class RemoteChatMessage {
     this.healthAnswer = false,
     this.notHelpful = false,
     this.clientMessageId,
+    this.aiGenerated = false,
   });
 
   final String id;
@@ -68,6 +69,9 @@ class RemoteChatMessage {
   /// The app's own id of a message the owner sent (stored by the server), to recognise it
   /// in the history fetched while the same message was being sent.
   final String? clientMessageId;
+
+  /// Stored `ai_generated` flag (null/absent on old messages = false).
+  final bool aiGenerated;
 }
 
 /// A stored backend conversation as returned by `GET /conversations` (which
@@ -697,6 +701,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
             createdAt: DateTime.tryParse(raw['created_at'] as String? ?? ''),
             healthAnswer: raw['health_answer'] as bool? ?? false,
             notHelpful: raw['not_helpful'] as bool? ?? false,
+            aiGenerated: raw['ai_generated'] as bool? ?? false,
             clientMessageId: raw['client_message_id'] as String?,
           ),
       ],

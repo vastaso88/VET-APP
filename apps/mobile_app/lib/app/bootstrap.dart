@@ -27,6 +27,7 @@ import '../features/notifications/domain/notification_time_zone.dart';
 import '../features/pets/data/pet_demo_store.dart';
 import '../features/pets/data/pet_photo_repository.dart';
 import '../features/reminders/data/reminders_repository.dart';
+import '../features/account_consents/data/signup_consents.dart';
 import '../features/age/data/age_store.dart';
 import '../features/settings/data/layout_settings_store.dart';
 import '../features/settings/data/unit_settings_store.dart';
@@ -131,6 +132,7 @@ Future<void> bootstrap({Future<void> Function()? afterSupabaseReady}) async {
           ProfilePhotoRepository.clearLocalCache();
           MarketplaceUnreadStore.instance.reset();
           unawaited(AgeStore.instance.reset());
+          unawaited(SignUpConsents.clear());
           BillingDemoStore.instance.reset();
           StoreBillingController.instance.reset();
         }

@@ -110,6 +110,7 @@ class _Header extends StatelessWidget {
               Row(
                 children: [
                   IconButton(
+                    tooltip: context.l10n.commonBack,
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(Icons.arrow_back_rounded),
                     color: AppColors.onPrimary,
@@ -382,6 +383,20 @@ class ReminderKindChip extends StatelessWidget {
 /// Shows a reminder refusal even when the page that caused it has closed.
 void showReminderFailure(String message) {
   AppRouter.scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(content: Text(message)));
+}
+
+/// Saves and tells whether it worked; on a refusal (no network...) the message
+/// is shown and the caller keeps the form open with everything typed.
+Future<bool> saveReminderKeepingForm(RemindersRepository repository, ReminderEntry reminder) async {
+  try {
+    await repository.saveReminder(reminder);
+    return true;
+  } catch (error) {
+    showReminderFailure(
+      error is ReminderSyncException ? error.message : appL10n.remindersErrorSaveFailed,
+    );
+    return false;
+  }
 }
 
 /// Saves without making the owner wait for the server: the change is already

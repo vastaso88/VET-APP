@@ -144,6 +144,7 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
               child: Row(
                 children: [
                   IconButton(
+                    tooltip: context.l10n.commonBack,
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(Icons.arrow_back_rounded),
                     color: AppColors.onPrimary,

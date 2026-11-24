@@ -40,6 +40,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonBack => 'Back';
 
   @override
+  String get commonOpenCalendar => 'Open the calendar';
+
+  @override
   String get commonNext => 'Next';
 
   @override
@@ -2785,10 +2788,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'other':
-          'If $name\'s microchip was registered with a pet registry, the death usually has to be reported: your vet or the body that keeps the registry in your country (in Italy, the ASL or the municipality) can tell you how and by when.',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'other':
+            'If $name\'s microchip was registered with a pet registry, the death usually has to be reported: your vet or the body that keeps the registry in your country (in Italy, the ASL or the municipality) can tell you how and by when.',
+      },
+    );
     return '$_temp0';
   }
 
@@ -2814,9 +2820,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'other': 'Moved by mistake? Bring back to Pets',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'other': 'Moved by mistake? Bring back to Pets',
+      },
+    );
     return '$_temp0';
   }
 
@@ -4485,6 +4494,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get remindersCreateButton => 'Create';
+
+  @override
+  String get remindersChoosePet => 'For which animal?';
+
+  @override
+  String get remindersNeedPetFirst =>
+      'Add an animal first: every reminder belongs to one of them.';
 
   @override
   String get remindersLoadingTitle => 'Loading reminders';
@@ -6521,6 +6537,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get monitoringFieldWeightHintKg => 'E.g. 10.5';
 
   @override
+  String get monitoringFieldWeightHintSmallKg => 'E.g. 0.385 (that is 385 g)';
+
+  @override
   String get monitoringFieldWeightHintLb => 'E.g. 22.5';
 
   @override
@@ -6758,6 +6777,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get noticeChatMedia =>
       'Your voice goes to an external service (today Groq, in the United States) that transcribes it. The filter that removes personal data works on text, not on voice: avoid saying your name, address and microchip number.';
+
+  @override
+  String get noticeChatPhoto =>
+      'The photo stays in your account. When photo analysis is on, it goes to an external service (today Groq, in the United States) that describes it. The filter that removes personal data works on text, not on images: avoid showing names, addresses or microchip numbers.';
 
   @override
   String get noticeRecordDocument =>
@@ -7147,6 +7170,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get remindersDoneTooltip => 'Mark as done';
+
+  @override
+  String get remindersPreviousMonth => 'Previous month';
+
+  @override
+  String get remindersNextMonth => 'Next month';
+
+  @override
+  String remindersDayActivities(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reminders',
+      one: '1 reminder',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get remindersNotifOffBanner =>

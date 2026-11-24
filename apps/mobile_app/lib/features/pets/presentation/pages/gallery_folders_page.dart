@@ -54,6 +54,7 @@ class _GalleryFoldersPageState extends State<GalleryFoldersPage> {
               child: Row(
                 children: [
                   IconButton(
+                    tooltip: context.l10n.commonBack,
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(Icons.arrow_back_rounded),
                     color: AppColors.onPrimary,

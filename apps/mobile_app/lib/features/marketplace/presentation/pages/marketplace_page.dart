@@ -212,15 +212,6 @@ class _MarketplacePageState extends State<MarketplacePage> {
         actions: [
           const MarketplaceInfoButton(),
           MarketplaceMessagesButton(repository: widget.messagesRepository),
-          if (!limited)
-            FutureBuilder<_MarketplaceViewData>(
-              future: _dataFuture,
-              builder: (context, snapshot) => TextButton.icon(
-                onPressed: snapshot.hasData ? () => _openMap(snapshot.data!) : null,
-                icon: const Icon(Icons.map_outlined),
-                label: Text(context.l10n.marketplaceMapAction),
-              ),
-            ),
           const SizedBox(width: AppSpacing.sm),
         ],
       ),
@@ -287,6 +278,16 @@ class _MarketplacePageState extends State<MarketplacePage> {
                     const LimitedMarketplaceNotice(),
                     const SizedBox(height: AppSpacing.lg),
                   ] else ...[
+                    // Not in the app bar: with the info and messages icons it
+                    // left the title only "Merca...".
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: TextButton.icon(
+                        onPressed: () => _openMap(data),
+                        icon: const Icon(Icons.map_outlined),
+                        label: Text(context.l10n.marketplaceMapAction),
+                      ),
+                    ),
                     _CategoryFilterRow(
                       selected: _filter.category,
                       onSelected: (category) =>

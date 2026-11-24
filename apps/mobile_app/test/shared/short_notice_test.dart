@@ -71,6 +71,18 @@ void main() {
     expect(_answer, isTrue);
   });
 
+  testWidgets('the photo notice speaks of the photo, not of voice, and is separate from the voice one',
+      (tester) async {
+    await _open(tester, ShortNotice.chatMedia);
+    await tester.tap(find.byKey(const ValueKey('short-notice-ok')));
+    await tester.pumpAndSettle();
+
+    await _open(tester, ShortNotice.chatPhoto);
+    expect(find.textContaining('La foto resta nel tuo account'), findsOneWidget);
+    expect(find.textContaining('La voce'), findsNothing);
+    expect(find.text('Continua'), findsOneWidget);
+  });
+
   testWidgets('the Mercatino notice links to the Terms, not to the privacy notice', (tester) async {
     await _open(tester, ShortNotice.marketplace);
     expect(find.textContaining('solo per maggiorenni'), findsOneWidget);

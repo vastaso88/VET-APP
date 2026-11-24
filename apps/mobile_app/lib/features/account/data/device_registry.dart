@@ -30,7 +30,9 @@ class DeviceRegistry implements DeviceRegistryClient {
   static const _timeout = Duration(seconds: 10);
 
   /// Set when the app signed this device out because a newer one took its
-  /// place; the sign-in screen explains it once, then clears it.
+  /// place; the sign-in screen shows it (every time it is built) until this
+  /// device gets a place again (the gate clears it) - a second sign-in page
+  /// built right after the first one used to find it already consumed.
   static bool pendingNotice = false;
 
   static bool takePendingNotice() {

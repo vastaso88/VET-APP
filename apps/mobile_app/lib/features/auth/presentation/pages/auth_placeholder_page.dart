@@ -19,9 +19,9 @@ class AuthPlaceholderPage extends StatefulWidget {
 }
 
 class _AuthPlaceholderPageState extends State<AuthPlaceholderPage> {
-  // Shown once: the app signed this device out because the plan's device
+  // Kept until the device gets a place again: the app signed this device out because the plan's device
   // limit was reached and a newer device took its place.
-  late final bool _signedOutForDeviceLimit = DeviceRegistry.takePendingNotice();
+  late final bool _signedOutForDeviceLimit = DeviceRegistry.pendingNotice;
 
   @override
   Widget build(BuildContext context) {

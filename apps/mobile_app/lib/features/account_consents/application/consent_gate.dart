@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/account_consents_remote_data_source.dart';
+import '../data/signup_consents.dart';
 import '../domain/account_consent_models.dart';
 import '../presentation/pages/consent_gate_page.dart';
 import '../presentation/pages/emergency_notice_gate_page.dart';
@@ -36,6 +37,9 @@ Future<bool> ensureMandatoryConsents(
   AccountConsentsRemoteDataSource? dataSource,
 }) async {
   final source = dataSource ?? HttpAccountConsentsRemoteDataSource();
+  // What a sign-up could not save is sent now, before asking the owner again.
+  await SignUpConsents.submitPending(source);
+  if (!context.mounted) return false;
   final result = await source.fetch();
   if (!context.mounted) return false;
   final snapshot = result.fold(onSuccess: (value) => value, onFailure: (_) => null);

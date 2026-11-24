@@ -56,6 +56,9 @@ class SubscriptionGate {
       return (destination: AppRouter.auth, status: null);
     }
 
+    // This device holds a place again: an old "signed out for the device
+    // limit" notice no longer applies.
+    DeviceRegistry.pendingNotice = false;
     final result = await fetched;
     return result.fold(
       // Fail-open: a backend hiccup shouldn't lock a legitimate user out of

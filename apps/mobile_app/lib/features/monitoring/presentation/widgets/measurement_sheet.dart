@@ -1,3 +1,4 @@
+import '../../../settings/domain/unit_conversion.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -88,6 +89,12 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
 
   /// The body condition is asked only for species with a published guide.
   BodyConditionGuideKind? get _guide => bodyConditionGuideFor(widget.pet);
+
+  /// The animal's weight is under one kilo (shown in grams elsewhere).
+  bool get _isSmallPet {
+    final kg = widget.initial?.weightKg ?? parseWeightLabelKg(widget.pet.weightLabel);
+    return kg != null && kg > 0 && kg < 1;
+  }
 
   /// The birth date, only when it is a full date (day, month, year).
   DateTime? get _birthDate => parsePetBirthdayLabel(widget.pet.birthDateLabel);
@@ -240,7 +247,11 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
                       : l10n.monitoringFieldWeightKg,
                   hint: pounds
                       ? l10n.monitoringFieldWeightHintLb
-                      : l10n.monitoringFieldWeightHintKg,
+                      // The card shows a light animal in grams ("380 g") but the
+                      // field is in kilos: the hint says how a gram weight is typed.
+                      : _isSmallPet
+                          ? l10n.monitoringFieldWeightHintSmallKg
+                          : l10n.monitoringFieldWeightHintKg,
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),

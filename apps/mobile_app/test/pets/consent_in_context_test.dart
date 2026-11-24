@@ -33,17 +33,37 @@ PetProfile _pet({bool? consent}) => PetProfile(
       medicalRecordConsentGranted: consent,
     );
 
-Future<void> _open(WidgetTester tester, PetProfile pet, _FakeRemote remote) async {
+Future<void> _open(
+  WidgetTester tester,
+  PetProfile pet,
+  _FakeRemote remote, {
+  Future<({bool reachable, bool? granted})> Function(String)? readConsent,
+}) async {
   await tester.pumpWidget(MaterialApp(
     locale: const Locale('it'),
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    home: Scaffold(body: MedicalRecordConsentCard(pet: pet, remote: remote)),
+    home: Scaffold(body: MedicalRecordConsentCard(pet: pet, remote: remote, readConsent: readConsent)),
   ));
   await tester.pumpAndSettle();
 }
 
 void main() {
+  testWidgets('no decision yet (server reached) is not shown as a connection problem',
+      (tester) async {
+    await _open(tester, _pet(), _FakeRemote(),
+        readConsent: (_) async => (reachable: true, granted: null));
+    expect(find.textContaining('controlla la connessione'), findsNothing);
+    expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
+  });
+
+  testWidgets('a read that cannot reach the server still says to check the connection',
+      (tester) async {
+    await _open(tester, _pet(), _FakeRemote(),
+        readConsent: (_) async => (reachable: false, granted: null));
+    expect(find.textContaining('controlla la connessione'), findsOneWidget);
+  });
+
   testWidgets('turning it on shows what it is first, and saves only after «Attiva»', (tester) async {
     final remote = _FakeRemote();
     await _open(tester, _pet(), remote);

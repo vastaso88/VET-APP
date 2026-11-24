@@ -402,6 +402,7 @@ class _Header extends StatelessWidget {
     return Row(
       children: [
         IconButton(
+          tooltip: context.l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const Icon(Icons.arrow_back_rounded),
           visualDensity: VisualDensity.compact,

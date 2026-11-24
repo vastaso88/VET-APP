@@ -53,6 +53,7 @@ class PetsScaffold extends StatelessWidget {
                   children: [
                     if (onBack != null) ...[
                       IconButton(
+                        tooltip: context.l10n.commonBack,
                         onPressed: onBack,
                         icon: const Icon(Icons.arrow_back_rounded),
                         color: AppColors.onPrimary,

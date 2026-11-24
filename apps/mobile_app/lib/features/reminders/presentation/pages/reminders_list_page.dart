@@ -65,17 +65,15 @@ class _RemindersListPageState extends State<RemindersListPage> {
   }
 
   void _openCreate() {
-    unawaited(
-      Navigator.of(context)
-          .push(
-        MaterialPageRoute<void>(builder: (_) => const ReminderCreatePage()),
-      )
-          .then((_) {
-        if (mounted) {
-          _reload();
-        }
-      }),
-    );
+    unawaited(() async {
+      await PetDemoStore.instance.ensureHydrated();
+      if (!mounted) return;
+      await openReminderCreate(
+        context,
+        petNames: [for (final pet in PetDemoStore.instance.list()) pet.name],
+      );
+      if (mounted) await _reload();
+    }());
   }
 
   void _openDetail(ReminderEntry reminder) {
@@ -458,6 +456,7 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
           Row(
             children: [
               IconButton(
+                tooltip: context.l10n.remindersPreviousMonth,
                 onPressed: () => _changeMonth(-1),
                 icon: const Icon(Icons.chevron_left_rounded),
                 color: AppColors.secondaryStrong,
@@ -470,6 +469,7 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
                 ),
               ),
               IconButton(
+                tooltip: context.l10n.remindersNextMonth,
                 onPressed: () => _changeMonth(1),
                 icon: const Icon(Icons.chevron_right_rounded),
                 color: AppColors.secondaryStrong,
@@ -587,53 +587,62 @@ class _MonthDayCell extends StatelessWidget {
     final shown = markers.take(3).toList();
     final extra = markers.length - shown.length;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-          decoration: BoxDecoration(
-            color: background,
-            borderRadius: BorderRadius.circular(AppRadii.medium),
-            border: isToday && !isSelected
-                ? Border.all(color: AppColors.primary.withValues(alpha: 0.4))
-                : null,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '${day.day}',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: foreground,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: markers.isEmpty
+          ? '${day.day}'
+          : '${day.day}, ${context.l10n.remindersDayActivities(markers.length)}',
+      excludeSemantics: true,
+      onTap: onTap,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadii.medium),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+            decoration: BoxDecoration(
+              color: background,
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+              border: isToday && !isSelected
+                  ? Border.all(color: AppColors.primary.withValues(alpha: 0.4))
+                  : null,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${day.day}',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: foreground,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 3),
-              SizedBox(
-                height: 12,
-                child: markers.isEmpty
-                    ? null
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          for (final marker in shown)
-                            MarkerGlyph(marker: marker, size: 9),
-                          if (extra > 0)
-                            Text(
-                              '+$extra',
-                              style: TextStyle(
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w800,
-                                  color: foreground),
-                            ),
-                        ],
-                      ),
-              ),
-            ],
+                const SizedBox(height: 3),
+                SizedBox(
+                  height: 12,
+                  child: markers.isEmpty
+                      ? null
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (final marker in shown)
+                              MarkerGlyph(marker: marker, size: 9),
+                            if (extra > 0)
+                              Text(
+                                '+$extra',
+                                style: TextStyle(
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w800,
+                                    color: foreground),
+                              ),
+                          ],
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -727,13 +736,16 @@ class _ReminderTile extends StatelessWidget {
                   ),
                   if (onMarkDone != null) ...[
                     const SizedBox(height: AppSpacing.xs),
-                    InkWell(
-                      onTap: onMarkDone,
-                      borderRadius: BorderRadius.circular(AppRadii.pill),
-                      child: const Padding(
-                        padding: EdgeInsets.all(4),
-                        child: Icon(Icons.check_circle_outline,
-                            size: 18, color: AppColors.success),
+                    Tooltip(
+                      message: context.l10n.remindersDoneTooltip,
+                      child: InkWell(
+                        onTap: onMarkDone,
+                        borderRadius: BorderRadius.circular(AppRadii.pill),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4),
+                          child: Icon(Icons.check_circle_outline,
+                              size: 18, color: AppColors.success),
+                        ),
                       ),
                     ),
                   ],

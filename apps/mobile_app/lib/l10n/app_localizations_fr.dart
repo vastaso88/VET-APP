@@ -40,6 +40,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get commonBack => 'Retour';
 
   @override
+  String get commonOpenCalendar => 'Apri il calendario';
+
+  @override
   String get commonNext => 'Suivant';
 
   @override
@@ -2821,10 +2824,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'other':
-          'Si la puce de $name était enregistrée dans un fichier des animaux de compagnie, le décès doit en général être déclaré : votre vétérinaire ou l\'organisme qui tient le fichier dans votre pays (en Italie, l\'ASL ou la commune) vous dira comment et dans quel délai.',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'other':
+            'Si la puce de $name était enregistrée dans un fichier des animaux de compagnie, le décès doit en général être déclaré : votre vétérinaire ou l\'organisme qui tient le fichier dans votre pays (en Italie, l\'ASL ou la commune) vous dira comment et dans quel délai.',
+      },
+    );
     return '$_temp0';
   }
 
@@ -2850,10 +2856,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'female': 'Déplacée par erreur ? Remettre dans Animaux',
-      'other': 'Déplacé par erreur ? Remettre dans Animaux',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'female': 'Déplacée par erreur ? Remettre dans Animaux',
+        'other': 'Déplacé par erreur ? Remettre dans Animaux',
+      },
+    );
     return '$_temp0';
   }
 
@@ -4546,6 +4555,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get remindersCreateButton => 'Créer';
+
+  @override
+  String get remindersChoosePet => 'Per quale animale?';
+
+  @override
+  String get remindersNeedPetFirst =>
+      'Aggiungi prima un animale: ogni promemoria è legato a uno di loro.';
 
   @override
   String get remindersLoadingTitle => 'Chargement des rappels';
@@ -6599,6 +6615,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get monitoringFieldWeightHintKg => 'Ex. 10,5';
 
   @override
+  String get monitoringFieldWeightHintSmallKg => 'Es. 0,385 (cioè 385 g)';
+
+  @override
   String get monitoringFieldWeightHintLb => 'Ex. 22,5';
 
   @override
@@ -6841,6 +6860,10 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get noticeChatMedia =>
       'Votre voix part vers un service externe (aujourd\'hui Groq, aux États-Unis) qui la transcrit. Le filtre qui retire les données personnelles travaille sur le texte, pas sur la voix : évitez de dire votre nom, votre adresse et le numéro de puce électronique.';
+
+  @override
+  String get noticeChatPhoto =>
+      'La foto resta nel tuo account. Quando l\'analisi delle foto è attiva, va a un servizio esterno (oggi Groq, negli Stati Uniti) che la descrive. Il filtro che toglie i dati personali lavora sul testo, non sulle immagini: evita di inquadrare nomi, indirizzi o numeri di microchip.';
 
   @override
   String get noticeRecordDocument =>
@@ -7233,6 +7256,23 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get remindersDoneTooltip => 'Marquer comme fait';
+
+  @override
+  String get remindersPreviousMonth => 'Mese precedente';
+
+  @override
+  String get remindersNextMonth => 'Mese successivo';
+
+  @override
+  String remindersDayActivities(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count promemoria',
+      one: '1 promemoria',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get remindersNotifOffBanner =>

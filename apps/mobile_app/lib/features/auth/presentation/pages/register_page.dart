@@ -12,6 +12,7 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/auth.dart';
 import '../../../account_consents/data/account_consents_remote_data_source.dart';
+import '../../../account_consents/data/signup_consents.dart';
 import '../../../account_consents/domain/account_consent_models.dart';
 import '../../../account_consents/presentation/pages/consent_choices_page.dart';
 import '../../../billing/data/subscription_remote_data_source.dart';
@@ -229,21 +230,8 @@ class _RegisterPageState extends State<RegisterPage> {
       // feature entirely).
       // Awaited, so the acceptance is on record before the first calls that follow
       // (the server can refuse them with `consent_required` until it is).
-      final consentsDataSource = HttpAccountConsentsRemoteDataSource();
-      await Future.wait([
-        consentsDataSource.setConsent(
-          consentKey: AccountConsentKeys.termsOfService,
-          granted: true,
-        ),
-        consentsDataSource.setConsent(
-          consentKey: AccountConsentKeys.privacyPolicy,
-          granted: true,
-        ),
-        consentsDataSource.setConsent(
-          consentKey: AccountConsentKeys.emergencyNotice,
-          granted: true,
-        ),
-      ]);
+      // One after the other (the server kept only one of two parallel calls).
+      await SignUpConsents.send(HttpAccountConsentsRemoteDataSource());
 
       // The declared date goes to the backend now that a session exists; if
       // that fails it waits on the phone and is sent at the next start.

@@ -40,6 +40,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get commonBack => 'Indietro';
 
   @override
+  String get commonOpenCalendar => 'Apri il calendario';
+
+  @override
   String get commonNext => 'Avanti';
 
   @override
@@ -4533,6 +4536,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String get remindersCreateButton => 'Crea';
 
   @override
+  String get remindersChoosePet => 'Per quale animale?';
+
+  @override
+  String get remindersNeedPetFirst =>
+      'Aggiungi prima un animale: ogni promemoria è legato a uno di loro.';
+
+  @override
   String get remindersLoadingTitle => 'Caricamento promemoria';
 
   @override
@@ -6577,6 +6587,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get monitoringFieldWeightHintKg => 'Es. 10,5';
 
   @override
+  String get monitoringFieldWeightHintSmallKg => 'Es. 0,385 (cioè 385 g)';
+
+  @override
   String get monitoringFieldWeightHintLb => 'Es. 22,5';
 
   @override
@@ -6816,6 +6829,10 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get noticeChatMedia =>
       'La voce va a un servizio esterno (oggi Groq, negli Stati Uniti) che la trascrive. Il filtro che toglie i dati personali lavora sul testo, non sulla voce: evita di dire nome, indirizzo e numero di microchip.';
+
+  @override
+  String get noticeChatPhoto =>
+      'La foto resta nel tuo account. Quando l\'analisi delle foto è attiva, va a un servizio esterno (oggi Groq, negli Stati Uniti) che la descrive. Il filtro che toglie i dati personali lavora sul testo, non sulle immagini: evita di inquadrare nomi, indirizzi o numeri di microchip.';
 
   @override
   String get noticeRecordDocument =>
@@ -7207,6 +7224,23 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get remindersDoneTooltip => 'Segna come fatto';
+
+  @override
+  String get remindersPreviousMonth => 'Mese precedente';
+
+  @override
+  String get remindersNextMonth => 'Mese successivo';
+
+  @override
+  String remindersDayActivities(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count promemoria',
+      one: '1 promemoria',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get remindersNotifOffBanner =>
