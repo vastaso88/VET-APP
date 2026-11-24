@@ -139,7 +139,9 @@ def test_a_photo_with_a_question_opens_with_the_sentence_and_the_model_knows_not
         "cosa ne pensi di questa macchia sulla pelle?",
         RecordingLLMClient("Una macchia sulla pelle può avere molte cause."),
     )
-    assert answer.startswith(translate("photo_reading_off", "it"))
+    # no document is named: the notice without its clause on booklets and reports (T10)
+    assert answer.startswith("Per ora non posso vedere il contenuto delle foto")
+    assert "Descrivimi a parole cosa vedi." in answer and "libretto" not in answer
     prompt = client.requests_for("answer")[-1].user_prompt
     assert "photo reading is switched off" in prompt
     assert "Never describe it or guess" in prompt

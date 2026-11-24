@@ -86,6 +86,7 @@ from packages.core.domain.conversation.answer_cache import (
 from packages.core.domain.conversation.answer_cleanup import clean_answer_text
 from packages.core.domain.conversation.asked_length import asked_words
 from packages.core.domain.conversation.models import ChatMessage
+from packages.core.domain.conversation.photo_notice import notice_for, without_repeated_notice
 from packages.core.domain.conversation.referral_style import strip_ritual_referral
 from packages.core.domain.conversation.request_kind import (
     RequestKind,
@@ -1299,12 +1300,17 @@ class ChatOrchestrator:
         if self._answer_v2 and result.model in _GUARDS_WITH_FOLLOW_UP:
             result = self._with_guard_follow_up(result, data)
         if data.photo_reading_off:
-            notice = translate("photo_reading_off", data.language)
+            notice = notice_for(data.user_message, translate("photo_reading_off", data.language))
+            body = (
+                without_repeated_notice(result.answer)
+                if result.mode in ("natural", "evidence")
+                else result.answer
+            )
             # An emergency keeps its first lines: the notice goes last there.
             text = (
-                f"{result.answer}\n\n{notice}"
+                f"{body}\n\n{notice}"
                 if result.mode in ("triage", "safety_clarification")
-                else f"{notice}\n\n{result.answer}"
+                else f"{notice}\n\n{body}"
             )
             result = result.model_copy(update={"answer": text})
         if result.mode in ("natural", "evidence"):
