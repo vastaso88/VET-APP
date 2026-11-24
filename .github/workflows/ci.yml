@@ -52,6 +52,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          # Keeps the Android libraries between runs: downloading them all every time made
+          # Maven Central answer 429 (twice on 23-24 November 2026) with nothing wrong of ours.
+          cache: gradle
+          cache-dependency-path: |
+            apps/mobile_app/android/**/*.gradle.kts
+            apps/mobile_app/android/gradle/wrapper/gradle-wrapper.properties
       - name: Compile Android native localization
         # Debug build, never distributed: the Gradle signing guard still needs the flag.
         run: flutter build apk --debug --flavor prod --android-project-arg=allowDebugSigning=true
