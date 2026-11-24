@@ -10,12 +10,17 @@ import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
 import '../domain/account_consent_models.dart';
 
+/// The code of a refused acceptance: the text shown was not the one in force. The app reads
+/// the catalog again and asks with the current text.
+const kConsentVersionMismatchCode = 'consent_version_mismatch';
+
 abstract class AccountConsentsRemoteDataSource {
   Future<Result<AccountConsentsSnapshot>> fetch();
 
   Future<Result<AccountConsentsSnapshot>> setConsent({
     required String consentKey,
     required bool granted,
+    String? shownVersion,
   });
 }
 
@@ -82,17 +87,28 @@ class HttpAccountConsentsRemoteDataSource implements AccountConsentsRemoteDataSo
   Future<Result<AccountConsentsSnapshot>> setConsent({
     required String consentKey,
     required bool granted,
+    String? shownVersion,
   }) async {
     try {
       final response = await _client
           .post(
             Uri.parse('$_baseUrl/account/consents'),
             headers: _headers,
-            body: jsonEncode({'consent_key': consentKey, 'granted': granted}),
+            body: jsonEncode({
+              'consent_key': consentKey,
+              'granted': granted,
+              if (shownVersion != null) 'shown_version': shownVersion,
+            }),
           )
           .timeout(_timeout);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
+        // 400 `{"detail": "consent_version_mismatch"}`: the text shown is not the current one.
+        if (response.statusCode == 400 && response.body.contains(kConsentVersionMismatchCode)) {
+          return Result.failure(
+            AppNetworkError(code: kConsentVersionMismatchCode, message: appL10n.consentTextChanged),
+          );
+        }
         return Result.failure(
           AppNetworkError(
             code: 'account_consents_set_http_${response.statusCode}',

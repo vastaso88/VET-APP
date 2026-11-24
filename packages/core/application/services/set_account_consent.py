@@ -1,3 +1,5 @@
+import logging
+
 from pydantic import BaseModel
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
@@ -15,12 +17,17 @@ from packages.core.domain.consent.models import (
 )
 from packages.shared.errors.base import AgeRestrictedError, ValidationError
 
+logger = logging.getLogger(__name__)
+
+MISMATCH = "consent_version_mismatch"
+
 
 class SetAccountConsentInput(BaseModel):
     owner_id: str
     consent_key: str
     granted: bool
     language: str = "it"
+    shown_version: str | None = None
 
 
 class SetAccountConsentOutput(BaseModel):
@@ -67,6 +74,16 @@ class SetAccountConsentService:
             # (docs/compliance/10 §3): the server refuses even if a client sends
             # it. Declining or revoking is always allowed.
             raise AgeRestrictedError("consent_not_for_minors")
+
+        if data.granted:
+            if data.shown_version is None:
+                # An older app: recorded at the current version, the gap is counted (the key
+                # only, never the owner).
+                logger.info("consent recorded without a declared version: %s", data.consent_key)
+            elif data.shown_version != CURRENT_VERSIONS[data.consent_key]:
+                # The app showed another text than the one in force: nothing is recorded; the
+                # app fetches the catalog and asks again with the current text.
+                raise ValidationError(MISMATCH)
 
         saved = self._repository.record(
             data.owner_id,

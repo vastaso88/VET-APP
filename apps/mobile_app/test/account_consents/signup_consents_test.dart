@@ -18,6 +18,10 @@ class _Backend implements AccountConsentsRemoteDataSource {
   /// Number of times each key still fails.
   final Map<String, int> failures;
   final List<String> calls = [];
+  final List<String?> versions = [];
+
+  /// A key whose acceptance is refused as a text that is not the current one.
+  final Set<String> mismatch = {};
   int running = 0;
   bool overlapped = false;
 
@@ -28,12 +32,17 @@ class _Backend implements AccountConsentsRemoteDataSource {
   Future<Result<AccountConsentsSnapshot>> setConsent({
     required String consentKey,
     required bool granted,
+    String? shownVersion,
   }) async {
     running++;
     if (running > 1) overlapped = true;
     await Future<void>.delayed(const Duration(milliseconds: 5));
     running--;
     calls.add(consentKey);
+    versions.add(shownVersion);
+    if (mismatch.contains(consentKey)) {
+      return Result.failure(const AppNetworkError(code: kConsentVersionMismatchCode));
+    }
     final left = failures[consentKey] ?? 0;
     if (left > 0) {
       failures[consentKey] = left - 1;
@@ -77,6 +86,39 @@ void main() {
   test('signing out forgets what was pending', () async {
     await SignUpConsents.send(_Backend(failures: {_terms: 2}));
     await SignUpConsents.clear();
+    final later = _Backend();
+    await SignUpConsents.submitPending(later);
+    expect(later.calls, isEmpty);
+  });
+
+  test('the version sent is the catalogue version, else the build version', () async {
+    final backend = _Backend();
+    await SignUpConsents.send(backend, readCatalogVersions: () async => {_terms: 'v5'});
+    expect(backend.versions, ['v5', AccountConsentKeys.shownVersions[_privacy]]);
+
+    final offline = _Backend();
+    await SignUpConsents.send(offline, readCatalogVersions: () async => null);
+    expect(offline.versions, [
+      AccountConsentKeys.shownVersions[_terms],
+      AccountConsentKeys.shownVersions[_privacy],
+    ]);
+  });
+
+  test('what is kept for later is sent with the version shown then, not the current one', () async {
+    final first = _Backend(failures: {_terms: 2});
+    await SignUpConsents.send(first, shownVersions: {_terms: 'v5', _privacy: 'v6'});
+
+    final later = _Backend();
+    await SignUpConsents.submitPending(later);
+    expect(later.calls, [_terms]);
+    expect(later.versions, ['v5']);
+  });
+
+  test('a refused text is not kept: the gate asks again with the new one', () async {
+    final backend = _Backend()..mismatch.add(_terms);
+    final failed = await SignUpConsents.send(backend, shownVersions: {_terms: 'v1'});
+    expect(failed, isEmpty);
+
     final later = _Backend();
     await SignUpConsents.submitPending(later);
     expect(later.calls, isEmpty);

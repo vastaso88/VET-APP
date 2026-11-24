@@ -321,7 +321,11 @@ class _SettingsPageState extends State<SettingsPage> {
         );
       });
     }
-    final result = await _consentsDataSource.setConsent(consentKey: key, granted: granted);
+    final result = await _consentsDataSource.setConsent(
+      consentKey: key,
+      granted: granted,
+      shownVersion: previous?.catalog[key]?.version,
+    );
     if (!mounted) return;
     result.fold(
       onSuccess: (snapshot) {

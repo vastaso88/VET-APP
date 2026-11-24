@@ -12,7 +12,11 @@ import '../../domain/account_consent_models.dart';
 /// owner (no scrolling, not a link). Shown when the first chat is opened (see ChatNotice):
 /// "Non accetto", like going back, only leaves the chat. Closes with true when accepted.
 class EmergencyNoticeGatePage extends StatefulWidget {
-  const EmergencyNoticeGatePage({super.key});
+  const EmergencyNoticeGatePage({super.key, this.catalogText});
+
+  /// The short text of the server's catalog, when it is newer than the one built into this
+  /// app (its version is the one sent with the acceptance). Null: the app's own text.
+  final String? catalogText;
 
   @override
   State<EmergencyNoticeGatePage> createState() => _EmergencyNoticeGatePageState();
@@ -37,7 +41,7 @@ class _EmergencyNoticeGatePageState extends State<EmergencyNoticeGatePage> {
             ),
             const SizedBox(height: AppSpacing.md),
             // The short version, always in view: not behind a link.
-            Text(l10n.emergencyNoticeShort, style: AppTextStyles.body),
+            Text(widget.catalogText ?? l10n.emergencyNoticeShort, style: AppTextStyles.body),
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton(

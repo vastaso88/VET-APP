@@ -57,7 +57,13 @@ Future<bool> ensureMandatoryConsents(
   final accepted = await Navigator.of(context, rootNavigator: true).push<bool>(
     MaterialPageRoute<bool>(
       fullscreenDialog: true,
-      builder: (_) => ConsentGatePage(dataSource: source),
+      builder: (_) => ConsentGatePage(
+        dataSource: source,
+        catalogVersions: {
+          for (final key in AccountConsentKeys.mandatory)
+            if (snapshot.catalog[key] != null) key: snapshot.catalog[key]!.version,
+        },
+      ),
     ),
   );
   return accepted == true;

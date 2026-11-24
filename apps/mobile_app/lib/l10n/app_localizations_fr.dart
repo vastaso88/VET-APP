@@ -8291,4 +8291,12 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get authErrorLinkOtherDevice =>
       'Ce lien doit être ouvert sur l\'appareil depuis lequel vous l\'avez demandé. Si vous confirmiez votre adresse, elle est déjà confirmée : connectez-vous avec votre e-mail et votre mot de passe. Si vous réinitialisiez votre mot de passe, demandez un nouveau lien depuis cet appareil.';
+
+  @override
+  String get consentTextChanged =>
+      'Le texte a changé pendant que vous le lisiez. Relisez-le et acceptez à nouveau.';
+
+  @override
+  String get consentUpdateApp =>
+      'Pour accepter, il faut la version la plus récente de l\'application : mettez-la à jour depuis la boutique.';
 }

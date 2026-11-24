@@ -13,7 +13,20 @@ import 'package:vet_app_mobile/shared/types/result.dart';
 const _notice = AccountConsentKeys.emergencyNotice;
 
 class _Backend implements AccountConsentsRemoteDataSource {
-  _Backend({this.knows = true, this.accepted, this.offline = false});
+  _Backend({
+    this.knows = true,
+    this.accepted,
+    this.offline = false,
+    this.version = 'v1',
+    this.text = 'urgenze',
+  });
+
+  /// What the server's catalogue holds now for the text.
+  String version;
+  String text;
+
+  /// The versions each acceptance declared.
+  final List<String?> declared = [];
 
   /// False: an older server, without this text in its catalogue.
   bool knows;
@@ -31,7 +44,7 @@ class _Backend implements AccountConsentsRemoteDataSource {
               decidedAt: DateTime(2026, 11, 24),
             ),
         },
-        catalog: {if (knows) _notice: const ConsentCatalogEntry(version: 'v1', text: 'urgenze')},
+        catalog: {if (knows) _notice: ConsentCatalogEntry(version: version, text: text)},
       );
 
   @override
@@ -45,8 +58,13 @@ class _Backend implements AccountConsentsRemoteDataSource {
   Future<Result<AccountConsentsSnapshot>> setConsent({
     required String consentKey,
     required bool granted,
+    String? shownVersion,
   }) async {
     if (offline || !knows) return Result.failure(const AppNetworkError(code: 'consent_http_400'));
+    if (shownVersion != null && shownVersion != version) {
+      return Result.failure(const AppNetworkError(code: kConsentVersionMismatchCode));
+    }
+    declared.add(shownVersion);
     set.add(consentKey);
     return Result.success(_snapshot);
   }
@@ -99,11 +117,10 @@ void main() {
     expect(backend.set, [_notice]);
     expect(find.byType(EmergencyNoticeGatePage), findsNothing);
 
-    // The second chat: no question, no wait for the server.
-    final before = backend.fetches;
+    // The second chat: no question, no wait for the server (a check may run behind it).
     expect(await open(), isTrue);
     expect(find.byType(EmergencyNoticeGatePage), findsNothing);
-    expect(backend.fetches, before);
+    expect(backend.declared, ['v1']);
   });
 
   testWidgets('accepted on another phone: not asked again', (tester) async {
@@ -128,6 +145,49 @@ void main() {
     await ChatNotice.submitPending(backend);
     await ChatNotice.submitPending(backend);
     expect(backend.set, [_notice]);
+  });
+
+  testWidgets('a newer text in the catalogue is the one shown, with its own version', (tester) async {
+    final backend = _Backend(version: 'v2', text: 'testo nuovo del server');
+    final open = _pump(tester, backend);
+    await open();
+
+    expect(find.text('testo nuovo del server'), findsOneWidget);
+    await _accept(tester);
+    expect(backend.declared, ['v2']);
+  });
+
+  testWidgets('a text that changed while it was read is asked again with the new one', (tester) async {
+    // The first read says v1; by the time the answer arrives the server holds v2.
+    final backend = _Backend();
+    final open = _pump(tester, backend);
+    await open();
+    backend
+      ..version = 'v2'
+      ..text = 'secondo testo';
+    await _accept(tester);
+
+    expect(find.text('secondo testo'), findsOneWidget);
+    await _accept(tester);
+    expect(backend.declared, ['v2']);
+  });
+
+  testWidgets('a refused version never closes the chat and is not sent as another one', (tester) async {
+    final backend = _Backend();
+    final open = _pump(tester, backend);
+    await open();
+    backend
+      ..version = 'v2'
+      ..offline = true; // the catalogue cannot be read again either
+    await _accept(tester);
+    backend.offline = false;
+
+    // The chat opened. What was shown was v1: v1 is what is sent later, and the server refuses
+    // it, so nothing is recorded under v2 and the next chat asks again with the new text.
+    await ChatNotice.submitPending(backend);
+    expect(backend.declared, isEmpty);
+    await open();
+    expect(find.byType(EmergencyNoticeGatePage), findsOneWidget);
   });
 
   testWidgets('with no network the acceptance stays on the phone', (tester) async {
@@ -162,6 +222,14 @@ void main() {
     await ChatNotice.clear();
     await _pump(tester, _Backend())();
     expect(find.byType(EmergencyNoticeGatePage), findsOneWidget);
+  });
+
+  test('what build 44 kept as a yes/no is sent with the text it showed', () async {
+    SharedPreferences.setMockInitialValues({'vet_app.chat_notice_pending': true});
+    final backend = _Backend();
+    await ChatNotice.submitPending(backend);
+    await ChatNotice.submitPending(backend);
+    expect(backend.set, [_notice]); // once
   });
 
   group('the page (docs/compliance/22 §5)', () {

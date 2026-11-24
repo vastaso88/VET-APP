@@ -4570,5 +4570,7 @@
   },
   "authResendSent": "E-Mail erneut gesendet. Prüfen Sie Ihr Postfach und den Spam-Ordner.",
   "authErrorEmailUndeliverable": "Wir können die E-Mail nicht an diese Adresse zustellen. Prüfen Sie die Schreibweise oder verwenden Sie eine andere Adresse.",
-  "authErrorLinkOtherDevice": "Dieser Link muss auf dem Gerät geöffnet werden, von dem Sie ihn angefordert haben. Wenn Sie Ihre Adresse bestätigen wollten, ist sie bereits bestätigt: Melden Sie sich mit E-Mail und Passwort an. Wenn Sie das Passwort zurücksetzen wollten, fordern Sie auf diesem Gerät einen neuen Link an."
+  "authErrorLinkOtherDevice": "Dieser Link muss auf dem Gerät geöffnet werden, von dem Sie ihn angefordert haben. Wenn Sie Ihre Adresse bestätigen wollten, ist sie bereits bestätigt: Melden Sie sich mit E-Mail und Passwort an. Wenn Sie das Passwort zurücksetzen wollten, fordern Sie auf diesem Gerät einen neuen Link an.",
+  "consentTextChanged": "Der Text hat sich geändert, während Sie ihn gelesen haben. Lesen Sie ihn noch einmal und stimmen Sie erneut zu.",
+  "consentUpdateApp": "Zum Akzeptieren benötigen Sie die neueste Version der App: Aktualisieren Sie sie im Store."
 }

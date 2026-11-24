@@ -8256,4 +8256,12 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get authErrorLinkOtherDevice =>
       'Este enlace debe abrirse en el mismo dispositivo desde el que lo pediste. Si estabas confirmando tu dirección, ya está confirmada: inicia sesión con tu correo y tu contraseña. Si estabas restableciendo la contraseña, pide un enlace nuevo desde este dispositivo.';
+
+  @override
+  String get consentTextChanged =>
+      'El texto cambió mientras lo leías. Vuelve a leerlo y acepta de nuevo.';
+
+  @override
+  String get consentUpdateApp =>
+      'Para aceptar necesitas la versión más reciente de la aplicación: actualízala desde la tienda.';
 }

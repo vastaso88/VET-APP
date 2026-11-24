@@ -156,6 +156,7 @@ class _FakeConsents implements AccountConsentsRemoteDataSource {
   Future<Result<AccountConsentsSnapshot>> setConsent({
     required String consentKey,
     required bool granted,
+    String? shownVersion,
   }) async {
     _contributions.rulesAccepted = granted;
     return Result.success(_snapshot);

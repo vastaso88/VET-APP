@@ -4570,5 +4570,7 @@
   },
   "authResendSent": "E-mail renvoyé. Vérifiez votre boîte de réception et vos spams.",
   "authErrorEmailUndeliverable": "Nous ne pouvons pas livrer l'e-mail à cette adresse. Vérifiez qu'elle est bien écrite ou utilisez-en une autre.",
-  "authErrorLinkOtherDevice": "Ce lien doit être ouvert sur l'appareil depuis lequel vous l'avez demandé. Si vous confirmiez votre adresse, elle est déjà confirmée : connectez-vous avec votre e-mail et votre mot de passe. Si vous réinitialisiez votre mot de passe, demandez un nouveau lien depuis cet appareil."
+  "authErrorLinkOtherDevice": "Ce lien doit être ouvert sur l'appareil depuis lequel vous l'avez demandé. Si vous confirmiez votre adresse, elle est déjà confirmée : connectez-vous avec votre e-mail et votre mot de passe. Si vous réinitialisiez votre mot de passe, demandez un nouveau lien depuis cet appareil.",
+  "consentTextChanged": "Le texte a changé pendant que vous le lisiez. Relisez-le et acceptez à nouveau.",
+  "consentUpdateApp": "Pour accepter, il faut la version la plus récente de l'application : mettez-la à jour depuis la boutique."
 }

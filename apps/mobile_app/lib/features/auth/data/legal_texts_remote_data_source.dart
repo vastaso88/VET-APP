@@ -21,6 +21,29 @@ class LegalTextsRemoteDataSource {
 
   static const _timeout = Duration(seconds: 15);
 
+  /// The version of every text in the public catalog (what the owner can open now), or null
+  /// when it can't be read.
+  Future<Map<String, String>?> fetchVersions() async {
+    try {
+      final baseUrl = _configLoader.load().apiBaseUrl;
+      final response = await _client
+          .get(Uri.parse('$baseUrl/legal/consents').replace(
+            queryParameters: {'lang': AppLocaleHolder.current.languageCode},
+          ))
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode < 200 || response.statusCode >= 300) return null;
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final catalog = json['catalog'] as Map<String, dynamic>;
+      return {
+        for (final entry in catalog.entries)
+          if ((entry.value as Map<String, dynamic>)['version'] is String)
+            entry.key: (entry.value as Map<String, dynamic>)['version'] as String,
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// The full text for [consentKey], or null when it can't be loaded.
   Future<String?> fetchText(String consentKey) async {
     try {

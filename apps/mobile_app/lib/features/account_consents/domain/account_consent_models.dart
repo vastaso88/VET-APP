@@ -16,6 +16,25 @@ class AccountConsentKeys {
   /// `CURRENT_VERSIONS` on the server (a test checks it).
   static const emergencyNoticeVersion = 'v1';
 
+  /// The version of each mandatory text THIS build can show on its own (the fallback when the
+  /// server's catalog could not be read). The version sent with an acceptance is the one of the
+  /// catalog the owner can really open (`shownVersionFor`); this is only the last resort. Raise
+  /// it with `CURRENT_VERSIONS` when the app's own wording changes (a test compares the two).
+  static const shownVersions = {
+    termsOfService: 'v2',
+    privacyPolicy: 'v3',
+    emergencyNotice: emergencyNoticeVersion,
+  };
+
+  /// The version to declare for [key]: the catalog's (the text the owner can open now), else
+  /// this build's own.
+  static String? shownVersionFor(AccountConsentsSnapshot? snapshot, String key) =>
+      snapshot?.catalog[key]?.version ?? shownVersions[key];
+
+  /// The same, from the versions of a catalog already read.
+  static String? shownVersionIn(Map<String, String>? catalogVersions, String key) =>
+      catalogVersions?[key] ?? shownVersions[key];
+
   /// The mandatory keys of the app, equal to `AccountConsentType.MANDATORY` on the server (a
   /// test checks it): while one is missing or at an old version the server answers
   /// `consent_required`.

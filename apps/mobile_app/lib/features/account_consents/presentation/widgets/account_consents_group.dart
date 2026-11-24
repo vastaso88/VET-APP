@@ -105,7 +105,11 @@ class _AccountConsentsGroupState extends State<AccountConsentsGroup> {
       if (!ok || !mounted) return;
     }
     setState(() => _saving.add(key));
-    final result = await _dataSource.setConsent(consentKey: key, granted: value);
+    final result = await _dataSource.setConsent(
+      consentKey: key,
+      granted: value,
+      shownVersion: snapshot.catalog[key]?.version,
+    );
     if (!mounted) return;
     result.fold(
       onSuccess: (saved) {

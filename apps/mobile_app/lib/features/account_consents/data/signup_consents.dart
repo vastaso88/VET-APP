@@ -1,5 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../shared/types/result.dart';
+import '../../auth/data/legal_texts_remote_data_source.dart';
 import '../domain/account_consent_models.dart';
 import 'account_consents_remote_data_source.dart';
 
@@ -25,28 +27,51 @@ class SignUpConsents {
   static Future<List<String>> send(
     AccountConsentsRemoteDataSource source, {
     List<String> pending = keys,
+    Map<String, String>? shownVersions,
+    Future<Map<String, String>?> Function()? readCatalogVersions,
   }) async {
+    // The version of the text the owner could open while signing up: the public catalog's,
+    // else this build's own. Kept with the key if it cannot be sent now, and sent again as it was.
+    final shown = shownVersions ??
+        await (readCatalogVersions ?? LegalTextsRemoteDataSource().fetchVersions)();
     final failed = <String>[];
+    final kept = <String>[];
     for (final key in pending) {
-      var result = await source.setConsent(consentKey: key, granted: true);
-      if (result.isFailure) {
-        result = await source.setConsent(consentKey: key, granted: true);
+      final version = AccountConsentKeys.shownVersionIn(shown, key);
+      var result = await source.setConsent(consentKey: key, granted: true, shownVersion: version);
+      if (result.isFailure && !_isMismatch(result)) {
+        result = await source.setConsent(consentKey: key, granted: true, shownVersion: version);
       }
-      if (result.isFailure) failed.add(key);
+      // A refused text (the catalog moved on) is not kept: the gate asks again with the new one.
+      if (result.isFailure && !_isMismatch(result)) {
+        failed.add(key);
+        kept.add('$key$_separator${version ?? ''}');
+      }
     }
-    await _store(failed);
+    await _store(kept);
     return failed;
   }
 
-  /// Sends what a failed sign-up left on the phone, if anything.
+  static const _separator = '|';
+
+  static bool _isMismatch(Result<AccountConsentsSnapshot> result) =>
+      result.fold(onSuccess: (_) => false, onFailure: (e) => e.code == kConsentVersionMismatchCode);
+
+  /// Sends what a failed sign-up left on the phone, if anything, with the version it showed then.
   static Future<void> submitPending(AccountConsentsRemoteDataSource source) async {
     try {
       final preferences = await SharedPreferences.getInstance();
-      final pending = (preferences.getStringList(_pendingKey) ?? const <String>[])
-          .where(keys.contains)
-          .toList();
-      if (pending.isEmpty) return;
-      await send(source, pending: pending);
+      final stored = preferences.getStringList(_pendingKey) ?? const <String>[];
+      final keysToSend = <String>[];
+      final versions = <String, String>{};
+      for (final entry in stored) {
+        final parts = entry.split(_separator);
+        if (!keys.contains(parts.first)) continue;
+        keysToSend.add(parts.first);
+        if (parts.length > 1 && parts[1].isNotEmpty) versions[parts.first] = parts[1];
+      }
+      if (keysToSend.isEmpty) return;
+      await send(source, pending: keysToSend, shownVersions: versions);
     } catch (_) {}
   }
 

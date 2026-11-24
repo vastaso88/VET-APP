@@ -39,7 +39,11 @@ Future<bool> ensureMarketplaceRulesAccepted(
     builder: (_) => _RulesDialog(text: entry.text),
   );
   if (accepted != true) return false;
-  final saved = await source.setConsent(consentKey: marketplaceRulesKey, granted: true);
+  final saved = await source.setConsent(
+    consentKey: marketplaceRulesKey,
+    granted: true,
+    shownVersion: entry.version,
+  );
   return saved.isSuccess;
 }
 

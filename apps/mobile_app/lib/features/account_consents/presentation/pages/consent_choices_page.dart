@@ -92,7 +92,11 @@ class _ConsentChoicesPageState extends State<ConsentChoicesPage> {
   Future<void> _save() async {
     setState(() => _saving = true);
     for (final key in _keys.where(_on.contains)) {
-      final result = await _dataSource.setConsent(consentKey: key, granted: true);
+      final result = await _dataSource.setConsent(
+        consentKey: key,
+        granted: true,
+        shownVersion: _snapshot?.catalog[key]?.version,
+      );
       if (!mounted) return;
       final failure = result.fold(onSuccess: (_) => null, onFailure: (error) => error);
       if (failure != null) {

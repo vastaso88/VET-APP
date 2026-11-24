@@ -39,6 +39,13 @@ class _Backend implements AccountConsentsRemoteDataSource {
   final bool failSet;
   final List<String> set = [];
 
+  /// What each acceptance declared, by key.
+  final Map<String, String?> declared = {};
+
+  /// The versions the server holds now; an acceptance for another one is refused (400
+  /// `consent_version_mismatch`). Null: every version is accepted.
+  Map<String, String>? serverVersions;
+
   @override
   Future<Result<AccountConsentsSnapshot>> fetch() async => Result.success(snapshot);
 
@@ -46,8 +53,14 @@ class _Backend implements AccountConsentsRemoteDataSource {
   Future<Result<AccountConsentsSnapshot>> setConsent({
     required String consentKey,
     required bool granted,
+    String? shownVersion,
   }) async {
     if (failSet) return Result.failure(const AppNetworkError(code: 'consent_http_500'));
+    final current = serverVersions;
+    if (current != null && shownVersion != null && shownVersion != current[consentKey]) {
+      return Result.failure(const AppNetworkError(code: kConsentVersionMismatchCode));
+    }
+    declared[consentKey] = shownVersion;
     set.add(consentKey);
     return Result.success(snapshot);
   }
@@ -172,6 +185,81 @@ void main() {
 
       expect(find.textContaining('Non siamo riusciti a registrare'), findsOneWidget);
       expect(find.text('Prima di continuare'), findsOneWidget);
+    });
+
+    testWidgets('the version sent is the one of the catalogue the owner can open', (tester) async {
+      final backend = _Backend(_snapshot({}));
+      await tester.pumpWidget(
+        _app(
+          (_) => ConsentGatePage(
+            dataSource: backend,
+            catalogVersions: const {_terms: 'v7', _privacy: 'v8'},
+          ),
+        ),
+      );
+      await tester.tap(find.byType(CheckboxListTile));
+      await tester.pump();
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+
+      expect(backend.declared, {_terms: 'v7', _privacy: 'v8'});
+    });
+
+    testWidgets('a text that changed is read again and asked again, not recorded', (tester) async {
+      // The page was opened with v2/v3; the server holds v3/v4 now.
+      final backend = _Backend(
+        AccountConsentsSnapshot(
+          decisions: const {},
+          catalog: const {
+            _terms: ConsentCatalogEntry(version: 'v3', text: 'termini nuovi'),
+            _privacy: ConsentCatalogEntry(version: 'v4', text: 'informativa nuova'),
+          },
+        ),
+      )..serverVersions = {_terms: 'v3', _privacy: 'v4'};
+      await tester.pumpWidget(
+        _app(
+          (_) => ConsentGatePage(
+            dataSource: backend,
+            catalogVersions: const {_terms: 'v2', _privacy: 'v3'},
+          ),
+        ),
+      );
+      await tester.tap(find.byType(CheckboxListTile));
+      await tester.pump();
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+
+      expect(backend.set, isEmpty); // nothing was recorded for a text that was not current
+      expect(find.textContaining('Il testo è cambiato'), findsOneWidget);
+      expect(tester.widget<FilledButton>(find.byType(FilledButton)).onPressed, isNull);
+
+      await tester.tap(find.byType(CheckboxListTile));
+      await tester.pump();
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+      expect(backend.declared, {_terms: 'v3', _privacy: 'v4'});
+    });
+
+    testWidgets('if no newer text can be shown it says the app must be updated', (tester) async {
+      // Refused, and the catalogue holds the same versions the page already had.
+      final backend = _Backend(_snapshot({}))..serverVersions = {_terms: 'v9', _privacy: 'v9'};
+      await tester.pumpWidget(
+        _app(
+          (_) => ConsentGatePage(
+            dataSource: backend,
+            catalogVersions: const {_terms: 'v2', _privacy: 'v3'},
+          ),
+        ),
+      );
+      await tester.tap(find.byType(CheckboxListTile));
+      await tester.pump();
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining("versione più recente dell'app"), findsOneWidget);
+      expect(backend.set, isEmpty);
+      // Leaving stays possible.
+      expect(find.text('Esci'), findsOneWidget);
     });
 
     testWidgets('"Esci" leaves instead of accepting', (tester) async {

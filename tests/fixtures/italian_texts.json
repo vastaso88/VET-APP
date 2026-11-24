@@ -572,6 +572,8 @@
   "consentGateContinue": "Accetta e continua",
   "consentGateFailed": "Non siamo riusciti a registrare la tua accettazione. Riprova tra poco.",
   "consentGateTitle": "Prima di continuare",
+  "consentTextChanged": "Il testo è cambiato mentre lo leggevi. Rileggilo e accetta di nuovo.",
+  "consentUpdateApp": "Per accettare serve la versione più recente dell'app: aggiornala dallo store.",
   "consentsErrorLoad": "Non sono riuscito a leggere i tuoi consensi. Riprova.",
   "consentsErrorSave": "Non sono riuscito a salvare la tua scelta. Riprova.",
   "emergencyNoticeCheckbox": "Ho capito che Quokka non gestisce le urgenze e non lo uso in caso di emergenza.",

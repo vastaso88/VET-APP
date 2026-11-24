@@ -113,6 +113,27 @@ def test_whoever_declines_a_new_version_can_still_pause_or_cancel_a_deletion(
     assert client.post("/account/deletion/cancel").status_code != 403
 
 
+def test_a_text_shown_at_another_version_is_refused_on_the_route_with_a_400(
+    world: _World,
+) -> None:
+    """The real HTTP answer (docs/compliance/04): `ValidationError` is a 400 whose `detail` is
+    the code the app reads; nothing is recorded. An app that sends no version is still served."""
+    client = TestClient(app)
+
+    refused = client.post(
+        "/account/consents",
+        json={"consent_key": "terms_of_service", "granted": True, "shown_version": "v0"},
+    )
+    assert refused.status_code == 400
+    assert refused.json() == {"detail": "consent_version_mismatch"}
+    assert client.get("/pets").status_code == 403  # still not accepted
+
+    undeclared = client.post(
+        "/account/consents", json={"consent_key": "terms_of_service", "granted": True}
+    )
+    assert undeclared.status_code == 200
+
+
 def test_accepting_through_the_consent_route_opens_everything_at_once(world: _World) -> None:
     client = TestClient(app)
     assert client.get("/pets").status_code == 403

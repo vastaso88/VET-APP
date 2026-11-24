@@ -18,9 +18,13 @@ import '../../domain/account_consent_models.dart';
 /// accepted at the current version. The owner reads them, ticks the box and goes
 /// on, or leaves the account. Nothing optional is touched here.
 class ConsentGatePage extends StatefulWidget {
-  const ConsentGatePage({super.key, this.dataSource, this.onLeave});
+  const ConsentGatePage({super.key, this.dataSource, this.onLeave, this.catalogVersions});
 
   final AccountConsentsRemoteDataSource? dataSource;
+
+  /// The versions of the catalog already read (the texts the owner can open here): the ones
+  /// declared with the acceptance. Without them, this build's own.
+  final Map<String, String>? catalogVersions;
 
   /// What "Esci" does; by default sign out and go to the sign-in page.
   final Future<void> Function(BuildContext context)? onLeave;
@@ -35,30 +39,73 @@ class _ConsentGatePageState extends State<ConsentGatePage> {
   bool _accepted = false;
   bool _busy = false;
   bool _failed = false;
+  late Map<String, String>? _versions = widget.catalogVersions;
+
+  /// A sentence for the owner when the text changed or the app is too old (null otherwise).
+  String? _notice;
 
   Future<void> _continue() async {
     if (!_accepted || _busy) return;
     setState(() {
       _busy = true;
       _failed = false;
+      _notice = null;
     });
     var ok = true;
+    var mismatch = false;
     for (final key in const [
       AccountConsentKeys.termsOfService,
       AccountConsentKeys.privacyPolicy,
     ]) {
-      final result = await _source.setConsent(consentKey: key, granted: true);
-      if (result.isFailure) ok = false;
+      final result = await _source.setConsent(
+        consentKey: key,
+        granted: true,
+        shownVersion: AccountConsentKeys.shownVersionIn(_versions, key),
+      );
+      if (result.isFailure) {
+        ok = false;
+        final code = result.fold(onSuccess: (_) => null, onFailure: (error) => error.code);
+        if (code == kConsentVersionMismatchCode) mismatch = true;
+      }
     }
     if (!mounted) return;
     if (ok) {
       Navigator.of(context).pop(true);
-    } else {
-      setState(() {
-        _busy = false;
-        _failed = true;
-      });
+      return;
     }
+    if (mismatch) {
+      await _reloadCatalog();
+      return;
+    }
+    setState(() {
+      _busy = false;
+      _failed = true;
+    });
+  }
+
+  /// The text shown was not the current one: read the catalog again and ask with the new
+  /// text (the owner reads it and ticks again). If no newer text can be shown, say that the
+  /// app must be updated: nothing is recorded for a text that was not shown.
+  Future<void> _reloadCatalog() async {
+    final l10n = context.l10n;
+    final result = await _source.fetch();
+    if (!mounted) return;
+    final snapshot = result.fold(onSuccess: (value) => value, onFailure: (_) => null);
+    final fresh = snapshot == null
+        ? null
+        : {for (final key in AccountConsentKeys.mandatory) key: snapshot.catalog[key]?.version ?? ''};
+    final changed = fresh != null &&
+        fresh.entries.any((e) => e.value.isNotEmpty && e.value != _versions?[e.key]);
+    setState(() {
+      _busy = false;
+      if (changed) {
+        _versions = fresh;
+        _accepted = false;
+        _notice = l10n.consentTextChanged;
+      } else {
+        _notice = l10n.consentUpdateApp;
+      }
+    });
   }
 
   Future<void> _leave() async {
@@ -123,6 +170,13 @@ class _ConsentGatePageState extends State<ConsentGatePage> {
                   style: AppTextStyles.bodySmall,
                 ),
               ),
+              if (_notice != null) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  _notice!,
+                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.danger),
+                ),
+              ],
               if (_failed) ...[
                 const SizedBox(height: AppSpacing.sm),
                 Text(

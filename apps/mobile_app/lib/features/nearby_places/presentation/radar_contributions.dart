@@ -90,10 +90,11 @@ class RadarContributions {
 
   Future<bool> _acceptRules(BuildContext context) async {
     final snapshot = await _consents.fetch();
-    final rules = snapshot.fold(
-      onSuccess: (value) => value.catalog[_rulesConsentKey]?.text,
+    final entry = snapshot.fold(
+      onSuccess: (value) => value.catalog[_rulesConsentKey],
       onFailure: (_) => null,
     );
+    final rules = entry?.text;
     if (!context.mounted) {
       return false;
     }
@@ -104,7 +105,13 @@ class RadarContributions {
     if (accepted != true) {
       return false;
     }
-    final saved = await _consents.setConsent(consentKey: _rulesConsentKey, granted: true);
+    final saved = await _consents.setConsent(
+      consentKey: _rulesConsentKey,
+      granted: true,
+      // The version of the text that was shown: the catalog's, nothing when the built-in
+      // fallback text was shown instead.
+      shownVersion: entry?.version,
+    );
     return saved.isSuccess;
   }
 }

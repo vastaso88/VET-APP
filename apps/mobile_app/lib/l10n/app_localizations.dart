@@ -13675,6 +13675,18 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Questo link va aperto sullo stesso dispositivo da cui l\'hai richiesto. Se stavi confermando l\'indirizzo, è già confermato: accedi con email e password. Se stavi reimpostando la password, richiedi un nuovo link da questo dispositivo.'**
   String get authErrorLinkOtherDevice;
+
+  /// No description provided for @consentTextChanged.
+  ///
+  /// In it, this message translates to:
+  /// **'Il testo è cambiato mentre lo leggevi. Rileggilo e accetta di nuovo.'**
+  String get consentTextChanged;
+
+  /// No description provided for @consentUpdateApp.
+  ///
+  /// In it, this message translates to:
+  /// **'Per accettare serve la versione più recente dell\'app: aggiornala dallo store.'**
+  String get consentUpdateApp;
 }
 
 class _AppLocalizationsDelegate
