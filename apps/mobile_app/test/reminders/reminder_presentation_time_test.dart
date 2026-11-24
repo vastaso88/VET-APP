@@ -33,6 +33,24 @@ void main() {
         'Ciclo · 90 giorni · 08:00, 20:00');
   });
 
+  test('a one-off reminder has no type label in a list ("Evento" on every row)', () {
+    final presentation = ReminderPresentation.of(spot(DateTime(2026, 10, 8)), now: now);
+    expect(presentation.kindLabel, 'Evento', reason: 'still there for the detail page');
+    expect(presentation.listKindLabel, isNull);
+  });
+
+  test('a course keeps its type label in a list', () {
+    final course = ReminderEntry(
+      id: 'c',
+      petName: 'Moka',
+      title: 'Antibiotico',
+      kind: EventKind.course,
+      dueAt: DateTime(2026, 10, 8),
+      courseDurationDays: 7,
+    );
+    expect(ReminderPresentation.of(course, now: now).listKindLabel, isNotNull);
+  });
+
   test('clock times round-trip and reject nonsense', () {
     expect(formatClockTime(8, 5), '08:05');
     expect(parseClockTime('20:00'), (hour: 20, minute: 0));

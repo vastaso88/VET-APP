@@ -14,6 +14,9 @@
   "commonNext": "Avanti",
   "commonSkip": "Salta",
   "commonEdit": "Modifica",
+  "commonRemove": "Rimuovi",
+  "commonDecrease": "Diminuisci",
+  "commonIncrease": "Aumenta",
   "commonAdd": "Aggiungi",
   "commonYes": "Sì",
   "commonNo": "No",
@@ -417,6 +420,7 @@
     }
   },
   "chatCancelEditTooltip": "Annulla modifica",
+  "chatSendTooltip": "Invia il messaggio",
   "chatMenuTooltip": "Opzioni chat",
   "chatMenuRename": "Rinomina",
   "chatMenuExport": "Esporta chat",
@@ -1328,6 +1332,7 @@
   "petsDetailWalkUnfavoriteTitle": "Togliere dai preferiti?",
   "petsDetailWalkUnfavoriteMessage": "Se non è anche il record o tra le ultime 3 passeggiate, potrà perdere la mappa alla prossima pulizia automatica.",
   "petsDetailWalkUnfavoriteConfirm": "Togli dai preferiti",
+  "petsDetailWalkFavoriteTooltip": "Metti tra i preferiti",
   "petsDetailWalkDeleteTitle": "Eliminare questa passeggiata?",
   "petsDetailWalkDeleteMessage": "La passeggiata del {date} ({distance}) verrà eliminata definitivamente.",
   "@petsDetailWalkDeleteMessage": {
@@ -2536,7 +2541,7 @@
   "remindersErrorSaveFailed": "Non sono riuscito a salvare il promemoria. Riprova.",
   "remindersErrorDeleteFailed": "Non sono riuscito a eliminare il promemoria. Riprova.",
   "petNewsTitle": "Notizie",
-  "petNewsLoading": "Carico le News...",
+  "petNewsLoading": "Carico le notizie...",
   "petNewsEmpty": "Nessuna notizia disponibile per questa categoria al momento.",
   "petNewsEmptyLocal": "Per ora non ci sono notizie nella tua lingua e per il tuo paese. Non mostriamo notizie di altri paesi.",
   "petNewsCategoryAll": "Tutti",
@@ -2848,7 +2853,7 @@
       }
     }
   },
-  "settingsSectionPushNotifications": "Notifiche push",
+  "settingsSectionPushNotifications": "Notifiche",
   "settingsNotificationsToggle": "Notifiche",
   "settingsSectionLayout": "Layout",
   "settingsLayoutWeeksTitle": "Settimane visualizzate in Home",

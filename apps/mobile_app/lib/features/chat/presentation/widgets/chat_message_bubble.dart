@@ -43,12 +43,17 @@ class ChatMessageBubble extends StatelessWidget {
     final foregroundColor = isUser ? AppColors.onPrimary : AppColors.text;
     final showAiDisclosure = !isUser && message.aiGenerated;
 
+    final sender = isUser ? context.l10n.chatSenderYou : context.l10n.chatSenderAssistant;
     final bubble = Row(
       mainAxisAlignment:
           isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
         Flexible(
-          child: GestureDetector(
+          // The reader says who is speaking before the text.
+          child: Semantics(
+            label: sender,
+            container: true,
+            child: GestureDetector(
             onLongPress: onLongPress,
             child: Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
@@ -115,6 +120,7 @@ class ChatMessageBubble extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
             ),
           ),
         ),
@@ -241,6 +247,7 @@ class _MarkdownLiteText extends StatelessWidget {
 
   static final _boldPattern = RegExp(r'\*\*(.+?)\*\*');
   static final _bulletPattern = RegExp(r'^[*-]\s+(.*)');
+  static final _numberedPattern = RegExp(r'^(\d{1,2})[.)]\s+(.*)');
 
   @override
   Widget build(BuildContext context) {
@@ -264,6 +271,28 @@ class _MarkdownLiteText extends StatelessWidget {
           children: [
             Text('•  ', style: style),
             Expanded(child: _richText(bulletMatch.group(1)!)),
+          ],
+        ),
+      );
+    }
+
+    // "1. Do this": the number is its own column and the lines that wrap stay
+    // under the text, not under the number; a little air between the steps.
+    final numberedMatch = _numberedPattern.firstMatch(line);
+    if (numberedMatch != null) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 26,
+              child: Text(
+                '${numberedMatch.group(1)}.',
+                style: style.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+            Expanded(child: _richText(numberedMatch.group(2)!)),
           ],
         ),
       );

@@ -18,6 +18,7 @@ import '../../data/reminders_repository.dart';
 import '../../domain/reminder_calendar.dart';
 import '../../domain/reminder_presentation.dart';
 import '../widgets/reminder_completion_sheet.dart';
+import '../../../../shared/widgets/min_tap_target.dart';
 import '../widgets/reminder_page_parts.dart';
 import 'reminder_create_edit_pages.dart';
 import 'reminder_detail_page.dart';
@@ -221,7 +222,7 @@ class _KindFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 40,
+      height: 48,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
@@ -261,7 +262,7 @@ class _PetFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 40,
+      height: 48,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
@@ -292,7 +293,9 @@ class _PetChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    return MinTapTarget(
+      onTap: onTap,
+      child: Material(
       color: selected ? AppColors.primary : AppColors.surface,
       borderRadius: BorderRadius.circular(AppRadii.pill),
       child: InkWell(
@@ -327,6 +330,7 @@ class _PetChip extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }
@@ -706,12 +710,14 @@ class _ReminderTile extends StatelessWidget {
                       style: AppTextStyles.title
                           .copyWith(fontSize: compact ? 15 : 17),
                     ),
-                    if (!compact) ...[
+                    if (!compact &&
+                        (reminder.petName.isNotEmpty || presentation.listKindLabel != null)) ...[
                       const SizedBox(height: AppSpacing.xs),
                       Text(
-                        reminder.petName.isEmpty
-                            ? presentation.kindLabel
-                            : '${reminder.petName} · ${presentation.kindLabel}',
+                        [
+                          if (reminder.petName.isNotEmpty) reminder.petName,
+                          if (presentation.listKindLabel != null) presentation.listKindLabel!,
+                        ].join(' · '),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.bodySmall,

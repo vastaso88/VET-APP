@@ -134,8 +134,11 @@ class _PetLoaderState extends State<PetLoader> with SingleTickerProviderStateMix
     );
 
     final label = widget.label;
+    // One spoken name: the turning animal emoji and the text under it are not
+    // read out on top of it.
     return Semantics(
       label: label ?? context.l10n.sharedLoadingLabel,
+      excludeSemantics: true,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

@@ -77,6 +77,7 @@ class _PetsListPageState extends State<PetsListPage> {
         // Ricordi is NOT up here on purpose: it sits quietly at the bottom of
         // the list (docs/product/17_ricordi_animali.md §2).
         IconButton(
+          tooltip: context.l10n.petsListEmptyOnlyMemoriesAction,
           onPressed: () => _openCreate(context),
           icon: const Icon(Icons.add_rounded),
           color: AppColors.onPrimary,
@@ -349,14 +350,14 @@ class _PetRow extends StatelessWidget {
                   children: [
                     Text(
                       pet.name,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.title.copyWith(fontSize: 17),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '${pet.speciesDisplayLabel} · ${pet.breedLabel}',
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodySmall,
                     ),

@@ -52,6 +52,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get commonEdit => 'Bearbeiten';
 
   @override
+  String get commonRemove => 'Entfernen';
+
+  @override
+  String get commonDecrease => 'Verringern';
+
+  @override
+  String get commonIncrease => 'Erhöhen';
+
+  @override
   String get commonAdd => 'Hinzufügen';
 
   @override
@@ -879,6 +888,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get chatCancelEditTooltip => 'Bearbeitung abbrechen';
+
+  @override
+  String get chatSendTooltip => 'Nachricht senden';
 
   @override
   String get chatMenuTooltip => 'Chat-Optionen';
@@ -2559,6 +2571,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get petsDetailWalkUnfavoriteConfirm => 'Aus Favoriten entfernen';
+
+  @override
+  String get petsDetailWalkFavoriteTooltip => 'Zu Favoriten hinzufügen';
 
   @override
   String get petsDetailWalkDeleteTitle => 'Diesen Spaziergang löschen?';
@@ -4888,7 +4903,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get settingsSectionPushNotifications => 'Push-Benachrichtigungen';
+  String get settingsSectionPushNotifications => 'Benachrichtigungen';
 
   @override
   String get settingsNotificationsToggle => 'Benachrichtigungen';

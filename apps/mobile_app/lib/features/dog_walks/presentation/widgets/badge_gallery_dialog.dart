@@ -122,6 +122,7 @@ Future<void> showBadgeGalleryDialog(
                 children: [
                   Expanded(child: Text(context.l10n.walksBadgeGalleryTitle, style: AppTextStyles.title)),
                   IconButton(
+                    tooltip: context.l10n.commonClose,
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close_rounded),
                   ),

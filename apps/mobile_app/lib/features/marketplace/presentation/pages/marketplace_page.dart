@@ -437,13 +437,14 @@ class _CategoryFilterRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 40,
+      height: 48,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: ChoiceChip(
+              materialTapTargetSize: MaterialTapTargetSize.padded,
               label: Text(context.l10n.marketplaceFilterAllCategories),
               selected: selected == null,
               onSelected: (_) => onSelected(null),
@@ -453,6 +454,7 @@ class _CategoryFilterRow extends StatelessWidget {
             (category) => Padding(
               padding: const EdgeInsets.only(right: AppSpacing.sm),
               child: ChoiceChip(
+                materialTapTargetSize: MaterialTapTargetSize.padded,
                 label: Text(listingCategoryLabel(category)),
                 selected: selected == category,
                 onSelected: (_) => onSelected(category),
@@ -476,13 +478,14 @@ class _SpeciesFilterRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 40,
+      height: 48,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: ChoiceChip(
+              materialTapTargetSize: MaterialTapTargetSize.padded,
               label: Text(context.l10n.marketplaceFilterAllSpecies),
               selected: selected == null,
               onSelected: (_) => onSelected(null),
@@ -492,6 +495,7 @@ class _SpeciesFilterRow extends StatelessWidget {
                 (species) => Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.sm),
                   child: ChoiceChip(
+                    materialTapTargetSize: MaterialTapTargetSize.padded,
                     label: Text(listingSpeciesLabel(species)),
                     selected: selected == species,
                     onSelected: (_) => onSelected(species),
@@ -520,7 +524,7 @@ class _DistanceFilterRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 40,
+      height: 48,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
@@ -536,6 +540,7 @@ class _DistanceFilterRow extends StatelessWidget {
             (km) => Padding(
               padding: const EdgeInsets.only(right: AppSpacing.sm),
               child: ChoiceChip(
+                materialTapTargetSize: MaterialTapTargetSize.padded,
                 key: ValueKey('marketplace-radius-${km.round()}'),
                 label: Text(listingDistanceFilterLabel(km)),
                 selected: selected == km,
@@ -546,6 +551,7 @@ class _DistanceFilterRow extends StatelessWidget {
           // "Altro" is selected whenever the radius is not one of the quick
           // choices, and then shows the value.
           ChoiceChip(
+            materialTapTargetSize: MaterialTapTargetSize.padded,
             key: const ValueKey('marketplace-radius-other'),
             label: Text(
               marketplaceRadiusOptionsKm.contains(selected)

@@ -8,6 +8,7 @@ import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/min_tap_target.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/presentation/widgets/pet_avatar.dart';
 import '../../../../app/router/app_router.dart';
@@ -342,7 +343,9 @@ class ReminderKindChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    return MinTapTarget(
+      onTap: onTap,
+      child: Material(
       color: selected ? AppColors.primary : AppColors.surface,
       borderRadius: BorderRadius.circular(AppRadii.pill),
       child: InkWell(
@@ -376,6 +379,7 @@ class ReminderKindChip extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

@@ -209,6 +209,9 @@ class _HomeShellPageState extends State<HomeShellPage> {
     if (!mounted) return;
     final outcome = await checkAccountSession(context);
     if (!mounted) return;
+    // A newer device may have taken this phone's place while the app stayed open.
+    if (outcome == SessionOutcome.ok && await checkDeviceStillActive(context)) return;
+    if (!mounted) return;
     if (outcome == SessionOutcome.deactivated) {
       await checkPendingDeletionAfterSignIn(context);
       return;

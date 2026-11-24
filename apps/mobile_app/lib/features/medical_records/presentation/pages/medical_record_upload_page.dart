@@ -673,6 +673,7 @@ class _SuggestionBanner extends StatelessWidget {
           Expanded(child: Text(text, style: AppTextStyles.caption)),
           TextButton(onPressed: onApply, child: Text(applyLabel)),
           IconButton(
+            tooltip: context.l10n.commonClose,
             onPressed: onDismiss,
             icon: const Icon(Icons.close_rounded, size: 18),
             color: AppColors.mutedText,

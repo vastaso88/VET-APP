@@ -14,6 +14,9 @@
   "commonNext": "Next",
   "commonSkip": "Skip",
   "commonEdit": "Edit",
+  "commonRemove": "Remove",
+  "commonDecrease": "Decrease",
+  "commonIncrease": "Increase",
   "commonAdd": "Add",
   "commonYes": "Yes",
   "commonNo": "No",
@@ -417,6 +420,7 @@
     }
   },
   "chatCancelEditTooltip": "Cancel edit",
+  "chatSendTooltip": "Send message",
   "chatMenuTooltip": "Chat options",
   "chatMenuRename": "Rename",
   "chatMenuExport": "Export chat",
@@ -1328,6 +1332,7 @@
   "petsDetailWalkUnfavoriteTitle": "Remove from favorites?",
   "petsDetailWalkUnfavoriteMessage": "If it is not also a record or one of the last 3 walks, its map may be removed during the next automatic cleanup.",
   "petsDetailWalkUnfavoriteConfirm": "Remove from favorites",
+  "petsDetailWalkFavoriteTooltip": "Add to favorites",
   "petsDetailWalkDeleteTitle": "Delete this walk?",
   "petsDetailWalkDeleteMessage": "The walk on {date} ({distance}) will be permanently deleted.",
   "@petsDetailWalkDeleteMessage": {
@@ -2848,7 +2853,7 @@
       }
     }
   },
-  "settingsSectionPushNotifications": "Push notifications",
+  "settingsSectionPushNotifications": "Notifications",
   "settingsNotificationsToggle": "Notifications",
   "settingsSectionLayout": "Layout",
   "settingsLayoutWeeksTitle": "Weeks shown on Home",

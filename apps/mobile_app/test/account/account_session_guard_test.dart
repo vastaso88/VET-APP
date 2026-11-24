@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vet_app_mobile/app/router/app_router.dart';
 import 'package:vet_app_mobile/features/account/application/account_session_guard.dart';
 import 'package:vet_app_mobile/features/account/data/account_pause_remote_data_source.dart';
+import 'package:vet_app_mobile/features/account/data/device_registry.dart';
 import 'package:vet_app_mobile/l10n/l10n.dart';
 import 'package:vet_app_mobile/shared/errors/app_network_error.dart';
 import 'package:vet_app_mobile/shared/types/result.dart';
@@ -62,8 +63,21 @@ Widget _app(Future<void> Function(BuildContext context) onStart, {List<String>? 
   );
 }
 
+class _Registry implements DeviceRegistryClient {
+  _Registry(this.active);
+  final bool active;
+  bool? claimed;
+
+  @override
+  Future<bool> register({required bool claim}) async {
+    claimed = claim;
+    return active;
+  }
+}
+
 void main() {
   setUp(() {
+    DeviceRegistry.pendingNotice = false;
     cleared = 0;
     signedOut = 0;
   });
@@ -186,6 +200,55 @@ void main() {
 
       expect(find.byType(AlertDialog), findsNothing);
       expect(backend.acknowledged, 0);
+    });
+  });
+
+  group('a phone whose place was taken while the app stayed open', () {
+    testWidgets('is signed out at once, told why and sent to the sign-in page', (tester) async {
+      final visited = <String>[];
+      final registry = _Registry(false);
+      bool? out;
+      await tester.pumpWidget(
+        _app((context) async {
+          out = await checkDeviceStillActive(
+            context,
+            registry: registry,
+            clearLocalTraces: _clear,
+            signOut: _signOut,
+          );
+        }, visited: visited),
+      );
+      await tester.tap(find.text('go'));
+      await tester.pumpAndSettle();
+
+      expect(out, isTrue);
+      expect(registry.claimed, isFalse); // it asks, it does not take a place
+      expect(cleared, 1);
+      expect(signedOut, 1);
+      expect(DeviceRegistry.pendingNotice, isTrue); // the sign-in page shows the notice
+      expect(visited, contains(AppRouter.auth));
+    });
+
+    testWidgets('a phone that still has its place is left alone', (tester) async {
+      final visited = <String>[];
+      bool? out;
+      await tester.pumpWidget(
+        _app((context) async {
+          out = await checkDeviceStillActive(
+            context,
+            registry: _Registry(true),
+            clearLocalTraces: _clear,
+            signOut: _signOut,
+          );
+        }, visited: visited),
+      );
+      await tester.tap(find.text('go'));
+      await tester.pumpAndSettle();
+
+      expect(out, isFalse);
+      expect(cleared + signedOut, 0);
+      expect(DeviceRegistry.pendingNotice, isFalse);
+      expect(visited, isNot(contains(AppRouter.auth)));
     });
   });
 }

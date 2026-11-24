@@ -454,7 +454,7 @@ class _WeekStrip extends StatelessWidget {
                   builder: (context) {
                     final day = days[week * 7 + i];
                     return Expanded(
-                      child: _DayChip(
+                      child: HomeDayChip(
                         day: day,
                         label: labels[i],
                         isToday: isSameDay(day, startOfToday),
@@ -473,8 +473,11 @@ class _WeekStrip extends StatelessWidget {
   }
 }
 
-class _DayChip extends StatelessWidget {
-  const _DayChip({
+/// One day of the home calendar strip. Public only so a test can pump it.
+@visibleForTesting
+class HomeDayChip extends StatelessWidget {
+  const HomeDayChip({
+    super.key,
     required this.day,
     required this.label,
     required this.isToday,
@@ -501,7 +504,14 @@ class _DayChip extends StatelessWidget {
     // text and marker-row height staying pinned to the reference size.
     final scale = appScaleOf(context);
 
-    return Container(
+    // Spoken as "19, 2 promemoria", not as the letter, the number and the
+    // marker glyphs one by one.
+    return Semantics(
+      label: markers.isEmpty
+          ? '${day.day}'
+          : '${day.day}, ${context.l10n.remindersDayActivities(markers.length)}',
+      excludeSemantics: true,
+      child: Container(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       decoration: BoxDecoration(
         color: background,
@@ -552,6 +562,7 @@ class _DayChip extends StatelessWidget {
                   ),
           ),
         ],
+      ),
       ),
     );
   }

@@ -24,7 +24,7 @@ void main() {
     await tester.pumpWidget(_app(const NewsFeedPage()));
 
     expect(find.byType(PetLoader), findsOneWidget);
-    expect(find.text('Carico le News...'), findsOneWidget);
+    expect(find.text('Carico le notizie...'), findsOneWidget);
     expect(find.byType(SplashAnimalTicker), findsNothing);
 
     await tester.pumpAndSettle(const Duration(milliseconds: 200));

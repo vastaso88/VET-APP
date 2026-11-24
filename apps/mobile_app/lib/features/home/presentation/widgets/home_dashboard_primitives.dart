@@ -298,7 +298,7 @@ class DashboardListRow extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.body.copyWith(
                     color: AppColors.text,

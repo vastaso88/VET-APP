@@ -329,16 +329,20 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
                   ),
                 ),
               const SizedBox(width: AppSpacing.xs),
-              SizedBox(
-                width: 40,
-                height: 40,
-                child: FloatingActionButton(
-                  heroTag: null,
-                  elevation: 0,
+              // 40 px visible, 48 px to touch (padded tap target).
+              IconButton.filled(
+                tooltip: context.l10n.chatSendTooltip,
+                onPressed: canSend ? () => _sendMessage(_controller.text) : null,
+                icon: const Icon(Icons.arrow_upward_rounded, size: 18),
+                style: IconButton.styleFrom(
+                  fixedSize: const Size(40, 40),
+                  minimumSize: const Size(40, 40),
+                  tapTargetSize: MaterialTapTargetSize.padded,
                   backgroundColor: canSend ? AppColors.primary : AppColors.border,
+                  disabledBackgroundColor: AppColors.border,
                   foregroundColor: AppColors.onPrimary,
-                  onPressed: canSend ? () => _sendMessage(_controller.text) : null,
-                  child: const Icon(Icons.arrow_upward_rounded, size: 18),
+                  disabledForegroundColor: AppColors.onPrimary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
               ),
             ],
@@ -748,6 +752,8 @@ class _ComposerIconButton extends StatelessWidget {
       icon: Icon(icon, color: color ?? AppColors.secondaryText, size: 22),
       visualDensity: VisualDensity.compact,
       constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+      // 40 px visible, 48 px to touch.
+      style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.padded),
     );
   }
 }

@@ -1598,7 +1598,12 @@ class _StockRow extends StatelessWidget {
                   style: AppTextStyles.bodySmall.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
                 ),
               ),
-              _CompactIconButton(onPressed: onRemove, icon: Icons.close_rounded, color: AppColors.mutedText),
+              _CompactIconButton(
+                onPressed: onRemove,
+                icon: Icons.close_rounded,
+                color: AppColors.mutedText,
+                tooltip: context.l10n.commonRemove,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
@@ -1655,6 +1660,7 @@ class _SexCounter extends StatelessWidget {
           onPressed: count > 0 ? () => onChanged(count - 1) : null,
           icon: Icons.remove_circle_outline,
           color: AppColors.secondaryStrong,
+          tooltip: context.l10n.commonDecrease,
         ),
         SizedBox(
           width: 20,
@@ -1668,6 +1674,7 @@ class _SexCounter extends StatelessWidget {
           onPressed: () => onChanged(count + 1),
           icon: Icons.add_circle_outline,
           color: AppColors.secondaryStrong,
+          tooltip: context.l10n.commonIncrease,
         ),
       ],
     );
@@ -1678,15 +1685,22 @@ class _SexCounter extends StatelessWidget {
 /// actions) where the default [IconButton] 48×48 minimum would crowd out
 /// the content next to it on a narrow phone screen.
 class _CompactIconButton extends StatelessWidget {
-  const _CompactIconButton({required this.onPressed, required this.icon, required this.color});
+  const _CompactIconButton({
+    required this.onPressed,
+    required this.icon,
+    required this.color,
+    required this.tooltip,
+  });
 
   final VoidCallback? onPressed;
   final IconData icon;
   final Color color;
+  final String tooltip;
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
+      tooltip: tooltip,
       onPressed: onPressed,
       icon: Icon(icon, size: 20),
       color: color,

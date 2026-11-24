@@ -11,6 +11,7 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../pets/data/pet_demo_store.dart';
+import '../../../../shared/widgets/min_tap_target.dart';
 import '../../data/pet_news_repository.dart';
 import '../../domain/pet_news_item.dart';
 import '../widgets/pet_news_card.dart';
@@ -212,6 +213,7 @@ class _RefreshButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
+      tooltip: context.l10n.settingsLocationRefresh,
       onPressed: refreshing ? null : onTap,
       icon: refreshing
           ? const SizedBox(
@@ -238,7 +240,7 @@ class _CategoryBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 40,
+      height: 48,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
@@ -303,7 +305,9 @@ class _CategoryChip extends StatelessWidget {
     final isGenerale = species == 'Generale';
     final isTutti = isAll;
 
-    return Material(
+    return MinTapTarget(
+      onTap: onTap,
+      child: Material(
       color: selected ? AppColors.primary : AppColors.surface,
       borderRadius: BorderRadius.circular(AppRadii.pill),
       child: InkWell(
@@ -339,6 +343,7 @@ class _CategoryChip extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

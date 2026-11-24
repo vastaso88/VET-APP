@@ -19,12 +19,21 @@ class ReminderPresentation {
     required this.kindLabel,
     required this.dateLabel,
     required this.tone,
+    this.isSingleEvent = false,
   });
 
   final IconData icon;
   final String kindLabel;
   final String dateLabel;
   final DashboardTone tone;
+
+  /// A one-off reminder: its type label is just "Evento", which would be
+  /// repeated on every row of a list, so lists leave it out ([listKindLabel]).
+  final bool isSingleEvent;
+
+  /// The type label for a list row; null for a one-off reminder (nothing
+  /// useful to say), the real label for recurring reminders and courses.
+  String? get listKindLabel => isSingleEvent ? null : kindLabel;
 
   factory ReminderPresentation.of(ReminderEntry reminder, {DateTime? now}) {
     final today = now ?? DateTime.now();
@@ -35,6 +44,7 @@ class ReminderPresentation {
         return ReminderPresentation(
           icon: reminder.effectiveCategory.icon,
           kindLabel: appL10n.remindersKindEvent,
+          isSingleEvent: true,
           dateLabel: _withTime(relativeDayLabel(reminder.dueAt), reminder.dueAt),
           tone: _urgencyTone(reminder.dueAt, startOfToday),
         );

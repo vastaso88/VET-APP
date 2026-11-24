@@ -14,6 +14,9 @@
   "commonNext": "Weiter",
   "commonSkip": "Überspringen",
   "commonEdit": "Bearbeiten",
+  "commonRemove": "Entfernen",
+  "commonDecrease": "Verringern",
+  "commonIncrease": "Erhöhen",
   "commonAdd": "Hinzufügen",
   "commonYes": "Ja",
   "commonNo": "Nein",
@@ -417,6 +420,7 @@
     }
   },
   "chatCancelEditTooltip": "Bearbeitung abbrechen",
+  "chatSendTooltip": "Nachricht senden",
   "chatMenuTooltip": "Chat-Optionen",
   "chatMenuRename": "Umbenennen",
   "chatMenuExport": "Chat exportieren",
@@ -1328,6 +1332,7 @@
   "petsDetailWalkUnfavoriteTitle": "Aus Favoriten entfernen?",
   "petsDetailWalkUnfavoriteMessage": "Ist er nicht auch ein Rekord oder unter den letzten 3 Spaziergängen, kann die Karte bei der nächsten automatischen Bereinigung verloren gehen.",
   "petsDetailWalkUnfavoriteConfirm": "Aus Favoriten entfernen",
+  "petsDetailWalkFavoriteTooltip": "Zu Favoriten hinzufügen",
   "petsDetailWalkDeleteTitle": "Diesen Spaziergang löschen?",
   "petsDetailWalkDeleteMessage": "Der Spaziergang vom {date} ({distance}) wird endgültig gelöscht.",
   "@petsDetailWalkDeleteMessage": {
@@ -2848,7 +2853,7 @@
       }
     }
   },
-  "settingsSectionPushNotifications": "Push-Benachrichtigungen",
+  "settingsSectionPushNotifications": "Benachrichtigungen",
   "settingsNotificationsToggle": "Benachrichtigungen",
   "settingsSectionLayout": "Layout",
   "settingsLayoutWeeksTitle": "Wochen auf der Startseite",

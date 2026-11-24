@@ -188,6 +188,24 @@ abstract class AppLocalizations {
   /// **'Modifica'**
   String get commonEdit;
 
+  /// No description provided for @commonRemove.
+  ///
+  /// In it, this message translates to:
+  /// **'Rimuovi'**
+  String get commonRemove;
+
+  /// No description provided for @commonDecrease.
+  ///
+  /// In it, this message translates to:
+  /// **'Diminuisci'**
+  String get commonDecrease;
+
+  /// No description provided for @commonIncrease.
+  ///
+  /// In it, this message translates to:
+  /// **'Aumenta'**
+  String get commonIncrease;
+
   /// No description provided for @commonAdd.
   ///
   /// In it, this message translates to:
@@ -1549,6 +1567,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Annulla modifica'**
   String get chatCancelEditTooltip;
+
+  /// No description provided for @chatSendTooltip.
+  ///
+  /// In it, this message translates to:
+  /// **'Invia il messaggio'**
+  String get chatSendTooltip;
 
   /// No description provided for @chatMenuTooltip.
   ///
@@ -4346,6 +4370,12 @@ abstract class AppLocalizations {
   /// **'Togli dai preferiti'**
   String get petsDetailWalkUnfavoriteConfirm;
 
+  /// No description provided for @petsDetailWalkFavoriteTooltip.
+  ///
+  /// In it, this message translates to:
+  /// **'Metti tra i preferiti'**
+  String get petsDetailWalkFavoriteTooltip;
+
   /// No description provided for @petsDetailWalkDeleteTitle.
   ///
   /// In it, this message translates to:
@@ -7115,7 +7145,7 @@ abstract class AppLocalizations {
   /// No description provided for @petNewsLoading.
   ///
   /// In it, this message translates to:
-  /// **'Carico le News...'**
+  /// **'Carico le notizie...'**
   String get petNewsLoading;
 
   /// No description provided for @petNewsEmpty.
@@ -8075,7 +8105,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSectionPushNotifications.
   ///
   /// In it, this message translates to:
-  /// **'Notifiche push'**
+  /// **'Notifiche'**
   String get settingsSectionPushNotifications;
 
   /// No description provided for @settingsNotificationsToggle.

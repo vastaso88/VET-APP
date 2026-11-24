@@ -52,6 +52,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get commonEdit => 'Modifier';
 
   @override
+  String get commonRemove => 'Retirer';
+
+  @override
+  String get commonDecrease => 'Diminuer';
+
+  @override
+  String get commonIncrease => 'Augmenter';
+
+  @override
   String get commonAdd => 'Ajouter';
 
   @override
@@ -877,6 +886,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get chatCancelEditTooltip => 'Annuler la modification';
+
+  @override
+  String get chatSendTooltip => 'Envoyer le message';
 
   @override
   String get chatMenuTooltip => 'Options du chat';
@@ -2557,6 +2569,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get petsDetailWalkUnfavoriteConfirm => 'Retirer des favorites';
+
+  @override
+  String get petsDetailWalkFavoriteTooltip => 'Ajouter aux favoris';
 
   @override
   String get petsDetailWalkDeleteTitle => 'Supprimer cette promenade ?';
@@ -4896,7 +4911,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get settingsSectionPushNotifications => 'Notifications push';
+  String get settingsSectionPushNotifications => 'Notifications';
 
   @override
   String get settingsNotificationsToggle => 'Notifications';
@@ -8243,7 +8258,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get emergencyNoticeDeclineTitle =>
-      'Sans cette confirmation, vous ne pouvez pas utiliser le chat. Le reste de l\'application reste disponible.';
+      'Sans cette confirmation, vous ne pouvez pas utiliser le chat. Le reste de l\'application demeure disponible.';
 
   @override
   String get chatFixedLine =>

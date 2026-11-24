@@ -131,6 +131,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
           style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
         ),
         IconButton(
+          tooltip: context.l10n.commonEdit,
           onPressed: pet == null ? null : () => _openEdit(context, pet),
           icon: const Icon(Icons.edit_outlined),
           color: AppColors.onPrimary,
@@ -471,7 +472,7 @@ class _HabitatSummaryRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   '${petHabitatLabel(pet.species, context.l10n)} · ${_summary(context)}',
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption.copyWith(
                       color: AppColors.text, fontWeight: FontWeight.w600),
@@ -685,7 +686,7 @@ class _ReminderRow extends StatelessWidget {
       onTap: onTap,
       leading: _RowIcon(icon: presentation.icon),
       title: reminder.title,
-      subtitle: presentation.kindLabel,
+      subtitle: presentation.listKindLabel ?? '',
       trailingText: presentation.dateLabel,
       // Edit / mark done / delete live in the three-dot menu; the list
       // rebuilds by itself through RemindersRepository.changes.
@@ -1352,6 +1353,9 @@ class _WalkCard extends StatelessWidget {
                     ),
                   ),
                   IconButton(
+                    tooltip: walk.isFavorite
+                        ? context.l10n.petsDetailWalkUnfavoriteConfirm
+                        : context.l10n.petsDetailWalkFavoriteTooltip,
                     onPressed: () => _toggleFavorite(context),
                     icon: Icon(
                       walk.isFavorite ? Icons.star_rounded : Icons.star_outline_rounded,
@@ -1359,6 +1363,7 @@ class _WalkCard extends StatelessWidget {
                     ),
                   ),
                   IconButton(
+                    tooltip: context.l10n.commonDelete,
                     onPressed: () => _delete(context),
                     icon: const Icon(Icons.delete_outline_rounded, color: AppColors.mutedText),
                   ),
@@ -1448,12 +1453,13 @@ class _CompactRow extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.caption,
-                    ),
+                    if (subtitle.isNotEmpty)
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.caption,
+                      ),
                   ],
                 ),
               ),

@@ -10,6 +10,7 @@ import '../../auth/data/auth_repository_factory.dart';
 import '../../notifications/application/notification_scheduler.dart';
 import '../../pets/data/pet_photo_repository.dart';
 import '../data/account_pause_remote_data_source.dart';
+import '../data/device_registry.dart';
 import '../data/profile_photo_repository.dart';
 
 /// What the app does when the backend says the account was paused or put in
@@ -62,6 +63,28 @@ Future<SessionOutcome> checkAccountSession(
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   navigator.pushNamedAndRemoveUntil(AppRouter.auth, (route) => false);
   return SessionOutcome.paused;
+}
+
+/// Back in front with the app already open: is this phone still one of the places the plan
+/// allows? When a newer device took its place, this one is signed out HERE, at once (not at the
+/// next cold start), the local notices and caches are cleared, and the sign-in page says why and
+/// what to do (the notice `authDeviceLimitNotice`: sign in again to take a place back). Returns
+/// true when it was signed out. Fails open like the registry: no answer keeps the person in.
+Future<bool> checkDeviceStillActive(
+  BuildContext context, {
+  DeviceRegistryClient? registry,
+  Future<void> Function()? clearLocalTraces,
+  Future<void> Function()? signOut,
+}) async {
+  final stillActive = await (registry ?? DeviceRegistry()).register(claim: false);
+  if (stillActive || !context.mounted) return false;
+  DeviceRegistry.pendingNotice = true;
+  await (clearLocalTraces ?? _clearLocalAccountTraces)();
+  await (signOut ?? () => const AuthRepositoryFactory().create().signOut())();
+  if (!context.mounted) return true;
+  Navigator.of(context, rootNavigator: true)
+      .pushNamedAndRemoveUntil(AppRouter.auth, (route) => false);
+  return true;
 }
 
 Future<void> _clearLocalAccountTraces() async {

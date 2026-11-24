@@ -25,6 +25,16 @@ class WeightChartView extends StatelessWidget {
     return hundredths % 10 == 0 ? 1 : 2;
   }
 
+  /// Whether the label at [value] of the horizontal axis has room: the chart
+  /// always prints its two ends, and a regular step that falls closer than
+  /// 3/4 of a step to an end would be drawn on top of it ("15 set" over
+  /// "21 set"), so that one is left out.
+  static bool axisLabelFits(double value, {required double minX, required double maxX, required double interval}) {
+    const epsilon = 1e-6;
+    if ((value - minX).abs() < epsilon || (value - maxX).abs() < epsilon) return true;
+    return value - minX >= interval * 0.75 && maxX - value >= interval * 0.75;
+  }
+
   @override
   Widget build(BuildContext context) {
     final byAge = data.mode == WeightChartMode.byAge;
@@ -130,7 +140,10 @@ class WeightChartView extends StatelessWidget {
                   reservedSize: 28,
                   interval: data.xInterval,
                   getTitlesWidget: (value, meta) {
-                    if (value > data.maxX || value < data.minX) {
+                    if (value > data.maxX ||
+                        value < data.minX ||
+                        !axisLabelFits(value,
+                            minX: data.minX, maxX: data.maxX, interval: data.xInterval)) {
                       return const SizedBox.shrink();
                     }
                     final text = byAge

@@ -1201,6 +1201,7 @@ class _StepperRow extends StatelessWidget {
             ),
           ),
           IconButton(
+            tooltip: context.l10n.commonDecrease,
             onPressed: value > minValue ? () => onChanged(value - 1) : null,
             icon: const Icon(Icons.remove_circle_outline),
             color: AppColors.secondaryStrong,
@@ -1211,6 +1212,7 @@ class _StepperRow extends StatelessWidget {
             style: AppTextStyles.body.copyWith(color: AppColors.text, fontWeight: FontWeight.w700),
           ),
           IconButton(
+            tooltip: context.l10n.commonIncrease,
             onPressed: value < maxValue ? () => onChanged(value + 1) : null,
             icon: const Icon(Icons.add_circle_outline),
             color: AppColors.secondaryStrong,
