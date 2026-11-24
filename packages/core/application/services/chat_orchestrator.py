@@ -80,6 +80,7 @@ from packages.core.domain.conversation.answer_cache import (
     normalize_question,
 )
 from packages.core.domain.conversation.answer_cleanup import clean_answer_text
+from packages.core.domain.conversation.asked_length import asked_words
 from packages.core.domain.conversation.models import ChatMessage
 from packages.core.domain.conversation.referral_style import strip_ritual_referral
 from packages.core.domain.conversation.request_kind import (
@@ -4202,8 +4203,13 @@ class ChatOrchestrator:
             self._fixed_opening_words(data, message, dose_part) if self._answer_v2 else 0
         )
         may_shorten = kind is not RequestKind.REPORT and not is_long_message(message)
+        # the length the owner asked for, when they did (F36)
+        asked = asked_words(message)
+        target = asked if asked is not None else max(90, min(150, budget - 30))
+        if asked is not None:
+            budget = min(budget, round(1.3 * asked))
         if may_shorten and _word_count(response.content) > budget:
-            response = self._shortened(response, words=max(90, min(150, budget - 30)))
+            response = self._shortened(response, words=target)
         if self._answer_v2:
             # synthetic users round 4: "oggi stesso" in a serious case, read again
             checked = self._severity_checked(
@@ -4219,7 +4225,7 @@ class ChatOrchestrator:
             ):
                 # the rewrite adds the "now" sentence: shortened again, which keeps every
                 # mention of the vet with its reason (SHORTEN_PROMPT)
-                checked = self._shortened(checked, words=max(90, min(150, budget - 30)))
+                checked = self._shortened(checked, words=max(target, 90 if asked is None else 0))
             response = self._in_language(checked, data.language, data.user_message)
 
         validation = validate_answer(response.content, sources_count=len(sources))

@@ -32,6 +32,7 @@ from packages.core.application.services.natural_answer_prompt import (
 )
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.domain.common.language import reply_in_this_language
+from packages.core.domain.conversation.asked_length import asked_words
 from packages.core.domain.conversation.request_kind import (
     RequestKind,
     asks_to_stop_questions,
@@ -377,6 +378,7 @@ def assemble_natural_prompts(
         child_at_risk=mentions_a_child_at_risk(message, data.pet_name),
         long_message=is_long_message(message),
         forced_yes_no=asks_for_a_bare_yes_or_no(message),
+        short_words=asked_words(message),
         future_animal=is_about_a_future_animal(message),
         visit_today=vomiting_and_not_eating_for_a_day(message),
         plant_diet=is_plant_diet_for_a_carnivore(message, normalize_species(effective_species)),

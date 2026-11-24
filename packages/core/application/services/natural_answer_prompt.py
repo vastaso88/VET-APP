@@ -370,6 +370,12 @@ _FORCED_YES_NO = (
     "why nobody can answer that way without a visit, then what the signs may mean, what it "
     "takes to find out, and offer to go through it together."
 )
+# Collaudo F36: "riassumi in 3 righe" got 110 words.
+_SHORT_ANSWER = (
+    "THE OWNER ASKED FOR A SHORT ANSWER: about {words} words in all, plain sentences, no list and "
+    "no extra advice. If a vet is needed now, that comes first, with its reason: the limit "
+    "never cuts it."
+)
 _FUTURE_ANIMAL = (
     "A FUTURE ANIMAL. The question is about an animal the owner does not have yet: do not "
     "use the name, species or data of the pet in the profile; speak of 'the dog', 'the "
@@ -830,6 +836,7 @@ def build_system_prompt(
     child_at_risk: bool = False,
     long_message: bool = False,
     forced_yes_no: bool = False,
+    short_words: int | None = None,
     future_animal: bool = False,
     visit_today: bool = False,
     plant_diet: bool = False,
@@ -889,6 +896,8 @@ def build_system_prompt(
         parts.append(_LONG_MESSAGE)
     if forced_yes_no:
         parts.append(_FORCED_YES_NO)
+    if short_words is not None:
+        parts.append(_SHORT_ANSWER.format(words=short_words))
     if future_animal:
         parts.append(_FUTURE_ANIMAL)
     if visit_today:
