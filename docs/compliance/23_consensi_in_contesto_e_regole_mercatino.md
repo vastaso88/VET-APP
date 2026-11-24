@@ -21,7 +21,7 @@ Data: 2026-11-21. Parere breve richiesto dall'Orchestratore su una proposta dell
 | Che cosa | Natura | Come si presenta |
 |---|---|---|
 | Termini e Informativa privacy | accettazione obbligatoria | schermata «Prima di continuare» |
-| «Quokka non gestisce le urgenze» ([22](22_clausola_quokka_non_gestisce_urgenze.md)) | riconoscimento obbligatorio | schermata una volta per versione, **non un interruttore** |
+| «Quokka non gestisce le urgenze» ([22](22_clausola_quokka_non_gestisce_urgenze.md)) | riconoscimento richiesto per la chat | schermata alla prima chat, una volta per versione, **non un interruttore** |
 | Regole del Mercatino | accettazione del servizio | casella al primo accesso |
 | Lettura della cartella clinica da parte dell'assistente (per animale) | **consenso**, facoltativo | interruttore, con le regole dei punti 1 e 2 |
 | Email di marketing; rapporti sugli errori; analisi d'uso | **consensi**, facoltativi | interruttori nel gruppo «Privacy» |
