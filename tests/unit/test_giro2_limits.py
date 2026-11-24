@@ -1,8 +1,8 @@
 """Synthetic users, round 2 (2026-11-16), points 4 and 7 of the report:
 
-* an emergency is never stopped by the per-pet chat limit, and is neither refused nor
-  buried in an old chat about something else: it gets a chat of its own, a few above
-  the limit;
+* the per-pet chat limit is the same for every message (24/11/2026: the two more chats
+  for emergencies are gone, the app does not handle urgencies and every question takes the
+  same path): the owner can go on in a chat they already have;
 * the limit refusals reach a client that is not the app without the technical prefix
   and in the owner's language;
 * choosing a plan with fewer places than the owner has pets is no longer silent.
@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 from datetime import timedelta
 from types import SimpleNamespace
 from typing import Any
@@ -39,7 +40,6 @@ from packages.core.domain.common.entity import utc_now
 from packages.core.domain.localization import translate
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.subscription.limits import (
-    EMERGENCY_CHATS_ABOVE_PET_LIMIT,
     LIMITS_BY_PLAN,
     PlanLimits,
 )
@@ -61,7 +61,7 @@ URGENT = "ha mangiato il veleno per topi"
 ROUTINE = "quanto deve dormire?"
 
 
-# --- 4. an emergency is never stopped by the per-pet chat limit ------------------------------
+# --- 4. the per-pet chat limit is the same for every message ---------------------------------
 
 
 def _chat_service(limit_per_pet: int) -> SendChatMessageService:
@@ -95,51 +95,44 @@ def _fill(service: SendChatMessageService, count: int) -> list[str]:
     return ids
 
 
-def test_an_emergency_at_the_limit_opens_a_chat_of_its_own_with_its_own_title() -> None:
+@pytest.mark.parametrize("text", [URGENT, ROUTINE, "Il mio gatto non riesce a urinare da ieri"])
+def test_at_the_limit_every_message_gets_the_same_refusal(text: str) -> None:
     service = _chat_service(limit_per_pet=2)
     old = _fill(service, 2)
 
-    urgent = _send(service, URGENT)
+    with pytest.raises(ConversationLimitError) as caught:
+        _send(service, text)
 
-    assert urgent.conversation.id not in old
-    assert urgent.conversation.messages[0].content == URGENT  # the first words of that chat
-    assert len(service._repository.list_by_pet("pet-a")) == 3  # noqa: SLF001
-    assert urgent.mode == "triage"
-
-
-def test_the_allowance_above_the_limit_is_bounded() -> None:
-    limit = 2
-    service = _chat_service(limit_per_pet=limit)
-    _fill(service, limit)
-
-    for _ in range(EMERGENCY_CHATS_ABOVE_PET_LIMIT):
-        _send(service, URGENT)
-    assert len(service._repository.list_by_pet("pet-a")) == limit + EMERGENCY_CHATS_ABOVE_PET_LIMIT  # noqa: SLF001
-
-    # One more: no further chat is piled up, it goes on in the chat used last.
-    last_used = service._repository.list_by_pet("pet-a")[-1].id  # noqa: SLF001
-    again = _send(service, URGENT)
-
-    assert again.conversation.id == last_used
-    assert len(service._repository.list_by_pet("pet-a")) == limit + EMERGENCY_CHATS_ABOVE_PET_LIMIT  # noqa: SLF001
+    assert str(caught.value) == "conversation_limit_reached: " + translate(
+        "conversation_limit", "it", limit=2, pet_name="Milo"
+    )
+    assert [c.id for c in service._repository.list_by_pet("pet-a")] == old  # noqa: SLF001
 
 
-def test_past_the_allowance_it_goes_on_in_the_chat_used_last_not_the_newest_created() -> None:
-    limit = 1
-    service = _chat_service(limit_per_pet=limit)
-    _fill(service, limit)
-    for _ in range(EMERGENCY_CHATS_ABOVE_PET_LIMIT):
-        _send(service, URGENT)
-    chats = service._repository.list_by_pet("pet-a")  # noqa: SLF001
-    oldest = chats[0]
-    # The oldest chat is the one written in last.
-    later = oldest.model_copy(deep=True)
-    later.messages[-1].created_at = utc_now() + timedelta(minutes=5)
-    service._repository.save(later)  # noqa: SLF001
+def test_at_the_limit_the_same_message_is_answered_in_a_chat_that_exists() -> None:
+    service = _chat_service(limit_per_pet=2)
+    old = _fill(service, 2)
 
-    again = _send(service, URGENT)
+    answered = service.execute(
+        SendChatMessageInput(
+            owner_id="owner-a", pet_id="pet-a", user_message=URGENT, conversation_id=old[0]
+        )
+    )
 
-    assert again.conversation.id == oldest.id
+    assert answered.conversation.id == old[0]
+    assert answered.mode == "triage"
+
+
+@pytest.mark.parametrize("language", ["it", "en", "es", "de", "fr"])
+def test_the_chat_limit_text_is_calm_and_has_no_phone_number(language: str) -> None:
+    text = translate("conversation_limit", language, limit=2, pet_name="Milo")
+    assert not re.search(r"\+?\d{3,}", text)
+    assert "!" not in text
+    assert not re.search(
+        r"non aspettare|subito|adesso|do not wait|straight away|right now|ahora|no esperes|"
+        r"sofort|warten sie nicht|tout de suite|n'attendez pas",
+        text.lower(),
+    )
 
 
 def test_a_message_that_is_not_an_emergency_is_still_refused_at_the_limit() -> None:

@@ -126,7 +126,7 @@ L'ordine conta: i controlli deterministici vengono **prima** di qualsiasi modell
    - caso dubbio → domanda di chiarimento fissa della categoria, che segue specie e sesso dell'animale.
 5. **Dosi** → testo fisso, mai una dose. Una domanda mista («funziona? quante gocce?») riceve la frase fissa sulla dose e la risposta sul resto.
 6. **Due animali, domanda d'identità, salute umana, richiesta di rivelare il prompt, saluti** → testi fissi.
-7. **Ammissione al budget** (`LlmBudget.admit`): limite giornaliero del piano e quota dei modelli. Il messaggio conta come domanda solo se apre un argomento nuovo (§11). Al limite il classificatore legge comunque il messaggio: un'urgenza non viene mai fermata dal limite.
+7. **Ammissione al budget** (`LlmBudget.admit`): limite giornaliero del piano e quota dei modelli. Il messaggio conta come domanda solo se apre un argomento nuovo (§11). Il tetto vale per ogni messaggio (24/11/2026): al limite nessun modello viene chiamato e la chat risponde con un testo unico. I testi fissi senza modello (triage, dosaggi) non passano dal tetto, come prima.
 8. **Avvio in parallelo:** classificatore d'urgenza e ricerca delle fonti.
 9. **Secondo parere** del classificatore: urgenza → `_urgent_answer`; caso dubbio → domanda di chiarimento, se esiste per quella specie.
 10. **Fuori tema:** il classificatore dice `off_topic` **e** il messaggio non nomina animali, specie o il nome dell'animale → `OFF_TOPIC_TEXTS`, senza modello.
@@ -341,5 +341,5 @@ Prima di cambiare il comportamento, leggi il test che lo fissa:
 - **Espressioni regolari multilingue:** lavorano sul testo passato da `normalize_for_matching`, cioè minuscolo e senza accenti. Usa i confini di parola: «denti» non deve trovare «accidenti».
 - **File grande:** `chat_orchestrator.py` è lungo; molti metodi sono `@staticmethod` usati anche dai test e dagli strumenti di misura. Cerca i chiamanti prima di cambiare una firma.
 - **Dose nel testo del modello:** se il proprietario **non** ha chiesto una quantità, `without_dose_sentences` toglie solo le frasi con la dose e il resto resta; il rifiuto fisso va solo a una richiesta vera (giro 3: il peso «85 g» di una calopsite sostituiva quattro risposte diverse). Il secondo rifiuto di fila usa `dosage_answer_again`.
-- **Limite di chat per animale:** con un piano vale `plan.max_chats_per_pet` (Plus 2, Pro 4, Ultra 6); `MAX_ACTIVE_CONVERSATIONS_PER_PET` solo senza piano (sviluppatori).
+- **Limite di chat per animale:** con un piano vale `plan.max_chats_per_pet` (Plus 2, Pro 4, Ultra 6); `MAX_ACTIVE_CONVERSATIONS_PER_PET` solo senza piano (sviluppatori). Vale per ogni messaggio: le due chat in più per le urgenze sono state tolte il 24/11/2026.
 - **Prove con il modello:** usa `--evidence in_memory`. Il `.env` locale può avere `EVIDENCE_BACKEND=scientific_multi`, che interroga banche dati esterne e non rappresenta la produzione.

@@ -173,28 +173,6 @@ def test_a_fish_is_never_asked_whether_it_ran() -> None:
     assert "corsa" not in result.answer
 
 
-@pytest.mark.parametrize(
-    "message",
-    [
-        "cane in macchina col sole, ansima molto",  # a heatstroke
-        "Il mio gatto non riesce a urinare da ieri",  # a blocked bladder
-        "Kernel sanguina parecchio, non si ferma con il panno",
-    ],
-)
-def test_the_chat_limit_never_stops_these_emergencies(message: str) -> None:
-    # Pricing, round 2: with the per-pet chat limit reached, a message not
-    # recognised as an emergency is refused.
-    assert SendChatMessageService._is_an_emergency(message, None)
-
-
-@pytest.mark.parametrize(
-    "message",
-    ["il cane ansima dopo la corsa", "oggi fa caldo, posso portarlo al parco?"],
-)
-def test_ordinary_heat_or_panting_is_not_an_emergency(message: str) -> None:
-    assert not SendChatMessageService._is_an_emergency(message, None)
-
-
 # --- 1. the emergency prompt: the steps that fit, gesture first --------------------------------
 
 

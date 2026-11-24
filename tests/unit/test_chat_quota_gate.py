@@ -69,7 +69,6 @@ def test_after_the_daily_allowance_the_owner_is_told_when_to_come_back() -> None
     assert result.ai_generated is False  # type: ignore[attr-defined]
     assert "2 domande" in result.answer  # type: ignore[attr-defined]
     assert "12 ore" in result.answer  # type: ignore[attr-defined]
-    assert "Rex" in result.answer  # type: ignore[attr-defined]
     assert len(client.requests) == calls_before
 
 

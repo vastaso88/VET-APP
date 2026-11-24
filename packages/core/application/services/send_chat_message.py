@@ -24,7 +24,6 @@ from packages.core.application.services.message_claims import MessageClaims
 from packages.core.application.services.reminder_context_retriever import (
     ReminderContextRetriever,
 )
-from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.domain.age.models import AgeBand, band_for
 from packages.core.domain.common.language import normalize_language
 from packages.core.domain.conversation.attachment import ChatAttachment
@@ -51,15 +50,11 @@ from packages.core.domain.pet_profile.body_condition import (
 )
 from packages.core.domain.pet_profile.memorial import ensure_not_in_memories
 from packages.core.domain.pet_profile.models import PetProfile
-from packages.core.domain.pet_profile.species import normalize_species
 from packages.core.domain.pet_profile.weight_measurement import (
     format_date_it,
     weight_label_with_date,
 )
-from packages.core.domain.safety.clarification_fit import describes_a_grave_picture
-from packages.core.domain.safety.first_aid import describes_fume_distress, describes_heat_distress
-from packages.core.domain.safety.triage_clarification import requires_immediate_escalation
-from packages.core.domain.subscription.limits import EMERGENCY_CHATS_ABOVE_PET_LIMIT, PlanLimits
+from packages.core.domain.subscription.limits import PlanLimits
 from packages.shared.errors.base import ConversationLimitError, ValidationError
 
 logger = logging.getLogger(__name__)
@@ -780,19 +775,6 @@ class SendChatMessageService:
         else:
             max_per_pet = self._max_active_conversations_per_pet
         if len(existing_for_pet) >= max_per_pet:
-            if existing_for_pet and self._is_an_emergency(data.user_message, pet_profile):
-                # An emergency never waits for a free slot (synthetic users
-                # 2026-11-07 P5, 2026-11-16 giro 2): it gets a chat of its own, a few
-                # above the limit, so it is neither refused nor buried in an old
-                # chat about something else. Past that allowance it goes on in the
-                # chat used last.
-                if len(existing_for_pet) < max_per_pet + EMERGENCY_CHATS_ABOVE_PET_LIMIT:
-                    return Conversation(
-                        owner_id=data.owner_id,
-                        pet_id=data.pet_id,
-                        title=title_from_message(data.user_message),
-                    )
-                return migrate_legacy_title(max(existing_for_pet, key=_last_activity))
             pet_name = pet_profile.name if pet_profile is not None else ""
             raise ConversationLimitError(
                 translate(
@@ -804,20 +786,6 @@ class SendChatMessageService:
             owner_id=data.owner_id,
             pet_id=data.pet_id,
             title=title_from_message(data.user_message),
-        )
-
-    @staticmethod
-    def _is_an_emergency(message: str, pet_profile: PetProfile | None) -> bool:
-        species = pet_profile.species if pet_profile is not None else "other"
-        lowered = message.lower()
-        # The grave pictures and a heatstroke too (Pricing, synthetic users round 2):
-        # the wider this is, the less the per-pet chat limit can ever weigh.
-        return (
-            bool(SafetyGate().evaluate(lowered, species=species))
-            or requires_immediate_escalation(lowered)
-            or describes_a_grave_picture(message)
-            or describes_heat_distress(message)
-            or (normalize_species(species) == "bird" and describes_fume_distress(message))
         )
 
     def _persist_pet_level_consent(self, pet_profile: PetProfile, granted: bool | None) -> None:

@@ -75,13 +75,6 @@ NO_ACCESS_LIMITS = PlanLimits(
     max_pets=0, max_chats_per_pet=0, daily_questions=0, max_devices=1, source="none"
 )
 
-# An emergency never waits for a free chat (synthetic users 2026-11-07 and 2026-11-16):
-# at the per-pet limit it opens a chat of its own, up to this many above the limit
-# (so a cap that was reached can never stand between an owner and an answer, and a
-# loop of "emergencies" cannot pile up chats without end). Beyond that it goes on in
-# the chat used last. The same for every plan, so not in PlanLimits.
-EMERGENCY_CHATS_ABOVE_PET_LIMIT = 2
-
 # How many pets one owner may keep in Ricordi (owner decision 2026-11-16: pets in
 # Ricordi do not count towards the plan's pets, so this is what bounds what an
 # account can pile up there). The same for every plan, so not in PlanLimits. This

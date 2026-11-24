@@ -1498,37 +1498,31 @@ CHILD_NEVER_ALONE: dict[str, str] = {
 }
 
 
-# --- the daily limit (synthetic users 2026-11-07, P1 and P9) -------------------
-# Safety first, the count after; no technical code; "domande" as in the app;
-# {wait} is the time until the count starts again (format_wait).
+# --- the daily limit -----------------------------------------------------------------
+# One calm text for every message at the limit (owner, 11/2026: the app does not handle
+# urgencies, the same path for every question; F11 of the collaudo): how many questions
+# the plan gives and when they start again ({wait}, format_wait). {name} is not used.
 
 LIMIT_TEXTS: dict[str, str] = {
     "it": (
-        "Se {name} sta male adesso, non aspettare questo messaggio: un caso grave non aspetta, "
-        "chiama subito il veterinario o un pronto soccorso veterinario. Per oggi hai usato "
-        "tutte le {limit} domande del tuo piano: il conteggio riparte tra circa {wait}."
+        "Per oggi hai usato tutte le {limit} domande del tuo piano: il conteggio riparte "
+        "tra circa {wait}."
     ),
     "en": (
-        "If {name} is unwell right now, do not wait for this message: a serious case does not "
-        "wait, call your vet or an emergency clinic straight away. For today you have used all "
-        "{limit} questions of your plan: the count starts again in about {wait}."
+        "For today you have used all {limit} questions of your plan: the count starts again "
+        "in about {wait}."
     ),
     "es": (
-        "Si {name} está mal ahora, no esperes este mensaje: un caso grave no espera, llama "
-        "ahora mismo al veterinario o a urgencias veterinarias. Por hoy has usado las {limit} "
-        "preguntas de tu plan: el contador vuelve a empezar dentro de unos {wait}."
+        "Por hoy has usado las {limit} preguntas de tu plan: el contador vuelve a empezar "
+        "dentro de unos {wait}."
     ),
     "de": (
-        "Wenn es {name} gerade schlecht geht, warten Sie nicht auf diese Nachricht: Ein ernster "
-        "Fall wartet nicht, rufen Sie sofort Ihre Tierarztpraxis oder einen Notdienst an. Für "
-        "heute haben Sie alle {limit} Fragen Ihres Tarifs verbraucht: Der Zähler startet in "
-        "{wait} wieder."
+        "Für heute haben Sie alle {limit} Fragen Ihres Tarifs verbraucht: Der Zähler startet "
+        "in {wait} wieder."
     ),
     "fr": (
-        "Si {name} va mal en ce moment, n'attendez pas ce message : un cas grave n'attend pas, "
-        "appelez tout de suite votre vétérinaire ou un service d'urgences. Pour aujourd'hui "
-        "vous avez utilisé les {limit} questions de votre offre : le compteur repart dans "
-        "{wait}."
+        "Pour aujourd'hui vous avez utilisé les {limit} questions de votre offre : le "
+        "compteur repart dans {wait}."
     ),
 }
 

@@ -447,6 +447,15 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "de": "Nicht gefunden.",
         "fr": "Introuvable.",
     },
+    # A request refused by the throttle (apps/api/rate_limit.py): {wait} is how long until the
+    # caller's oldest request leaves the window (collaudo F44: it used to say "in a moment").
+    "too_many_requests": {
+        "it": "Troppe richieste: riprova tra {wait}.",
+        "en": "Too many requests: try again in {wait}.",
+        "es": "Demasiadas solicitudes: inténtalo de nuevo dentro de {wait}.",
+        "de": "Zu viele Anfragen: Versuchen Sie es in {wait} erneut.",
+        "fr": "Trop de demandes : réessayez dans {wait}.",
+    },
     "weight_marker": {
         "it": "manca il peso",
         "en": "the weight is missing",
@@ -714,11 +723,11 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
     # app keeps the "conversation_limit_reached:" prefix as its signal; the
     # text after it is what a person reads.
     "conversation_limit": {
-        "it": "Hai già {limit} chat aperte per {pet_name}: per iniziarne una nuova, elimina una chat dalla lista. Se {pet_name} sta male adesso, non aspettare: scrivi in una chat che hai già o chiama subito il veterinario.",
-        "en": "You already have {limit} chats open for {pet_name}: to start a new one, delete a chat from the list. If {pet_name} is unwell right now, do not wait: write in a chat you already have or call your vet straight away.",
-        "es": "Ya tienes {limit} chats abiertos para {pet_name}: para empezar uno nuevo, elimina un chat de la lista. Si {pet_name} está mal ahora, no esperes: escribe en un chat que ya tienes o llama ahora mismo al veterinario.",
-        "de": "Sie haben schon {limit} offene Chats für {pet_name}: Um einen neuen zu beginnen, löschen Sie einen Chat aus der Liste. Wenn es {pet_name} gerade schlecht geht, warten Sie nicht: Schreiben Sie in einem bestehenden Chat oder rufen Sie sofort Ihre Tierarztpraxis an.",
-        "fr": "Vous avez déjà {limit} conversations ouvertes pour {pet_name} : pour en commencer une nouvelle, supprimez une conversation de la liste. Si {pet_name} va mal en ce moment, n'attendez pas : écrivez dans une conversation existante ou appelez tout de suite votre vétérinaire.",
+        "it": "Hai già {limit} chat aperte per {pet_name}: per iniziarne una nuova, elimina una chat dalla lista.",
+        "en": "You already have {limit} chats open for {pet_name}: to start a new one, delete a chat from the list.",
+        "es": "Ya tienes {limit} chats abiertos para {pet_name}: para empezar uno nuevo, elimina un chat de la lista.",
+        "de": "Sie haben schon {limit} offene Chats für {pet_name}: Um einen neuen zu beginnen, löschen Sie einen Chat aus der Liste.",
+        "fr": "Vous avez déjà {limit} conversations ouvertes pour {pet_name} : pour en commencer une nouvelle, supprimez une conversation de la liste.",
     },
     # The plan's number of pets (POST /pets refused, 403 plan_limit_reached): the
     # first when there is a plan above to suggest, the second when there is not.

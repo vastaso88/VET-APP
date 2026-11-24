@@ -3,6 +3,8 @@ behaviour at the orchestrator and chat-service level."""
 
 from __future__ import annotations
 
+import re
+
 import pytest
 from llm_fakes import RecordingLLMClient
 from test_chat_orchestrator import ScriptedContentLLMClient
@@ -31,7 +33,7 @@ from packages.core.domain.safety.clarification_fit import (
     injury_is_on_a_person,
     is_a_past_event,
 )
-from packages.core.domain.safety.harmful_requests import is_minor_writing
+from packages.core.domain.safety.harmful_requests import LIMIT_TEXTS, is_minor_writing
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
 )
@@ -128,10 +130,13 @@ def test_the_fixed_lists_catch_the_blocked_cases_before_any_limit() -> None:
         assert result.mode in ("triage", "safety_clarification"), (message, result.answer[:80])
 
 
-def test_the_classifier_runs_before_the_limit_and_an_emergency_goes_on() -> None:
+def test_at_the_limit_no_model_is_called_whatever_the_message_says() -> None:
+    # Until 24/11/2026 the light classifier read the message past the limit and an emergency
+    # was answered by the model, outside the count. Now the cap is the same for everybody.
     classifier = _Classifier("emergency", "other")
+    client = RecordingLLMClient()
     orchestrator = ChatOrchestrator(
-        RecordingLLMClient(),
+        client,
         InMemoryEvidenceRetriever(),
         NoopPiiAnonymizer(),
         usage_budget=_exhausted_budget(),
@@ -144,34 +149,34 @@ def test_the_classifier_runs_before_the_limit_and_an_emergency_goes_on() -> None
         user_daily_limit=1,
     )
 
-    assert classifier.calls == 1
-    assert result.mode == "triage"
+    assert classifier.calls == 0 and client.requests == []
+    assert result.mode == "user_limit_reached"
 
 
-def test_the_limit_message_puts_safety_first_in_the_owners_language() -> None:
-    for language, fragment in (
-        ("it", "un caso grave non aspetta"),
-        ("en", "a serious case does not wait"),
-        ("de", "Ein ernster Fall wartet nicht"),
-    ):
-        orchestrator = ChatOrchestrator(
-            RecordingLLMClient(),
-            InMemoryEvidenceRetriever(),
-            NoopPiiAnonymizer(),
-            usage_budget=_exhausted_budget(),
-            answer_models=["main"],
-        )
-        result, _ = _ask(
-            "quante volte al giorno deve mangiare?",
-            orchestrator=orchestrator,
-            language=language,
-            user_daily_limit=1,
-        )
-        assert result.mode == "user_limit_reached"
-        assert result.answer.startswith(("Se Toby", "If Toby", "Wenn es Toby"))
-        assert fragment in result.answer
-        assert "tutti i " not in result.answer and " messaggi " not in result.answer
-        assert "plan_limit" not in result.answer and not result.answer.startswith("Per oggi")
+@pytest.mark.parametrize("language", ["it", "en", "es", "de", "fr"])
+def test_the_limit_message_is_calm_and_says_when_the_count_starts_again(language: str) -> None:
+    orchestrator = ChatOrchestrator(
+        RecordingLLMClient(),
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        usage_budget=_exhausted_budget(),
+        answer_models=["main"],
+    )
+    result, _ = _ask(
+        "quante volte al giorno deve mangiare?",
+        orchestrator=orchestrator,
+        language=language,
+        user_daily_limit=1,
+    )
+    assert result.mode == "user_limit_reached"
+    before, after = LIMIT_TEXTS[language].format(limit=1, wait="|").split("|")
+    assert result.answer.startswith(before) and result.answer.endswith(after)
+    wait = result.answer.removeprefix(before).removesuffix(after)
+    assert re.search(r"[0-9]", wait)
+    assert not re.search(r"\+?\d{3,}", result.answer)
+    assert "!" not in result.answer
+    assert "tutti i " not in result.answer and " messaggi " not in result.answer
+    assert "plan_limit" not in result.answer
 
 
 # --- P5. the per-pet chat limit and empty conversations -------------------------------
@@ -195,30 +200,20 @@ def _service(limit_per_pet: int = 1, budget: LlmBudget | None = None) -> SendCha
     )
 
 
-def test_an_emergency_gets_a_chat_of_its_own_when_the_pet_limit_is_reached() -> None:
+def test_the_pet_limit_refuses_every_message_the_same_way() -> None:
+    # Until 24/11/2026 an emergency got a chat of its own above the limit.
     service = _service(limit_per_pet=1)
-    first = service.execute(
+    service.execute(
         SendChatMessageInput(
             owner_id="owner-a", pet_id="pet-a", user_message="quanto deve dormire?"
         )
     )
-    with pytest.raises(ValidationError, match="conversation_limit_reached: Hai già 1 chat"):
-        service.execute(
-            SendChatMessageInput(
-                owner_id="owner-a", pet_id="pet-a", user_message="e quanto mangia?"
+    for text in ("e quanto mangia?", "ha mangiato il veleno per topi"):
+        with pytest.raises(ValidationError, match="conversation_limit_reached: Hai già 1 chat"):
+            service.execute(
+                SendChatMessageInput(owner_id="owner-a", pet_id="pet-a", user_message=text)
             )
-        )
-
-    urgent = service.execute(
-        SendChatMessageInput(
-            owner_id="owner-a", pet_id="pet-a", user_message="ha mangiato il veleno per topi"
-        )
-    )
-
-    assert urgent.mode == "triage"
-    # Not refused, and not buried in the old chat about something else (giro 2):
-    assert urgent.conversation.id != first.conversation.id
-    assert len(service._repository.list_by_pet("pet-a")) == 2  # noqa: SLF001
+    assert len(service._repository.list_by_pet("pet-a")) == 1  # noqa: SLF001
 
 
 def test_a_message_the_daily_limit_stops_does_not_create_a_chat() -> None:

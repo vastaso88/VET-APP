@@ -1654,12 +1654,7 @@ class ChatOrchestrator:
                 counts_as_question=not self._continues_a_topic(data),
             )
             if denial is not None:
-                # P1: an emergency the fixed lists missed is still an
-                # emergency; the light classifier runs before the limit
-                # stops the turn, and what escalates is never blocked.
-                urgent = self._urgency_despite_limit(data, message, lowered, effective_species)
-                if urgent is not None:
-                    return urgent
+                # The cap counts for every message (owner, 11/2026: no lane for urgencies).
                 return self._quota_result(data, denial)
 
         situation = data.situation_model or SituationModel()
@@ -2715,8 +2710,7 @@ class ChatOrchestrator:
                 species_family=normalize_species(effective_species),
                 female=(data.sex or "").strip().lower() in _FEMALE_LABELS,
                 heat=mentions_heat(message),
-                # Reached after the turn's admission (or past the owner's
-                # limit, P1): the message is not counted again.
+                # Reached after the turn's admission: the message is not counted again.
                 admitted=True,
             )
         question = clarifying_question(
@@ -2748,38 +2742,13 @@ class ChatOrchestrator:
             safety_clarification_category=category,
         )
 
-    def _urgency_despite_limit(
-        self,
-        data: ChatOrchestratorInput,
-        message: str,
-        lowered: str,
-        effective_species: str,
-    ) -> ChatOrchestratorResult | None:
-        """With the owner's allowance used up, the light classifier still
-        reads the message: an emergency or a possible one goes on as if
-        there were no limit (synthetic users 2026-11-07, P1)."""
-        classifier = self._urgency_classifier
-        if classifier is None or self._classify_intent(lowered) == "general_info":
-            return None
-        try:
-            verdict = classifier.classify(
-                self._anonymize_for_provider(message, data), effective_species
-            )
-        except Exception:  # noqa: BLE001 - a helper must never cost the answer
-            logger.exception("urgency classifier at the limit failed; the limit message goes")
-            return None
-        if verdict is None or verdict.level == "normal":
-            return None
-        return self._result_from_urgency_verdict(verdict, data, message, effective_species)
-
     @classmethod
     def _quota_result(
         cls, data: ChatOrchestratorInput, denial: QuotaDenial
     ) -> ChatOrchestratorResult:
         """The kind refusal of a turn that cannot be answered today: the
-        owner's allowance is used up, or every model's daily quota is.
-        Safety first, then the count and when it starts again, in the
-        owner's language (synthetic users 2026-11-07, P9)."""
+        owner's allowance is used up, or every model's daily quota is: the
+        count and when it starts again, in the owner's language."""
         language = normalize_language(data.language)
         wait = format_wait(denial.retry_after_seconds, language)
         if denial.reason == "user_limit":
@@ -2999,11 +2968,10 @@ class ChatOrchestrator:
                 # model wrote part of it); the follow-up ceiling still applies.
                 counts_as_question=False,
             )
-            if denial is not None and denial.reason != "user_limit":
-                # Every model's daily budget is gone: the fixed steps, as always.
+            if denial is not None:
+                # The owner's cap or every model's daily budget is gone: the fixed steps, and
+                # no model call. The cap counts for every message (HK Verifica, 24/11/2026).
                 return fixed
-            # The owner's own allowance never stops an emergency (P1): the
-            # message is counted and the answer goes.
         opening, steps = self._triage_texts(
             data.pet_name,
             category,

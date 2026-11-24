@@ -13,7 +13,7 @@ from packages.core.application.services.chat_orchestrator import (
     ChatOrchestratorInput,
     ChatOrchestratorResult,
 )
-from packages.core.application.services.llm_budget import LlmBudget
+from packages.core.application.services.llm_budget import FOLLOWUPS_PER_QUESTION, LlmBudget
 from packages.core.domain.conversation.models import ChatMessage
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
@@ -177,3 +177,19 @@ def test_an_urgency_is_never_a_question_of_the_plan() -> None:
 
     assert urgent.mode == "triage"
     assert after.mode == LIMIT_MODE  # the urgency did not use a question, the first one did
+
+
+def test_past_the_follow_up_ceiling_an_urgency_gets_the_fixed_steps_and_no_model_call() -> None:
+    # HK Verifica, 24/11/2026: past the ceiling the model still wrote the answer, uncounted.
+    orchestrator, llm = _setup()
+    message = "Toby ha appena mangiato il topicida e adesso trema e sbava"
+    for _ in range(FOLLOWUPS_PER_QUESTION):
+        _ask(orchestrator, message)
+    counted = len(llm.requests_for("urgent_answer"))
+    total = len(llm.requests)
+
+    past = _ask(orchestrator, message)
+
+    assert counted == FOLLOWUPS_PER_QUESTION
+    assert past.mode == "triage"  # the fixed steps, as when the model is off
+    assert len(llm.requests) == total
