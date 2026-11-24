@@ -44,6 +44,7 @@ class ChatConversationMenuButton extends StatelessWidget {
           PopupMenuItem(
               value: _Action.clinicalConsent,
               child: Text(context.l10n.petsConsentCardTitle(petName))),
+        const PopupMenuDivider(),
         PopupMenuItem(
           value: _Action.delete,
           child: Text(

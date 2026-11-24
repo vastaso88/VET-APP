@@ -560,7 +560,8 @@ class PetDemoStore {
       nextVisitLabel: (row['next_visit_label'] ?? '').toString(),
       avatarEmoji: (row['avatar_emoji'] ?? (name.isEmpty ? '' : name[0].toUpperCase())).toString(),
       accentColor: _colorFromValue(row['accent_color_value']) ?? option.accentColor,
-      identityColor: _colorFromValue(row['identity_color_value']) ?? option.accentColor,
+      identityColor:
+          _colorFromValue(row['identity_color_value']) ?? defaultIdentityColorForId(id),
       dogSizeCategory: row['dog_size_category'] as String?,
       isMemorial: row['is_memorial'] as bool? ?? false,
       memorialDate: parsePetBirthDateLabel(row['memorial_date_label'] as String?),
