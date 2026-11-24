@@ -225,7 +225,11 @@ class _EventsPageState extends State<EventsPage> {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   if (visible.isEmpty) ...[
-                    _EmptyState(message: eventsEmptyMessage(_filter, today)),
+                    _EmptyState(
+                      message: result.countryHasEvents
+                          ? eventsEmptyMessage(_filter, today)
+                          : context.l10n.eventsNoneInCountry,
+                    ),
                     Text(
                       context.l10n.eventsCountryOnlyNote,
                       style: AppTextStyles.caption,

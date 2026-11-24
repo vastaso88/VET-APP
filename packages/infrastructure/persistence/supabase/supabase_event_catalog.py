@@ -25,6 +25,18 @@ class SupabaseEventCatalogRepository(EventCatalogRepository):
         self._client = client
         self._table = "events"
 
+    def has_public_events(self, country: str) -> bool:
+        response = (
+            self._client.table(self._table)
+            .select("id")
+            .in_("status", ["published", "cancelled", "postponed"])
+            .eq("audience", "public")
+            .eq("country", country)
+            .limit(1)
+            .execute()
+        )
+        return bool(response.data)
+
     def list_public(self, *, country: str, from_day: date, to_day: date) -> list[dict[str, Any]]:
         response = (
             self._client.table(self._table)

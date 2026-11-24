@@ -2379,6 +2379,7 @@
     }
   },
   "eventsEmptyPeriod": "Aucun événement sur la période choisie",
+  "eventsNoneInCountry": "Nous n'avons pas encore d'événements pour votre pays.",
   "eventsCountryOnlyNote": "Nous n'affichons que les événements de votre pays, celui de la langue choisie dans l'application.",
   "eventsLevelLocal": "Local",
   "eventsLevelProvincial": "Provincial",

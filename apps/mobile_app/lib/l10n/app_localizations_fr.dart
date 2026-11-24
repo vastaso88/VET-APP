@@ -4053,6 +4053,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get eventsEmptyPeriod => 'Aucun événement sur la période choisie';
 
   @override
+  String get eventsNoneInCountry =>
+      'Nous n\'avons pas encore d\'événements pour votre pays.';
+
+  @override
   String get eventsCountryOnlyNote =>
       'Nous n\'affichons que les événements de votre pays, celui de la langue choisie dans l\'application.';
 

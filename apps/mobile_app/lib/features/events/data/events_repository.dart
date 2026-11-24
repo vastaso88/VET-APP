@@ -18,10 +18,17 @@ import '../domain/event_filter.dart';
 /// nascondere la seconda.
 class EventsLoadResult {
   const EventsLoadResult(
-      {required this.events, this.failed = false, this.needsPlan = false});
+      {required this.events,
+      this.failed = false,
+      this.needsPlan = false,
+      this.countryHasEvents = true});
 
   final List<EventEntry> events;
   final bool failed;
+
+  /// False when the server says the catalogue has no event at all for the owner's country
+  /// (a server that does not say it yet counts as true): not the same as an empty period.
+  final bool countryHasEvents;
 
   /// The backend refused (402): the trial is over and the owner has no plan.
   /// Different from [failed]: retrying changes nothing.
@@ -82,7 +89,8 @@ class EventsRepository {
           jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       final events = _parseRows(json['events'] as List<dynamic>? ?? const []);
       return EventsLoadResult(
-          events: filterEventsByCountry(events, countryCode));
+          events: filterEventsByCountry(events, countryCode),
+          countryHasEvents: json['country_has_events'] != false);
     } catch (_) {
       return null;
     }

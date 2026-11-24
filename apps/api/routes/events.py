@@ -23,12 +23,14 @@ def list_events(
     to_day: Annotated[date, Query(alias="to")],
 ) -> dict[str, object]:
     """The public events of [country] that touch the window. Part of what a
-    plan includes: after the trial an owner without a plan gets 402."""
+    plan includes: after the trial an owner without a plan gets 402.
+
+    `country_has_events` tells an empty month from a country the catalogue does not cover."""
     container = get_container()
     result = container.list_events_service().execute(
         ListEventsInput(country=country, from_day=from_day, to_day=to_day)
     )
-    return {"events": result.events}
+    return {"events": result.events, "country_has_events": result.country_has_events}
 
 
 class SubmitEventRequest(BaseModel):

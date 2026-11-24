@@ -4002,6 +4002,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eventsEmptyPeriod => 'No events in the selected period';
 
   @override
+  String get eventsNoneInCountry =>
+      'We don\'t have any events for your country yet.';
+
+  @override
   String get eventsCountryOnlyNote =>
       'We only show events from your country, based on the language you picked in the app.';
 

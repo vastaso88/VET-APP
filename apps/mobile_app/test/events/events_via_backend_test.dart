@@ -81,6 +81,17 @@ void main() {
     expect(result.events.map((e) => e.id), ['ev-it']);
   });
 
+  test('a country with no events at all is told apart; an older server says nothing', () async {
+    Future<bool> has(String body) async => (await _repository(
+          MockClient((request) async => http.Response(body, 200)),
+        ).loadEvents(from: _from, to: _to, country: 'FR'))
+            .countryHasEvents;
+
+    expect(await has('{"events":[],"country_has_events":false}'), isFalse);
+    expect(await has('{"events":[],"country_has_events":true}'), isTrue);
+    expect(await has('{"events":[]}'), isTrue);
+  });
+
   test('a 402 means the owner needs a plan: not a failure, nothing to retry', () async {
     final client =
         MockClient((request) async => http.Response('{"code":"subscription_required"}', 402));

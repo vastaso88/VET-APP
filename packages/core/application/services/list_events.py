@@ -18,6 +18,9 @@ class ListEventsInput(BaseModel):
 
 class ListEventsOutput(BaseModel):
     events: list[dict[str, Any]]
+    # Collaudo F42: an empty list of a country the catalogue does not cover (false) is not
+    # "nothing in this period" (true).
+    country_has_events: bool
 
 
 class ListEventsService:
@@ -36,8 +39,10 @@ class ListEventsService:
             raise ValidationError("the end of the window is before its start")
         if data.to_day - data.from_day > MAX_WINDOW:
             raise ValidationError("the window is too wide")
+        events = self._repository.list_public(
+            country=country, from_day=data.from_day, to_day=data.to_day
+        )
         return ListEventsOutput(
-            events=self._repository.list_public(
-                country=country, from_day=data.from_day, to_day=data.to_day
-            )
+            events=events,
+            country_has_events=bool(events) or self._repository.has_public_events(country),
         )

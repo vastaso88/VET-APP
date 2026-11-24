@@ -14,6 +14,14 @@ class InMemoryEventCatalogRepository(EventCatalogRepository):
     def add(self, row: dict[str, Any]) -> None:
         self._rows.append(row)
 
+    def has_public_events(self, country: str) -> bool:
+        return any(
+            str(row.get("country", "IT")).upper() == country
+            and row.get("audience", "public") == "public"
+            and row.get("status", "published") in ("published", "cancelled", "postponed")
+            for row in self._rows
+        )
+
     def list_public(self, *, country: str, from_day: date, to_day: date) -> list[dict[str, Any]]:
         def keep(row: dict[str, Any]) -> bool:
             return (

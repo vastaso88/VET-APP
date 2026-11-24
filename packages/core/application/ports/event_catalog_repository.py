@@ -8,3 +8,7 @@ class EventCatalogRepository(Protocol):
         [from_day]..[to_day] (ends included), oldest start first. Published,
         cancelled and postponed events only, `audience = 'public'`."""
         ...
+
+    def has_public_events(self, country: str) -> bool:
+        """Whether the country has at least one event [list_public] can return, in any period."""
+        ...

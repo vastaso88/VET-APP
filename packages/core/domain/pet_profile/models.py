@@ -10,6 +10,7 @@ from packages.core.domain.pet_profile.body_condition import (
 )
 from packages.core.domain.pet_profile.details import ACTIVITY_LEVELS, validated_microchip
 from packages.core.domain.pet_profile.sex import split_legacy_sex
+from packages.core.domain.pet_profile.species import tidy_species
 
 
 class HabitatDetails(BaseModel):
@@ -101,6 +102,17 @@ class PetProfile(BaseModel):
     # read here so nothing new is added about a pet that passed away. Never
     # written by the backend (`exclude`), so a save can't bring a pet back.
     is_memorial: bool = Field(default=False, exclude=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _tidy_species(cls, data: Any) -> Any:
+        """«cane », «PESCI», «Hunde» are the app's «Cane» / «Pesce» / «Cane»: a species written
+        another way is matched to the app's list on the way in AND on the way out of the
+        database, so an old dirty row reads clean too (collaudo F40)."""
+        if not isinstance(data, dict) or not isinstance(data.get("species"), str):
+            return data
+        tidy = tidy_species(data["species"])
+        return data if tidy == data["species"] else {**data, "species": tidy}
 
     @model_validator(mode="before")
     @classmethod

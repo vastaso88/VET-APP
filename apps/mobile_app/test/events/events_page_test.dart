@@ -107,6 +107,17 @@ void main() {
     expect(find.text('Nessun evento nei prossimi 30 giorni'), findsOneWidget);
   });
 
+  testWidgets('a country the catalogue does not cover is told apart', (tester) async {
+    final repository = _FakeRepository(
+      (_, __) async => const EventsLoadResult(events: [], countryHasEvents: false),
+    );
+    await _pump(tester, repository);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Per il tuo paese non abbiamo ancora eventi.'), findsOneWidget);
+    expect(find.text('Nessun evento nei prossimi 30 giorni'), findsNothing);
+  });
+
   testWidgets('a failed load is not shown as an empty list, and can be retried', (tester) async {
     var attempts = 0;
     final repository = _FakeRepository((_, __) async {

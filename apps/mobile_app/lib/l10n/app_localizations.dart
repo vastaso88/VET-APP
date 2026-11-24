@@ -6644,6 +6644,12 @@ abstract class AppLocalizations {
   /// **'Nessun evento nel periodo scelto'**
   String get eventsEmptyPeriod;
 
+  /// No description provided for @eventsNoneInCountry.
+  ///
+  /// In it, this message translates to:
+  /// **'Per il tuo paese non abbiamo ancora eventi.'**
+  String get eventsNoneInCountry;
+
   /// No description provided for @eventsCountryOnlyNote.
   ///
   /// In it, this message translates to:
