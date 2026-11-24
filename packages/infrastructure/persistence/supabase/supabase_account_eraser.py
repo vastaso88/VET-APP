@@ -84,13 +84,12 @@ OWNER_TABLES: tuple[tuple[str, str], ...] = (
 LEGACY_OWNER_TABLES: tuple[tuple[str, str], ...] = (
     ("adoption_contact_requests", "owner_id"),
     ("adoption_listings", "owner_id"),
-    # The old billing: everything hangs off owner_profiles, which goes last.
+    # The old billing: everything hangs off owner_profiles, at the end of this list.
     ("billing_founder_slots", "owner_id"),
     ("billing_one_time_purchases", "owner_id"),
     ("billing_subscriptions", "owner_id"),
     ("billing_customers", "owner_id"),
     ("owner_billing_entitlements", "owner_id"),
-    ("owner_profiles", "owner_id"),
     ("clinical_documents", "owner_id"),
     ("local_service_reviews", "owner_id"),
     ("local_service_events", "owner_id"),
@@ -100,6 +99,8 @@ LEGACY_OWNER_TABLES: tuple[tuple[str, str], ...] = (
     ("radar_place_coverages", "owner_id"),
     ("radar_coverages", "owner_id"),
     ("radar_places", "owner_id"),
+    # Last: the old billing tables reference it.
+    ("owner_profiles", "owner_id"),
 )
 
 # Tables keyed by a keyed pseudonym of the owner instead of the id.

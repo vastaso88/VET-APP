@@ -606,3 +606,7 @@ def test_an_id_that_is_not_a_plain_name_removes_no_file(listing_id: str) -> None
 
     for bucket, paths in others.items():
         assert paths <= client.buckets[bucket], bucket
+
+
+def test_the_old_profiles_are_erased_after_everything_that_references_them() -> None:
+    assert LEGACY_OWNER_TABLES[-1] == ("owner_profiles", "owner_id")
