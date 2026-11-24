@@ -192,6 +192,14 @@ begin
         if new.memorial_date_label is not distinct from old.memorial_date_label then
             return new;
         end if;
+    elsif exists (
+        select 1 from public.pet_profiles p
+         where p.id = new.id
+           and p.memorial_date_label is not distinct from new.memorial_date_label
+    ) then
+        -- L'app salva con un upsert: il trigger «before insert» scatta anche per una riga che
+        -- esiste gia' (poi diventa una modifica). Data non cambiata = non si giudica.
+        return new;
     end if;
     parts := regexp_split_to_array(btrim(new.memorial_date_label), '\s+');
     part_count := array_length(parts, 1);

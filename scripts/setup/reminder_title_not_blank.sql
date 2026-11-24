@@ -28,6 +28,13 @@ begin
         if new.title is not distinct from old.title then
             return new;
         end if;
+    elsif exists (
+        select 1 from public.reminders r
+         where r.id = new.id and r.title is not distinct from new.title
+    ) then
+        -- L'app salva con un upsert: il trigger «before insert» scatta anche per una riga che
+        -- esiste gia' (poi diventa una modifica). Titolo non cambiato = non si giudica.
+        return new;
     end if;
     if new.title is null or new.title ~ '^\s*$' then
         raise exception 'reminder_title_required'
