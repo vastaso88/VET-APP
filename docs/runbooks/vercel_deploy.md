@@ -7,6 +7,14 @@ This project exposes the FastAPI application through the repository root `app.py
 - Deploy `apps/api` via the root `app.py` entrypoint.
 - Keep the API deployment separate from the Flutter web preview.
 
+## Admin panel
+
+The `vet-app-34xp` project uses `apps/admin_portal` as its Vercel Root Directory.
+Its [Ignored Build Step](../../apps/admin_portal/scripts/ignore-build.sh) skips Git
+builds when that directory matches the last successful deployment on the branch.
+For a new preview branch it compares against `main`. If the comparison is
+unavailable, the build proceeds. Vercel can list skipped builds as **Canceled**.
+
 ## Flutter web preview
 Use this for the founder demo and other visual review flows.
 
