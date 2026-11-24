@@ -4533,16 +4533,16 @@
   "storeBillingPending": "Paiement en attente de confirmation par la boutique.",
   "storeBillingVerifying": "Vérification de l’achat…",
   "storeBillingVerified": "Abonnement actif.",
-  "storeBillingFailed": "Impossible de vérifier l’achat. Réessaie plus tard : tu ne seras pas débité deux fois.",
+  "storeBillingFailed": "Impossible de vérifier l’achat. Réessayez plus tard : vous ne serez pas débité deux fois.",
   "storeBillingOwnedByOther": "Cet achat est lié à un autre compte Quokka.",
   "storeBillingUnavailable": "Les achats en boutique ne sont pas disponibles sur cet appareil.",
   "storeBillingCanceledUntil": "Renouvellement désactivé : actif jusqu’au {date}",
   "storeBillingExpired": "Abonnement expiré",
   "storeBillingRefunded": "Abonnement remboursé ou révoqué",
-  "storeBillingPaymentIssue": "Problème de paiement : mets à jour le moyen de paiement dans la boutique",
+  "storeBillingPaymentIssue": "Problème de paiement : mettez à jour le moyen de paiement dans la boutique",
   "storeBillingTrialDaysLeft": "Essai gratuit : {days} jours restants",
   "storeBillingRestoreDone": "Restauration terminée.",
-  "storeBillingPricesFromStore": "Les prix, la devise et les taxes sont ceux indiqués par la boutique pour ton pays. L’abonnement se renouvelle automatiquement jusqu’à ce que tu le résilies dans la boutique.",
+  "storeBillingPricesFromStore": "Les prix, la devise et les taxes sont ceux indiqués par la boutique pour votre pays. L’abonnement se renouvelle automatiquement jusqu’à ce que vous le résiliez dans la boutique.",
   "emergencyNoticeShort": "Quokka ne gère pas les urgences : en cas d'urgence, adressez-vous immédiatement à un vétérinaire, aux services d'urgence ou à un service d'écoute de votre pays. N'attendez pas la réponse de l'application.",
   "emergencyNoticeTitle": "Quokka ne gère pas les urgences",
   "emergencyNoticeCheckbox": "J'ai compris que Quokka ne gère pas les urgences et je ne l'utilise pas en cas d'urgence.",
@@ -4572,5 +4572,7 @@
   "authErrorEmailUndeliverable": "Nous ne pouvons pas livrer l'e-mail à cette adresse. Vérifiez qu'elle est bien écrite ou utilisez-en une autre.",
   "authErrorLinkOtherDevice": "Ce lien doit être ouvert sur l'appareil depuis lequel vous l'avez demandé. Si vous confirmiez votre adresse, elle est déjà confirmée : connectez-vous avec votre e-mail et votre mot de passe. Si vous réinitialisiez votre mot de passe, demandez un nouveau lien depuis cet appareil.",
   "consentTextChanged": "Le texte a changé pendant que vous le lisiez. Relisez-le et acceptez à nouveau.",
-  "consentUpdateApp": "Pour accepter, il faut la version la plus récente de l'application : mettez-la à jour depuis la boutique."
+  "consentUpdateApp": "Pour accepter, il faut la version la plus récente de l'application : mettez-la à jour depuis la boutique.",
+  "consentGateOtherOptions": "Autres possibilités",
+  "consentGatePauseOrDelete": "Mettre le compte en pause ou le supprimer"
 }

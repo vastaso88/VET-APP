@@ -8265,4 +8265,10 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get consentUpdateApp =>
       'Per accettare serve la versione più recente dell\'app: aggiornala dallo store.';
+
+  @override
+  String get consentGateOtherOptions => 'Altre possibilità';
+
+  @override
+  String get consentGatePauseOrDelete => 'Metti in pausa o elimina l\'account';
 }

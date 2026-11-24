@@ -8201,7 +8201,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get storeBillingFailed =>
-      'Impossible de vérifier l’achat. Réessaie plus tard : tu ne seras pas débité deux fois.';
+      'Impossible de vérifier l’achat. Réessayez plus tard : vous ne serez pas débité deux fois.';
 
   @override
   String get storeBillingOwnedByOther =>
@@ -8224,7 +8224,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get storeBillingPaymentIssue =>
-      'Problème de paiement : mets à jour le moyen de paiement dans la boutique';
+      'Problème de paiement : mettez à jour le moyen de paiement dans la boutique';
 
   @override
   String storeBillingTrialDaysLeft(String days) {
@@ -8236,7 +8236,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get storeBillingPricesFromStore =>
-      'Les prix, la devise et les taxes sont ceux indiqués par la boutique pour ton pays. L’abonnement se renouvelle automatiquement jusqu’à ce que tu le résilies dans la boutique.';
+      'Les prix, la devise et les taxes sont ceux indiqués par la boutique pour votre pays. L’abonnement se renouvelle automatiquement jusqu’à ce que vous le résiliez dans la boutique.';
 
   @override
   String get emergencyNoticeShort =>
@@ -8299,4 +8299,11 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get consentUpdateApp =>
       'Pour accepter, il faut la version la plus récente de l\'application : mettez-la à jour depuis la boutique.';
+
+  @override
+  String get consentGateOtherOptions => 'Autres possibilités';
+
+  @override
+  String get consentGatePauseOrDelete =>
+      'Mettre le compte en pause ou le supprimer';
 }

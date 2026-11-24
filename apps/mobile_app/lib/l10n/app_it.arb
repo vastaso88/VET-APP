@@ -4711,5 +4711,7 @@
   "authErrorEmailUndeliverable": "Non riusciamo a consegnare l'email a questo indirizzo. Controlla che sia scritto bene oppure usane un altro.",
   "authErrorLinkOtherDevice": "Questo link va aperto sullo stesso dispositivo da cui l'hai richiesto. Se stavi confermando l'indirizzo, è già confermato: accedi con email e password. Se stavi reimpostando la password, richiedi un nuovo link da questo dispositivo.",
   "consentTextChanged": "Il testo è cambiato mentre lo leggevi. Rileggilo e accetta di nuovo.",
-  "consentUpdateApp": "Per accettare serve la versione più recente dell'app: aggiornala dallo store."
+  "consentUpdateApp": "Per accettare serve la versione più recente dell'app: aggiornala dallo store.",
+  "consentGateOtherOptions": "Altre possibilità",
+  "consentGatePauseOrDelete": "Metti in pausa o elimina l'account"
 }

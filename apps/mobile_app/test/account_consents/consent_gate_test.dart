@@ -262,6 +262,19 @@ void main() {
       expect(find.text('Esci'), findsOneWidget);
     });
 
+    testWidgets('"Altre possibilità" offers the data, the pause and the deletion', (tester) async {
+      final backend = _Backend(_snapshot({}));
+      await tester.pumpWidget(_app((_) => ConsentGatePage(dataSource: backend)));
+      await tester.ensureVisible(find.byKey(const Key('consentGateOtherOptions')));
+      await tester.tap(find.byKey(const Key('consentGateOtherOptions')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Scarica i miei dati'), findsOneWidget);
+      expect(find.text("Metti in pausa o elimina l'account"), findsOneWidget);
+      // Nothing was accepted by looking at them.
+      expect(backend.set, isEmpty);
+    });
+
     testWidgets('"Esci" leaves instead of accepting', (tester) async {
       var left = 0;
       await tester.pumpWidget(

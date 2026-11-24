@@ -13687,6 +13687,18 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Per accettare serve la versione più recente dell\'app: aggiornala dallo store.'**
   String get consentUpdateApp;
+
+  /// No description provided for @consentGateOtherOptions.
+  ///
+  /// In it, this message translates to:
+  /// **'Altre possibilità'**
+  String get consentGateOtherOptions;
+
+  /// No description provided for @consentGatePauseOrDelete.
+  ///
+  /// In it, this message translates to:
+  /// **'Metti in pausa o elimina l\'account'**
+  String get consentGatePauseOrDelete;
 }
 
 class _AppLocalizationsDelegate

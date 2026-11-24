@@ -8212,4 +8212,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get consentUpdateApp =>
       'To accept you need the latest version of the app: update it from the store.';
+
+  @override
+  String get consentGateOtherOptions => 'Other options';
+
+  @override
+  String get consentGatePauseOrDelete => 'Pause or delete the account';
 }

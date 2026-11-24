@@ -4572,5 +4572,7 @@
   "authErrorEmailUndeliverable": "No podemos entregar el correo a esta dirección. Comprueba que esté bien escrita o usa otra.",
   "authErrorLinkOtherDevice": "Este enlace debe abrirse en el mismo dispositivo desde el que lo pediste. Si estabas confirmando tu dirección, ya está confirmada: inicia sesión con tu correo y tu contraseña. Si estabas restableciendo la contraseña, pide un enlace nuevo desde este dispositivo.",
   "consentTextChanged": "El texto cambió mientras lo leías. Vuelve a leerlo y acepta de nuevo.",
-  "consentUpdateApp": "Para aceptar necesitas la versión más reciente de la aplicación: actualízala desde la tienda."
+  "consentUpdateApp": "Para aceptar necesitas la versión más reciente de la aplicación: actualízala desde la tienda.",
+  "consentGateOtherOptions": "Otras opciones",
+  "consentGatePauseOrDelete": "Poner en pausa o eliminar la cuenta"
 }

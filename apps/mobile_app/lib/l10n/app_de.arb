@@ -4533,16 +4533,16 @@
   "storeBillingPending": "Zahlung wartet auf Bestätigung durch den Store.",
   "storeBillingVerifying": "Kauf wird überprüft…",
   "storeBillingVerified": "Abo aktiv.",
-  "storeBillingFailed": "Der Kauf konnte nicht überprüft werden. Versuche es später erneut: Es wird nicht doppelt abgebucht.",
+  "storeBillingFailed": "Der Kauf konnte nicht überprüft werden. Versuchen Sie es später erneut: Es wird nicht doppelt abgebucht.",
   "storeBillingOwnedByOther": "Dieser Kauf ist mit einem anderen Quokka-Konto verknüpft.",
   "storeBillingUnavailable": "Store-Käufe sind auf diesem Gerät nicht verfügbar.",
   "storeBillingCanceledUntil": "Verlängerung aus: aktiv bis {date}",
   "storeBillingExpired": "Abo abgelaufen",
   "storeBillingRefunded": "Abo erstattet oder widerrufen",
-  "storeBillingPaymentIssue": "Zahlungsproblem: Aktualisiere die Zahlungsmethode im Store",
+  "storeBillingPaymentIssue": "Zahlungsproblem: Aktualisieren Sie die Zahlungsmethode im Store",
   "storeBillingTrialDaysLeft": "Kostenlose Testphase: noch {days} Tage",
   "storeBillingRestoreDone": "Wiederherstellung abgeschlossen.",
-  "storeBillingPricesFromStore": "Preise, Währung und Steuern sind die vom Store für dein Land angezeigten. Das Abo verlängert sich automatisch, bis du es im Store kündigst.",
+  "storeBillingPricesFromStore": "Preise, Währung und Steuern sind die vom Store für Ihr Land angezeigten. Das Abo verlängert sich automatisch, bis Sie es im Store kündigen.",
   "emergencyNoticeShort": "Quokka ist nicht für Notfälle zuständig: Wenden Sie sich in einem Notfall sofort an eine Tierärztin oder einen Tierarzt, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Warten Sie nicht auf die Antwort der App.",
   "emergencyNoticeTitle": "Quokka ist nicht für Notfälle zuständig",
   "emergencyNoticeCheckbox": "Ich habe verstanden, dass Quokka nicht für Notfälle zuständig ist, und nutze es im Notfall nicht.",
@@ -4572,5 +4572,7 @@
   "authErrorEmailUndeliverable": "Wir können die E-Mail nicht an diese Adresse zustellen. Prüfen Sie die Schreibweise oder verwenden Sie eine andere Adresse.",
   "authErrorLinkOtherDevice": "Dieser Link muss auf dem Gerät geöffnet werden, von dem Sie ihn angefordert haben. Wenn Sie Ihre Adresse bestätigen wollten, ist sie bereits bestätigt: Melden Sie sich mit E-Mail und Passwort an. Wenn Sie das Passwort zurücksetzen wollten, fordern Sie auf diesem Gerät einen neuen Link an.",
   "consentTextChanged": "Der Text hat sich geändert, während Sie ihn gelesen haben. Lesen Sie ihn noch einmal und stimmen Sie erneut zu.",
-  "consentUpdateApp": "Zum Akzeptieren benötigen Sie die neueste Version der App: Aktualisieren Sie sie im Store."
+  "consentUpdateApp": "Zum Akzeptieren benötigen Sie die neueste Version der App: Aktualisieren Sie sie im Store.",
+  "consentGateOtherOptions": "Weitere Möglichkeiten",
+  "consentGatePauseOrDelete": "Konto pausieren oder löschen"
 }

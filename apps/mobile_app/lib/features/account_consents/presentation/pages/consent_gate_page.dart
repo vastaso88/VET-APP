@@ -8,6 +8,8 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/pet_loader.dart';
+import '../../../account/presentation/pages/delete_account_page.dart';
+import '../../../account/presentation/pages/export_data_page.dart';
 import '../../../auth/data/auth_repository_factory.dart';
 import '../../../auth/presentation/pages/legal_text_page.dart';
 import '../../data/account_consents_remote_data_source.dart';
@@ -121,6 +123,44 @@ class _ConsentGatePageState extends State<ConsentGatePage> {
         .pushNamedAndRemoveUntil(AppRouter.auth, (route) => false);
   }
 
+  /// Whoever does not accept the new text can still leave with their data: download them,
+  /// put the account in pause or delete it (pages and routes that already exist; the server
+  /// keeps them open while a consent is missing).
+  Future<void> _otherOptions() async {
+    final l10n = context.l10n;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.download_rounded),
+              title: Text(l10n.settingsAccountExport),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                _openPage(const ExportDataPage());
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.pause_circle_outline_rounded),
+              title: Text(l10n.consentGatePauseOrDelete),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                _openPage(const DeleteAccountPage());
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openPage(Widget page) {
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
+  }
+
   void _open(String key, String title) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => LegalTextPage(consentKey: key, title: title)),
@@ -192,6 +232,11 @@ class _ConsentGatePageState extends State<ConsentGatePage> {
               TextButton(
                 onPressed: _busy ? null : () => unawaited(_leave()),
                 child: Text(l10n.settingsLogout),
+              ),
+              TextButton(
+                key: const Key('consentGateOtherOptions'),
+                onPressed: _busy ? null : () => unawaited(_otherOptions()),
+                child: Text(l10n.consentGateOtherOptions),
               ),
             ],
           ),

@@ -571,6 +571,8 @@
   "consentGateBody": "Per usare Quokka serve accettare i Termini di Servizio e l'Informativa Privacy, nella versione attuale. Puoi leggerli prima di accettare.",
   "consentGateContinue": "Accetta e continua",
   "consentGateFailed": "Non siamo riusciti a registrare la tua accettazione. Riprova tra poco.",
+  "consentGateOtherOptions": "Altre possibilità",
+  "consentGatePauseOrDelete": "Metti in pausa o elimina l'account",
   "consentGateTitle": "Prima di continuare",
   "consentTextChanged": "Il testo è cambiato mentre lo leggevi. Rileggilo e accetta di nuovo.",
   "consentUpdateApp": "Per accettare serve la versione più recente dell'app: aggiornala dallo store.",

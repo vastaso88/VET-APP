@@ -8264,4 +8264,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get consentUpdateApp =>
       'Para aceptar necesitas la versión más reciente de la aplicación: actualízala desde la tienda.';
+
+  @override
+  String get consentGateOtherOptions => 'Otras opciones';
+
+  @override
+  String get consentGatePauseOrDelete => 'Poner en pausa o eliminar la cuenta';
 }

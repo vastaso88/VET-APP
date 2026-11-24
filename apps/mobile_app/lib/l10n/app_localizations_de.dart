@@ -8194,7 +8194,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get storeBillingFailed =>
-      'Der Kauf konnte nicht überprüft werden. Versuche es später erneut: Es wird nicht doppelt abgebucht.';
+      'Der Kauf konnte nicht überprüft werden. Versuchen Sie es später erneut: Es wird nicht doppelt abgebucht.';
 
   @override
   String get storeBillingOwnedByOther =>
@@ -8217,7 +8217,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get storeBillingPaymentIssue =>
-      'Zahlungsproblem: Aktualisiere die Zahlungsmethode im Store';
+      'Zahlungsproblem: Aktualisieren Sie die Zahlungsmethode im Store';
 
   @override
   String storeBillingTrialDaysLeft(String days) {
@@ -8229,7 +8229,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get storeBillingPricesFromStore =>
-      'Preise, Währung und Steuern sind die vom Store für dein Land angezeigten. Das Abo verlängert sich automatisch, bis du es im Store kündigst.';
+      'Preise, Währung und Steuern sind die vom Store für Ihr Land angezeigten. Das Abo verlängert sich automatisch, bis Sie es im Store kündigen.';
 
   @override
   String get emergencyNoticeShort =>
@@ -8292,4 +8292,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get consentUpdateApp =>
       'Zum Akzeptieren benötigen Sie die neueste Version der App: Aktualisieren Sie sie im Store.';
+
+  @override
+  String get consentGateOtherOptions => 'Weitere Möglichkeiten';
+
+  @override
+  String get consentGatePauseOrDelete => 'Konto pausieren oder löschen';
 }
