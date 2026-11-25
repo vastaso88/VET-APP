@@ -1,7 +1,7 @@
 """A quantity of food or water is said only when a source, the owner or the animal's profile
 gives it (collaudo, wave 2: "2-3 % of body weight, 600-900 g a day" for a Labrador; "about
 10 gallons per inch, so 30 cm = 120 litres" for a turtle). Deterministic, in the five
-languages of the chat: the sentence with the figure goes. Any model, the reserve included.
+languages of the chat: the sentence with the figure goes, whatever model wrote it.
 
 A dose of a medicine is the business of dose_in_answer.py; the size of a cage of
 enclosure_size.py.

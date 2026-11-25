@@ -3,7 +3,6 @@
 import logging
 
 from packages.bootstrap.container_state import ContainerState
-from packages.bootstrap.settings_rules import groq_reserve_configured
 from packages.core.application.ports.answer_cache_repository import AnswerCacheRepository
 from packages.core.application.ports.auth_provider import AuthProvider
 from packages.core.application.ports.email_sender import EmailSender
@@ -12,7 +11,6 @@ from packages.core.application.ports.image_analyzer import ImageAnalyzer
 from packages.core.application.ports.llm_client import LLMClient
 from packages.core.application.ports.llm_usage_repository import LlmUsageRepository
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizer
-from packages.core.application.ports.speech_to_text_provider import SpeechToTextProvider
 from packages.infrastructure.auth.age_guarded_auth_provider import AgeGuardedAuthProvider
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.email.in_memory_email_sender import (
@@ -21,8 +19,6 @@ from packages.infrastructure.email.in_memory_email_sender import (
 )
 from packages.infrastructure.llm.providers.anthropic_llm_client import AnthropicLLMClient
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
-from packages.infrastructure.llm.providers.groq_llm_client import GroqLLMClient
-from packages.infrastructure.llm.providers.reserve_llm_client import ReserveLLMClient
 from packages.infrastructure.llm.retrieval.crossref_evidence_retriever import (
     CrossrefEvidenceRetriever,
 )
@@ -54,12 +50,8 @@ from packages.infrastructure.persistence.in_memory_repositories import (
 )
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
 from packages.infrastructure.privacy.rule_based_pii_anonymizer import RuleBasedPiiAnonymizer
-from packages.infrastructure.speech.echo_speech_to_text_provider import EchoSpeechToTextProvider
-from packages.infrastructure.speech.groq_speech_to_text_provider import GroqSpeechToTextProvider
 from packages.infrastructure.vision.disabled_image_analyzer import DisabledImageAnalyzer
 from packages.infrastructure.vision.echo_image_analyzer import EchoImageAnalyzer
-from packages.infrastructure.vision.groq_image_analyzer import GroqImageAnalyzer
-from packages.shared.config.groq_models import is_groq_production_model
 
 logger = logging.getLogger("packages.bootstrap.container")
 
@@ -123,17 +115,10 @@ class PlatformWiring(ContainerState):
         return BootstrapAuthProvider(self.settings)
 
     def _build_llm_client(self) -> LLMClient:
+        # Claude alone, no reserve (owner decision 2026-11-25): when it cannot
+        # answer, or is past the day's spending cap, the chat says so kindly.
         if self.settings.llm_provider == "anthropic":
-            # Claude answers; the Groq chain is the automatic reserve when a
-            # Groq key is configured (owner decision 2026-11-07).
-            primary: LLMClient = AnthropicLLMClient(self.settings, availability=self.llm_budget)
-            if groq_reserve_configured(self.settings):
-                return ReserveLLMClient(
-                    primary, GroqLLMClient(self.settings, availability=self.llm_budget)
-                )
-            return primary
-        if self.settings.llm_provider == "groq":
-            return GroqLLMClient(self.settings, availability=self.llm_budget)
+            return AnthropicLLMClient(self.settings, availability=self.llm_budget)
         return EchoLLMClient(self.settings)
 
     def _build_llm_usage_repository(self) -> LlmUsageRepository:
@@ -170,11 +155,6 @@ class PlatformWiring(ContainerState):
                 raise
         return InMemoryAnswerCacheRepository()
 
-    def _build_speech_to_text_provider(self) -> SpeechToTextProvider:
-        if self.settings.stt_provider == "groq":
-            return GroqSpeechToTextProvider(self.settings)
-        return EchoSpeechToTextProvider()
-
     @property
     def photo_reading_enabled(self) -> bool:
         """False when photos are saved but never read (the chat says so)."""
@@ -182,17 +162,13 @@ class PlatformWiring(ContainerState):
 
     def _build_image_analyzer(self) -> ImageAnalyzer:
         provider = self.settings.vision_provider
-        if provider == "groq":
-            if is_groq_production_model(self.settings.vision_model):
-                return GroqImageAnalyzer(self.settings)
-            # Empty, or a preview model outside Groq's data agreement
-            # (docs/compliance/19): photos are saved, never read.
-            logger.warning("VISION_MODEL is not a Groq production model: photo reading is off")
-            return DisabledImageAnalyzer()
         if provider == "echo" and self.settings.environment != "production":
             # The local test double; never in production, where it would
             # hand the chat an invented description.
             return EchoImageAnalyzer()
+        if provider not in ("echo", "off"):
+            # A value of the time when a service read the photos: ignored.
+            logger.warning("VISION_PROVIDER is neither off nor echo: photo reading is off")
         return DisabledImageAnalyzer()
 
     def _build_pii_anonymizer(self) -> PiiAnonymizer:

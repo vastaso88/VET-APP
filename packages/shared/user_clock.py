@@ -2,7 +2,7 @@
 
 The app sends the phone's current offset from UTC (`X-UTC-Offset-Minutes`,
 e.g. 60 in winter and 120 in summer for Rome). The backend needs it for one
-thing: the per-owner daily counters (questions, photos, dictations, summaries)
+thing: the per-owner daily counters (questions, photos, summaries)
 start over at the owner's own midnight, not at midnight UTC.
 
 An offset is enough: nothing here needs the zone's rules, because the phone

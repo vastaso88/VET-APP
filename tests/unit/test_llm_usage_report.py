@@ -24,7 +24,8 @@ from packages.infrastructure.persistence.supabase.supabase_repositories import (
 
 HAIKU = "claude-haiku-5-5"
 SONNET = "claude-sonnet-5-5"
-GROQ = "openai/gpt-oss-120b"
+# A row of the reserve provider removed on 2026-11-25: still in the ledger, still read.
+OLD_RESERVE = "openai/gpt-oss-120b"
 NOW = datetime(2026, 11, 15, 12, 0, tzinfo=UTC)
 TODAY = NOW.date()
 
@@ -106,7 +107,7 @@ def test_with_nothing_recorded_everything_is_zero_and_the_series_is_complete() -
     assert report.daily[-1].date == TODAY
     assert report.daily[0].date == TODAY - timedelta(days=29)
     assert [d.date for d in report.daily] == sorted({d.date for d in report.daily})
-    assert report.sonnet_answers_today == report.reserve_calls_today == 0
+    assert report.sonnet_answers_today == report.failed_calls_today == 0
 
 
 # --- today, against the euro cap ----------------------------------------------------------------
@@ -205,7 +206,7 @@ def test_every_model_has_its_own_row_with_today_and_the_month() -> None:
         _event(HAIKU, prompt=2000, completion=500, calls=3)
         + _event(HAIKU, days_ago=3, prompt=2000, completion=500, calls=2)
         + _event(SONNET, prompt=3000, completion=800, calls=1)
-        + _event(GROQ, prompt=1000, completion=300, calls=4)
+        + _event(OLD_RESERVE, prompt=1000, completion=300, calls=4)
     )
 
     report = _report(events)
@@ -217,9 +218,9 @@ def test_every_model_has_its_own_row_with_today_and_the_month() -> None:
     assert haiku.today.calls == 3 and haiku.month.calls == 5
     assert haiku.today.total_tokens == 3 * 2500 and haiku.month.total_tokens == 5 * 2500
     assert haiku.today.eur == pytest.approx(3 * (2000 * 0.10 + 500 * 0.50) / 1_000_000)
-    groq = by_label["gpt-oss-120b"]
-    assert (groq.provider, groq.paid) == ("groq", False)
-    assert groq.month.eur == 0 and groq.month.calls == 4
+    old = by_label["gpt-oss-120b"]
+    assert (old.provider, old.paid) == ("groq", False)
+    assert old.month.eur == 0 and old.month.calls == 4
 
 
 def test_models_are_listed_dearest_first_and_sonnet_costs_more_than_haiku() -> None:
@@ -230,19 +231,37 @@ def test_models_are_listed_dearest_first_and_sonnet_costs_more_than_haiku() -> N
     assert labels == ["Sonnet 5.5", "Haiku 5.5"]
 
 
-def test_sonnet_answers_and_the_groq_reserve_are_counted_for_today() -> None:
+def test_sonnet_answers_are_counted_for_today() -> None:
     events = (
         _event(SONNET, calls=2)
         + _event(SONNET, days_ago=1, calls=5)
         + _event(HAIKU, calls=7)
-        + _event(GROQ, calls=3)
-        + _event("qwen/qwen3.8-27b", calls=1)
+        + _event(OLD_RESERVE, calls=3)
     )
 
-    report = _report(events)
+    assert _report(events).sonnet_answers_today == 2
 
-    assert report.sonnet_answers_today == 2
-    assert report.reserve_calls_today == 4
+
+def test_the_old_rows_of_the_removed_reserve_stay_readable_and_free() -> None:
+    old = (
+        _event(OLD_RESERVE, prompt=1000, completion=300, calls=4)
+        + _event("qwen/qwen3.8-27b", days_ago=2, prompt=500, completion=100, calls=3)
+        + _event("llama-3.3-70b-versatile", days_ago=20, prompt=200, completion=50, calls=2)
+    )
+
+    report = _report(_event(HAIKU, completion=1_000_000) + old)
+
+    rows = {m.label: m for m in report.models}
+    assert rows["gpt-oss-120b"].today.calls == 4
+    assert rows["gpt-oss-120b"].today.total_tokens == 4 * 1300
+    assert rows["qwen3.8-27b"].month.calls == 3
+    assert all(rows[label].month.eur == 0 for label in ("gpt-oss-120b", "qwen3.8-27b"))
+    # The spend is Claude's alone, and no call is lost from the days.
+    assert report.today.spent_usd == pytest.approx(0.5)
+    assert sum(day.calls for day in report.daily) == 1 + 4 + 3 + 2
+    assert sum(day.reserve_calls for day in report.daily) == 4 + 3 + 2
+    # Serializable as the portal receives it.
+    assert report.model_dump(mode="json")["models"]
 
 
 def test_failed_calls_are_counted_apart_and_never_priced() -> None:
@@ -254,7 +273,6 @@ def test_failed_calls_are_counted_apart_and_never_priced() -> None:
     assert report.failed_calls_month == 5
     assert report.models == []
     assert report.today.spent_usd == 0
-    assert report.reserve_calls_today == 0
 
 
 # --- the last 30 days -----
@@ -275,8 +293,8 @@ def test_the_series_covers_exactly_the_last_thirty_days() -> None:
     assert sum(d.eur for d in report.daily) == pytest.approx(1.5)
 
 
-def test_a_day_says_how_many_calls_went_to_claude_and_how_many_to_the_reserve() -> None:
-    events = _event(HAIKU, calls=6, days_ago=1) + _event(GROQ, calls=2, days_ago=1)
+def test_a_day_says_how_many_calls_went_to_claude_and_how_many_to_the_old_reserve() -> None:
+    events = _event(HAIKU, calls=6, days_ago=1) + _event(OLD_RESERVE, calls=2, days_ago=1)
 
     day = _report(events).daily[-2]
 
@@ -370,6 +388,7 @@ def test_supabase_reads_the_daily_totals_for_the_range() -> None:
         ("claude-opus-5", "Opus 5", "anthropic"),
         ("openai/gpt-oss-120b", "gpt-oss-120b", "groq"),
         ("qwen/qwen3.8-27b", "qwen3.8-27b", "groq"),
+        ("demo-model", "demo-model", "echo"),
     ],
 )
 def test_models_have_a_readable_label_and_a_provider(model: str, label: str, provider: str) -> None:

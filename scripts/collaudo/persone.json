@@ -25,7 +25,6 @@
   "sottofondo_riapertura",
   "passeggiate",
   "foto_galleria",
-  "dettatura",
   "ricordi",
   "pausa_account",
   "esporta_dati",
@@ -171,10 +170,9 @@
    "tipo": "funzionale",
    "eta": 74,
    "lingua": "it",
-   "profilo": "poco digitale, frasi corte, dettatura; chiarezza e fine vita",
+   "profilo": "poco digitale, frasi corte; chiarezza e fine vita",
    "funzioni": [
     "chat",
-    "dettatura",
     "ricordi",
     "promemoria_medicine",
     "profilo_animale"
@@ -347,7 +345,6 @@
     "lingua_unita",
     "chat",
     "peso_monitoraggio",
-    "dettatura",
     "segnala_luogo",
     "eventi",
     "doveri_viaggi"
@@ -503,7 +500,7 @@
    "chat": "col-est-chat",
    "tipo": "estetica",
    "lingua": "it",
-   "profilo": "esperienza della chat: bolle, lunghezza e forma delle risposte, attesa, allegati, dettatura",
+   "profilo": "esperienza della chat: bolle, lunghezza e forma delle risposte, attesa, allegati",
    "funzioni": [],
    "animali": [
     {

@@ -17063,15 +17063,6 @@
       "fr": "12797ac105d863c27da4666f3d68b5cafe6ea47b5cf4e0ebfe7a99b2da0ca9fa"
     }
   },
-  "backend:quota_dictation_exhausted": {
-    "source": "dcc19daa4c97091db2db6ecb4effe8d93e1f235eea1f291325978040b7519719",
-    "targets": {
-      "en": "3f2cf1dc506a38546f7d870f5dc1503da757dc52ad73b37afdc7e2c4d98bc021",
-      "es": "6458d1b0a064b5119f74f69f93432d7f57daa0ea223c3be833b15b8157ab83f3",
-      "de": "9a0d3ee0267a20fb87d3748efcbef8f35b4443e6e9c278593479ecefd4463304",
-      "fr": "cfd35f0a058bc33a534e01c9f7c76a5f079e28ba1d5e8c173beb606bd674942c"
-    }
-  },
   "backend:quota_summary_exhausted": {
     "source": "e10083e154dc09fbd1ef6746589503e1316cb37429a104d4e8e314ec7aa6dade",
     "targets": {
@@ -21255,15 +21246,6 @@
       "es": "aae81c70e4fcad68c24115212d0e8fcd41668fd8f78aeba18da51ee278675786",
       "de": "aac548bf1cc3f40dd11e8d551ba1087ca0a8c59ee628166ae8e190984632ce61",
       "fr": "5708e199bbb34b81d154f155f4aa2d6de4802b984d104dabfba3a1221dfdb5ca"
-    }
-  },
-  "backend:dictation_heard_nothing": {
-    "source": "b924fa383aeafd923de0869b24eff881fc22d256169fb324218414036b3e867b",
-    "targets": {
-      "en": "69dbe9520d4e877cbf5a8d4a9bc8ab22ed2a38e87a5509faedbcbde203c956f9",
-      "es": "b85e87f570f8f720490efd8130a7dea96602d225b1edec712024edebed5a5e46",
-      "de": "2333c486d4f3cab7cf1d75ffd7ae346ff7f88a8e78477e33ae875f90333ab22d",
-      "fr": "f711318c1416a1af3c53d3441ec9c46ebe69dcccfb42e7bf99d5633cb4ce319a"
     }
   },
   "backend:input_too_long": {

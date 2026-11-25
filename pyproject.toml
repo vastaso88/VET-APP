@@ -12,8 +12,8 @@ dependencies = [
     "httpx>=0.28.0",
     "pydantic>=2.11.0",
     "pydantic-settings>=2.10.0",
-    # Required at runtime for FastAPI's File/UploadFile (voice dictation
-    # audio upload) — FastAPI raises at request time without it, not at
+    # Required at runtime for FastAPI's File/UploadFile (chat attachments,
+    # ad photos) — FastAPI raises at request time without it, not at
     # import time, so this is easy to miss until the endpoint is hit.
     "pypdf>=5.0",
     "python-multipart>=0.0.20",

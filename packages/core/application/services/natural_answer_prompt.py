@@ -21,7 +21,7 @@ Compacted for the free tier (build 32, 2026-10-14): the same rules in
 fewer words — 1750 tokens of system prompt had become the largest part
 of every call. The wording the tests pin (test_vet_referral_calibration,
 test_chat_request_routing, test_species_facts) is kept verbatim. The
-system prompt is the stable prefix Groq's prompt cache can reuse between
+system prompt is the stable prefix the prompt cache can reuse between
 calls, so it stays identical from one call to the next: everything that
 varies (pet, history, date, documents) goes in the user message.
 

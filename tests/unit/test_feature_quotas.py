@@ -1,10 +1,9 @@
-"""Security audit BE-4/LLM-4: photo readings, dictation and vet summaries
-have a per-owner daily allowance on the same ledger as the messages, and
-the owner is told clearly, in their language, when it is used up."""
+"""Security audit BE-4/LLM-4: photo readings and vet summaries have a
+per-owner daily allowance on the same ledger as the messages, and the owner
+is told clearly, in their language, when it is used up."""
 
 from __future__ import annotations
 
-import io
 from datetime import UTC, datetime
 from typing import Any
 
@@ -14,10 +13,10 @@ from llm_fakes import RecordingLLMClient
 
 from apps.api.main import app
 from packages.bootstrap.container import get_container, reset_container
-from packages.core.application.services.llm_budget import LlmBudget, format_wait
-from packages.core.application.services.transcribe_audio import (
-    TranscribeAudioInput,
-    TranscribeAudioService,
+from packages.core.application.services.llm_budget import (
+    LlmBudget,
+    format_wait,
+    require_feature_allowance,
 )
 from packages.core.application.services.vet_summary import VetSummaryInput, VetSummaryService
 from packages.core.domain.conversation.models import ChatMessage, Conversation
@@ -32,15 +31,6 @@ from packages.shared.errors.base import QuotaExceededError
 NOON = datetime(2026, 10, 26, 12, 0, tzinfo=UTC)
 
 
-class _Transcriber:
-    def __init__(self) -> None:
-        self.calls = 0
-
-    def transcribe(self, audio_bytes: bytes, filename: str, content_type: str) -> str:
-        self.calls += 1
-        return "testo dettato"
-
-
 def _budget() -> LlmBudget:
     return LlmBudget(
         InMemoryLlmUsageRepository(),
@@ -51,91 +41,95 @@ def _budget() -> LlmBudget:
     )
 
 
-def _audio(
+def _summaries(
+    budget: LlmBudget | None, daily_limit: int = 0
+) -> tuple[VetSummaryService, RecordingLLMClient]:
+    conversations = InMemoryConversationRepository()
+    for owner in ("anna", "bruno"):
+        conversations.save(
+            Conversation(
+                id=f"chat-of-{owner}",
+                owner_id=owner,
+                pet_id="p1",
+                title="t",
+                messages=[ChatMessage(role="user", content="ciao")],
+            )
+        )
+    client = RecordingLLMClient("Riassunto.")
+    service = VetSummaryService(
+        conversations,
+        InMemoryPetProfileRepository(),
+        client,
+        NoopPiiAnonymizer(),
+        budget=budget,
+        daily_limit=daily_limit,
+    )
+    return service, client
+
+
+def _request(
     owner: str = "anna", *, quota_exempt: bool = False, language: str = "it"
-) -> TranscribeAudioInput:
-    return TranscribeAudioInput(
-        audio_bytes=b"RIFF",
-        filename="a.wav",
-        content_type="audio/wav",
+) -> VetSummaryInput:
+    return VetSummaryInput(
         owner_id=owner,
+        conversation_id=f"chat-of-{owner}",
         quota_exempt=quota_exempt,
         language=language,
     )
 
 
-def test_dictation_stops_at_the_daily_allowance_with_a_clear_message() -> None:
-    transcriber = _Transcriber()
-    service = TranscribeAudioService(transcriber, budget=_budget(), daily_limit=2)
+def test_a_feature_stops_at_the_daily_allowance_with_a_clear_message() -> None:
+    service, client = _summaries(_budget(), 2)
 
-    service.execute(_audio())
-    service.execute(_audio())
+    service.execute(_request())
+    service.execute(_request())
     with pytest.raises(QuotaExceededError) as raised:
-        service.execute(_audio())
+        service.execute(_request())
 
-    assert transcriber.calls == 2
-    assert raised.value.kind == "dictation" and raised.value.limit == 2
-    assert "2 dettature" in raised.value.message
+    assert len(client.requests) == 2
+    assert raised.value.kind == "summary" and raised.value.limit == 2
+    assert "2 riassunti" in raised.value.message
     assert "12 ore" in raised.value.message
     assert raised.value.retry_after_seconds == 12 * 3600
 
 
 def test_the_refusal_speaks_the_owners_language_and_exempt_accounts_are_not_counted() -> None:
-    transcriber = _Transcriber()
-    service = TranscribeAudioService(transcriber, budget=_budget(), daily_limit=1)
+    service, client = _summaries(_budget(), 1)
 
-    service.execute(_audio(language="de"))
+    service.execute(_request(language="de"))
     with pytest.raises(QuotaExceededError) as raised:
-        service.execute(_audio(language="de"))
-    assert "Diktate" in raised.value.message and "12 Stunden" in raised.value.message
+        service.execute(_request(language="de"))
+    assert "Zusammenfassungen" in raised.value.message and "12 Stunden" in raised.value.message
 
     for _ in range(3):
-        service.execute(_audio(quota_exempt=True))
+        service.execute(_request(quota_exempt=True))
     # Another owner has an allowance of their own.
-    service.execute(_audio(owner="bruno"))
-    assert transcriber.calls == 5
+    service.execute(_request(owner="bruno"))
+    assert len(client.requests) == 5
 
 
 def test_each_feature_has_its_own_counter() -> None:
     budget = _budget()
-    dictation = TranscribeAudioService(_Transcriber(), budget=budget, daily_limit=1)
-    conversations = InMemoryConversationRepository()
-    conversations.save(
-        Conversation(
-            id="c1",
-            owner_id="anna",
-            pet_id="p1",
-            title="t",
-            messages=[ChatMessage(role="user", content="ciao")],
-        )
-    )
-    summaries = VetSummaryService(
-        conversations,
-        InMemoryPetProfileRepository(),
-        RecordingLLMClient("Riassunto."),
-        NoopPiiAnonymizer(),
-        budget=budget,
-        daily_limit=1,
-    )
+    service, _ = _summaries(budget, 1)
 
-    dictation.execute(_audio())
-    summaries.execute(VetSummaryInput(owner_id="anna", conversation_id="c1"))  # still allowed
+    require_feature_allowance(budget, owner_id="anna", kind="vision", limit=1)
+    service.execute(_request())  # still allowed
     with pytest.raises(QuotaExceededError) as raised:
-        summaries.execute(VetSummaryInput(owner_id="anna", conversation_id="c1"))
+        service.execute(_request())
 
     assert raised.value.kind == "summary"
     assert "riassunti" in raised.value.message
+    with pytest.raises(QuotaExceededError) as photos:
+        require_feature_allowance(budget, owner_id="anna", kind="vision", limit=1)
+    assert photos.value.kind == "vision"
 
 
 def test_no_limit_or_no_budget_means_no_refusal() -> None:
-    transcriber = _Transcriber()
-    for service in (
-        TranscribeAudioService(transcriber, budget=_budget(), daily_limit=0),
-        TranscribeAudioService(transcriber),
-    ):
+    for budget in (_budget(), None):
+        service, client = _summaries(budget, 0)
         for _ in range(5):
-            service.execute(_audio())
-    assert transcriber.calls == 10
+            service.execute(_request())
+        assert len(client.requests) == 5
 
 
 def test_waits_are_worded_per_language() -> None:
@@ -154,34 +148,27 @@ def test_the_api_answers_429_with_the_message_and_a_retry_header(
         client = TestClient(app)
         container = get_container()
         monkeypatch.setattr(
-            container.settings, "chat_daily_dictation_limit_per_user", 1, raising=False
+            container.settings, "chat_daily_summary_limit_per_user", 1, raising=False
         )
         monkeypatch.setattr(container, "developer_emails", frozenset())
-        # The bootstrap provider is the demo echo; the service goes through
-        # the container's budget with the patched limit.
-        monkeypatch.setattr(
-            type(container.speech_to_text_provider),
-            "transcribe",
-            lambda self, *a, **k: "testo",
-            raising=False,
-        )
+        pet = client.post("/pets", json={"name": "Rex", "species": "Cane"}).json()["pet_profile"]
+        asked = client.post("/chat", json={"pet_id": pet["id"], "user_message": "Mangia poco"})
+        conversation_id = asked.json()["conversation"]["id"]
 
-        def upload() -> Any:
-            return client.post(
-                "/speech-to-text",
-                files={"file": ("a.wav", io.BytesIO(b"RIFF" * 10), "audio/wav")},
-                headers={"Accept-Language": "en"},
+        def summary() -> Any:
+            return client.get(
+                f"/conversations/{conversation_id}/summary", headers={"Accept-Language": "en"}
             )
 
-        first = upload()
-        second = upload()
+        first = summary()
+        second = summary()
 
         assert first.status_code == 200, first.text
         assert second.status_code == 429, second.text
         body = second.json()
-        assert body["code"] == "quota_exceeded" and body["kind"] == "dictation"
+        assert body["code"] == "quota_exceeded" and body["kind"] == "summary"
         assert body["detail"].startswith("quota_exceeded: ")
-        assert "dictations available today" in body["detail"]
+        assert "vet summaries available today" in body["detail"]
         assert int(second.headers["Retry-After"]) >= 60
     finally:
         reset_container()

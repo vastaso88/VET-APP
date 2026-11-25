@@ -5,9 +5,9 @@ It runs the backend of this working tree in-process, with persistence in
 memory and the bootstrap (fake) user: it never touches Supabase, nobody's
 account, or production. Only the LLM/vision provider is real.
 
-It NEVER uses the production key: it needs its own, EVAL_LLM_API_KEY (in
+It NEVER uses the production key: it needs its own, EVAL_ANTHROPIC_API_KEY (in
 the environment or the local .env, never printed), and refuses to start
-without it or when it is the same as LLM_API_KEY. On 2026-10-05 two full
+without it or when it is the same as ANTHROPIC_API_KEY. On 2026-10-05 two full
 runs on the shared key used up the provider's daily quota and took the
 app's chat down. Each execution also stops by itself at `--max-tokens`
 (default 40000; a full run with the judge needs about 100000). See
@@ -27,8 +27,8 @@ an antivirus that intercepts HTTPS add `--with truststore` to `uv run`.
 Without any API key: set EVAL_CLAUDE_EXE (path of the local `claude` program)
 in the environment of the process only, and every model call, judge included,
 goes through it with the test login of ~/.claude-eval-cli (EVAL_CLI_MODEL,
-default claude-haiku-5-5). See claude_cli.py. Scenarios with documents still
-need the cached readings, or EVAL_LLM_API_KEY for the vision model.
+default claude-haiku-5-5). See claude_cli.py. Scenarios with scanned documents
+need the cached readings: no service reads the photos.
 
 Output, under .local/chat_eval/<label>/ (never committed): results.json
 and transcripts.md.
@@ -260,8 +260,8 @@ _READ_REPORT = re.compile(
 
 DEFAULT_MAX_TOKENS = 40_000
 # With the local claude program (EVAL_CLAUDE_EXE) the calls are paid by the
-# subscription, not by the shared Groq quota the default ceiling protects:
-# no ceiling unless --max-tokens asks for one.
+# subscription, not by the account the default ceiling protects: no ceiling
+# unless --max-tokens asks for one.
 CLI_MAX_TOKENS = 10**12
 # The local claude program takes 10-40 s per call, the production budget for
 # the model part of an urgency is 12 s: with it every urgency would fall back
@@ -287,8 +287,6 @@ class CallCounter:
     its helpers each hold their own reference to the client. Enforces the
     execution's ceiling: no call is made once it has been reached.
 
-    Tokens of the vision model (reading a scanned fixture, once, then
-    cached) are not counted: they are not reported through this client.
     """
 
     calls = 0
@@ -329,25 +327,23 @@ class CallCounter:
         client_class._eval_counted = True
 
 
-def _dedicated_key(
-    production_key: str, *, name: str = "EVAL_LLM_API_KEY", production_name: str = "LLM_API_KEY"
-) -> str:
-    """The dedicated evaluation key ([name]) from the environment or the
-    local .env. Exits with an explanation when it is missing or is the
-    production key ([production_name])."""
-    key = _env_value(name)
+def _dedicated_key(production_key: str) -> str:
+    """The dedicated evaluation key (EVAL_ANTHROPIC_API_KEY) from the environment
+    or the local .env. Exits with an explanation when it is missing or is the
+    production key (ANTHROPIC_API_KEY)."""
+    key = _env_value("EVAL_ANTHROPIC_API_KEY")
     if not key:
         sys.exit(
-            f"Manca {name}.\n"
-            f"Le prove della chat non devono usare la chiave di produzione ({production_name}): "
-            "consumano la stessa quota giornaliera e possono fermare la chat dell'app.\n"
-            "Crea una chiave su un conto del provider SEPARATO da quello di produzione "
-            "(i limiti sono per conto, non per chiave) e aggiungila al file .env locale "
-            f"come {name}=... Vedi scripts/eval/chat_quality/README.md."
+            "Manca EVAL_ANTHROPIC_API_KEY.\n"
+            "Le prove della chat non devono usare la chiave di produzione (ANTHROPIC_API_KEY): "
+            "consumano lo stesso credito e possono fermare la chat dell'app.\n"
+            "Crea una chiave su un conto o workspace SEPARATO da quello di produzione e "
+            "aggiungila al file .env locale come EVAL_ANTHROPIC_API_KEY=... "
+            "Vedi scripts/eval/chat_quality/README.md."
         )
-    if key == production_key and not _env_value("EVAL_LLM_BASE_URL"):
+    if key == production_key:
         sys.exit(
-            f"{name} è uguale a {production_name}: è la chiave di produzione. "
+            "EVAL_ANTHROPIC_API_KEY è uguale a ANTHROPIC_API_KEY: è la chiave di produzione. "
             "Usa una chiave di un conto separato."
         )
     return key
@@ -404,7 +400,7 @@ def _allow_production_key(max_tokens: int | None) -> None:
             f"Con la chiave di produzione il tetto e' {PRODUCTION_KEY_DAILY_CAP} token al "
             f"giorno in totale: oggi ne sono gia' stati usati {used}, ne restano {remaining}, "
             f"e questa esecuzione ne chiede fino a {max_tokens}. Riduci --max-tokens o usa "
-            "EVAL_LLM_API_KEY."
+            "EVAL_ANTHROPIC_API_KEY."
         )
     # Every call is written to the ledger as it returns, not at the end.
     CallCounter.on_tokens = record_production_key_usage
@@ -449,78 +445,38 @@ def build_settings(
     max_tokens: int | None = DEFAULT_MAX_TOKENS,
 ) -> Settings:
     overrides: dict[str, Any] = {
-        # The model under test only: a silent switch to a reserve model
-        # would make two runs incomparable.
-        "llm_fallback_models": "",
         "environment": "development",
         "persistence_backend": "in_memory",
         "auth_backend": "bootstrap",
-        "vision_provider": "groq",
+        # No service reads the photos: a scanned fixture needs its cached reading.
+        "vision_provider": "off",
         "media_storage_dir": str(OUTPUT_DIR / "media"),
     }
     if evidence:
         overrides["evidence_backend"] = evidence
-    settings = Settings().model_copy(update=overrides)
+    # The provider is chosen here, whatever the local .env says.
+    settings = Settings(LLM_PROVIDER="echo").model_copy(update=overrides)
+    if _env_value("EVAL_ANTHROPIC_MODEL"):
+        settings = settings.model_copy(
+            update={"anthropic_model": _env_value("EVAL_ANTHROPIC_MODEL")}
+        )
     if not real_calls:
         return settings
     # The local claude program under test (EVAL_CLAUDE_EXE, in the process
     # environment only; see claude_cli.py): every model call goes to it, no
-    # API key of the answering model is kept, so none can be spent. The vision
-    # readings of the fixtures keep the dedicated Groq key, when there is one.
+    # API key of the answering model is kept, so none can be spent.
     if cli_exe():
         _use_claude_cli()
-        return settings.model_copy(
-            update={
-                "llm_provider": "echo",
-                # The plain model name: the in-memory spending ledger prices it.
-                "llm_model": cli_model(),
-                "llm_api_key": _env_value("EVAL_LLM_API_KEY"),
-                "anthropic_api_key": "",
-            }
-        )
-    # Another OpenAI-compatible provider under test (EVAL_LLM_BASE_URL and
-    # EVAL_LLM_MODEL): the Groq client speaks that protocol.
-    base_url, model = _env_value("EVAL_LLM_BASE_URL"), _env_value("EVAL_LLM_MODEL")
-    if base_url or model:
-        settings = settings.model_copy(
-            update={
-                "llm_provider": "groq",
-                "llm_base_url": base_url or settings.llm_base_url,
-                "llm_model": model or settings.llm_model,
-            }
-        )
-    # Claude under test (LLM_PROVIDER=anthropic in the .env, or
-    # EVAL_LLM_PROVIDER=anthropic): its own dedicated key, from a separate
-    # account or workspace; the Groq reserve is switched off (LLM_MODEL
-    # empty) so that a run measures one model, and the Groq key is the
-    # dedicated one too, for the attachment readings.
-    if (_env_value("EVAL_LLM_PROVIDER") or settings.llm_provider) == "anthropic":
-        updates: dict[str, Any] = {
-            "llm_provider": "anthropic",
-            "llm_model": "",
-            "llm_api_key": _env_value("EVAL_LLM_API_KEY"),
-        }
-        if _env_value("EVAL_ANTHROPIC_MODEL"):
-            updates["anthropic_model"] = _env_value("EVAL_ANTHROPIC_MODEL")
-        settings = settings.model_copy(update=updates)
-        if allow_production_key and not _env_value("EVAL_ANTHROPIC_API_KEY"):
-            _allow_production_key(max_tokens)
-            return settings
-        return settings.model_copy(
-            update={
-                "anthropic_api_key": _dedicated_key(
-                    settings.anthropic_api_key,
-                    name="EVAL_ANTHROPIC_API_KEY",
-                    production_name="ANTHROPIC_API_KEY",
-                )
-            }
-        )
-    if settings.llm_provider == "echo":
-        sys.exit("LLM_PROVIDER è 'echo': nel .env serve un provider reale per valutare la chat.")
-    if allow_production_key and not _env_value("EVAL_LLM_API_KEY"):
+        return settings.model_copy(update={"anthropic_model": cli_model(), "anthropic_api_key": ""})
+    # Claude under test, with its own dedicated key, from a separate account
+    # or workspace.
+    settings = settings.model_copy(update={"llm_provider": "anthropic"})
+    if allow_production_key and not _env_value("EVAL_ANTHROPIC_API_KEY"):
         _allow_production_key(max_tokens)
         return settings
-    return settings.model_copy(update={"llm_api_key": _dedicated_key(settings.llm_api_key)})
+    return settings.model_copy(
+        update={"anthropic_api_key": _dedicated_key(settings.anthropic_api_key)}
+    )
 
 
 def _load_cache() -> dict[str, str]:
@@ -553,7 +509,10 @@ def _attachment_for(
             .attachment
         )
         if not uploaded.analysis:
-            raise ProviderError(f"lettura del referto di prova {fixture} non riuscita")
+            raise ProviderError(
+                f"lettura del referto di prova {fixture} non riuscita (una scansione si usa solo "
+                "con la lettura già in analysis_cache.json: nessun servizio legge le foto)"
+            )
         cache[key] = uploaded.analysis
         ANALYSIS_CACHE.parent.mkdir(parents=True, exist_ok=True)
         ANALYSIS_CACHE.write_text(json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -958,7 +917,7 @@ def write_outputs(label: str, results: list[dict[str, Any]], settings: Settings)
         by_category.setdefault(result["category"], []).append(result)
     payload = {
         "label": label,
-        "model": settings.llm_model,
+        "model": settings.anthropic_model,
         "summary": summarize(results),
         "by_category": {name: summarize(items) for name, items in by_category.items()},
         "results": results,
@@ -966,7 +925,7 @@ def write_outputs(label: str, results: list[dict[str, Any]], settings: Settings)
     (folder / "results.json").write_text(
         json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    lines = [f"# Trascritti - {label} ({settings.llm_model})", ""]
+    lines = [f"# Trascritti - {label} ({settings.anthropic_model})", ""]
     for result in results:
         lines += [f"## {result['id']} ({result['category']})", ""]
         for turn in result["turns"]:
@@ -1165,7 +1124,7 @@ def main() -> int:
         "--allow-production-key",
         action="store_true",
         help=(
-            "usa LLM_API_KEY se manca EVAL_LLM_API_KEY: solo con --max-tokens, massimo "
+            "usa ANTHROPIC_API_KEY se manca EVAL_ANTHROPIC_API_KEY: solo con --max-tokens, massimo "
             f"{PRODUCTION_KEY_DAILY_CAP} token al giorno in totale"
         ),
     )

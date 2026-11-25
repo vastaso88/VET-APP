@@ -4,7 +4,7 @@ The normal local backend knows one user. This one gives every account its own
 identity, keeps everything in memory, binds to 127.0.0.1 and forces SUPABASE_URL
 empty. With EVAL_CLAUDE_EXE set the model is reached through the Claude Code CLI
 (test use with an owner login); with EVAL_ANTHROPIC_API_KEY (and no CLI) Claude is
-reached through the API with that dedicated key; otherwise the configured provider.
+reached through the API with that dedicated key; otherwise the local stand-in answers.
 """
 
 from __future__ import annotations
@@ -52,23 +52,30 @@ def _env_value(name: str) -> str:
     return value
 
 
-# Claude through the API with the dedicated evaluation key (never the
-# production one), when the CLI is not in use: the provider is switched for
-# this process only and the Groq reserve is off (LLM_MODEL empty), so every
-# answer comes from the model under test.
+# The provider is chosen for this process only, whatever the local .env says: the
+# stand-in; Claude through the API with the dedicated evaluation key (never the
+# production one); or the CLI, which replaces the client below, so the key is a
+# placeholder nobody sends and the euro cap must not stop the round.
+os.environ["LLM_PROVIDER"] = "echo"
 ANTHROPIC_EVAL_KEY = "" if EXE else _env_value("EVAL_ANTHROPIC_API_KEY")
 if ANTHROPIC_EVAL_KEY:
-    os.environ.update(
-        {"LLM_PROVIDER": "anthropic", "ANTHROPIC_API_KEY": ANTHROPIC_EVAL_KEY, "LLM_MODEL": ""}
-    )
+    os.environ.update({"LLM_PROVIDER": "anthropic", "ANTHROPIC_API_KEY": ANTHROPIC_EVAL_KEY})
     if _env_value("EVAL_ANTHROPIC_MODEL"):
         os.environ["ANTHROPIC_MODEL"] = _env_value("EVAL_ANTHROPIC_MODEL")
+elif EXE:
+    os.environ.update(
+        {
+            "LLM_PROVIDER": "anthropic",
+            "ANTHROPIC_API_KEY": "not-used-with-the-cli",
+            "LLM_DAILY_BUDGET_EUR": "1000",
+        }
+    )
 sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 
 import uvicorn  # noqa: E402
 
-from packages.bootstrap.container import ApplicationContainer  # noqa: E402
+from packages.bootstrap.container import ApplicationContainer, answer_models  # noqa: E402
 from packages.core.application.ports.auth_provider import (  # noqa: E402
     AuthenticatedUser,
     AuthSession,
@@ -240,5 +247,6 @@ if __name__ == "__main__":
     if settings.persistence_backend != "in_memory" or settings.supabase_url:
         sys.exit("Rifiutato: questo server funziona solo in memoria, mai con Supabase.")
     OUTPUT.mkdir(parents=True, exist_ok=True)
-    print(f"Model: {MODEL if EXE else settings.llm_model}. Only on http://127.0.0.1:{PORT}")
+    model = MODEL if EXE else answer_models(settings)[0]
+    print(f"Model: {model}. Only on http://127.0.0.1:{PORT}")
     uvicorn.run(TokenMiddleware(app), host="127.0.0.1", port=PORT, log_level="warning")

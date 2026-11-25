@@ -22,18 +22,18 @@ from run import _env_value  # noqa: E402
 
 
 def main() -> int:
-    eval_key = _env_value("EVAL_LLM_API_KEY")
+    eval_key = _env_value("EVAL_ANTHROPIC_API_KEY")
     if not eval_key:
-        print("chiave NON trovata: manca EVAL_LLM_API_KEY nel file .env (o nell'ambiente).")
+        print("chiave NON trovata: manca EVAL_ANTHROPIC_API_KEY nel file .env (o nell'ambiente).")
         return 1
-    if eval_key == _env_value("LLM_API_KEY") and not _env_value("EVAL_LLM_BASE_URL"):
+    if eval_key == _env_value("ANTHROPIC_API_KEY"):
         print(
-            "ATTENZIONE: EVAL_LLM_API_KEY e' uguale a LLM_API_KEY (la chiave di produzione). "
-            "Serve la chiave del secondo account."
+            "ATTENZIONE: EVAL_ANTHROPIC_API_KEY e' uguale a ANTHROPIC_API_KEY (la chiave di "
+            "produzione). Serve la chiave del secondo account."
         )
         return 2
-    if not eval_key.startswith("gsk_"):
-        print("chiave trovata, ma non sembra una chiave Groq (non inizia con gsk_): ricontrolla.")
+    if not eval_key.startswith("sk-ant-"):
+        print("chiave trovata, ma non sembra una chiave Anthropic (sk-ant-): ricontrolla.")
         return 3
     print("chiave trovata.")
     return 0

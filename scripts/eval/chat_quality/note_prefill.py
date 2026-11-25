@@ -14,7 +14,7 @@ Normativa docs/compliance/20 §18: reading only because a question asks, never t
 section of a site; caps and pauses as in the app; no source text written to disk; a site's
 notes can be removed with NoteLibrary.remove_site(). Questions never enter a note (they are
 passed as "forbidden" text). Model calls: local claude program (EVAL_CLAUDE_EXE) or an eval
-key, never Groq nor production keys. Without --run it only prints what it would do.
+key, never production keys. Without --run it only prints what it would do.
 """
 
 from __future__ import annotations

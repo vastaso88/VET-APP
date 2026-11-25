@@ -19,10 +19,9 @@ What is not modelled, on purpose:
 * the 1-hour cache write ($0.20): the client uses the 5-minute cache;
 * batch and fast-mode multipliers: neither is used.
 
-Groq's free tier costs nothing, so its models are priced at zero and keep
-their own token budgets. If the Groq account ever becomes paid, put its
-prices here (the business plan lists gpt-oss-120b at 0.15 / 0.60 and
-gpt-oss-20b at 0.075 / 0.30 USD per million) and they join the euro cap.
+A model that is not Claude costs nothing: the local stand-in, and the old rows
+of the ledger written by Groq's free tier, the reserve provider until
+2026-11-25.
 """
 
 from __future__ import annotations
@@ -97,8 +96,8 @@ _warned_unknown: set[str] = set()
 
 
 def price_for(model: str) -> ModelPrice:
-    """The price of [model]: listed, free (not a Claude model: Groq's free
-    tier), or the conservative price of an unlisted Claude model."""
+    """The price of [model]: listed, free (not a Claude model), or the
+    conservative price of an unlisted Claude model."""
     price = PRICES_USD_PER_MILLION.get(model)
     if price is not None:
         return price

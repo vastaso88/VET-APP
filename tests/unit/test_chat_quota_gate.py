@@ -22,7 +22,7 @@ from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
 from packages.infrastructure.persistence.in_memory_repositories import InMemoryLlmUsageRepository
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
 
-MAIN = "openai/gpt-oss-120b"
+MAIN = "model-a"
 NOON = datetime(2026, 10, 14, 12, 0, tzinfo=UTC)
 
 

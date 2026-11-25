@@ -5,13 +5,12 @@
 - **Tipo**: funzionale
 - **Età**: 74
 - **Lingua**: it
-- **Chi è**: poco digitale, frasi corte, dettatura; chiarezza e fine vita
+- **Chi è**: poco digitale, frasi corte; chiarezza e fine vita
 - **Account**: `col-nonna-pina@example.com`, piano Pro
 
 ## Funzioni da provare
 
 - chat
-- dettatura
 - ricordi
 - promemoria_medicine
 - profilo_animale

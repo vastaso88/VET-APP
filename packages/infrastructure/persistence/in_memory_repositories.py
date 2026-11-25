@@ -673,10 +673,6 @@ class InMemoryLlmUsageRepository(LlmUsageRepository):
             if start <= d <= end
         ]
 
-    def mark_exhausted(self, model: str, day: date, until: datetime) -> None:
-        usage = self._daily.setdefault((day, model), ModelDailyUsage(day=day, model=model))
-        usage.exhausted_until = until
-
     def add_user_message(self, owner_id: str, day: date) -> int:
         return self.add_user_usage(owner_id, day, "messages")
 

@@ -31,10 +31,9 @@ EXCEPTIONS: dict[tuple[str, str], str] = {
     # owner's language), before anything reaches a column; see test_pet_numbers_past_the_limit.
     ("POST /pets", "body.age_years"): "judged by the service: 422 age_out_of_range",
     ("PUT /pets/{pet_id}", "body.age_years"): "judged by the service: 422 age_out_of_range",
-    # Uploaded files are bounded by the size checks of their routes (4 MB dictation, the
-    # attachment limit), not by a schema keyword.
+    # Uploaded files are bounded by the size checks of their routes (the attachment
+    # limit), not by a schema keyword.
     ("POST /chat-attachments", "body.file"): "file: bounded by the upload size check",
-    ("POST /speech-to-text", "body.file"): "file: bounded by MAX_AUDIO_BYTES",
     # Operator-only (admin token) schedule payload: its keys are validated one by one by
     # `_validated_schedule_payload` before it is stored.
     ("POST /admin/schedules", "body.payload"): "admin only, validated key by key",

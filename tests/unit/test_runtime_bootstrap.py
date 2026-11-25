@@ -14,8 +14,6 @@ def test_bootstrap_container_starts_without_supabase_imports() -> None:
             "BOOTSTRAP_USER_ID": "demo-user",
             "BOOTSTRAP_USER_EMAIL": "demo@vetapp.local",
             "LLM_PROVIDER": "echo",
-            "LLM_MODEL": "demo-model",
-            "LLM_API_KEY": "test-key",
         }
     )
 
@@ -68,8 +66,6 @@ def test_api_main_import_does_not_touch_supabase_modules() -> None:
             "BOOTSTRAP_USER_ID": "demo-user",
             "BOOTSTRAP_USER_EMAIL": "demo@vetapp.local",
             "LLM_PROVIDER": "echo",
-            "LLM_MODEL": "demo-model",
-            "LLM_API_KEY": "test-key",
         }
     )
 

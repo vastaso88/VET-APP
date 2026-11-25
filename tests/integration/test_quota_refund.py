@@ -9,7 +9,6 @@ Real app and middleware, bootstrap sign-in, in-memory ledger; the provider is si
 from __future__ import annotations
 
 import asyncio
-import io
 import threading
 from collections.abc import Iterator
 from datetime import UTC, datetime
@@ -69,7 +68,6 @@ def allowances(monkeypatch: pytest.MonkeyPatch) -> None:
         container.settings.model_copy(
             update={
                 "chat_daily_vision_limit_per_user": 10,
-                "chat_daily_dictation_limit_per_user": 10,
                 "chat_daily_summary_limit_per_user": 10,
             }
         ),
@@ -119,7 +117,7 @@ def test_an_apology_instead_of_an_answer_does_not_use_a_question(
     assert _used("messages") == 1
 
     def provider_down(self: object, request: object) -> object:
-        raise ProviderError("Groq request failed with status 503")
+        raise ProviderError("Anthropic request failed with status 503")
 
     monkeypatch.setattr(EchoLLMClient, "generate", provider_down)
 
@@ -156,7 +154,7 @@ def test_everything_counted_in_a_request_is_given_back_once_and_the_spend_is_kep
     with access_token_context("token"):
         budget.admit(owner_id="o", models=["m"], user_daily_limit=5)
         budget.admit_feature(owner_id="o", kind="vision", limit=5)
-        budget.admit_feature(owner_id="o", kind="dictation", limit=5)
+        budget.admit_feature(owner_id="o", kind="summary", limit=5)
         budget.admit_sonnet(owner_id="o", limit=3)
         budget.note_usage("m", 1200, prompt_tokens=1000, completion_tokens=200)
         spent_before = budget.used_today("m")
@@ -166,7 +164,7 @@ def test_everything_counted_in_a_request_is_given_back_once_and_the_spend_is_kep
 
     assert repository.add_user_message("o", day) == 1
     assert repository.add_user_usage("o", day, "vision") == 1
-    assert repository.add_user_usage("o", day, "dictation") == 1
+    assert repository.add_user_usage("o", day, "summary") == 1
     assert repository.add_user_usage("o", day, "sonnet") == 1
     assert budget.used_today("m") == spent_before == 1200  # money spent stays counted
 
@@ -214,48 +212,7 @@ def test_a_ledger_that_cannot_give_back_never_breaks_the_request(
     assert "secret-owner" not in logged
 
 
-# --- dictation, photo reading ----------------------------------------------------------
-
-
-def _speak(client: TestClient, audio: bytes = b"x" * 500) -> Any:
-    return client.post("/speech-to-text", files={"file": ("a.m4a", io.BytesIO(audio), "audio/mp4")})
-
-
-class _Failing:
-    def __init__(self, error: Exception) -> None:
-        self._error = error
-
-    def transcribe(self, audio_bytes: bytes, filename: str, content_type: str) -> str:
-        raise self._error
-
-
-def test_dictations_that_fail_on_the_providers_side_do_not_use_the_allowance(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setattr(
-        get_container(), "speech_to_text_provider", _Failing(ProviderError("timed out"))
-    )
-
-    for _ in range(3):
-        assert _speak(client).status_code == 502
-
-    assert _used("dictation") == 0
-
-
-def test_an_empty_recording_is_refused_before_any_count_and_silence_stays_counted(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    assert _speak(client, audio=b"").status_code == 400
-    assert _used("dictation") == 0
-
-    class Silent:
-        def transcribe(self, audio_bytes: bytes, filename: str, content_type: str) -> str:
-            return ""
-
-    monkeypatch.setattr(get_container(), "speech_to_text_provider", Silent())
-    assert _speak(client).status_code == 200
-    # The provider did its work on the clip: silence is the owner's, and not a free round.
-    assert _used("dictation") == 1
+# --- photo reading -----------------------------------------------------------------------
 
 
 def test_three_uploads_that_end_in_500_use_no_photo_reading(
@@ -286,7 +243,7 @@ def test_a_photo_reading_that_fails_on_the_providers_side_is_given_back(
 
     class Down:
         def analyze(self, *args: object, **kwargs: object) -> str:
-            raise ProviderError("Unable to reach Groq API: timed out")
+            raise ProviderError("the photo service timed out")
 
     monkeypatch.setattr(get_container(), "image_analyzer", Down())
     _upload(client, pet_id)  # the file is saved, only the reading degrades
@@ -301,7 +258,7 @@ def test_a_file_the_provider_refuses_as_invalid_stays_counted(
 
     class Refuses:
         def analyze(self, *args: object, **kwargs: object) -> str:
-            raise ProviderError("Groq vision failed with status 400: invalid image")
+            raise ProviderError("the photo service failed with status 400: invalid image")
 
     monkeypatch.setattr(get_container(), "image_analyzer", Refuses())
     _upload(client, pet_id)
@@ -330,13 +287,12 @@ def _upload(client: TestClient, pet_id: str) -> Any:
     )
 
 
-def test_a_successful_upload_and_dictation_are_counted(client: TestClient) -> None:
+def test_a_successful_upload_is_counted(client: TestClient) -> None:
     pet_id = _pet(client)
 
     assert _upload(client, pet_id).status_code == 200
-    assert _speak(client).status_code == 200
 
-    assert _used("vision") == 1 and _used("dictation") == 1
+    assert _used("vision") == 1
 
 
 # --- the client leaving, and what is final -------------------------------------------
@@ -459,7 +415,7 @@ def test_the_same_message_twice_at_once_is_counted_once(client: TestClient) -> N
     ("error", "ours"),
     [
         (RuntimeError("bug"), True),
-        (ProviderError("Groq request failed with status 503"), True),
+        (ProviderError("Anthropic request failed with status 503"), True),
         (TimeoutError(), True),
         (ValidationError("not found"), False),
         (QuotaExceededError("vision", limit=1, retry_after_seconds=1, message="x"), False),

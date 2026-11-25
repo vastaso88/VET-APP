@@ -57,7 +57,7 @@ class RequestIdentityMemo:
     # --- daily allowances counted in this request -----------------------------------
 
     def note_quota_use(self, use: Any) -> None:
-        """An allowance (a question, a photo reading, a dictation...) was counted for this
+        """An allowance (a question, a photo reading, a summary...) was counted for this
         request. If the request then fails through no fault of the owner, the use is given
         back (`take_quota_uses` + the budget's refund): only what the owner received counts."""
         self._quota_uses.append(use)

@@ -45,25 +45,20 @@ If you enable Supabase-backed auth or persistence, also configure:
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
-## Groq mode variables
-If you enable the hosted LLM path, also configure:
-- `LLM_PROVIDER=groq`
-- `LLM_MODEL`
-- `LLM_API_KEY`
-- `LLM_BASE_URL`
-
 ## Claude mode variables (chat on Claude Haiku 5.5, from 2026-11-07)
-The chat answers with Claude through the official SDK; the Groq chain stays as the
-automatic reserve and still serves vision and dictation, so keep the Groq variables.
+The chat answers with Claude through the official SDK. There is no reserve provider, no
+voice dictation and no photo reading on the server (removed on 2026-11-25): the variables
+of that time are ignored, and one log line at start-up names the ones still set (names
+only); remove them from the project. `LLM_PROVIDER` accepts `anthropic` and `echo` only:
+any other value stops the start-up.
 - `LLM_PROVIDER=anthropic`
 - `ANTHROPIC_API_KEY` (a key of its own from the Anthropic console; never in the repository)
 - `ANTHROPIC_MODEL=claude-haiku-5-5` (default)
 - `ANTHROPIC_EFFORT=low` and `ANTHROPIC_EFFORT_LIGHT=low` (optional; `low`, `medium` or `high`)
 - `ANTHROPIC_THINKING_HEADROOM_TOKENS=1200` and `ANTHROPIC_TIMEOUT_SECONDS=30` (optional)
 - `URGENT_ANSWER_TIMEOUT_SECONDS=12` (optional; `0` = fixed first-aid texts only)
-- `LLM_API_KEY`, `LLM_MODEL`, `LLM_FALLBACK_MODELS`, `LLM_BASE_URL`: the Groq reserve
-- `LLM_DAILY_TOKEN_BUDGETS` may add `claude-haiku-5-5=<tokens>` to change the daily
-  spending guard (default 4,000,000 tokens a day, after which the Groq reserve answers)
+- `LLM_DAILY_BUDGET_EUR` (default 1): the day's spending cap, after which the chat says
+  kindly that today's answers are over, until midnight UTC
 
 ## Notes
 - `vercel.json` rewrites all incoming paths to the FastAPI entrypoint so API routes such as `/health` keep working.

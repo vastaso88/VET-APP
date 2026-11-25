@@ -1,5 +1,9 @@
 # Chat sul free tier di Groq: misura, budget e degrado graziosa
 
+> **Nota storica.** Dal 25/11/2026 Groq non c'è più (decisione del proprietario): Claude è l'unico
+> fornitore, senza riserva. Il registro dei consumi, il tetto in euro e i limiti per proprietario
+> restano; le catene di modelli, le quote in token di Groq e le loro variabili no.
+
 Build 32 (2026-10-14). Decisione dell'utente: la chat resta su Groq gratuito. Il free
 tier conta i token **al giorno e per modello, per tutta l'organizzazione** (non per
 chiave): il 2026-10-05 una sola esecuzione della valutazione ha esaurito la quota e la

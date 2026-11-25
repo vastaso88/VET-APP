@@ -40,7 +40,6 @@ from apps.api.routes.marketplace_messages import router as marketplace_messages_
 from apps.api.routes.news import router as news_router
 from apps.api.routes.pets import router as pets_router
 from apps.api.routes.reminders import router as reminders_router
-from apps.api.routes.speech_to_text import router as speech_to_text_router
 from apps.api.routes.subscription import router as subscription_router
 from apps.api.routes.travel import router as travel_router
 from packages.bootstrap.container import get_container
@@ -369,7 +368,7 @@ async def handle_quota_exceeded(_: Request, exc: QuotaExceededError) -> JSONResp
 
 @app.exception_handler(ProviderError)
 async def handle_provider_error(_: Request, exc: ProviderError) -> JSONResponse:
-    # Provider error bodies (Groq quota lines, model names, request ids)
+    # Provider error bodies (quota lines, model names, request ids)
     # stay in the server log; the client gets a fixed message plus a
     # correlation id to quote when reporting the problem.
     error_id = uuid.uuid4().hex[:12]
@@ -413,7 +412,6 @@ app.include_router(account_age_router)
 app.include_router(account_preferences_router)
 app.include_router(legal_router)
 app.include_router(chat_response_reports_router)
-app.include_router(speech_to_text_router)
 app.include_router(chat_attachments_router)
 app.include_router(subscription_router)
 app.include_router(billing_router)

@@ -94,7 +94,7 @@ For the LLM path, the recommended flow is:
 - curate allowed hosts in `ai.trusted_source_domains`
 - ingest only documents that belong to those hosts into `ai.source_documents`
 - chunk and embed only approved text marked `eligible_for_rag = true`
-- call `ai.rank_source_documents(...)` first, then `ai.match_source_chunks(...)` before sending context to Groq
+- call `ai.rank_source_documents(...)` first, then `ai.match_source_chunks(...)` before sending context to the model
 
 Recommended backend toggle:
 - `EVIDENCE_BACKEND=in_memory` for preview mode

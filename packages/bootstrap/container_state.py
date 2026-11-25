@@ -52,7 +52,6 @@ from packages.core.application.ports.radar_places_repository import RadarPlacesR
 from packages.core.application.ports.radar_places_source import RadarPlacesSource
 from packages.core.application.ports.radar_reports_repository import RadarReportsRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
-from packages.core.application.ports.speech_to_text_provider import SpeechToTextProvider
 from packages.core.application.ports.store_billing import StoreEntitlementRepository
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
 from packages.core.application.ports.user_device_repository import UserDeviceRepository
@@ -83,7 +82,6 @@ class ContainerState:
     answer_cache_repository: AnswerCacheRepository
     llm_budget: LlmBudget
     llm_client: LLMClient
-    speech_to_text_provider: SpeechToTextProvider
     evidence_retriever: EvidenceRetriever
     pii_anonymizer: PiiAnonymizer
     clinical_event_repository: ClinicalEventRepository

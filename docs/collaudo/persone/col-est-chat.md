@@ -4,7 +4,7 @@
 
 - **Tipo**: estetica
 - **Lingua**: it
-- **Chi è**: esperienza della chat: bolle, lunghezza e forma delle risposte, attesa, allegati, dettatura
+- **Chi è**: esperienza della chat: bolle, lunghezza e forma delle risposte, attesa, allegati
 - **Account**: `col-est-chat@example.com`, piano Pro
 
 ## Animali (giro 1)

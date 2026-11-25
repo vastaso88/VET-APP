@@ -1,5 +1,7 @@
 # 06 — La chat di Quokka oggi: guida per chi ci lavora (Codex)
 
+> **Dal 25/11/2026 (decisione del proprietario) Groq non c'è più**: Claude è l'unico fornitore, senza riserva; niente dettatura (`/speech-to-text` risponde 404) e niente lettura delle foto; `LLM_PROVIDER` accetta solo `anthropic` ed `echo`. Dove il testo sotto parla di riserva, visione o dettatura Groq è storia.
+
 Stato al 2026-11-10, ramo `Francesco`, commit `8d239d3`. Questo documento descrive la sezione **chat** del backend così com'è nel codice: architettura, flusso di una risposta, regole di sicurezza, modelli, prompt, impostazioni, test, strumenti di misura e decisioni ancora aperte.
 
 I documenti `01`-`05` di questa cartella sono le specifiche iniziali. Diverse parti sono superate: per esempio la pipeline «solo dalle fonti» è stata spenta il 2026-09-21 e sostituita dalla risposta naturale. Quando divergono da questo documento, vale il codice e questo documento.

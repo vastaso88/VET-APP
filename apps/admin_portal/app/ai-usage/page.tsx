@@ -1,5 +1,10 @@
 import { AdminShell } from "../../components/admin-shell";
-import { getAdminLlmUsage, type LlmBudgetState, type LlmUsageTotals } from "../../lib/admin-api";
+import {
+  getAdminLlmUsage,
+  type LlmBudgetState,
+  type LlmModelUsage,
+  type LlmUsageTotals,
+} from "../../lib/admin-api";
 import {
   chartGeometry,
   formatCount,
@@ -15,13 +20,21 @@ const CONSOLE_COST_URL = "https://platform.claude.com/cost";
 const STATE_TEXT: Record<LlmBudgetState, { label: string; detail: string }> = {
   ok: { label: "Nei limiti", detail: "Claude risponde a tutti." },
   reserve: {
-    label: "Riserva",
-    detail: "Oltre la soglia di riserva del tetto: Sonnet è spento, Haiku risponde ancora.",
+    label: "Vicino al tetto",
+    detail: "Oltre la soglia del tetto: Sonnet è spento, Haiku risponde ancora.",
   },
   exhausted: {
     label: "Tetto raggiunto",
-    detail: "Claude è fermo fino a mezzanotte UTC: risponde la riserva Groq.",
+    detail:
+      "Claude è fermo fino a mezzanotte UTC: la chat dice che le risposte di oggi sono finite.",
   },
+};
+
+/** The old rows of the reserve removed on 2026-11-25 stay in the table, with their date. */
+const PROVIDER_TAG: Record<LlmModelUsage["provider"], string> = {
+  anthropic: "Claude",
+  groq: "Groq, fino al 25/11/2026",
+  echo: "prova",
 };
 
 /** The month's credits: the colour only, the limit itself is in the Console. */
@@ -105,12 +118,9 @@ export default async function AiUsagePage() {
           <small>oltre il tetto del piano risponde Haiku</small>
         </article>
         <article className="metric-card">
-          <span>Riserva Groq oggi</span>
-          <strong>{formatCount(usage.reserve_calls_today)}</strong>
-          <small>
-            chiamate · {formatCount(usage.failed_calls_today)} fallite oggi,{" "}
-            {formatCount(usage.failed_calls_month)} nel mese
-          </small>
+          <span>Chiamate fallite oggi</span>
+          <strong>{formatCount(usage.failed_calls_today)}</strong>
+          <small>{formatCount(usage.failed_calls_month)} nel mese</small>
         </article>
       </div>
 
@@ -165,7 +175,7 @@ export default async function AiUsagePage() {
             usage.models.map((model) => (
               <div className="table-row" key={model.model}>
                 <span>
-                  {model.label} <span className="tag">{model.paid ? "Claude" : "Groq"}</span>
+                  {model.label} <span className="tag">{PROVIDER_TAG[model.provider]}</span>
                 </span>
                 <span>{formatCount(model.today.calls)}</span>
                 <span>{formatCount(model.today.total_tokens)}</span>

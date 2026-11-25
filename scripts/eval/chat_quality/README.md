@@ -1,8 +1,8 @@
 # Valutazione della qualità della chat
 
 Conversazioni vere con il modello vero, su animali e referti inventati, valutate con una
-griglia scritta. Serve a confrontare la chat prima e dopo una modifica, o un fornitore di
-modelli con un altro.
+griglia scritta. Serve a confrontare la chat prima e dopo una modifica, o un modello con un
+altro.
 
 Non è parte della suite di test (`pytest` non lo esegue) e non tocca Supabase, account
 reali o produzione: il backend gira in memoria con un utente finto. Solo il modello è reale.
@@ -13,39 +13,24 @@ Le prove **non devono usare la chiave di produzione**. Il 5 ottobre 2026 due ese
 complete sulla chiave condivisa hanno esaurito il tetto giornaliero del provider e fermato
 la chat dell'app per ore.
 
-1. Crea una chiave su un **conto del provider separato** da quello di produzione. I limiti
-   di Groq sono per conto (organizzazione) e per modello: una seconda chiave dello stesso
-   conto consuma la stessa quota.
+1. Crea una chiave Anthropic su un **conto o workspace separato** da quello di produzione.
 2. Aggiungila al file `.env` locale (mai nel repository):
 
    ```
-   EVAL_LLM_API_KEY=...
+   EVAL_ANTHROPIC_API_KEY=...
    ```
 
-Senza `EVAL_LLM_API_KEY`, o se è uguale a `LLM_API_KEY`, lo strumento si ferma e spiega
-perché. La chiave non viene mai stampata.
+Senza `EVAL_ANTHROPIC_API_KEY`, o se è uguale a `ANTHROPIC_API_KEY`, lo strumento si ferma e
+spiega perché. La chiave non viene mai stampata. `EVAL_ANTHROPIC_MODEL` cambia il modello in
+esame. Il valore di `LLM_PROVIDER` nel `.env` non conta: lo strumento usa sempre Claude.
 
-**Eccezione controllata**: `--allow-production-key` usa `LLM_API_KEY` quando manca la
+**Eccezione controllata**: `--allow-production-key` usa `ANTHROPIC_API_KEY` quando manca la
 chiave dedicata, ma solo con un `--max-tokens` esplicito, non superiore a quanto resta del
 tetto di 40.000 token al giorno. Il consumo è annotato chiamata per chiamata in
 `.local/chat_eval/production_key_usage.json`, quindi conta anche se l'esecuzione si
 interrompe; prima di ogni chiamata viene stimato il costo massimo (prompt più intera
 risposta) e, se supererebbe il tetto, la chiamata non parte. Pensata per un sottoinsieme
 rappresentativo, non per un giro completo.
-
-## Valutare Claude (LLM_PROVIDER=anthropic)
-
-Con `LLM_PROVIDER=anthropic` nel `.env`, o con `EVAL_LLM_PROVIDER=anthropic`, lo strumento
-usa il client Claude del backend e chiede una chiave dedicata, `EVAL_ANTHROPIC_API_KEY`,
-di un conto o workspace separato da quello di produzione (`ANTHROPIC_API_KEY`). La riserva
-Groq è spenta durante la prova, così ogni risposta viene dal modello in esame;
-`EVAL_ANTHROPIC_MODEL` cambia il modello. `EVAL_LLM_API_KEY` resta la chiave Groq dedicata
-per la lettura degli allegati.
-
-```
-EVAL_LLM_PROVIDER=anthropic
-EVAL_ANTHROPIC_API_KEY=<chiave del conto di prova>
-```
 
 ## Valutare Claude senza chiave API (programma `claude` locale)
 
@@ -55,28 +40,12 @@ Claude Code installato. Usa l'accesso di prova tenuto a parte in `~/.claude-eval
 nessuna chiave API e nessuna quota di produzione. `EVAL_CLI_MODEL` cambia il modello
 (predefinito `claude-haiku-5-5`, quello di produzione). Il programma non ha `max_tokens`:
 le lunghezze misurate sono quelle naturali del modello. Gli scenari con documenti
-richiedono le letture già in cache, oppure `EVAL_LLM_API_KEY` per il modello di visione.
+scansionati richiedono le letture già in cache: nessun servizio legge le foto.
 
 ```
 $env:EVAL_CLAUDE_EXE = "C:\...\claude.exe"     # PowerShell, solo per questa finestra
 uv run python scripts/eval/chat_quality/run.py run --label prova --only <id> --evidence in_memory
 ```
-
-## Confrontare un altro fornitore (es. OpenAI)
-
-Lo strumento parla il protocollo "chat completions" compatibile OpenAI. Per misurare un
-altro fornitore basta impostare, nel `.env` o nell'ambiente:
-
-```
-EVAL_LLM_BASE_URL=https://.../v1
-EVAL_LLM_MODEL=<nome del modello>
-EVAL_LLM_API_KEY=<chiave di quel fornitore>
-```
-
-Poi `run --label <etichetta>` e `compare` con l'esecuzione di riferimento. Il giudice usa lo
-stesso modello in prova: per un confronto equo tra due fornitori conviene far rigiudicare
-entrambe le esecuzioni con lo stesso modello (`rejudge <etichetta> --all` con le variabili
-del modello giudice impostate).
 
 ## Tetto di spesa
 
@@ -85,11 +54,10 @@ ha fatto fino a lì è salvato e si riprende con `--resume`.
 
 Ordini di grandezza misurati il 6 ottobre 2026: una conversazione a un turno senza giudice
 costa circa 1.500-1.900 token; con il giudice circa 2.500-3.000; un'esecuzione completa
-(79 scenari) con giudice circa 200.000. Il piano gratuito di Groq concede 200.000 token al
-giorno per modello.
+(79 scenari) con giudice circa 200.000.
 
-I token del modello di visione non sono contati: servono solo la prima volta, per leggere le
-due scansioni di prova, poi la lettura resta in `.local/chat_eval/analysis_cache.json`.
+Le due scansioni di prova (`coprologico.jpg`, `urine.jpg`) si usano solo se la loro lettura è
+già in `.local/chat_eval/analysis_cache.json`: dal 25/11/2026 nessun servizio legge le foto.
 
 ## Comandi
 
@@ -169,9 +137,9 @@ dati deve mantenere questa regola.
 
 `token_budget.py` fa girare gli stessi scenari con un modello finto e conta i token di
 ogni prompt che la chat avrebbe mandato, per scopo e per classe di modello, e stima le
-risposte al giorno che la quota regge. Nessuna chiamata al provider. Con tiktoken il
-conteggio è esatto (`o200k_base`, la famiglia dei modelli gpt-oss), altrimenti è una
-stima a caratteri, dichiarata nell'output:
+risposte al giorno che il tetto di spesa regge (`--budget-eur`, predefinito 1). Nessuna
+chiamata al provider. Con tiktoken il conteggio è preciso (`o200k_base`, vicino abbastanza
+per confrontare due esecuzioni), altrimenti è una stima a caratteri, dichiarata nell'output:
 
 ```bash
 uv run --system-certs --with tiktoken --with truststore python -c "import truststore; truststore.inject_into_ssl(); import runpy, sys; sys.argv=['token_budget.py','--label','dopo']; runpy.run_path('scripts/eval/chat_quality/token_budget.py', run_name='__main__')"

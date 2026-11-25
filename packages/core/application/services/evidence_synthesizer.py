@@ -90,13 +90,12 @@ class EvidenceSynthesizer:
                 # room than the single free-text paragraph this replaced —
                 # the previous 600-token default silently truncated it into
                 # invalid JSON, which parsed as an empty (thus rejected)
-                # synthesis every time. GroqLLMClient's reasoning_effort=low
-                # fixes the main failure mode (the reasoning model spending
-                # the whole budget on invisible chain-of-thought), but how
-                # much of the budget it uses still varies sample to sample —
-                # a live case that came back with genuinely empty content
-                # even with reasoning_effort=low at 1200 tokens is the
-                # reason for this extra headroom, not a theoretical margin.
+                # synthesis every time. The main failure mode was a reasoning
+                # model spending the whole budget on invisible thinking, and
+                # how much of it goes there varies sample to sample — a live
+                # case that came back with genuinely empty content at 1200
+                # tokens is the reason for this extra headroom, not a
+                # theoretical margin.
                 max_tokens=2000,
                 purpose="evidence_synthesis",
             )

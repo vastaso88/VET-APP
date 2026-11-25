@@ -7,8 +7,7 @@
 -- come entrata normale: un piccolo sottoconteggio della spesa (al massimo il
 -- 25% del prezzo di entrata sui token scritti), niente di piu'.
 --
--- QUANDO: prima di passare la chat a Claude (oggi la produzione usa ancora
--- Groq, che non ha scritture in cache). Idempotente. Aggiunge solo una
+-- QUANDO: prima di passare la chat a Claude. Idempotente. Aggiunge solo una
 -- colonna e una funzione: non cambia nulla di quello che c'e' gia'.
 
 alter table public.llm_usage_daily

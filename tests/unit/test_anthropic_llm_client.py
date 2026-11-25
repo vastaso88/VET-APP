@@ -1,7 +1,7 @@
 """Claude through the official SDK (owner decision 2026-11-07): what the
 client sends and withholds, how it counts usage, what it does with a
-refusal, an error, a deadline, an exhausted budget; the Groq reserve
-behind it; the container's wiring. No network: the SDK client is a fake."""
+refusal, an error, a deadline, an exhausted budget; the container's wiring.
+No network: the SDK client is a fake."""
 
 from __future__ import annotations
 
@@ -16,7 +16,6 @@ from packages.bootstrap.container import ApplicationContainer, answer_models
 from packages.core.application.ports.llm_client import (
     LLMGenerationRequest,
     LLMRefusal,
-    LLMResponse,
 )
 from packages.core.application.services.llm_budget import LlmBudget, QuotaExhausted
 from packages.core.application.services.llm_usage_recorder import InstrumentedLLMClient
@@ -25,8 +24,6 @@ from packages.infrastructure.llm.providers.anthropic_llm_client import (
     AnthropicLLMClient,
     split_system_prompt,
 )
-from packages.infrastructure.llm.providers.groq_llm_client import GroqLLMClient
-from packages.infrastructure.llm.providers.reserve_llm_client import ReserveLLMClient
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryLlmUsageRepository,
 )
@@ -49,7 +46,6 @@ def _settings(**overrides: object) -> Settings:
         "llm_provider": "anthropic",
         "anthropic_api_key": "test-key",
         "anthropic_model": MODEL,
-        "llm_api_key": "",
         **overrides,
     }
     return Settings().model_copy(update=values)
@@ -305,50 +301,26 @@ def test_with_no_time_left_the_second_writing_is_not_started() -> None:
     assert len(fake.calls) == 1
 
 
-class _Reserve:
-    def __init__(self, *, fails: bool = False) -> None:
-        self.fails = fails
-
-    def generate(self, request: LLMGenerationRequest) -> LLMResponse:
-        if self.fails:
-            raise ProviderError("the reserve is down too")
-        return LLMResponse(content="dalla riserva", provider="groq", model="r", token_count=10)
-
-
-def _measured(fake: FakeAnthropic, reserve: _Reserve) -> tuple[InstrumentedLLMClient, LlmBudget]:
+def _measured(fake: FakeAnthropic) -> tuple[InstrumentedLLMClient, LlmBudget]:
     repository = InMemoryLlmUsageRepository()
     budget = LlmBudget(repository, budgets={MODEL: 4_000_000}, default_budget=200_000)
-    inner = ReserveLLMClient(_client(fake), reserve)
-    return InstrumentedLLMClient(inner, repository=repository, budget=budget), budget
+    return InstrumentedLLMClient(_client(fake), repository=repository, budget=budget), budget
 
 
 def _spent(*, input_tokens: int, output_tokens: int) -> Any:
     return _message("", stop="max_tokens", input_tokens=input_tokens, output_tokens=output_tokens)
 
 
-def test_what_the_primary_was_paid_for_is_counted_when_the_reserve_answers() -> None:
+def test_what_claude_was_paid_for_is_counted_when_nothing_comes_of_it() -> None:
     fake = FakeAnthropic(
         _spent(input_tokens=100, output_tokens=1050), _spent(input_tokens=100, output_tokens=450)
     )
-    client, budget = _measured(fake, _Reserve())
-
-    answer = client.generate(ANSWER)
-
-    assert answer.content == "dalla riserva"
-    assert budget.used_today(MODEL) == 1700  # both attempts, on the model that spent them
-    assert budget.used_today("r") == 10
-
-
-def test_what_the_primary_was_paid_for_is_counted_when_nobody_answers() -> None:
-    fake = FakeAnthropic(
-        _spent(input_tokens=100, output_tokens=1050), _spent(input_tokens=100, output_tokens=450)
-    )
-    client, budget = _measured(fake, _Reserve(fails=True))
+    client, budget = _measured(fake)
 
     with pytest.raises(ProviderError):
         client.generate(ANSWER)
 
-    assert budget.used_today(MODEL) == 1700
+    assert budget.used_today(MODEL) == 1700  # both attempts, on the model that spent them
 
 
 def test_the_prompt_cache_of_both_writings_is_counted() -> None:
@@ -424,80 +396,10 @@ def test_past_its_daily_budget_the_model_is_left_alone() -> None:
     assert fake.calls == []
 
 
-# --- the Groq reserve -----------------------------------------------------------------------
-
-
-class _Stub:
-    def __init__(self, outcome: str | Exception) -> None:
-        self.outcome = outcome
-        self.requests: list[LLMGenerationRequest] = []
-
-    def generate(self, request: LLMGenerationRequest) -> LLMResponse:
-        self.requests.append(request)
-        if isinstance(self.outcome, Exception):
-            raise self.outcome
-        return LLMResponse(content=self.outcome, provider="stub", model="stub", token_count=1)
-
-
-def test_the_reserve_answers_when_the_primary_fails() -> None:
-    primary, reserve = _Stub(ProviderError("Anthropic request failed with status 529")), _Stub("ok")
-
-    response = ReserveLLMClient(primary, reserve).generate(ANSWER)
-
-    assert response.content == "ok"
-    assert len(reserve.requests) == 1
-
-
-def test_an_exhausted_primary_budget_hands_over_to_the_reserve() -> None:
-    primary, reserve = _Stub(QuotaExhausted(3600)), _Stub("ok")
-
-    assert ReserveLLMClient(primary, reserve).generate(ANSWER).content == "ok"
-
-
-def test_a_refusal_is_not_retried_on_the_reserve() -> None:
-    primary, reserve = _Stub(LLMRefusal("declined (bio)")), _Stub("ok")
-
-    with pytest.raises(LLMRefusal):
-        ReserveLLMClient(primary, reserve).generate(ANSWER)
-
-    assert reserve.requests == []
-
-
-def test_the_reserve_gets_what_is_left_of_the_deadline() -> None:
-    primary, reserve = _Stub(ProviderError("Anthropic request timed out")), _Stub("ok")
-
-    ReserveLLMClient(primary, reserve).generate(LIGHT.model_copy(update={"timeout_seconds": 10}))
-
-    (request,) = reserve.requests
-    assert request.timeout_seconds is not None and 7 <= request.timeout_seconds <= 10
-
-
-def test_the_reserve_is_not_asked_when_no_time_is_left() -> None:
-    primary, reserve = _Stub(ProviderError("Anthropic request timed out")), _Stub("ok")
-
-    with pytest.raises(ProviderError):
-        ReserveLLMClient(primary, reserve).generate(LIGHT.model_copy(update={"timeout_seconds": 2}))
-
-    assert reserve.requests == []
-
-
 # --- the wiring -----------------------------------------------------------------------------
 
 
-def test_the_container_puts_claude_first_and_groq_as_the_reserve() -> None:
-    settings = _settings(llm_api_key="groq-test-key", llm_model="openai/gpt-oss-120b")
-
-    container = ApplicationContainer(settings)
-
-    client = container.llm_client
-    assert isinstance(client, InstrumentedLLMClient)
-    assert isinstance(client.inner, ReserveLLMClient)
-    assert isinstance(client.inner.primary, AnthropicLLMClient)
-    assert isinstance(client.inner.reserve, GroqLLMClient)
-    assert answer_models(settings)[:2] == [MODEL, "openai/gpt-oss-120b"]
-
-
-def test_without_a_groq_key_claude_stands_alone() -> None:
+def test_claude_stands_alone_in_the_container() -> None:
     settings = _settings()
 
     container = ApplicationContainer(settings)
@@ -505,15 +407,6 @@ def test_without_a_groq_key_claude_stands_alone() -> None:
     assert isinstance(container.llm_client, InstrumentedLLMClient)
     assert isinstance(container.llm_client.inner, AnthropicLLMClient)
     assert answer_models(settings) == [MODEL]
-
-
-def test_the_groq_provider_is_wired_as_before() -> None:
-    settings = Settings().model_copy(
-        update={"llm_provider": "groq", "llm_api_key": "k", "llm_model": "openai/gpt-oss-120b"}
-    )
-
-    assert answer_models(settings)[0] == "openai/gpt-oss-120b"
-    assert isinstance(ApplicationContainer(settings).llm_client.inner, GroqLLMClient)  # type: ignore[attr-defined]
 
 
 def test_settings_refuse_an_effort_the_light_calls_cannot_use() -> None:

@@ -7,18 +7,16 @@ Two kinds of budget, by what a model costs (pricing.py):
   token is 5 times an input token, a cache read a tenth of one), converted
   at LLM_USD_PER_EUR. `daily_cap_eur()` is the one place where the cap is
   decided (today a fixed LLM_DAILY_BUDGET_EUR, minimum 1 EUR a day);
-* a FREE model (Groq's free tier) has a tokens-per-day limit per model,
-  counted for the whole organization.
+* a model with no price (the local stand-in) has a tokens-per-day limit.
 
 The same rules apply to both. The chat must not discover a limit by failing:
 
 * under 80% of a model's budget (configurable) it is used normally;
-* from 80% the reserve models go first, so the main model keeps a margin
-  for when the reserves run out too;
-* at 100%, or once Groq itself answered "per day" 429 for the model, it is
-  left alone until the counter resets; when every model of a chain is in
-  that state the chat says so kindly, with the time to wait, instead of
-  "servizio non disponibile";
+* from 80% the rest is kept as a margin: of several models the ones under
+  their share go first, and Sonnet leaves the answers to Haiku;
+* at 100% the model is left alone until the counter resets; when no model
+  is left (Claude has no reserve) the chat says so kindly, with the time to
+  wait, instead of "servizio non disponibile";
 * each owner has a daily number of messages (configurable), so one account
   cannot spend the quota of everyone else. The owner's day is their own:
   the counters start over at midnight on the clock of their phone (the
@@ -38,7 +36,7 @@ import logging
 import time
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime
 
 from pydantic import BaseModel
 
@@ -63,9 +61,6 @@ from packages.shared.user_clock import current_utc_offset_minutes
 logger = logging.getLogger("vetgpt.budget")
 
 DEFAULT_RESERVE_SHARE = 0.8
-# Groq's "try again in" for a daily limit can be most of a day; anything
-# past the next counter reset is pointless to remember.
-MAX_EXHAUSTION_SECONDS = 24 * 3600
 
 # A health case takes 3-4 messages (the chat asks before it answers): the
 # replies that continue a topic are not new questions, but they are not
@@ -183,7 +178,7 @@ def require_feature_allowance(
     language: str = "it",
 ) -> None:
     """Raises QuotaExceededError when [owner_id] has used today's [limit] of
-    [kind] ("vision", "dictation", "summary"); counts the use otherwise.
+    [kind] ("vision", "summary"); counts the use otherwise.
     No budget, no limit or an exempt account: nothing happens."""
     if budget is None:
         return
@@ -384,24 +379,6 @@ class LlmBudget:
         usage.cache_write_tokens += max(0, cache_write_tokens)
         usage.calls += 1
 
-    def note_rate_limited(
-        self, model: str, *, daily: bool, retry_after_seconds: int | None
-    ) -> None:
-        """The provider refused [model]: a daily limit marks it exhausted for
-        everyone until the provider's own retry time (or the next reset)."""
-        if not daily:
-            return
-        now = self._clock()
-        wait = min(retry_after_seconds or MAX_EXHAUSTION_SECONDS, MAX_EXHAUSTION_SECONDS)
-        until = min(now + timedelta(seconds=wait), next_day_start(now))
-        self._refresh()
-        usage = self._known.setdefault(model, ModelDailyUsage(day=self._today(), model=model))
-        usage.exhausted_until = until
-        try:
-            self._repository.mark_exhausted(model, self._today(), until)
-        except Exception:  # noqa: BLE001 - the ledger must never take the chat down
-            logger.exception("llm budget: could not record that %s is exhausted", model)
-
     # --- admission of a chat turn ---------------------------------------------------
 
     def admit(
@@ -574,8 +551,8 @@ class LlmBudget:
 
     def refund_request_quota_uses(self) -> int:
         """Gives back every use counted so far in the request being served (the owner received
-        nothing for them): a question, a photo reading, a dictation, a summary, a Sonnet
-        answer. The model spend (llm_usage) is NOT touched: money already spent stays counted.
+        nothing for them): a question, a photo reading, a summary, a Sonnet answer. The
+        model spend (llm_usage) is NOT touched: money already spent stays counted.
         Each use is returned once, however many times this is called. Returns how many."""
         memo = get_identity_memo()
         if memo is None:

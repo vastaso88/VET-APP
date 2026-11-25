@@ -242,8 +242,7 @@ class SendChatMessageService:
         self._owner_limits = owner_limits
         # None: no age is ever declared here, every owner is treated as an adult.
         self._account_age_repository = account_age_repository
-        # False: photos are saved but never read (VISION_PROVIDER=off, or no
-        # Groq production vision model: docs/compliance/19).
+        # False: photos are saved but never read (what production does).
         self._photo_reading_enabled = photo_reading_enabled
         # QK-03b: the reservation shared by every instance (None: only the lock below).
         self._message_claims = message_claims

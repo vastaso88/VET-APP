@@ -3,14 +3,14 @@
 Runs the evaluation scenarios through the real orchestrator with a stand-in
 model (no network, no key, no quota) and counts the tokens of every prompt
 the chat would have sent, call by call, with the purpose and model class of
-each. From that it estimates how many answers a day each Groq model's free
-quota sustains.
+each. From that it estimates what an answer costs and how many a day the
+spending cap sustains (pricing.py, the same arithmetic as the app's guard).
 
     uv run --system-certs --with tiktoken --with truststore \\
         python scripts/eval/chat_quality/token_budget.py --label prima
 
-tiktoken (o200k_base, the family of the gpt-oss tokenizers) is used when it
-can be imported; otherwise a character heuristic, said so in the output.
+tiktoken (o200k_base, close enough to compare two runs) is used when it can
+be imported; otherwise a character heuristic, said so in the output.
 The output tokens of the stand-in replies are NOT what the real model would
 write: the report counts the prompt exactly and takes the reply budget
 (`max_tokens`) and a typical real reply length as given.
@@ -46,22 +46,14 @@ from packages.core.application.ports.llm_client import (  # noqa: E402
 from packages.core.application.services.send_chat_message import (  # noqa: E402
     SendChatMessageInput,
 )
+from packages.core.domain.llm_usage.pricing import price_for, spend_usd  # noqa: E402
 from packages.shared.config.settings import Settings  # noqa: E402
 
 OUTPUT_DIR = ROOT_DIR / ".local" / "chat_eval"
 
-# Public figures (console.groq.com/docs/rate-limits, 2026-10): tokens per
-# day of the free tier, per model. The real ones are in the account's
-# limits page: pass --tpd to override.
-DEFAULT_TPD = {
-    "openai/gpt-oss-120b": 200_000,
-    "openai/gpt-oss-20b": 200_000,
-    # qwen/qwen3.8-27b removed 2026-11-16: a preview model, outside Groq's
-    # data agreement (docs/compliance/19).
-}
 # What a typical real reply costs on the output side: ~1000 characters of
 # Italian (the prompt's own ceiling for most kinds of request) plus the
-# reasoning a gpt-oss model spends at "low" effort before writing.
+# reasoning spent at "low" effort before writing.
 TYPICAL_REPLY_TOKENS = 350
 TYPICAL_REASONING_TOKENS = 150
 
@@ -248,7 +240,9 @@ def run_scenario(
     return {"id": scenario.id, "category": scenario.category, "turns": turns}
 
 
-def summarize(results: list[dict[str, Any]], tpd: dict[str, int]) -> dict[str, Any]:
+def summarize(
+    results: list[dict[str, Any]], settings: Settings, budget_eur: float
+) -> dict[str, Any]:
     answered = [
         turn
         for result in results
@@ -270,8 +264,18 @@ def summarize(results: list[dict[str, Any]], tpd: dict[str, int]) -> dict[str, A
     ]
     system_tokens = [c["system_tokens"] for c in answer_calls] or [0]
     median_main = statistics.median(main_per_turn)
-    cost_per_answer = median_main + TYPICAL_REPLY_TOKENS + TYPICAL_REASONING_TOKENS
-    main_tpd = tpd["openai/gpt-oss-120b"]
+    tokens_per_answer = median_main + TYPICAL_REPLY_TOKENS + TYPICAL_REASONING_TOKENS
+    # An upper bound: every prompt token at the plain input price, none read
+    # back from the cache. The light calls run on the same model.
+    eur_per_answer = (
+        spend_usd(
+            price_for(settings.anthropic_model),
+            prompt_tokens=int(median_main + statistics.median(light_per_turn)),
+            completion_tokens=TYPICAL_REPLY_TOKENS + TYPICAL_REASONING_TOKENS,
+            inference_geo=settings.anthropic_inference_geo,
+        )
+        / settings.llm_usd_per_eur
+    )
     return {
         "turns_answered": len(answered),
         "calls_per_turn_median": statistics.median(calls_per_turn),
@@ -281,11 +285,9 @@ def summarize(results: list[dict[str, Any]], tpd: dict[str, int]) -> dict[str, A
             min(len(main_per_turn) - 1, int(len(main_per_turn) * 0.9))
         ],
         "light_prompt_tokens_per_turn_median": statistics.median(light_per_turn),
-        "cost_per_answer_main_tokens": cost_per_answer,
-        "answers_per_day_main_model": int(main_tpd // cost_per_answer) if cost_per_answer else 0,
-        "answers_per_day_with_reserves": (
-            int(sum(tpd.values()) // cost_per_answer) if cost_per_answer else 0
-        ),
+        "tokens_per_answer": tokens_per_answer,
+        "eur_per_answer": round(eur_per_answer, 6),
+        "answers_per_day_in_the_cap": int(budget_eur // eur_per_answer) if eur_per_answer else 0,
         "by_purpose": {
             purpose: {
                 "calls": len(tokens),
@@ -308,9 +310,9 @@ def _print(label: str, method: str, summary: dict[str, Any], results: list[dict[
         "main_prompt_tokens_per_turn_median",
         "main_prompt_tokens_per_turn_p90",
         "light_prompt_tokens_per_turn_median",
-        "cost_per_answer_main_tokens",
-        "answers_per_day_main_model",
-        "answers_per_day_with_reserves",
+        "tokens_per_answer",
+        "eur_per_answer",
+        "answers_per_day_in_the_cap",
     ):
         print(f"| {key} | {summary[key]} |")
     print("\n| scopo | chiamate | token prompt (mediana) | max_tokens (mediana) |")
@@ -350,21 +352,13 @@ def main() -> int:
     parser.add_argument("--category", help="solo queste categorie, separate da virgola")
     parser.add_argument("--compare", nargs=2, metavar=("PRIMA", "DOPO"))
     parser.add_argument(
-        "--tpd",
-        action="append",
-        default=[],
-        metavar="MODELLO=TOKEN",
-        help="quota giornaliera reale di un modello (dalla console Groq)",
+        "--budget-eur", type=float, default=1.0, help="tetto di spesa di un giorno, in euro"
     )
     args = parser.parse_args()
     if args.compare:
         _compare(*args.compare)
         return 0
 
-    tpd = dict(DEFAULT_TPD)
-    for item in args.tpd:
-        model, _, value = item.partition("=")
-        tpd[model] = int(value)
     counter = Counter()
     cache = _load_cache()
     settings = _settings(args.interview_loop)
@@ -373,7 +367,7 @@ def main() -> int:
         s for s in (*SCENARIOS, LONG_CONVERSATION) if categories is None or s.category in categories
     ]
     results = [run_scenario(settings, scenario, counter, cache) for scenario in scenarios]
-    summary = summarize(results, tpd)
+    summary = summarize(results, settings, args.budget_eur)
     _print(args.label, counter.method, summary, results)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     (OUTPUT_DIR / f"token_budget_{args.label}.json").write_text(

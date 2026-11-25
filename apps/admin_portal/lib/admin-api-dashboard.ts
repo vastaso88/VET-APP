@@ -158,9 +158,10 @@ export type LlmUsageTotals = {
 
 export type LlmModelUsage = {
   model: string;
-  /** "Haiku 5.5", "Sonnet 5.5", "gpt-oss-120b". */
+  /** "Haiku 5.5", "Sonnet 5.5"; "gpt-oss-120b" in the old rows. */
   label: string;
-  provider: "anthropic" | "groq";
+  /** "groq": only the rows written before 2026-11-25, when it was removed. */
+  provider: "anthropic" | "groq" | "echo";
   paid: boolean;
   today: LlmUsageTotals;
   month: LlmUsageTotals;
@@ -173,6 +174,7 @@ export type LlmDayUsage = {
   eur: number;
   calls: number;
   paid_calls: number;
+  /** Calls with no price: the old rows of the removed reserve. */
   reserve_calls: number;
 };
 
@@ -210,8 +212,6 @@ export type AdminLlmUsage = {
   /** The last 30 days, oldest first, none missing. */
   daily: LlmDayUsage[];
   sonnet_answers_today: number;
-  /** Calls the Groq reserve took today. */
-  reserve_calls_today: number;
   failed_calls_today: number;
   failed_calls_month: number;
 };

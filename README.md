@@ -29,7 +29,7 @@ Quokka helps people who live with an animal understand it and look after it well
      Europe PMC REST API only (no key needed)
    - `EVIDENCE_BACKEND=scientific_multi` for Europe PMC + PubMed + Crossref +
      OpenAlex combined (no key needed for any of them)
-5. Keep `LLM_PROVIDER=echo` for browser demo runs. Switch to `LLM_PROVIDER=groq` only when you want to exercise the hosted LLM path and have set `LLM_API_KEY`.
+5. Keep `LLM_PROVIDER=echo` for browser demo runs. Switch to `LLM_PROVIDER=anthropic` only when you want to exercise the hosted LLM path and have set `ANTHROPIC_API_KEY`.
 6. Install dependencies with `make setup`.
 7. Start the API with `make run-api`.
 8. Start the Flutter web client with `cd apps/mobile_app && flutter pub get && flutter run -d chrome`.
@@ -93,9 +93,8 @@ Configuration is centralized in `packages/shared/config/settings.py`. The bootst
 - `SUPABASE_DB_NAME`
 - `SUPABASE_DB_USER`
 - `SUPABASE_DB_PASSWORD`
-- `LLM_PROVIDER`
-- `LLM_MODEL`
-- `LLM_API_KEY`
+- `LLM_PROVIDER` (`anthropic` or `echo`)
+- `ANTHROPIC_API_KEY`
 - `LOG_LEVEL`
 - `ENABLE_TELEMETRY`
 
@@ -111,7 +110,7 @@ See `docs/runbooks/vercel_deploy.md` for the deployment checklist.
 - LLM integration is still a demo stub in this first bootstrap push.
 - Supabase auth flow is now wired for runtime email/password login and bearer-token user resolution.
 - Supabase persistence tables are protected by RLS owner-based policies.
-- Browser preview should use `AUTH_BACKEND=bootstrap`, `PERSISTENCE_BACKEND=in_memory`, and `LLM_PROVIDER=echo` until the Supabase and Groq paths are intentionally enabled.
+- Browser preview should use `AUTH_BACKEND=bootstrap`, `PERSISTENCE_BACKEND=in_memory`, and `LLM_PROVIDER=echo` until the Supabase and Claude paths are intentionally enabled.
 
 ## Product source material
 Product and strategy documents now live under `docs/`:

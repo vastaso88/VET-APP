@@ -1,5 +1,5 @@
-"""Photo reading switched off (VISION_PROVIDER=off, or a vision model outside
-Groq's production list: docs/compliance/19, 2026-11-16).
+"""Photo reading switched off: no service reads the photos (owner decision
+2026-11-25).
 
 Nothing is sent anywhere and nothing is invented: every call fails as a
 provider error, so the upload keeps the file with no analysis, and the chat,

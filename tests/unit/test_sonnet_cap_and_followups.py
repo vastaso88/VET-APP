@@ -50,7 +50,7 @@ from packages.shared.user_clock import reset_utc_offset_minutes, set_utc_offset_
 
 HAIKU = "claude-haiku-5-5"
 SONNET = "claude-sonnet-5-5"
-GROQ = "openai/gpt-oss-120b"
+FREE_MODEL = "free-model"
 NOON = datetime(2026, 11, 10, 12, 0, tzinfo=UTC)
 
 
@@ -72,7 +72,7 @@ def _budget(
 ) -> LlmBudget:
     return LlmBudget(
         repository or InMemoryLlmUsageRepository(),
-        budgets={GROQ: 1000},
+        budgets={FREE_MODEL: 1000},
         default_budget=1000,
         reserve_share=reserve_share,
         user_daily_limit=user_daily_limit,
@@ -418,7 +418,7 @@ def _ask_at_the_limit(language: str, upgrade_plan: str | None) -> ChatOrchestrat
         InMemoryEvidenceRetriever(),
         NoopPiiAnonymizer(),
         usage_budget=budget,
-        answer_models=[GROQ],
+        answer_models=[FREE_MODEL],
     )
 
     def ask(text: str) -> ChatOrchestratorResult:

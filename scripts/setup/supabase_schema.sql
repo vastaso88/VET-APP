@@ -1846,8 +1846,7 @@ for delete using (
 
 -- ---------------------------------------------------------------------------
 -- Model usage ledger and daily budget (build 32, 2026-10-14).
--- Groq's free tier counts tokens per day and per model for the whole
--- organization. The backend records every model call (counts only: never
+-- The backend records every model call (counts only: never
 -- the owner's words), keeps the day's totals per model so every serverless
 -- instance sees the same figures, counts each owner's messages per day, and
 -- caches answers to general curiosities. Retention: llm_usage rows have no

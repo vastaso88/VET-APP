@@ -7,7 +7,7 @@
   our own words (the passage stays in memory: the 6-word check runs in NoteLibrary.add);
 - relate(): same fact / new fact / contrast between a new note and a similar one;
 - notes_block(): the good notes given to the writer as <fonti_ufficiali>.
-Every call goes through the eval's `call` (local claude program or an eval key), never Groq.
+Every call goes through the eval's `call` (local claude program or an eval key).
 """
 
 from __future__ import annotations

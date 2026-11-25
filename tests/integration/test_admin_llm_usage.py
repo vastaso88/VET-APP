@@ -98,7 +98,7 @@ def test_an_admin_gets_the_report(portal: TestClient, monkeypatch: pytest.Monkey
         "models",
         "daily",
         "sonnet_answers_today",
-        "reserve_calls_today",
+        "failed_calls_today",
         "usd_per_eur",
     }
     assert len(body["daily"]) == 30
@@ -112,6 +112,7 @@ def test_it_reports_what_the_ledger_holds(
 ) -> None:
     _record("claude-haiku-5-5", prompt=1_000_000, completion=0)  # $0.10
     _record("claude-sonnet-5-5", prompt=0, completion=100_000, calls=2)  # 2 x $1.00
+    # An old row of the reserve provider removed on 2026-11-25: read as before.
     _record("openai/gpt-oss-120b", prompt=500, completion=100, calls=3)
     _act_as(monkeypatch, ADMIN)
 
@@ -123,7 +124,8 @@ def test_it_reports_what_the_ledger_holds(
     assert body["month"]["spent_usd"] == pytest.approx(2.10)
     assert body["month"]["credits_usd"] == 100.0
     assert body["sonnet_answers_today"] == 2
-    assert body["reserve_calls_today"] == 3
+    assert "reserve_calls_today" not in body
+    assert body["daily"][-1]["reserve_calls"] == 3
     labels = {model["label"]: model for model in body["models"]}
     assert set(labels) == {"Haiku 5.5", "Sonnet 5.5", "gpt-oss-120b"}
     assert labels["Sonnet 5.5"]["today"]["calls"] == 2

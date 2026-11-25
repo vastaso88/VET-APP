@@ -6,7 +6,7 @@ settings (.env or environment variables) — defaults to echo + in_memory,
 so `python scripts/eval/run_evaluation.py` costs nothing and needs no
 network access. Point it at a real provider/backend to evaluate those:
 
-    LLM_PROVIDER=groq EVIDENCE_BACKEND=europe_pmc python scripts/eval/run_evaluation.py
+    LLM_PROVIDER=anthropic EVIDENCE_BACKEND=europe_pmc python scripts/eval/run_evaluation.py
 """
 
 from __future__ import annotations

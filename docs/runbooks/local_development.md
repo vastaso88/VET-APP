@@ -6,7 +6,6 @@
    - `AUTH_BACKEND=bootstrap`
    - `PERSISTENCE_BACKEND=in_memory`
    - `LLM_PROVIDER=echo`
-   - `LLM_API_KEY=` can stay empty in echo mode
    - to chat with Claude locally: `LLM_PROVIDER=anthropic` and `ANTHROPIC_API_KEY=...`
      (the other variables are listed in `docs/runbooks/vercel_deploy.md`)
 4. Run `make setup`.

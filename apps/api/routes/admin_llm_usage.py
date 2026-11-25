@@ -14,7 +14,7 @@ router = APIRouter(prefix="/admin/llm-usage", tags=["admin"])
 def llm_usage() -> dict[str, object]:
     """What the AI costs, for the portal's "AI usage" page: today's spend against
     the euro cap, the month against the account's credits, usage per model, the
-    last 30 days, the Sonnet answers and the Groq reserve calls of today.
+    last 30 days, the Sonnet answers and the failed calls of today.
     Aggregates from the usage ledger: no owner, no text, no personal data. Same
     admin protection as the other portal routes (a normal user gets 403)."""
     _require_admin()

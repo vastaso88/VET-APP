@@ -13,7 +13,6 @@
 - lingua_unita
 - chat
 - peso_monitoraggio
-- dettatura
 - segnala_luogo
 - eventi
 - doveri_viaggi

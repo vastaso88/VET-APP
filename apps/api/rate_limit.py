@@ -4,7 +4,7 @@ guard credentials.
 Why "best effort": the API runs as serverless functions, so this counter
 lives in each instance's memory and is not shared across instances or
 cold starts. It still stops the cheap attacks (a loop from one client
-hammering /auth/login or /speech-to-text through a single warm
+hammering /auth/login or /chat-attachments through a single warm
 instance) and documents the intended ceilings; a shared store (the
 `chat_user_daily_usage` table, or Supabase's own auth rate limits) is the
 place for hard guarantees.
@@ -56,7 +56,6 @@ DEFAULT_RULES: tuple[RateLimitRule, ...] = (
     # per-admin Postgres attempt counter so cold starts do not reset the limit.
     RateLimitRule(prefix="/admin/users/", suffix="/plan", limit=30, window_seconds=300.0),
     # Model calls outside the per-user daily chat quota.
-    RateLimitRule(prefix="/speech-to-text", limit=20, window_seconds=600.0),
     RateLimitRule(prefix="/chat-attachments", limit=20, window_seconds=600.0),
     # Messages of the Mercatino: a person does not send one a second for a
     # minute; a script does. The daily limit on new conversations is in the service.

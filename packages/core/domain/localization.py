@@ -377,13 +377,6 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "de": "Noch eine Sache: Im Profil von {pet_name} fehlt das Gewicht. Wenn Sie es im Tierprofil ergänzen, kann ich es bei künftigen Antworten berücksichtigen.",
         "fr": "Une dernière chose : le poids manque dans le profil de {pet_name}. Si vous l'ajoutez depuis sa fiche, je pourrai en tenir compte dans mes prochaines réponses.",
     },
-    "dictation_heard_nothing": {
-        "it": "Non ho sentito nulla. Riprova, avvicinandoti al microfono.",
-        "en": "I didn't hear anything. Try again, a little closer to the microphone.",
-        "es": "No he oído nada. Inténtalo de nuevo, más cerca del micrófono.",
-        "de": "Ich habe nichts gehört. Versuchen Sie es noch einmal, näher am Mikrofon.",
-        "fr": "Je n'ai rien entendu. Réessayez, un peu plus près du micro.",
-    },
     "input_too_long": {
         "it": "Il testo è troppo lungo: al massimo {max} caratteri.",
         "en": "The text is too long: {max} characters at most.",
@@ -814,13 +807,6 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "es": "Hoy has usado las {limit} lecturas de fotos y documentos disponibles. Podrás enviar otras dentro de unas {wait}.",
         "de": "Sie haben heute alle {limit} verfügbaren Auswertungen von Fotos und Dokumenten genutzt. In {wait} können Sie weitere senden.",
         "fr": "Vous avez utilisé aujourd'hui les {limit} lectures de photos et de documents disponibles. Vous pourrez en envoyer d'autres dans {wait}.",
-    },
-    "quota_dictation_exhausted": {
-        "it": "Per oggi hai usato tutte le {limit} dettature disponibili. Potrai dettare di nuovo tra circa {wait}; intanto puoi scrivere il messaggio.",
-        "en": "You have used all {limit} dictations available today. You can dictate again in about {wait}; meanwhile you can type your message.",
-        "es": "Hoy has usado los {limit} dictados disponibles. Podrás dictar de nuevo dentro de unas {wait}; mientras tanto puedes escribir el mensaje.",
-        "de": "Sie haben heute alle {limit} verfügbaren Diktate genutzt. In {wait} können Sie wieder diktieren; bis dahin können Sie die Nachricht tippen.",
-        "fr": "Vous avez utilisé aujourd'hui les {limit} dictées disponibles. Vous pourrez dicter à nouveau dans {wait} ; en attendant, vous pouvez écrire le message.",
     },
     "quota_summary_exhausted": {
         "it": "Per oggi hai usato tutti i {limit} riassunti per il veterinario disponibili. Potrai chiederne un altro tra circa {wait}.",

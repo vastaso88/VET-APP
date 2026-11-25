@@ -2,7 +2,7 @@ from typing import Any, Protocol
 
 from pydantic import BaseModel
 
-from packages.shared.errors.base import PaidCall, ProviderError
+from packages.shared.errors.base import ProviderError
 
 
 class LLMGenerationRequest(BaseModel):
@@ -14,9 +14,8 @@ class LLMGenerationRequest(BaseModel):
     # ...): recorded with the usage of every call, never sent to the provider.
     purpose: str = "answer"
     # "main": the configured model, for the answer the owner reads. "light":
-    # a smaller model with its own (larger) daily quota, for mechanical work
-    # — extraction, keywords, classification. A provider without a light
-    # model serves both from the main one.
+    # mechanical work — extraction, keywords, classification — where the
+    # provider writes at once, with no reasoning (Claude: the same model).
     # "strong": the occasional more capable model (Claude Sonnet, plan
     # "fratello maggiore"), when the provider has one; the others serve it
     # from the main model.
@@ -45,23 +44,20 @@ class LLMResponse(BaseModel):
     model: str
     token_count: int
     finish_reason: str | None = None
-    # From the provider's usage report when it gives one (Groq does); the
-    # cached count is the part of the prompt served from its prompt cache.
+    # From the provider's usage report; the cached count is the part of the
+    # prompt served from its prompt cache.
     prompt_tokens: int = 0
     completion_tokens: int = 0
     cached_prompt_tokens: int = 0
     # The part of prompt_tokens written to the provider's prompt cache (Claude
     # reports it; priced above plain input, so the spending guard needs it).
     cache_write_tokens: int = 0
-    # Calls paid before this answer with nothing to show for them (the primary spent its
-    # tokens and the reserve answered): counted on their own model.
-    paid_before: tuple[PaidCall, ...] = ()
 
 
 class LLMRefusal(ProviderError):
     """The provider's own safety classifiers declined the request (Claude:
-    `stop_reason: refusal`). A decision, not an outage: the reserve is not
-    asked the same thing and the owner gets a fixed, safe reply."""
+    `stop_reason: refusal`). A decision, not an outage: nobody else is asked
+    the same thing and the owner gets a fixed, safe reply."""
 
 
 class LLMClient(Protocol):

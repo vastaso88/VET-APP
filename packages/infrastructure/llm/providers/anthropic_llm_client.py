@@ -1,10 +1,10 @@
 """Claude as the chat's model, through the official `anthropic` SDK (owner
-decision 2026-11-07: Claude Haiku 5.5 answers the owners; Groq stays as
-the automatic reserve, see reserve_llm_client.py).
+decision 2026-11-07: Claude Haiku 5.5 answers the owners; since 2026-11-25
+it is the only provider, with no reserve).
 
-What leaves for the provider is exactly what left for Groq: the system
-prompt, the user prompt the orchestrator already passed through
-`_anonymize_for_provider`. What this client adds or withholds:
+What leaves for the provider is the system prompt and the user prompt the
+orchestrator already passed through `_anonymize_for_provider`. What this
+client adds or withholds:
 
 * no `temperature`, `top_p` or `top_k`: Haiku 5.5 refuses non-default
   sampling parameters with a 400 (the port's `temperature` is ignored);
@@ -25,7 +25,7 @@ prompt, the user prompt the orchestrator already passed through
 * a `json_mode` call with a `json_schema` uses structured outputs; without
   one, or when the schema is refused, the JSON instruction goes in words;
 * `stop_reason: refusal` (the provider's safety classifiers) raises
-  LLMRefusal: a decision, not an outage, so the reserve is not asked;
+  LLMRefusal: a decision, not an outage;
 * every SDK error becomes a ProviderError that names the status only,
   never the response body or the prompt; a deadline the caller set
   (urgency classifier, urgent answer) is honoured without SDK retries.
@@ -45,7 +45,7 @@ from packages.core.application.ports.llm_client import (
     LLMRefusal,
     LLMResponse,
 )
-from packages.infrastructure.llm.providers.groq_chat_api import ModelAvailability
+from packages.core.application.ports.model_availability import ModelAvailability
 from packages.shared.config.settings import Settings
 from packages.shared.errors.base import PaidCall, ProviderError
 
@@ -135,15 +135,14 @@ class AnthropicLLMClient(LLMClient):
 
     def generate(self, req: LLMGenerationRequest) -> LLMResponse:
         if self._availability is not None:
-            # Past its daily budget the model is left alone (QuotaExhausted):
-            # the reserve, when there is one, takes the call.
+            # Past its daily budget the model is left alone (QuotaExhausted).
             self._availability.order([self.model_for(req)])
         started = time.monotonic()
         try:
             return self._generate(req)
         except _BudgetSpentOnReasoning as spent:
-            # Written again at once with no reasoning: 13 answers of a round had gone to the
-            # reserve, after six seconds, for nothing more than this.
+            # Written again at once with no reasoning: 13 answers of a round had been lost,
+            # after six seconds, for nothing more than this.
             left = None
             if req.timeout_seconds is not None:
                 left = int(req.timeout_seconds - (time.monotonic() - started))
@@ -254,8 +253,7 @@ class AnthropicLLMClient(LLMClient):
         completion_tokens = int(usage.output_tokens or 0)
         finish = _FINISH_REASONS.get(stop or "", stop)
         if not text and finish == "length":
-            # Nothing to show the owner: written again with no reasoning (generate);
-            # failing that, the reserve may still answer in time.
+            # Nothing to show the owner: written again with no reasoning (generate).
             raise _BudgetSpentOnReasoning(
                 PaidCall(
                     model=str(getattr(message, "model", "") or self.model_for(req)),

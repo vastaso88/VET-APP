@@ -34,6 +34,6 @@ class ChatAttachment(BaseModel):
     analysis: str | None = None
     """Plain-text visual description from ImageAnalyzer, folded into the
     chat's case context as though the owner had described it in words —
-    never a diagnosis, see GroqImageAnalyzer's system prompt."""
+    never a diagnosis."""
     analysis_failed: bool = False
     created_at: datetime = Field(default_factory=utc_now)

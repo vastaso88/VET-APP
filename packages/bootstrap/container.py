@@ -13,7 +13,6 @@ from packages.bootstrap.settings_rules import (  # noqa: F401 - moved there, re-
     _parse_plan_overrides,
     _resolve_subscription_test_plan,
     answer_models,
-    groq_reserve_configured,
     resolve_memorial_pets_max,
 )
 from packages.core.application.ports.event_catalog_repository import EventCatalogRepository
@@ -91,7 +90,6 @@ from packages.core.application.services.set_medical_record_consent import (
 )
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
 from packages.core.application.services.store_billing import StoreBillingService
-from packages.core.application.services.transcribe_audio import TranscribeAudioService
 from packages.core.application.services.update_pet_profile import UpdatePetProfileService
 from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentService
 from packages.core.application.services.urgency_classifier import UrgencyClassifier
@@ -157,7 +155,6 @@ class ApplicationContainer(
             repository=self.llm_usage_repository,
             budget=self.llm_budget,
         )
-        self.speech_to_text_provider = self._build_speech_to_text_provider()
         self.evidence_retriever = self._build_evidence_retriever()
         self.pii_anonymizer = self._build_pii_anonymizer()
         self.clinical_event_repository = self._build_clinical_event_repository()
@@ -537,13 +534,6 @@ class ApplicationContainer(
 
     def resolve_chat_response_report_service(self) -> ResolveChatResponseReportService:
         return ResolveChatResponseReportService(self.chat_response_report_repository)
-
-    def transcribe_audio_service(self) -> TranscribeAudioService:
-        return TranscribeAudioService(
-            self.speech_to_text_provider,
-            budget=self.llm_budget,
-            daily_limit=self.settings.chat_daily_dictation_limit_per_user,
-        )
 
     def upload_chat_attachment_service(self) -> UploadChatAttachmentService:
         return UploadChatAttachmentService(

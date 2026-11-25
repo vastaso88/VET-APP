@@ -3,7 +3,7 @@ from packages.core.application.ports.llm_client import (
     LLMGenerationRequest,
     LLMResponse,
 )
-from packages.core.domain.llm_usage.models import estimate_tokens
+from packages.core.domain.llm_usage.models import DEMO_MODEL, estimate_tokens
 from packages.shared.config.settings import Settings
 
 # Matches EvidenceSynthesizer.SYNTHESIS_MARKER — the zero-cost demo/test
@@ -46,7 +46,7 @@ class EchoLLMClient(LLMClient):
         return LLMResponse(
             content=content,
             provider=self._settings.llm_provider,
-            model=self._settings.llm_model,
+            model=DEMO_MODEL,
             token_count=len(content.split()),
             finish_reason="stop",
             prompt_tokens=prompt_tokens,

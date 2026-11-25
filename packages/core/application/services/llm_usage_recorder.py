@@ -54,7 +54,6 @@ class InstrumentedLLMClient(LLMClient):
                 )
             )
             raise
-        self._record_paid(response.paid_before, request)
         prompt_tokens = response.prompt_tokens or estimate_tokens(
             request.system_prompt + request.user_prompt
         )

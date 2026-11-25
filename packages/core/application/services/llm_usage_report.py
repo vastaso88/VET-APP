@@ -22,7 +22,7 @@ from pydantic import BaseModel
 
 from packages.core.application.ports.llm_usage_repository import LlmUsageRepository
 from packages.core.application.services.llm_budget import LlmBudget
-from packages.core.domain.llm_usage.models import ModelDailyUsage, utc_now
+from packages.core.domain.llm_usage.models import DEMO_MODEL, ModelDailyUsage, utc_now
 from packages.core.domain.llm_usage.pricing import (
     DEFAULT_INFERENCE_GEO,
     DEFAULT_USD_PER_EUR,
@@ -32,6 +32,9 @@ from packages.core.domain.llm_usage.pricing import (
 
 SERIES_DAYS = 30
 ANTHROPIC = "anthropic"
+ECHO = "echo"
+# The reserve provider until 2026-11-25: nothing calls it any more, but the rows
+# it left in the ledger stay readable (this month's table, the last 30 days).
 GROQ = "groq"
 
 
@@ -63,6 +66,7 @@ class DayUsage(BaseModel):
     eur: float
     calls: int
     paid_calls: int
+    # Calls with no price: the old rows of the removed reserve (and the stand-in).
     reserve_calls: int
 
 
@@ -74,7 +78,7 @@ class TodayUsage(BaseModel):
     # Share of the euro cap used (None without a cap).
     share_of_cap: float | None
     # "ok", "reserve" (past the reserve share: Sonnet is off) or "exhausted"
-    # (the paid model is left alone until midnight UTC).
+    # (Claude is left alone until midnight UTC and the chat says so).
     state: str
 
 
@@ -99,21 +103,22 @@ class LlmUsageReport(BaseModel):
     models: list[ModelUsage]
     daily: list[DayUsage]
     sonnet_answers_today: int
-    # Calls the Groq reserve took today (Claude over its cap, or not answering).
-    reserve_calls_today: int
-    # Calls that failed before an answer, today and this month.
+    # Calls that failed before an answer (Claude over its cap, or not answering),
+    # today and this month.
     failed_calls_today: int
     failed_calls_month: int
 
 
 def describe_model(model: str) -> tuple[str, str]:
-    """(label, provider) of a ledger model name: "Haiku 5.5" and "anthropic",
-    "gpt-oss-120b" and "groq"."""
+    """(label, provider) of a ledger model name: "Haiku 5.5" and "anthropic";
+    for the rows of the removed reserve "gpt-oss-120b" and "groq"."""
     if model.startswith("claude-"):
         parts = model.split("-")
         family = parts[1].capitalize() if len(parts) > 1 else model
         version = ".".join(parts[2:]) if parts[2:] and all(p.isdigit() for p in parts[2:]) else ""
         return (f"{family} {version}".strip(), ANTHROPIC)
+    if model == DEMO_MODEL:
+        return (model, ECHO)
     return (model.split("/")[-1], GROQ)
 
 
@@ -196,11 +201,6 @@ class LlmUsageReportService:
             sonnet_answers_today=sum(
                 row.calls for row in today_rows if describe_model(row.model)[0].startswith("Sonnet")
             ),
-            reserve_calls_today=sum(
-                row.calls
-                for row in today_rows
-                if not _is_failure_row(row.model) and describe_model(row.model)[1] == GROQ
-            ),
             failed_calls_today=sum(r.calls for r in today_rows if _is_failure_row(r.model)),
             failed_calls_month=sum(r.calls for r in month_rows if _is_failure_row(r.model)),
         )
@@ -248,7 +248,7 @@ class LlmUsageReportService:
                     usd=usd_of[id(row)],
                     usd_per_eur=self._usd_per_eur,
                 )
-        # Dearest first: the paid models, then Groq's.
+        # Dearest first: the paid models, then the old rows with no price.
         return sorted(by_model.values(), key=lambda m: (-m.month.eur, m.model))
 
     def _daily(

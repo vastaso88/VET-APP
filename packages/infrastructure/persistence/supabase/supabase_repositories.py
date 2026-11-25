@@ -1276,12 +1276,6 @@ class SupabaseLlmUsageRepository(LlmUsageRepository):
         )
         return [ModelDailyUsage.model_validate(item) for item in response.data or []]
 
-    def mark_exhausted(self, model: str, day: date, until: datetime) -> None:
-        self._client.table("llm_usage_daily").upsert(
-            {"day": day.isoformat(), "model": model, "exhausted_until": until.isoformat()},
-            on_conflict="day,model",
-        ).execute()
-
     def add_user_message(self, owner_id: str, day: date) -> int:
         response = self._client.rpc(
             "chat_user_daily_usage_add", {"p_owner_id": owner_id, "p_day": day.isoformat()}

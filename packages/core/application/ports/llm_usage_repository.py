@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from typing import Protocol
 
 from packages.core.domain.llm_usage.models import LlmUsageEvent, ModelDailyUsage
@@ -19,16 +19,14 @@ class LlmUsageRepository(Protocol):
         (the admin portal's usage page). Aggregates only: no owner, no text."""
         ...
 
-    def mark_exhausted(self, model: str, day: date, until: datetime) -> None: ...
-
     def add_user_message(self, owner_id: str, day: date) -> int:
         """Counts one more message for [owner_id] today and returns the
         new total."""
         ...
 
     def add_user_usage(self, owner_id: str, day: date, kind: str) -> int:
-        """Counts one more use of [kind] ("messages", "vision", "dictation",
-        "summary") for [owner_id] today and returns the new total."""
+        """Counts one more use of [kind] ("messages", "vision", "summary",
+        "sonnet", "followup") for [owner_id] today and returns the new total."""
         ...
 
     def remove_user_usage(self, owner_id: str, day: date, kind: str) -> int:

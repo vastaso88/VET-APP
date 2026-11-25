@@ -2,7 +2,7 @@
 clock of the owner's phone (the offset the app sends), not at midnight UTC.
 
 The model token budgets stay on the provider's day, UTC: only the owner's own
-counters (questions, photos, dictations, summaries) move.
+counters (questions, photos, summaries) move.
 """
 
 from __future__ import annotations
@@ -251,21 +251,21 @@ def test_just_after_midnight_the_wait_is_almost_a_whole_day(offset: SetOffset) -
     assert denial.retry_after_seconds == 24 * 3600 - 1
 
 
-def test_the_photo_dictation_and_summary_counters_follow_the_owners_day_too(
+def test_the_photo_and_summary_counters_follow_the_owners_day_too(
     offset: SetOffset,
 ) -> None:
     offset(120)
     clock = Clock(utc(2026, 7, 10, 21, 0))  # 23:00 on the 10th in Rome in summer
     budget = _budget(clock)
 
-    for kind in ("vision", "dictation", "summary"):
+    for kind in ("vision", "summary"):
         assert budget.admit_feature(owner_id="anna", kind=kind, limit=1) is None
         denied = budget.admit_feature(owner_id="anna", kind=kind, limit=1)
         assert denied is not None and denied.reason == f"{kind}_limit"
         assert denied.retry_after_seconds == 3600
 
     clock.now = utc(2026, 7, 10, 22, 0)  # midnight in Rome
-    for kind in ("vision", "dictation", "summary"):
+    for kind in ("vision", "summary"):
         assert budget.admit_feature(owner_id="anna", kind=kind, limit=1) is None
 
 

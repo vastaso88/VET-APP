@@ -22,7 +22,7 @@ from packages.core.application.ports.llm_client import (
 )
 from packages.core.application.services.llm_budget import LlmBudget, QuotaExhausted, parse_budgets
 from packages.core.application.services.llm_usage_recorder import InstrumentedLLMClient
-from packages.core.domain.llm_usage.models import LlmUsageEvent
+from packages.core.domain.llm_usage.models import DEMO_MODEL, LlmUsageEvent
 from packages.core.domain.llm_usage.pricing import (
     DEFAULT_INFERENCE_GEO,
     DEFAULT_USD_PER_EUR,
@@ -41,7 +41,7 @@ from packages.infrastructure.persistence.supabase.supabase_repositories import (
 from packages.shared.config.settings import Settings
 
 HAIKU = "claude-haiku-5-5"
-GROQ = "openai/gpt-oss-120b"
+FREE_MODEL = "free-model"
 NOON = datetime(2026, 11, 10, 12, 0, tzinfo=UTC)
 
 
@@ -57,7 +57,7 @@ def _budget(
 ) -> LlmBudget:
     return LlmBudget(
         repository or InMemoryLlmUsageRepository(),
-        budgets=budgets if budgets is not None else {GROQ: 1000},
+        budgets=budgets if budgets is not None else {FREE_MODEL: 1000},
         default_budget=1000,
         reserve_share=reserve_share,
         clock=lambda: now,
@@ -86,8 +86,8 @@ def test_an_output_token_costs_five_inputs_and_a_cache_read_a_tenth() -> None:
     assert price.cache_read == pytest.approx(price.input / 10)
 
 
-def test_groq_models_are_free_and_have_no_euro_price() -> None:
-    for model in (GROQ, "openai/gpt-oss-20b", "qwen/qwen3.8-27b", "(main)"):
+def test_the_stand_in_and_the_old_rows_of_the_removed_reserve_have_no_price() -> None:
+    for model in (DEMO_MODEL, "openai/gpt-oss-120b", "qwen/qwen3.8-27b", "(main)"):
         assert price_for(model) == FREE
         assert not price_for(model).is_paid
 
@@ -227,7 +227,7 @@ def test_a_call_told_only_its_total_is_counted_as_input() -> None:
 
 def test_free_models_never_count_towards_the_euro_cap() -> None:
     budget = _budget()
-    budget.note_usage(GROQ, 900, prompt_tokens=500, completion_tokens=400)
+    budget.note_usage(FREE_MODEL, 900, prompt_tokens=500, completion_tokens=400)
 
     assert budget.spent_today_eur() == 0.0
     assert budget.state(HAIKU) == "ok"
@@ -237,11 +237,11 @@ def test_free_models_never_count_towards_the_euro_cap() -> None:
 
 
 def test_a_free_model_keeps_its_token_budget_next_to_the_euro_cap() -> None:
-    budget = _budget(budgets={GROQ: 1000})
+    budget = _budget(budgets={FREE_MODEL: 1000})
 
-    budget.note_usage(GROQ, 1000, prompt_tokens=600, completion_tokens=400)
+    budget.note_usage(FREE_MODEL, 1000, prompt_tokens=600, completion_tokens=400)
 
-    assert budget.state(GROQ) == "exhausted"
+    assert budget.state(FREE_MODEL) == "exhausted"
     assert budget.state(HAIKU) == "ok"
 
 
@@ -264,14 +264,14 @@ def test_without_a_euro_cap_a_paid_model_keeps_the_old_token_budget() -> None:
     assert budget.state(HAIKU) == "exhausted"
 
 
-def test_past_the_cap_the_reserve_answers_and_with_nothing_left_the_quota_says_so() -> None:
+def test_past_the_cap_the_quota_says_so_with_the_wait_until_midnight() -> None:
     budget = _budget(cap=0.001)
     budget.note_usage(HAIKU, 100_000, prompt_tokens=0, completion_tokens=100_000)  # $0.05
 
-    assert budget.order([HAIKU, GROQ]) == [GROQ]
-    budget.note_usage(GROQ, 1000, prompt_tokens=600, completion_tokens=400)
-    with pytest.raises(QuotaExhausted):
-        budget.order([HAIKU, GROQ])
+    with pytest.raises(QuotaExhausted) as raised:
+        budget.order([HAIKU])
+
+    assert raised.value.retry_after_seconds == 12 * 3600
 
 
 def test_past_the_cap_a_turn_is_refused_exactly_as_before_for_the_paid_model_alone() -> None:

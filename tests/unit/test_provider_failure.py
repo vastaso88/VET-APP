@@ -26,7 +26,7 @@ class FailingLLMClient:
 
 
 def test_send_chat_message_degrades_gracefully_on_provider_failure() -> None:
-    # Real-world finding (live testing against Groq, which rate-limits):
+    # Real-world finding (live testing against a provider that rate-limits):
     # a raised ProviderError used to crash the whole turn uncaught. Every
     # LLM call site in ChatOrchestrator now catches it and degrades to a
     # friendly retry message instead — a provider outage should never

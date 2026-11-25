@@ -1,15 +1,39 @@
 import json
 import logging
+import os
+from collections.abc import Mapping
 from functools import lru_cache
 from typing import Annotated, Any, Literal
 
 from pydantic import BeforeValidator, Field, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
-from packages.shared.config.groq_models import is_groq_production_model, production_models_only
 from packages.shared.http_identity import USER_AGENT
 
 _logger = logging.getLogger(__name__)
+
+# The only providers of the chat: Claude, and the local stand-in.
+LLM_PROVIDERS = ("anthropic", "echo")
+
+# Variables of the reserve provider, of the dictation and of the photo reading,
+# all removed on 2026-11-25 (owner decision). A deployment may still have them:
+# they are not settings any more, so they are ignored, whatever their value, and
+# one log line at start-up names them (names only, never a value).
+REMOVED_VARIABLES = (
+    "LLM_MODEL",
+    "LLM_FALLBACK_MODELS",
+    "LLM_API_KEY",
+    "LLM_BASE_URL",
+    "LLM_TIMEOUT_SECONDS",
+    "LLM_MODEL_LIGHT",
+    "LLM_LIGHT_FALLBACK_MODELS",
+    "LLM_REASONING_HEADROOM_TOKENS",
+    "STT_PROVIDER",
+    "STT_MODEL",
+    "VISION_MODEL",
+    "VISION_FALLBACK_MODELS",
+    "CHAT_DAILY_DICTATION_LIMIT_PER_USER",
+)
 
 
 def _string_list(value: Any) -> Any:
@@ -37,8 +61,19 @@ def _string_list(value: Any) -> Any:
 StringList = Annotated[list[str], NoDecode, BeforeValidator(_string_list)]
 
 
+def _provider_name(value: Any) -> Any:
+    return value.strip().lower() if isinstance(value, str) else value
+
+
+ProviderName = Annotated[str, BeforeValidator(_provider_name)]
+
+
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    # hide_input_in_errors: a start-up refused by the checks below prints its reason in
+    # the deployment's log, and pydantic would add the values next to it, keys included.
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore", hide_input_in_errors=True
+    )
 
     environment: str = Field(default="development", alias="ENVIRONMENT")
     app_name: str = Field(default="Vet App", alias="APP_NAME")
@@ -184,24 +219,14 @@ class Settings(BaseSettings):
     # chat response reports. Changing it orphans existing pseudonyms (no
     # more dedup/erasure match for old rows), so set it once and keep it.
     reporter_pseudonym_salt: str = Field(default="", alias="REPORTER_PSEUDONYM_SALT")
-    llm_provider: str = Field(default="echo", alias="LLM_PROVIDER")
-    llm_model: str = Field(default="demo-model", alias="LLM_MODEL")
-    # Reserve models, comma-separated, tried in order when LLM_MODEL is rate
-    # limited (Groq counts its daily limit per model: 2026-10-05, the chat
-    # was down for hours on a single exhausted model). Empty = no reserve.
-    # Default: Groq production models only (docs/compliance/19, 2026-11-16:
-    # preview models are outside Groq's data agreement; groq_models.py).
-    llm_fallback_models: str = Field(
-        default="openai/gpt-oss-20b,llama-3.3-70b-versatile", alias="LLM_FALLBACK_MODELS"
-    )
-    llm_api_key: str = Field(default="", alias="LLM_API_KEY")
-    llm_base_url: str = Field(default="https://api.groq.com/openai/v1", alias="LLM_BASE_URL")
-    llm_timeout_seconds: int = Field(default=30, alias="LLM_TIMEOUT_SECONDS")
+    # "anthropic" (Claude, the only provider) or "echo" (the local stand-in).
+    # Anything else stops the app at start-up: a typo must never end in the
+    # stand-in answering the owners.
+    llm_provider: ProviderName = Field(default="echo", alias="LLM_PROVIDER")
     # --- Claude (LLM_PROVIDER=anthropic, owner decision 2026-11-07) ------------
-    # The official SDK with ANTHROPIC_API_KEY; LLM_API_KEY stays the Groq key,
-    # used by the automatic reserve, the vision and the dictation. Effort:
-    # low, medium or high (the two higher levels are refused: thinking is
-    # switched off for the light calls, which those levels do not allow).
+    # The official SDK with ANTHROPIC_API_KEY. Effort: low, medium or high
+    # (the two higher levels are refused: thinking is switched off for the
+    # light calls, which those levels do not allow).
     # The headroom is added to every answer's visible budget because the
     # model's reasoning counts against max_tokens.
     anthropic_api_key: str = Field(default="", alias="ANTHROPIC_API_KEY")
@@ -232,26 +257,10 @@ class Settings(BaseSettings):
     urgent_answer_timeout_seconds: int = Field(
         default=12, ge=0, le=30, alias="URGENT_ANSWER_TIMEOUT_SECONDS"
     )
-    # --- Free-tier economy (build 32, 2026-10-14) -------------------------------
-    # A smaller model with its own daily quota for mechanical work: case
-    # extraction, interview phrasing, English search keywords, the urgency
-    # classifier. Empty = everything on LLM_MODEL. Its own reserve, tried in
-    # order when it is rate limited. Default: the small gpt-oss, which the
-    # free accounts have (2026-10-14: llama-3.1-8b-instant was not in the
-    # catalogue of a new free account; a missing model is skipped for the
-    # day and the reserve takes over).
-    llm_model_light: str = Field(default="openai/gpt-oss-20b", alias="LLM_MODEL_LIGHT")
-    llm_light_fallback_models: str = Field(
-        default="llama-3.1-8b-instant", alias="LLM_LIGHT_FALLBACK_MODELS"
-    )
     # Visible-reply budget of an ordinary answer (about 1300 characters of
-    # Italian); reports get a little more. Reasoning models (openai/gpt-oss)
-    # spend extra tokens thinking before writing: that headroom is added
-    # to every call to them, on top of the visible budget.
+    # Italian); reports get a little more. What the model spends on reasoning
+    # goes on top of it (ANTHROPIC_THINKING_HEADROOM_TOKENS).
     llm_answer_max_tokens: int = Field(default=450, ge=100, alias="LLM_ANSWER_MAX_TOKENS")
-    llm_reasoning_headroom_tokens: int = Field(
-        default=350, ge=0, alias="LLM_REASONING_HEADROOM_TOKENS"
-    )
     # What goes into the answer prompt: at most this many sources, each
     # snippet cut at this many characters; the last N messages of the
     # conversation verbatim (each cut at M characters), older ones as a
@@ -260,21 +269,18 @@ class Settings(BaseSettings):
     llm_prompt_source_chars: int = Field(default=300, ge=50, alias="LLM_PROMPT_SOURCE_CHARS")
     llm_history_recent_messages: int = Field(default=6, ge=0, alias="LLM_HISTORY_RECENT_MESSAGES")
     llm_history_message_chars: int = Field(default=400, ge=50, alias="LLM_HISTORY_MESSAGE_CHARS")
-    # Daily token budgets per model ("model=tokens,..."): the free-tier
-    # figures published by Groq (2026-10), to confirm in the console. From
-    # LLM_BUDGET_RESERVE_SHARE of a budget the reserve models go first; at
-    # 100% the model is left alone until the day resets.
-    llm_daily_token_budgets: str = Field(
-        default=("openai/gpt-oss-120b=200000,openai/gpt-oss-20b=200000"),
-        alias="LLM_DAILY_TOKEN_BUDGETS",
-    )
+    # Daily token budgets ("model=tokens,...") of the models with no price in
+    # pricing.py (the stand-in). From LLM_BUDGET_RESERVE_SHARE of a budget, in
+    # tokens or in euros, what is left is kept as a margin (Sonnet is off,
+    # Haiku answers); at 100% the model is left alone until the day resets.
+    llm_daily_token_budgets: str = Field(default="", alias="LLM_DAILY_TOKEN_BUDGETS")
     # Claude is paid per token, not rationed: its guard is money, not raw
     # tokens (an output token costs 5 times an input token, a cache read a
     # tenth). The day's spend of the paid models together may reach this many
     # euros (owner decision 2026-11-10: never under 1 EUR a day); past it the
-    # Groq reserve answers until midnight UTC. A token budget given above for
-    # a paid model is ignored. The conversion uses LLM_USD_PER_EUR (1 EUR in
-    # USD; ECB 2026-11-06: 1.1165).
+    # chat says kindly that today's answers are over, until midnight UTC. A
+    # token budget given above for a paid model is ignored. The conversion uses
+    # LLM_USD_PER_EUR (1 EUR in USD; ECB 2026-11-06: 1.1165).
     llm_daily_budget_eur: float = Field(default=1.0, gt=0, alias="LLM_DAILY_BUDGET_EUR")
     llm_usd_per_eur: float = Field(default=1.1165, gt=0, alias="LLM_USD_PER_EUR")
     # The monthly credit the Anthropic account has, in USD: the admin portal
@@ -294,13 +300,10 @@ class Settings(BaseSettings):
         default=20, ge=0, alias="CHAT_DAILY_MESSAGE_LIMIT_PER_USER"
     )
     # The other features that call a model, per owner per day (0 = no
-    # limit; security audit BE-4/LLM-4): photo/PDF readings, dictations,
-    # vet summaries. Same ledger and exemptions as the messages.
+    # limit; security audit BE-4/LLM-4): photo/PDF readings, vet summaries.
+    # Same ledger and exemptions as the messages.
     chat_daily_vision_limit_per_user: int = Field(
         default=10, ge=0, alias="CHAT_DAILY_VISION_LIMIT_PER_USER"
-    )
-    chat_daily_dictation_limit_per_user: int = Field(
-        default=30, ge=0, alias="CHAT_DAILY_DICTATION_LIMIT_PER_USER"
     )
     chat_daily_summary_limit_per_user: int = Field(
         default=5, ge=0, alias="CHAT_DAILY_SUMMARY_LIMIT_PER_USER"
@@ -343,25 +346,10 @@ class Settings(BaseSettings):
     # Off until the owner approves the text and the app with the checkbox is out.
     marketplace_rules_required: bool = Field(default=False, alias="MARKETPLACE_RULES_REQUIRED")
     news_disabled_feeds: str = Field(default="", alias="NEWS_DISABLED_FEEDS")
-    # Voice dictation (speech-to-text): reuses LLM_API_KEY/LLM_BASE_URL
-    # rather than a separate key — Groq's Whisper transcription endpoint
-    # is the same account/base URL family as chat completions, so this
-    # needs no new vendor relationship.
-    stt_provider: str = Field(default="echo", alias="STT_PROVIDER")
-    stt_model: str = Field(default="whisper-large-v3-turbo", alias="STT_MODEL")
-    # Photo attachments: visual analysis reuses the same Groq account
-    # (LLM_API_KEY/LLM_BASE_URL) as chat and voice dictation.
-    # "groq" reads photos with VISION_MODEL; "off" never reads them (the photo
-    # is saved, the chat says honestly it cannot see it, nothing leaves);
-    # "echo" is the local test double. VISION_MODEL must be a Groq production
-    # model (groq_models.py): empty, or a preview model, means off. Empty by
-    # default since 2026-11-16: the only image model on the account was a
-    # preview one, outside Groq's data agreement (docs/compliance/19).
-    vision_provider: str = Field(default="echo", alias="VISION_PROVIDER")
-    vision_model: str = Field(default="", alias="VISION_MODEL")
-    # Same idea for reading photos and scans. Empty by default: on
-    # 2026-10-05 the Groq account had no second model that accepts images.
-    vision_fallback_models: str = Field(default="", alias="VISION_FALLBACK_MODELS")
+    # Photo attachments: no service reads them. The photo is saved, the chat
+    # says honestly it cannot see it, nothing leaves. "echo" is the local test
+    # double, honoured outside production only; any other value means off.
+    vision_provider: ProviderName = Field(default="echo", alias="VISION_PROVIDER")
     # Nearby pet-services radar ("cosa c'e' attorno"). OpenStreetMap via
     # Overpass is the only provider; results are cached per geographic cell
     # in Supabase (radar_coverage_cells / radar_places_cache), so Overpass
@@ -528,6 +516,8 @@ class Settings(BaseSettings):
                 },
             )
 
+        if self.llm_provider not in LLM_PROVIDERS:
+            raise ValueError(f"LLM_PROVIDER must be one of: {', '.join(LLM_PROVIDERS)}")
         if self.llm_provider == "anthropic":
             self._require_fields(
                 "LLM_PROVIDER=anthropic",
@@ -542,58 +532,6 @@ class Settings(BaseSettings):
         ):
             if value not in ("low", "medium", "high"):
                 raise ValueError(f"{name} must be low, medium or high")
-
-        if self.llm_provider == "groq":
-            self._require_fields(
-                "LLM_PROVIDER=groq",
-                {
-                    "LLM_MODEL": self.llm_model,
-                    "LLM_API_KEY": self.llm_api_key,
-                    "LLM_BASE_URL": self.llm_base_url,
-                },
-            )
-
-        if self.stt_provider == "groq":
-            self._require_fields(
-                "STT_PROVIDER=groq",
-                {
-                    "STT_MODEL": self.stt_model,
-                    "LLM_API_KEY": self.llm_api_key,
-                    "LLM_BASE_URL": self.llm_base_url,
-                },
-            )
-
-        if self.vision_provider == "groq":
-            # VISION_MODEL is not required: empty, or a model outside Groq's
-            # production list, switches photo reading off (container), never
-            # stops the app from starting.
-            self._require_fields(
-                "VISION_PROVIDER=groq",
-                {
-                    "LLM_API_KEY": self.llm_api_key,
-                    "LLM_BASE_URL": self.llm_base_url,
-                },
-            )
-
-        # Groq's preview models are outside its data agreement
-        # (docs/compliance/19): whatever the environment says, the chat chains
-        # and the light model keep Groq production models only.
-        for field_name in (
-            "llm_fallback_models",
-            "llm_light_fallback_models",
-            "vision_fallback_models",
-        ):
-            kept, dropped = production_models_only(getattr(self, field_name))
-            if dropped:
-                _logger.warning(
-                    "%s: dropped models outside Groq production: %s",
-                    field_name.upper(),
-                    ",".join(dropped),
-                )
-                object.__setattr__(self, field_name, kept)
-        if self.llm_model_light and not is_groq_production_model(self.llm_model_light):
-            _logger.warning("LLM_MODEL_LIGHT outside Groq production: using openai/gpt-oss-20b")
-            object.__setattr__(self, "llm_model_light", "openai/gpt-oss-20b")
 
         if self.environment == "production":
             # A production deploy with the demo auth provider would accept
@@ -619,8 +557,16 @@ class Settings(BaseSettings):
             raise ValueError(f"Missing required settings for {context}: {formatted}")
 
 
+def removed_variables_present(environ: Mapping[str, str]) -> list[str]:
+    """The REMOVED_VARIABLES a deployment still sets: names only, never a value."""
+    return [name for name in REMOVED_VARIABLES if environ.get(name, "").strip()]
+
+
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
+    present = removed_variables_present(os.environ)
+    if present:
+        _logger.warning("settings: variables of removed services, ignored: %s", ", ".join(present))
     return Settings()
 
 

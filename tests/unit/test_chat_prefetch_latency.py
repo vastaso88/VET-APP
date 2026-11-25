@@ -1,6 +1,4 @@
-"""Build 33: the light-model helpers and the literature search run side by
-side; a chain of missing models fails at once; a reserve that is also the
-light model goes last."""
+"""Build 33: the light helpers and the literature search run side by side."""
 
 from __future__ import annotations
 
@@ -20,9 +18,7 @@ from packages.core.application.services.evidence_query_normalizer import (
 )
 from packages.core.application.services.urgency_classifier import UrgencyClassifier
 from packages.core.domain.knowledge.models import EvidenceSource
-from packages.infrastructure.llm.providers.groq_llm_client import GroqLLMClient
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
-from packages.shared.config.settings import Settings
 
 DELAY = 0.15
 NORMAL = '{"level": "normal", "category": null}'
@@ -125,29 +121,3 @@ def test_small_talk_and_fixed_replies_start_no_helper_at_all() -> None:
 
     assert client.requests == []
     assert retriever.requests == []
-
-
-# --- the provider side -----------------------------------------------------------------
-
-
-def _settings(**overrides: Any) -> Settings:
-    values: dict[str, Any] = {
-        "llm_provider": "groq",
-        "llm_model": "openai/gpt-oss-120b",
-        "llm_api_key": "test-key",
-        "llm_fallback_models": "openai/gpt-oss-20b,qwen/qwen3.8-27b",
-        "llm_model_light": "openai/gpt-oss-20b",
-        "llm_light_fallback_models": "qwen/qwen3.8-27b",
-        **overrides,
-    }
-    return Settings().model_copy(update=values)
-
-
-def test_a_reserve_that_is_also_the_light_model_goes_last() -> None:
-    client = GroqLLMClient(_settings(), transport=lambda *_: {})
-
-    assert client.main_models == ["openai/gpt-oss-120b", "qwen/qwen3.8-27b", "openai/gpt-oss-20b"]
-    assert client.light_models == ["openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
-    # Without a light model the configured order is kept as it is.
-    plain = GroqLLMClient(_settings(llm_model_light=""), transport=lambda *_: {})
-    assert plain.main_models == ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]

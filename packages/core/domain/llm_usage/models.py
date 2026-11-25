@@ -1,10 +1,8 @@
 """What one call to a language model cost, and the day's total per model.
 
-Groq's free tier counts tokens per day and per model, for the whole
-organization (2026-10-05: one evaluation run took the production chat
-down). To stay inside it on purpose rather than by luck, every call is
-recorded with its purpose, and the daily totals drive the budget
-(llm_budget.py). Nothing here carries the owner's words: counts only.
+Every call is recorded with its purpose, and the daily totals, shared by all
+the server instances, drive the budget (llm_budget.py). Nothing here carries
+the owner's words: counts only.
 """
 
 from __future__ import annotations
@@ -14,15 +12,17 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
+# The local stand-in (LLM_PROVIDER=echo) under its own name in the ledger.
+DEMO_MODEL = "demo-model"
+
 
 def utc_now() -> datetime:
     return datetime.now(UTC)
 
 
 def usage_day(moment: datetime) -> date:
-    """The UTC calendar day a call is counted under. Groq's own windows are
-    rolling 24 hours per model; the calendar day is the conservative
-    approximation we can share across serverless instances."""
+    """The UTC calendar day a call is counted under, the same for every
+    serverless instance."""
     return owner_day(moment, 0)
 
 
@@ -88,6 +88,7 @@ class ModelDailyUsage(BaseModel):
     # the writes are then counted at the plain input price (a small undercount).
     cache_write_tokens: int = 0
     total_tokens: int = 0
-    # Set when the provider itself said the model's daily limit is reached
-    # (HTTP 429 "per day"), with the moment it said to try again.
+    # Until when the model is left alone although its budget is not spent. Nothing
+    # sets it any more (the provider with daily limits was removed on 2026-11-25);
+    # the column is still read, so a row that has it keeps its meaning.
     exhausted_until: datetime | None = None

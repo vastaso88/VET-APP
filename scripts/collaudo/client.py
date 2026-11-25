@@ -5,7 +5,6 @@
     python -m scripts.collaudo.client <chat> prepara                 # Terms, Privacy, age
     python -m scripts.collaudo.client <chat> animali                 # create the persona's pets
     python -m scripts.collaudo.client <chat> allega <animale> <file>  # photo/PDF for the chat
-    python -m scripts.collaudo.client <chat> detta <file audio>      # dictation
     python -m scripts.collaudo.client <chat> carica <bucket> <nome> <file>  # storage, like the app
     python -m scripts.collaudo.client <chat> chat <animale> "messaggio" [--nuova]
     python -m scripts.collaudo.client <chat> api GET /reminders
@@ -224,12 +223,6 @@ class Sessione:
         )
         return self.api("POST", "/chat-attachments", raw=raw, funzione="referti_cartella")
 
-    def detta(self, file: Path) -> Risposta:
-        """A recorded question (audio file) to the dictation, as the app sends it."""
-        content_type = mimetypes.guess_type(file.name)[0] or "audio/webm"
-        raw = multipart({}, "file", file.name, file.read_bytes(), content_type)
-        return self.api("POST", "/speech-to-text", raw=raw, funzione="dettatura")
-
     def carica(self, bucket: str, nome: str, file: Path) -> Risposta:
         """A file straight into the twin's storage with the user's token, under the user's own
         folder (`<user id>/<nome>`), as the app does for pet and walk photos."""
@@ -403,8 +396,6 @@ def main(argv: list[str] | None = None) -> int:
     attach = sub.add_parser("allega")
     attach.add_argument("animale")
     attach.add_argument("file", type=Path)
-    dictate = sub.add_parser("detta")
-    dictate.add_argument("file", type=Path)
     upload = sub.add_parser("carica")
     upload.add_argument("bucket")
     upload.add_argument("nome")
@@ -482,11 +473,9 @@ def main(argv: list[str] | None = None) -> int:
         print("accesso fatto")
     elif args.comando == "prepara":
         _print(session.prepara())
-    elif args.comando in ("allega", "detta", "carica"):
+    elif args.comando in ("allega", "carica"):
         if args.comando == "allega":
             answer = session.allega(args.animale, args.file)
-        elif args.comando == "detta":
-            answer = session.detta(args.file)
         else:
             answer = session.carica(args.bucket, args.nome, args.file)
         _print({"status": answer.status, "secondi": answer.total_ms / 1000, "body": answer.body})

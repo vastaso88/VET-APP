@@ -4,9 +4,9 @@ container's own logger name, and `container.py` re-exports every name."""
 
 import logging
 
+from packages.core.domain.llm_usage.models import DEMO_MODEL
 from packages.core.domain.subscription.limits import DEFAULT_MAX_MEMORIAL_PETS
 from packages.core.domain.subscription.models import SubscriptionPlan
-from packages.infrastructure.llm.providers.groq_chat_api import split_models
 from packages.shared.config.settings import Settings
 
 logger = logging.getLogger("packages.bootstrap.container")
@@ -61,14 +61,7 @@ def resolve_memorial_pets_max(raw: str) -> int:
     return number
 
 
-def groq_reserve_configured(settings: Settings) -> bool:
-    return bool(settings.llm_api_key.strip() and settings.llm_model.strip())
-
-
 def answer_models(settings: Settings) -> list[str]:
     """The models an answer may come from, in order: what the budget
     checks before a turn is admitted."""
-    groq = [settings.llm_model, *split_models(settings.llm_fallback_models)]
-    if settings.llm_provider == "anthropic":
-        return [settings.anthropic_model, *(groq if groq_reserve_configured(settings) else [])]
-    return groq
+    return [settings.anthropic_model if settings.llm_provider == "anthropic" else DEMO_MODEL]

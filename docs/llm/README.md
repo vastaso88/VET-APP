@@ -1,5 +1,7 @@
 # Pacchetto Codex — Engine LLM + Motore Fonti Affidabili
 
+> **Nota storica.** Specifiche iniziali: dal 25/11/2026 Groq non c'è più, l'unico fornitore è Claude.
+
 ## Scopo
 Questo pacchetto contiene le istruzioni operative per Codex al fine di implementare il motore LLM del prototipo dell'app veterinaria e il sottosistema di retrieval basato su fonti scientifiche verificate.
 

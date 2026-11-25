@@ -1,8 +1,8 @@
 """Seconds per turn with a stand-in model of known latency: no provider.
 
 Each model call sleeps for a fixed time by purpose (defaults close to what
-Groq showed live: ~1.2 s for an answer, ~0.4 s for a short structured call
-on the light model), the literature retriever sleeps too, and the probe
+was measured live in 2026-10: ~1.2 s for an answer, ~0.4 s for a short
+structured call), the literature retriever sleeps too, and the probe
 reports, per turn, the wall-clock time against two references:
 
 * "solo risposta": one answer call, as the chat was before build 32;

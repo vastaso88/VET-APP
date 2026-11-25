@@ -3,7 +3,7 @@
 Since the MULTILANG merge the chat speaks it/en/es/de/fr, but the fixed
 lists that decide an emergency before any model call existed for Italian,
 English and Spanish only: a German or French owner was covered by the
-model-based classifier alone, which depends on the Groq budget. These are
+model-based classifier alone, which depends on the model's budget. These are
 the equivalents of the Italian lists, same groups and same thresholds,
 wired into SafetyGate (what is flagged) and triage_clarification (which
 category, which clarifying question, which replies downgrade it).
