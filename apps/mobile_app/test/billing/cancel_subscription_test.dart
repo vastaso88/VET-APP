@@ -205,25 +205,21 @@ void main() {
     });
   }
 
-  testWidgets('who paid in a store is not sent to the site by the phone app', (tester) async {
+  testWidgets('the phone app never sends to the site to manage the plan', (tester) async {
     final notice = _l10nNotice();
     await tester.pumpWidget(_app(const BillingPage()));
     await tester.pump(const Duration(milliseconds: 400));
-    await tester.scrollUntilVisible(find.text(notice), 200);
-    expect(find.text(notice), findsOneWidget);
-
     for (final subscription in [
+      null,
       _subscription(),
       _subscription(state: 'canceled', autoRenew: false),
       _subscription(state: 'expired', grantsAccess: false),
+      _subscription(store: 'admin_test'),
     ]) {
-      _seed(subscription);
+      if (subscription != null) _seed(subscription);
       await tester.pump();
-      expect(find.text(notice), findsNothing);
+      expect(find.text(notice, skipOffstage: false), findsNothing);
     }
-    _seed(_subscription(store: 'admin_test'));
-    await tester.pump();
-    expect(find.text(notice), findsOneWidget);
   });
 
   testWidgets('who cannot use the app because a payment failed finds it on the plans page too',

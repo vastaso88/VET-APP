@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../l10n/l10n.dart';
-import '../../data/billing_demo_store.dart';
 
 /// Native purchase links require actual store eligibility and program integration.
 /// Device locale, IP and a query parameter are not evidence of a storefront.
@@ -32,18 +31,9 @@ class BillingAccountPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final store = BillingDemoStore.instance;
-    return ListenableBuilder(
-      listenable: store,
-      // Whoever paid in a store manages the plan there: the phone app must not
-      // send them to the site.
-      builder: (context, _) => !kIsWeb && (store.storeSubscription?.isFromStore ?? false)
-          ? const SizedBox.shrink()
-          : _panel(context),
-    );
-  }
-
-  Widget _panel(BuildContext context) {
+    // On the phone a plan is bought and cancelled in the store: the sentence "it is managed from
+    // your account on the site" would be false there, with or without a subscription.
+    if (!kIsWeb) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
@@ -55,25 +45,23 @@ class BillingAccountPanel extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(context.l10n.billingAccountStatusNotice),
-          if (kIsWeb) ...[
-            const SizedBox(height: 16),
-            OutlinedButton(
-              onPressed: () async {
-                final opened = await launchUrl(
-                  accountUrl,
-                  mode: LaunchMode.externalApplication,
+          const SizedBox(height: 16),
+          OutlinedButton(
+            onPressed: () async {
+              final opened = await launchUrl(
+                accountUrl,
+                mode: LaunchMode.externalApplication,
+              );
+              if (!opened && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(context.l10n.billingOpenAccountError),
+                  ),
                 );
-                if (!opened && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(context.l10n.billingOpenAccountError),
-                    ),
-                  );
-                }
-              },
-              child: Text(context.l10n.billingOpenAccount),
-            ),
-          ],
+              }
+            },
+            child: Text(context.l10n.billingOpenAccount),
+          ),
         ],
       ),
     );
