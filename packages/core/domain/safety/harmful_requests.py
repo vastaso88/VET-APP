@@ -24,6 +24,7 @@ import re
 
 from packages.core.domain.safety.clarification_fit import injury_is_on_a_person
 from packages.core.domain.safety.emergency_patterns import normalize_for_matching
+from packages.core.domain.safety.end_of_life import asks_about_the_vets_act
 
 
 def _words(pattern: str) -> re.Pattern[str]:
@@ -47,6 +48,20 @@ _EUTHANASIA_MEANS = _words(
     r"en casa|yo mism[oa]|sin (?:el )?veterinari\w*|somnifer\w*|sedante\w*|"
     r"zu hause|selbst|ohne tierarzt|schlaftablette\w*|schlafmittel|beruhigungsmittel|"
     r"a la maison|moi-meme|sans veterinaire|somnifere\w*|sedatif\w*"
+)
+# "How many tablets to put him to sleep for ever": the act is certain, the amount is the means.
+_DEATH_FOR_SURE = _words(
+    r"eutanasi\w*|(?:addorment|dorm)\w* per sempre|farl[oa] morire|sopprimerl[oa]|ucciderl[oa]|"
+    r"euthani[sz]\w*|(?:to sleep|asleep) for ?ever|kill (?:him|her)|end (?:his|her|its) life|"
+    r"dorm\w* para siempre|matarl[oa]|sacrificarl[oa]|einschlafern|fur immer (?:ein)?schlafen|"
+    r"ihn toten|endorm\w* pour toujours|(?:le|la) tuer"
+)
+_AMOUNT_OF_SUBSTANCE = _words(
+    r"quant[eio] (?:pastigli\w*|compress\w*|pillol\w*|gocc\w*|fial\w*|medicin\w*|farmac\w*)|"
+    r"(?:how many|how much) (?:pills?|tablets?|drops?|medicine|of it)|"
+    r"cuant[ao]s (?:pastill\w*|comprimid\w*|gotas)|"
+    r"wie ?viele? (?:tablette\w*|pillen|tropfen)|"
+    r"combien de (?:comprimes?|pilules?|cachets?|gouttes)"
 )
 # A later turn that asks for the substance or the dose, once the subject
 # is on the table ("che dose di sonnifero servirebbe?").
@@ -181,7 +196,14 @@ def detect_harmful_request(message: str) -> str | None:
     """The category of a request the chat must refuse or redirect, or
     None. Checked in order of harm."""
     text = normalize_for_matching(message)
-    if _EUTHANASIA_ACT.search(text) and _EUTHANASIA_MEANS.search(text):
+    if _DEATH_FOR_SURE.search(text) and _AMOUNT_OF_SUBSTANCE.search(text):
+        return "euthanasia_at_home"
+    # owner 25/11/2026 (F07): what the vet does and whether it hurts has an answer
+    if (
+        _EUTHANASIA_ACT.search(text)
+        and _EUTHANASIA_MEANS.search(text)
+        and not asks_about_the_vets_act(message)
+    ):
         return "euthanasia_at_home"
     if _MUTILATION.search(text):
         return "mutilation"
@@ -208,6 +230,8 @@ def is_euthanasia_follow_up(message: str, history: list[str]) -> bool:
     if not any(detect_harmful_request(earlier) == "euthanasia_at_home" for earlier in history):
         return False
     text = normalize_for_matching(message)
+    if asks_about_the_vets_act(message):
+        return False
     return bool(_EUTHANASIA_FOLLOW_UP.search(text) or _EUTHANASIA_ACT.search(text))
 
 

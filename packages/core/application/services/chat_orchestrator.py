@@ -168,6 +168,10 @@ from packages.core.domain.safety.dosage_request import (
     without_water_amounts,
 )
 from packages.core.domain.safety.emergency_patterns import normalize_for_matching
+from packages.core.domain.safety.end_of_life import (
+    asks_what_happens_at_the_end,
+    official_sources,
+)
 from packages.core.domain.safety.exposure import (
     intends_to_give,
     is_educational_toxin_question,
@@ -4581,6 +4585,12 @@ class ChatOrchestrator:
             self._store_cached_answer(
                 cache_id, message, answer_text, response, sources, data, effective_species
             )
+        # F07: the official texts on the end of life are shown under the answer, never in it.
+        shown_sources = sources
+        if self._answer_v2 and asks_what_happens_at_the_end(
+            message, [m.content for m in data.conversation_history if m.role == "user"]
+        ):
+            shown_sources = [*official_sources(normalize_species(effective_species)), *sources]
         return ChatOrchestratorResult(
             answer=(
                 self._report_reading_line(data, kind, documents_read)
@@ -4590,7 +4600,7 @@ class ChatOrchestrator:
             mode="natural",
             confidence="medium",
             ai_generated=True,
-            sources=sources,
+            sources=shown_sources,
             state=(
                 ConversationState.ADEQUATE_EVIDENCE_FOUND
                 if sources
