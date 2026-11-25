@@ -117,10 +117,10 @@ class BillingDemoStore extends ChangeNotifier {
   /// successful sync (the screens then simply leave the limit lines out).
   PlanLimits? planLimitsFor(PlanTier tier) => _subscriptionStatus?.planLimits[tier];
 
-  /// The four limit lines of [tier], empty until the backend has answered.
+  /// The limit lines of [tier], empty until the backend has answered.
   List<PlanFeature> limitFeaturesFor(PlanTier tier) {
     final limits = planLimitsFor(tier);
-    return limits == null ? const [] : PlanFeature.forLimits(limits);
+    return limits == null ? const [] : PlanFeature.forLimits(limits, tier: tier);
   }
 
   /// True while the account has no chosen plan yet and the 14-day free

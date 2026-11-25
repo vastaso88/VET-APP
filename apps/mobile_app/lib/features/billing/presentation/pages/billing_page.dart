@@ -17,6 +17,7 @@ import '../../data/billing_demo_store.dart';
 import '../../data/subscription_remote_data_source.dart';
 import '../../domain/billing_models.dart';
 import '../plan_over_pet_limit.dart';
+import '../widgets/cancel_subscription_section.dart';
 import '../widgets/plan_feature_list.dart';
 import '../widgets/store_subscription_section.dart';
 import '../../../../l10n/regional_defaults.dart';
@@ -106,12 +107,20 @@ class _BillingPageState extends State<BillingPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      // The plan arrives after the page is open: the whole page follows it.
+      ListenableBuilder(listenable: _store, builder: (context, _) => _page(context));
+
+  Widget _page(BuildContext context) {
     if (!BillingAccountPanel.demoEnabled && !_store.isTestPeriod) {
       return Scaffold(
         appBar: AppBar(title: Text(context.l10n.billingTitle)),
         body: ListView(children: [
           _CurrentPlanCard(store: _store),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+            child: CancelSubscriptionSection(),
+          ),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
             child: StoreSubscriptionSection(),
@@ -154,6 +163,7 @@ class _BillingPageState extends State<BillingPage> {
                   const SizedBox(height: AppSpacing.md),
                 ],
                 _CurrentPlanCard(store: _store),
+                const CancelSubscriptionSection(),
                 const SizedBox(height: AppSpacing.xl),
                 if (_store.isTestPeriod) ...[
                   const IncludedInAllPlansCard(),

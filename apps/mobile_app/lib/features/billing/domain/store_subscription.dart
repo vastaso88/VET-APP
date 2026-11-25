@@ -43,6 +43,16 @@ class StoreSubscription {
   bool get isPaymentIssue =>
       state == 'in_grace_period' || state == 'billing_retry' || state == 'on_hold';
   bool get isRefundedOrRevoked => state == 'refunded' || state == 'revoked';
+
+  /// Bought in a store (a plan given by the team has no store).
+  bool get isFromStore => store == 'apple' || store == 'google';
+
+  /// The store will charge it again: the one there is something to cancel. False
+  /// once the owner has cancelled (the renewal is off) or the subscription is over.
+  bool get renews =>
+      isFromStore &&
+      autoRenew &&
+      const {'active', 'in_grace_period', 'billing_retry', 'on_hold', 'paused'}.contains(state);
 }
 
 /// One purchasable product as the app asks the store for it

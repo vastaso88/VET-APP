@@ -23,6 +23,7 @@ import '../../data/billing_demo_store.dart';
 import '../../data/subscription_remote_data_source.dart';
 import '../../domain/billing_models.dart';
 import '../plan_over_pet_limit.dart';
+import '../widgets/cancel_subscription_section.dart';
 import '../widgets/plan_feature_list.dart';
 import '../widgets/store_subscription_section.dart';
 
@@ -119,6 +120,7 @@ class _PaywallPageState extends State<PaywallPage> {
                 const IncludedInAllPlansCard(),
                 const SizedBox(height: AppSpacing.xl),
                 const BillingAccountPanel(),
+                const CancelSubscriptionSection(),
                 StoreSubscriptionSection(
                   onAccessGranted: () => Navigator.of(context)
                       .pushNamedAndRemoveUntil(AppRouter.homeShell, (route) => false),

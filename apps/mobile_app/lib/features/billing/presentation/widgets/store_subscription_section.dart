@@ -1,9 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/date_formats.dart';
@@ -13,7 +13,7 @@ import '../../../age/presentation/age_flow.dart';
 import '../../data/billing_demo_store.dart';
 import '../../data/store_billing_controller.dart';
 import '../../domain/billing_models.dart';
-import 'plan_feature_list.dart';
+import 'store_plan_offers.dart';
 
 /// Native subscriptions in the billing page and the paywall: status (trial,
 /// verified plan, renewal, cancellation, payment issue), store prices for
@@ -114,30 +114,16 @@ class _StoreSubscriptionSectionState extends State<StoreSubscriptionSection> {
               _StatusLine(icon: Icons.info_outline, text: l10n.storeBillingUnavailable)
             else ...[
               const SizedBox(height: AppSpacing.sm),
-              SegmentedButton<BillingCycle>(
-                segments: [
-                  ButtonSegment(value: BillingCycle.monthly, label: Text(l10n.billingCycleMonthly)),
-                  ButtonSegment(value: BillingCycle.yearly, label: Text(l10n.billingCycleYearly)),
-                ],
-                selected: {_store.billingCycle},
-                onSelectionChanged: (value) => _store.setBillingCycle(value.first),
+              StorePlanOffers(
+                cycle: _store.billingCycle,
+                onCycleChanged: _store.setBillingCycle,
+                priceFor: (tier) => _billing.priceFor(tier, _store.billingCycle),
+                featuresFor: _store.limitFeaturesFor,
+                current: verified,
+                storeName: defaultTargetPlatform == TargetPlatform.iOS ? 'Apple' : 'Google',
+                busy: _billing.isBusy,
+                onBuy: _buy,
               ),
-              const SizedBox(height: AppSpacing.md),
-              for (final plan in BillingDemoStore.plans)
-                if (_billing.priceFor(plan.tier, _store.billingCycle) case final price?) ...[
-                  _StorePlanCard(
-                    name: plan.displayName,
-                    price: _store.billingCycle == BillingCycle.yearly
-                        ? l10n.storeBillingSubscribeYearly(price)
-                        : l10n.storeBillingSubscribeMonthly(price),
-                    isCurrent: verified?.grantsAccess == true && verified?.plan == plan.tier.name,
-                    busy: _billing.isBusy,
-                    features: _store.limitFeaturesFor(plan.tier),
-                    onBuy: () => _buy(plan.tier),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                ],
-              Text(l10n.storeBillingPricesFromStore, style: AppTextStyles.caption),
             ],
             if (_billing.phase == StorePurchasePhase.verifying)
               _StatusLine(icon: Icons.hourglass_top, text: l10n.storeBillingVerifying),
@@ -174,56 +160,6 @@ class _StatusLine extends StatelessWidget {
           Icon(icon, size: 18, color: AppColors.secondaryText),
           const SizedBox(width: AppSpacing.sm),
           Expanded(child: Text(text, style: AppTextStyles.bodySmall)),
-        ],
-      ),
-    );
-  }
-}
-
-class _StorePlanCard extends StatelessWidget {
-  const _StorePlanCard({
-    required this.name,
-    required this.price,
-    required this.isCurrent,
-    required this.busy,
-    required this.features,
-    required this.onBuy,
-  });
-
-  final String name;
-  final String price;
-  final bool isCurrent;
-  final bool busy;
-  final List<PlanFeature> features;
-  final VoidCallback onBuy;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: isCurrent ? AppColors.primary : AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(name, style: AppTextStyles.title),
-          const SizedBox(height: AppSpacing.xs),
-          Text(price, style: AppTextStyles.body),
-          if (features.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.sm),
-            PlanFeatureList(features: features),
-          ],
-          const SizedBox(height: AppSpacing.md),
-          if (isCurrent)
-            Text(context.l10n.billingCurrentPlanLabel, style: AppTextStyles.caption)
-          else
-            FilledButton(
-              onPressed: busy ? null : onBuy,
-              child: Text(name),
-            ),
         ],
       ),
     );

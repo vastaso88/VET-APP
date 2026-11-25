@@ -22,9 +22,13 @@ from dataclasses import dataclass
 from html import escape
 
 from packages.core.domain.exit_notices import texts
+from packages.core.domain.exit_notices.sender_lines import SIGNATURES
+from packages.core.domain.localization import SupportedLocale
 
 LOGO_CID = "quokka-logo"
-SIGNATURE = "Il team di Quokka"
+# The exit e-mails exist only in Italian; the other service e-mails name their language.
+LANGUAGE: SupportedLocale = "it"
+SIGNATURE = SIGNATURES[LANGUAGE]
 
 # What the single button says, by notice. None: nothing to do any more, no button.
 BUTTON_LABELS: dict[str, str | None] = {
@@ -44,7 +48,7 @@ _COMPANY_MARK = "\x00T"
 _CONTACT_MARK = "\x00C"
 _LINK_MARK = "\x00L"
 _LINK_IN_SENTENCE = re.compile(r"\s+con questa e-mail\s+" + re.escape(_LINK_MARK))
-_GREETING = re.compile(r"^(Ciao[^,]*,)\s+(.*)$", re.DOTALL)
+_GREETING = re.compile(r"^((?:Ciao|Hi|Hola|Hallo|Bonjour)[^,]*,)\s+(.*)$", re.DOTALL)
 _QUESTION = "Hai cambiato idea?"
 _SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-ZÀ-Ý«])")
 
@@ -67,6 +71,12 @@ def _split_body(template_id: str, variables: dict[str, str]) -> tuple[str, list[
     }
     subject, body, block = texts.render_notice_split(template_id, marked)
     body = body.replace(f"{_COMPANY_MARK}, {_CONTACT_MARK}.", "").strip()
+    return subject, split_paragraphs(body), block
+
+
+def split_paragraphs(body: str) -> list[str]:
+    """The same words in short paragraphs. Called on the text BEFORE its dates are filled in when
+    a date may hold a full stop («16. Dezember»): the stop would look like the end of a sentence."""
     # «Ciao Giulia,» alone on the first line; the next paragraph starts with a capital.
     paragraphs: list[str] = []
     match = _GREETING.match(body)
@@ -84,7 +94,26 @@ def _split_body(template_id: str, variables: dict[str, str]) -> tuple[str, list[
         current.append(sentence)
     if current:
         paragraphs.append(" ".join(current))
-    return subject, paragraphs, block
+    return paragraphs
+
+
+def render_message(
+    subject: str, paragraphs: list[str], *, language: SupportedLocale, footer_line: str = ""
+) -> RenderedEmail:
+    """A service e-mail that is not an exit notice: its paragraphs already filled in, the team's
+    signature and the small line in [language], no button and no link."""
+    signature = SIGNATURES[language]
+    parts = [*paragraphs, signature]
+    if footer_line.strip():
+        parts.append(footer_line.strip())
+    return RenderedEmail(
+        subject=subject,
+        text="\n\n".join(parts) + "\n",
+        html=_html(
+            subject, paragraphs, "", None, "", footer_line, language=language, signature=signature
+        ),
+        button_label=None,
+    )
 
 
 def render_email(
@@ -134,6 +163,9 @@ def _html(
     login_url: str,
     footer_line: str,
     privacy_url: str = "",
+    *,
+    language: SupportedLocale = LANGUAGE,
+    signature: str = SIGNATURE,
 ) -> str:
     def para(paragraph: str, cls: str = "p") -> str:
         safe = escape(_plain(paragraph))
@@ -158,7 +190,7 @@ def _html(
     stays = para(block, "small") if block else ""
     footer = f'<p class="foot">{escape(footer_line.strip())}</p>' if footer_line.strip() else ""
     return f"""<!doctype html>
-<html lang="it">
+<html lang="{language}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -213,7 +245,7 @@ def _html(
 {body}
 {button}
 {stays}
-    <p class="sign">{escape(SIGNATURE)}</p>
+    <p class="sign">{escape(signature)}</p>
 {footer}
   </div>
 </div>

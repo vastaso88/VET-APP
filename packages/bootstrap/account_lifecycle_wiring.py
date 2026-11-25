@@ -5,6 +5,7 @@ from packages.core.application.ports.account_age_repository import AccountAgeRep
 from packages.core.application.ports.account_deletion_repository import AccountDeletionRepository
 from packages.core.application.ports.account_eraser import AccountEraser
 from packages.core.application.ports.account_exporter import AccountExporter
+from packages.core.application.ports.renewal_notice_log import RenewalNoticeLog
 from packages.core.application.services.account_deletion import AccountDeletionService
 from packages.core.application.services.age_gate import AgeGateService
 from packages.core.application.services.age_review_admin import AgeReviewAdminService
@@ -13,6 +14,7 @@ from packages.core.application.services.deletion_log import DeletionLogService
 from packages.core.application.services.exit_notices import ExitNoticeService
 from packages.core.application.services.export_account_data import ExportAccountDataService
 from packages.core.application.services.notice_mailer import NoticeConfig, NoticeMailer
+from packages.core.application.services.renewal_notices import RenewalNoticeService
 from packages.core.application.services.underage_review_dry_run import UnderageReviewDryRunService
 from packages.infrastructure.email.logo import quokka_head_png
 from packages.infrastructure.email.rules import check_recipient, parse_allowed_recipients
@@ -27,6 +29,12 @@ from packages.infrastructure.persistence.in_memory_account_exporter import InMem
 from packages.infrastructure.persistence.in_memory_deletion_log import (
     InMemoryDeletionLogCopy,
     InMemoryDeletionLogRepository,
+)
+from packages.infrastructure.persistence.in_memory_renewal_notice_log import (
+    InMemoryRenewalNoticeLog,
+)
+from packages.infrastructure.persistence.in_memory_store_billing import (
+    InMemoryStoreEntitlementRepository,
 )
 
 
@@ -71,7 +79,32 @@ class AccountLifecycleWiring(ContainerState):
             self.account_deletion_service(),
             self.notice_mailer(),
             self.settings.email_max_per_run,
+            self._build_renewal_notice_service(),
         )
+
+    def _build_renewal_notice_service(self) -> RenewalNoticeService | None:
+        """The reminder of the yearly renewals; None while store billing is off."""
+        billing = self.store_billing_service() if self.settings.billing_enabled else None
+        if billing is None:
+            return None
+        age_gate = self.age_gate_service()
+        return RenewalNoticeService(
+            billing,
+            self.store_entitlement_repository,
+            self._build_renewal_notice_log(),
+            self.notice_mailer(),
+            paid_plan_allowed=lambda owner_id: age_gate.status(owner_id).paid_plan_allowed,
+        )
+
+    def _build_renewal_notice_log(self) -> RenewalNoticeLog:
+        if isinstance(self.store_entitlement_repository, InMemoryStoreEntitlementRepository):
+            return InMemoryRenewalNoticeLog(self.store_entitlement_repository)
+        from packages.infrastructure.persistence.supabase.client import build_supabase_client
+        from packages.infrastructure.persistence.supabase.supabase_renewal_notice_log import (
+            SupabaseRenewalNoticeLog,
+        )
+
+        return SupabaseRenewalNoticeLog(build_supabase_client(self.settings))
 
     def hidden_owner_ids(self) -> set[str]:
         """Sellers whose ads are hidden: asked to delete."""

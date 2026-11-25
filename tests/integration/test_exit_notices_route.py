@@ -12,6 +12,12 @@ from apps.api.main import app
 from packages.bootstrap.container import get_container
 from packages.core.domain.account_deletion.models import AccountDeletionRequest
 from packages.core.domain.common.entity import utc_now
+from packages.core.domain.subscription.store import (
+    BillingPeriod,
+    Store,
+    StoreEntitlement,
+    StoreState,
+)
 
 SECRET = "test-scheduler-secret"
 HEADER = "X-VetApp-Scheduler"
@@ -60,6 +66,47 @@ def test_it_answers_with_numbers_only_and_sending_is_off_by_default(client: Test
     stored = get_container().account_deletion_repository.get(OWNER)
     assert stored is not None and stored.last_notice is None
     get_container().account_deletion_repository.delete(OWNER)
+
+
+def _yearly_plan_that_renews_in_seven_days() -> None:
+    get_container().store_entitlement_repository.save(
+        StoreEntitlement(
+            owner_id=OWNER,
+            store=Store.GOOGLE,
+            store_subscription_id="a-purchase-token",
+            product_id="quokka_pro",
+            plan="pro",
+            period=BillingPeriod.YEARLY,
+            state=StoreState.ACTIVE,
+            expires_at=utc_now() + timedelta(days=7),
+            auto_renew=True,
+        )
+    )
+
+
+def test_the_reminder_of_the_yearly_renewals_is_in_the_same_run_and_off_by_default(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("BILLING_ENABLED", "true")
+    monkeypatch.setenv("BILLING_ACCOUNT_TOKEN_SECRET", "test-secret-not-real")
+    _yearly_plan_that_renews_in_seven_days()
+
+    response = client.post(ROUTE, headers={HEADER: SECRET})
+
+    body = response.json()
+    assert response.status_code == 200
+    assert (body["renewal"]["due"], body["renewal"]["sent"]) == (1, 0)
+    assert body["renewal"]["blocked"] == "sending_off" and body["alarm"] == 0
+    for secret in ("@", OWNER, "Quokka", "a-purchase-token"):
+        assert secret not in str(body)
+
+
+def test_with_store_billing_off_there_is_no_renewal_to_tell(client: TestClient) -> None:
+    _yearly_plan_that_renews_in_seven_days()
+
+    body = client.post(ROUTE, headers={HEADER: SECRET}).json()
+
+    assert body["renewal"]["due"] == 0 and body["renewal"]["blocked"] is None
 
 
 def test_the_restore_route_still_answers_when_the_security_message_cannot_go(

@@ -8187,6 +8187,41 @@ class AppLocalizationsEs extends AppLocalizations {
       'Los precios, la moneda y los impuestos son los que indica la tienda para tu país. La suscripción se renueva automáticamente hasta que la canceles en la tienda.';
 
   @override
+  String renewMonthly(String price, String date) {
+    return '$price al mes (impuestos según la tienda de tu país). El plan se renueva automáticamente cada mes, el $date, hasta que lo canceles.';
+  }
+
+  @override
+  String renewYearly(String price, String date) {
+    return '$price al año (impuestos según la tienda de tu país). El plan se renueva automáticamente cada año, el $date, hasta que lo canceles.';
+  }
+
+  @override
+  String renewCancelLine(String store) {
+    return 'Puedes cancelar cuando quieras en Ajustes → Suscripción y pagos o en la tienda, y usas el plan hasta el final del periodo ya pagado. El pago y la renovación los gestiona $store.';
+  }
+
+  @override
+  String get subscribeButton => 'Suscribirse y pagar';
+
+  @override
+  String planLimitsPro(int perChat, int perDay) {
+    return '$perChat preguntas por chat · $perDay al día';
+  }
+
+  @override
+  String planLimitsUltra(int perChat, int perDay, int devices) {
+    return '$perChat preguntas por chat · $perDay al día · $devices dispositivos';
+  }
+
+  @override
+  String get cancelButton => 'Cancelar la suscripción';
+
+  @override
+  String get cancelButtonNote =>
+      'Se abre la página de la tienda donde cancelas. Usas el plan hasta el final del periodo ya pagado.';
+
+  @override
   String get emergencyNoticeShort =>
       'Quokka no gestiona urgencias: ante una emergencia, acude de inmediato a un veterinario, a los servicios de emergencia o a una línea de ayuda de tu país. No esperes la respuesta de la aplicación.';
 

@@ -8231,6 +8231,41 @@ class AppLocalizationsFr extends AppLocalizations {
       'Les prix, la devise et les taxes sont ceux indiqués par la boutique pour votre pays. L’abonnement se renouvelle automatiquement jusqu’à ce que vous le résiliez dans la boutique.';
 
   @override
+  String renewMonthly(String price, String date) {
+    return '$price par mois (taxes selon la boutique de votre pays). L\'abonnement se renouvelle automatiquement chaque mois, le $date, jusqu\'à ce que vous le résiliez.';
+  }
+
+  @override
+  String renewYearly(String price, String date) {
+    return '$price par an (taxes selon la boutique de votre pays). L\'abonnement se renouvelle automatiquement chaque année, le $date, jusqu\'à ce que vous le résiliez.';
+  }
+
+  @override
+  String renewCancelLine(String store) {
+    return 'Vous pouvez résilier à tout moment dans Paramètres → Abonnement et paiements ou dans la boutique, et vous utilisez l\'abonnement jusqu\'à la fin de la période déjà payée. Le paiement et le renouvellement sont gérés par $store.';
+  }
+
+  @override
+  String get subscribeButton => 'S\'abonner et payer';
+
+  @override
+  String planLimitsPro(int perChat, int perDay) {
+    return '$perChat questions par chat · $perDay par jour';
+  }
+
+  @override
+  String planLimitsUltra(int perChat, int perDay, int devices) {
+    return '$perChat questions par chat · $perDay par jour · $devices appareils';
+  }
+
+  @override
+  String get cancelButton => 'Résilier l\'abonnement';
+
+  @override
+  String get cancelButtonNote =>
+      'La page de la boutique où vous résiliez s\'ouvre. Vous utilisez l\'abonnement jusqu\'à la fin de la période déjà payée.';
+
+  @override
   String get emergencyNoticeShort =>
       'Quokka ne gère pas les urgences : en cas d\'urgence, adressez-vous immédiatement à un vétérinaire, aux services d\'urgence ou à un service d\'écoute de votre pays. N\'attendez pas la réponse de l\'application.';
 

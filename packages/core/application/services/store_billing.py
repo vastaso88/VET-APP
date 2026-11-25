@@ -232,6 +232,18 @@ class StoreBillingService:
             counts["updated"] += 1
         return counts
 
+    def store_says(
+        self, entitlement: StoreEntitlement
+    ) -> tuple[VerifiedStorePurchase, CatalogProduct]:
+        """What the store says right now about a subscription already bound to an account, and
+        the product of the catalogue it is. Read-only: nothing is saved, no right changes."""
+        purchase = self._verifier(entitlement.store).verify(
+            store_subscription_id=entitlement.store_subscription_id,
+            product_id=entitlement.product_id,
+        )
+        self._check_environment(purchase)
+        return purchase, self._product(purchase)
+
     # --- plan -------------------------------------------------------------
 
     def sync_plan(self, owner_id: str) -> str | None:

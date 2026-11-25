@@ -11,7 +11,7 @@ import json
 from datetime import datetime, timedelta
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from packages.core.domain.common.entity import utc_now
 from packages.core.domain.subscription.models import SubscriptionPlan
@@ -101,6 +101,15 @@ class ProductCatalog(BaseModel):
         )
 
 
+class StorePrice(BaseModel):
+    """An amount exactly as the store states it: millionths of the currency's unit."""
+
+    model_config = ConfigDict(frozen=True)
+
+    micros: int = Field(gt=0)
+    currency: str = Field(pattern=r"^[A-Z]{3}$")  # ISO 4217
+
+
 class VerifiedStorePurchase(BaseModel):
     """What the store itself says (API answer or signed payload)."""
 
@@ -118,6 +127,9 @@ class VerifiedStorePurchase(BaseModel):
     account_token: str | None = None  # appAccountToken / obfuscatedExternalAccountId
     linked_previous_id: str | None = None  # Google linkedPurchaseToken
     needs_acknowledgement: bool = False
+    # What the store says it charges at the next renewal. None when it does not say, or when
+    # the next charge may be another one. Never stored and never computed by us.
+    renewal_price: StorePrice | None = None
     event_time: datetime = Field(default_factory=utc_now)
 
 

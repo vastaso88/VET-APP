@@ -31,6 +31,7 @@ class PlanLimits {
     required this.maxChatsPerPet,
     required this.dailyQuestions,
     required this.maxDevices,
+    this.dailyQuestionsPerChat,
   });
 
   factory PlanLimits.fromJson(Map<String, dynamic> json) {
@@ -39,6 +40,11 @@ class PlanLimits {
       maxChatsPerPet: json['max_chats_per_pet'] as int,
       dailyQuestions: json['daily_questions'] as int,
       maxDevices: json['max_devices'] as int,
+      // A backend that does not know it yet leaves it out: no limit per chat is shown then.
+      dailyQuestionsPerChat: switch (json['daily_questions_per_chat']) {
+        final int cap when cap > 0 => cap,
+        _ => null,
+      },
     );
   }
 
@@ -46,6 +52,9 @@ class PlanLimits {
   final int maxChatsPerPet;
   final int dailyQuestions;
   final int maxDevices;
+
+  /// Questions a day inside one chat (Pro and Ultra); null = no cap per chat.
+  final int? dailyQuestionsPerChat;
 }
 
 /// Every feature line the plan screens can show; the wording lives in the
@@ -60,15 +69,22 @@ enum PlanFeatureId {
   limitChatsPerPet,
   limitQuestionsPerDay,
   limitDevices,
+
+  /// Pro and Ultra say their questions in one line (and Ultra its devices too).
+  limitsPro,
+  limitsUltra,
 }
 
 /// One line in a plan's "what's included" list. [count] fills the number of
-/// the limit lines.
+/// the limit lines; [perChat] and [devices] the other numbers of the lines
+/// that hold more than one.
 class PlanFeature {
-  const PlanFeature(this.id, {this.count = 0});
+  const PlanFeature(this.id, {this.count = 0, this.perChat = 0, this.devices = 0});
 
   final PlanFeatureId id;
   final int count;
+  final int perChat;
+  final int devices;
 
   String get label {
     final l10n = appL10n;
@@ -82,16 +98,35 @@ class PlanFeature {
       PlanFeatureId.limitChatsPerPet => l10n.billingLimitChatsPerPet(count),
       PlanFeatureId.limitQuestionsPerDay => l10n.billingLimitQuestionsPerDay(count),
       PlanFeatureId.limitDevices => l10n.billingLimitDevices(count),
+      PlanFeatureId.limitsPro => l10n.planLimitsPro(perChat, count),
+      PlanFeatureId.limitsUltra => l10n.planLimitsUltra(perChat, count, devices),
     };
   }
 
-  /// The four limit lines of a plan, in display order.
-  static List<PlanFeature> forLimits(PlanLimits limits) => [
-        PlanFeature(PlanFeatureId.limitPets, count: limits.maxPets),
-        PlanFeature(PlanFeatureId.limitChatsPerPet, count: limits.maxChatsPerPet),
-        PlanFeature(PlanFeatureId.limitQuestionsPerDay, count: limits.dailyQuestions),
+  /// The limit lines of the plan [tier], in display order. The numbers are
+  /// always the backend's; the words of Pro and Ultra are the ones the owner
+  /// approved on 2026-11-25. Plus has no cap per chat: its lines do not change.
+  static List<PlanFeature> forLimits(PlanLimits limits, {PlanTier? tier}) {
+    final perChat = limits.dailyQuestionsPerChat;
+    return [
+      PlanFeature(PlanFeatureId.limitPets, count: limits.maxPets),
+      PlanFeature(PlanFeatureId.limitChatsPerPet, count: limits.maxChatsPerPet),
+      if (tier == PlanTier.ultra && perChat != null)
+        PlanFeature(
+          PlanFeatureId.limitsUltra,
+          perChat: perChat,
+          count: limits.dailyQuestions,
+          devices: limits.maxDevices,
+        )
+      else ...[
+        if (tier == PlanTier.pro && perChat != null)
+          PlanFeature(PlanFeatureId.limitsPro, perChat: perChat, count: limits.dailyQuestions)
+        else
+          PlanFeature(PlanFeatureId.limitQuestionsPerDay, count: limits.dailyQuestions),
         PlanFeature(PlanFeatureId.limitDevices, count: limits.maxDevices),
-      ];
+      ],
+    ];
+  }
 }
 
 /// "4,99 €", "£4.99", "$4.99", "A$4.99" or "CHF 4.99": the placeholder price

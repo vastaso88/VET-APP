@@ -8135,6 +8135,41 @@ class AppLocalizationsEn extends AppLocalizations {
       'Prices, currency and taxes are those shown by the store for your country. The subscription renews automatically until you cancel it in the store.';
 
   @override
+  String renewMonthly(String price, String date) {
+    return '$price per month (taxes as shown by the store for your country). The plan renews automatically every month, on $date, until you cancel it.';
+  }
+
+  @override
+  String renewYearly(String price, String date) {
+    return '$price per year (taxes as shown by the store for your country). The plan renews automatically every year, on $date, until you cancel it.';
+  }
+
+  @override
+  String renewCancelLine(String store) {
+    return 'You can cancel at any time in Settings → Subscription and payments or in the store, and you keep using the plan until the end of the period you have already paid for. Payment and renewal are handled by $store.';
+  }
+
+  @override
+  String get subscribeButton => 'Subscribe and pay';
+
+  @override
+  String planLimitsPro(int perChat, int perDay) {
+    return '$perChat questions per chat · $perDay per day';
+  }
+
+  @override
+  String planLimitsUltra(int perChat, int perDay, int devices) {
+    return '$perChat questions per chat · $perDay per day · $devices devices';
+  }
+
+  @override
+  String get cancelButton => 'Cancel subscription';
+
+  @override
+  String get cancelButtonNote =>
+      'This opens the store page where you cancel. You keep using the plan until the end of the period you have already paid for.';
+
+  @override
   String get emergencyNoticeShort =>
       'Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a helpline in your country right away. Do not wait for the app\'s reply.';
 

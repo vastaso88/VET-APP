@@ -4689,6 +4689,64 @@
   },
   "storeBillingRestoreDone": "Ripristino completato.",
   "storeBillingPricesFromStore": "Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L'abbonamento si rinnova automaticamente finché non lo disdici nello store.",
+  "renewMonthly": "{price} al mese (imposte secondo lo store del tuo paese). Il piano si rinnova da solo ogni mese, il {date}, finché non lo disdici.",
+  "@renewMonthly": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "renewYearly": "{price} all'anno (imposte secondo lo store del tuo paese). Il piano si rinnova da solo ogni anno, il {date}, finché non lo disdici.",
+  "@renewYearly": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "renewCancelLine": "Puoi disdire quando vuoi da Impostazioni → Abbonamento e pagamenti o dallo store, e usi il piano fino alla fine del periodo già pagato. Pagamento e rinnovo sono gestiti da {store}.",
+  "@renewCancelLine": {
+    "placeholders": {
+      "store": {
+        "type": "String"
+      }
+    }
+  },
+  "subscribeButton": "Abbonati e paga",
+  "planLimitsPro": "{perChat} domande per chat · {perDay} al giorno",
+  "@planLimitsPro": {
+    "placeholders": {
+      "perChat": {
+        "type": "int"
+      },
+      "perDay": {
+        "type": "int"
+      }
+    }
+  },
+  "planLimitsUltra": "{perChat} domande per chat · {perDay} al giorno · {devices} dispositivi",
+  "@planLimitsUltra": {
+    "placeholders": {
+      "perChat": {
+        "type": "int"
+      },
+      "perDay": {
+        "type": "int"
+      },
+      "devices": {
+        "type": "int"
+      }
+    }
+  },
+  "cancelButton": "Disdici l'abbonamento",
+  "cancelButtonNote": "Si apre la pagina dello store dove disdici. Usi il piano fino alla fine del periodo già pagato.",
   "emergencyNoticeShort": "Quokka non gestisce le urgenze: in emergenza rivolgiti subito a un veterinario, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Non aspettare la risposta dell'app.",
   "firstChatTitle": "Prima della tua prima chat",
   "firstChatBody": "Ti risponde un'intelligenza artificiale e può sbagliare. Le tue domande, ripulite dai dati personali che riconosciamo, vanno ad Anthropic, il nostro fornitore di IA, con server negli Stati Uniti: i dettagli sono nell'informativa. Quokka non gestisce le urgenze: in emergenza rivolgiti subito a un veterinario, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Non aspettare la risposta dell'app.",

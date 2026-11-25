@@ -8216,6 +8216,41 @@ class AppLocalizationsDe extends AppLocalizations {
       'Preise, Währung und Steuern sind die vom Store für Ihr Land angezeigten. Das Abo verlängert sich automatisch, bis Sie es im Store kündigen.';
 
   @override
+  String renewMonthly(String price, String date) {
+    return '$price pro Monat (Steuern gemäß dem Store Ihres Landes). Das Abo verlängert sich automatisch jeden Monat, am $date, bis Sie es kündigen.';
+  }
+
+  @override
+  String renewYearly(String price, String date) {
+    return '$price pro Jahr (Steuern gemäß dem Store Ihres Landes). Das Abo verlängert sich automatisch jedes Jahr, am $date, bis Sie es kündigen.';
+  }
+
+  @override
+  String renewCancelLine(String store) {
+    return 'Sie können jederzeit kündigen, unter Einstellungen → Abo und Zahlungen oder im Store, und nutzen das Abo bis zum Ende des bereits bezahlten Zeitraums. Zahlung und Verlängerung werden von $store abgewickelt.';
+  }
+
+  @override
+  String get subscribeButton => 'Kostenpflichtig abonnieren';
+
+  @override
+  String planLimitsPro(int perChat, int perDay) {
+    return '$perChat Fragen pro Chat · $perDay pro Tag';
+  }
+
+  @override
+  String planLimitsUltra(int perChat, int perDay, int devices) {
+    return '$perChat Fragen pro Chat · $perDay pro Tag · $devices Geräte';
+  }
+
+  @override
+  String get cancelButton => 'Abo kündigen';
+
+  @override
+  String get cancelButtonNote =>
+      'Es öffnet sich die Seite des Stores, auf der Sie kündigen. Sie nutzen das Abo bis zum Ende des bereits bezahlten Zeitraums.';
+
+  @override
   String get emergencyNoticeShort =>
       'Quokka ist nicht für Notfälle zuständig: Wenden Sie sich in einem Notfall sofort an eine Tierärztin oder einen Tierarzt, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Warten Sie nicht auf die Antwort der App.';
 

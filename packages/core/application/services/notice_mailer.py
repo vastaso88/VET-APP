@@ -31,6 +31,8 @@ from packages.core.application.ports.email_sender import (
 from packages.core.application.ports.owner_contact_lookup import OwnerContactLookup
 from packages.core.domain.age.models import AgeBand, band_for
 from packages.core.domain.exit_notices import layout, texts
+from packages.core.domain.exit_notices.sender_lines import small_line
+from packages.core.domain.localization import SUPPORTED_LOCALES, SupportedLocale, normalize_locale
 
 logger = logging.getLogger(__name__)
 
@@ -58,9 +60,8 @@ class NoticeConfig:
             self.login_url.startswith("https://") and self.privacy_url.startswith("https://")
         )
 
-    def footer_line(self) -> str:
-        entity, contact = self.legal_entity.strip(), self.contact.strip()
-        return f"Quokka è un servizio di {entity} · {contact}" if entity and contact else ""
+    def footer_line(self, language: SupportedLocale = layout.LANGUAGE) -> str:
+        return small_line(language, self.legal_entity, self.contact)
 
 
 @dataclass(frozen=True)
@@ -69,6 +70,7 @@ class Recipient:
 
     address: str = field(repr=False)
     first_name: str | None = field(default=None, repr=False)
+    language: SupportedLocale = layout.LANGUAGE
 
 
 @dataclass(frozen=True)
@@ -190,9 +192,15 @@ class NoticeMailer:
 
     # -- who ---------------------------------------------------------------------------------
 
-    def recipient_for(self, owner_id: str, now: datetime | None = None) -> Recipient | str:
+    def recipient_for(
+        self,
+        owner_id: str,
+        now: datetime | None = None,
+        languages: frozenset[str] = frozenset({texts.LANGUAGE}),
+    ) -> Recipient | str:
         """The person to write to, or the reason not to ("no_contact", "no_address",
-        "unconfirmed", "closed_by_age", "language_not_ready")."""
+        "unconfirmed", "closed_by_age", "language_not_ready"). [languages] are the ones the text
+        exists in: the exit e-mails only in Italian."""
         contact = self._contacts.get(owner_id)
         if contact is None:
             return "no_contact"
@@ -205,13 +213,18 @@ class NoticeMailer:
             AgeBand.UNDER_MINIMUM
         ):
             return "closed_by_age"
-        if (contact.language or texts.LANGUAGE).lower().split("-")[0] != texts.LANGUAGE:
+        language = (contact.language or texts.LANGUAGE).lower().replace("_", "-").split("-")[0]
+        if language not in languages or language not in SUPPORTED_LOCALES:
             return "language_not_ready"
         if self._recipient_check is not None:
             refused = self._recipient_check(contact.email)
             if refused:
                 return refused
-        return Recipient(address=contact.email, first_name=contact.display_name)
+        return Recipient(
+            address=contact.email,
+            first_name=contact.display_name,
+            language=normalize_locale(language),
+        )
 
     # -- sending -----------------------------------------------------------------------------
 
@@ -220,10 +233,9 @@ class NoticeMailer:
     ) -> NoticeOutcome:
         """Writes one notice. Never raises. [variables] are the ones of the text (dates,
         durations); the greeting, the company, the contact and the links are added here."""
-        if not self.ready:
-            return NoticeOutcome(SKIPPED, self.blocked_reason)
-        try:
-            rendered = layout.render_email(
+        return self.deliver_rendered(
+            recipient,
+            lambda: layout.render_email(
                 template_id,
                 {
                     **variables,
@@ -233,7 +245,17 @@ class NoticeMailer:
                 },
                 login_url=self._config.login_url,
                 footer_line=self._config.footer_line(),
-            )
+            ),
+        )
+
+    def deliver_rendered(
+        self, recipient: Recipient, render: Callable[[], layout.RenderedEmail]
+    ) -> NoticeOutcome:
+        """Sends the message [render] writes, as a service message. Never raises."""
+        if not self.ready:
+            return NoticeOutcome(SKIPPED, self.blocked_reason)
+        try:
+            rendered = render()
             message = EmailMessage(
                 to=recipient.address,
                 subject=rendered.subject,
@@ -294,6 +316,33 @@ def deliver_booked(
     budget: SendBudget,
     attempted_when: frozenset[str] = frozenset(),
 ) -> bool:
+    """One exit notice, see [send_booked]."""
+    return send_booked(
+        mailer,
+        owner_id,
+        now,
+        lambda recipient: mailer.deliver(recipient, template_id, variables),
+        book=book,
+        release=release,
+        counts=counts,
+        budget=budget,
+        attempted_when=attempted_when,
+    )
+
+
+def send_booked(
+    mailer: NoticeMailer,
+    owner_id: str,
+    now: datetime,
+    send: Callable[[Recipient], NoticeOutcome],
+    *,
+    book: Callable[[], bool],
+    release: Callable[[], None],
+    counts: NoticeCounts,
+    budget: SendBudget,
+    attempted_when: frozenset[str] = frozenset(),
+    languages: frozenset[str] = frozenset({texts.LANGUAGE}),
+) -> bool:
     """One notice of a sequence, booked BEFORE it is sent so two runs can never both send it.
 
     1. who: an account that cannot or must not be written to is counted as skipped and nothing
@@ -311,7 +360,7 @@ def deliver_booked(
 
     Returns False when the run must stop (the booking cannot be written or given back)."""
     try:
-        recipient = mailer.recipient_for(owner_id, now)
+        recipient = mailer.recipient_for(owner_id, now, languages)
     except Exception:  # noqa: BLE001 - a failed lookup is a failure, not "no address"
         logger.warning("could not read the contact of an account", exc_info=False)
         counts.add(NoticeOutcome(FAILED, "contact_lookup"))
@@ -337,7 +386,7 @@ def deliver_booked(
     if not booked:
         counts.add(NoticeOutcome(SKIPPED, "already_booked"))
         return True
-    outcome = mailer.deliver(recipient, template_id, variables)
+    outcome = send(recipient)
     counts.add(outcome)
     if outcome.kind != SKIPPED:
         budget.spend()

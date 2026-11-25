@@ -239,6 +239,8 @@ BUILD_HOOKS = [
     "_build_radar_catalog_repository",
     "_build_radar_places_repository",
     "_build_radar_reports_repository",
+    "_build_renewal_notice_log",
+    "_build_renewal_notice_service",
     "_build_repositories",
     "_build_store_entitlement_repository",
     "_build_subscription_repository",

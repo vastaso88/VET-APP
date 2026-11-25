@@ -1,0 +1,93 @@
+{
+  "renewMonthly": {
+    "it": "{price} al mese (imposte secondo lo store del tuo paese). Il piano si rinnova da solo ogni mese, il {date}, finché non lo disdici.",
+    "en": "{price} per month (taxes as shown by the store for your country). The plan renews automatically every month, on {date}, until you cancel it.",
+    "es": "{price} al mes (impuestos según la tienda de tu país). El plan se renueva automáticamente cada mes, el {date}, hasta que lo canceles.",
+    "de": "{price} pro Monat (Steuern gemäß dem Store Ihres Landes). Das Abo verlängert sich automatisch jeden Monat, am {date}, bis Sie es kündigen.",
+    "fr": "{price} par mois (taxes selon la boutique de votre pays). L'abonnement se renouvelle automatiquement chaque mois, le {date}, jusqu'à ce que vous le résiliez."
+  },
+  "renewYearly": {
+    "it": "{price} all'anno (imposte secondo lo store del tuo paese). Il piano si rinnova da solo ogni anno, il {date}, finché non lo disdici.",
+    "en": "{price} per year (taxes as shown by the store for your country). The plan renews automatically every year, on {date}, until you cancel it.",
+    "es": "{price} al año (impuestos según la tienda de tu país). El plan se renueva automáticamente cada año, el {date}, hasta que lo canceles.",
+    "de": "{price} pro Jahr (Steuern gemäß dem Store Ihres Landes). Das Abo verlängert sich automatisch jedes Jahr, am {date}, bis Sie es kündigen.",
+    "fr": "{price} par an (taxes selon la boutique de votre pays). L'abonnement se renouvelle automatiquement chaque année, le {date}, jusqu'à ce que vous le résiliez."
+  },
+  "renewCancelLine": {
+    "it": "Puoi disdire quando vuoi da Impostazioni → Abbonamento e pagamenti o dallo store, e usi il piano fino alla fine del periodo già pagato. Pagamento e rinnovo sono gestiti da {store}.",
+    "en": "You can cancel at any time in Settings → Subscription and payments or in the store, and you keep using the plan until the end of the period you have already paid for. Payment and renewal are handled by {store}.",
+    "es": "Puedes cancelar cuando quieras en Ajustes → Suscripción y pagos o en la tienda, y usas el plan hasta el final del periodo ya pagado. El pago y la renovación los gestiona {store}.",
+    "de": "Sie können jederzeit kündigen, unter Einstellungen → Abo und Zahlungen oder im Store, und nutzen das Abo bis zum Ende des bereits bezahlten Zeitraums. Zahlung und Verlängerung werden von {store} abgewickelt.",
+    "fr": "Vous pouvez résilier à tout moment dans Paramètres → Abonnement et paiements ou dans la boutique, et vous utilisez l'abonnement jusqu'à la fin de la période déjà payée. Le paiement et le renouvellement sont gérés par {store}."
+  },
+  "subscribeButton": {
+    "it": "Abbonati e paga",
+    "en": "Subscribe and pay",
+    "es": "Suscribirse y pagar",
+    "de": "Kostenpflichtig abonnieren",
+    "fr": "S'abonner et payer"
+  },
+  "planLimitsPro": {
+    "it": "15 domande per chat · 40 al giorno",
+    "en": "15 questions per chat · 40 per day",
+    "es": "15 preguntas por chat · 40 al día",
+    "de": "15 Fragen pro Chat · 40 pro Tag",
+    "fr": "15 questions par chat · 40 par jour"
+  },
+  "planLimitsUltra": {
+    "it": "20 domande per chat · 80 al giorno · 5 dispositivi",
+    "en": "20 questions per chat · 80 per day · 5 devices",
+    "es": "20 preguntas por chat · 80 al día · 5 dispositivos",
+    "de": "20 Fragen pro Chat · 80 pro Tag · 5 Geräte",
+    "fr": "20 questions par chat · 80 par jour · 5 appareils"
+  },
+  "cancelButton": {
+    "it": "Disdici l'abbonamento",
+    "en": "Cancel subscription",
+    "es": "Cancelar la suscripción",
+    "de": "Abo kündigen",
+    "fr": "Résilier l'abonnement"
+  },
+  "cancelButtonNote": {
+    "it": "Si apre la pagina dello store dove disdici. Usi il piano fino alla fine del periodo già pagato.",
+    "en": "This opens the store page where you cancel. You keep using the plan until the end of the period you have already paid for.",
+    "es": "Se abre la página de la tienda donde cancelas. Usas el plan hasta el final del periodo ya pagado.",
+    "de": "Es öffnet sich die Seite des Stores, auf der Sie kündigen. Sie nutzen das Abo bis zum Ende des bereits bezahlten Zeitraums.",
+    "fr": "La page de la boutique où vous résiliez s'ouvre. Vous utilisez l'abonnement jusqu'à la fin de la période déjà payée."
+  },
+  "storeListingRenewalLine": {
+    "it": "Abbonamento con rinnovo automatico: disdici quando vuoi dallo store.",
+    "en": "Subscription with automatic renewal: cancel any time in the store.",
+    "es": "Suscripción con renovación automática: cancela cuando quieras desde la tienda.",
+    "de": "Abo mit automatischer Verlängerung: jederzeit im Store kündbar.",
+    "fr": "Abonnement à renouvellement automatique : résiliez quand vous voulez depuis la boutique."
+  },
+  "renewalEmailSubject": {
+    "it": "Il tuo piano annuale Quokka si rinnova tra 7 giorni",
+    "en": "Your Quokka yearly plan renews in 7 days",
+    "es": "Tu plan anual de Quokka se renueva en 7 días",
+    "de": "Ihr Quokka-Jahresabo verlängert sich in 7 Tagen",
+    "fr": "Votre abonnement annuel Quokka se renouvelle dans 7 jours"
+  },
+  "renewalEmailBody": {
+    "it": "Ciao {nome}, il {data_rinnovo} il tuo piano annuale Quokka si rinnova da solo e {store} addebita {prezzo}. Se vuoi continuare, non devi fare nulla. Se non vuoi rinnovare, puoi disdire quando vuoi da Impostazioni → Abbonamento e pagamenti o dallo store, prima di quella data: usi il piano fino alla fine del periodo già pagato. Questa è una comunicazione di servizio sul tuo abbonamento. {titolare}, {contatto}.",
+    "en": "Hi {nome}, on {data_rinnovo} your yearly Quokka plan renews automatically and {store} charges {prezzo}. If you want to continue, you do not need to do anything. If you do not want to renew, you can cancel at any time before that date in Settings → Subscription and payments or in the store: you keep using the plan until the end of the period you have already paid for. This is a service message about your subscription. {titolare}, {contatto}.",
+    "es": "Hola {nome}, el {data_rinnovo} tu plan anual de Quokka se renueva automáticamente y {store} cobra {prezzo}. Si quieres continuar, no tienes que hacer nada. Si no quieres renovar, puedes cancelar cuando quieras antes de esa fecha en Ajustes → Suscripción y pagos o en la tienda: usas el plan hasta el final del periodo ya pagado. Este es un mensaje de servicio sobre tu suscripción. {titolare}, {contatto}.",
+    "de": "Hallo {nome}, am {data_rinnovo} verlängert sich Ihr Quokka-Jahresabo automatisch, und {store} bucht {prezzo} ab. Wenn Sie weitermachen möchten, müssen Sie nichts tun. Wenn Sie nicht verlängern möchten, können Sie jederzeit vor diesem Datum unter Einstellungen → Abo und Zahlungen oder im Store kündigen: Sie nutzen das Abo bis zum Ende des bereits bezahlten Zeitraums. Dies ist eine Servicemitteilung zu Ihrem Abo. {titolare}, {contatto}.",
+    "fr": "Bonjour {nome}, le {data_rinnovo}, votre abonnement annuel Quokka se renouvelle automatiquement et {store} prélève {prezzo}. Si vous souhaitez continuer, vous n'avez rien à faire. Si vous ne souhaitez pas renouveler, vous pouvez résilier à tout moment, avant cette date, dans Paramètres → Abonnement et paiements ou dans la boutique : vous utilisez l'abonnement jusqu'à la fin de la période déjà payée. Ceci est un message de service concernant votre abonnement. {titolare}, {contatto}."
+  },
+  "emailSignature": {
+    "it": "Il team di Quokka",
+    "en": "The Quokka team",
+    "es": "El equipo de Quokka",
+    "de": "Das Quokka-Team",
+    "fr": "L'équipe Quokka"
+  },
+  "emailSmallLine": {
+    "it": "Quokka è un servizio di {titolare} · {contatto}",
+    "en": "Quokka is a service provided by {titolare} · {contatto}",
+    "es": "Quokka es un servicio de {titolare} · {contatto}",
+    "de": "Quokka ist ein Dienst von {titolare} · {contatto}",
+    "fr": "Quokka est un service de {titolare} · {contatto}"
+  }
+}

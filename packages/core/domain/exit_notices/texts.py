@@ -107,14 +107,19 @@ def format_duration(months: int) -> str:
     return "1 mese" if months == 1 else f"{months} mesi"
 
 
-def greeting(first_name: str | None) -> str:
-    """«Ciao Mario,» or «Ciao,». The name is what the owner typed: the first word only, control
-    characters and braces out, a short length. It never goes into a subject."""
+def first_word(first_name: str | None) -> str:
+    """The name as a greeting may show it. It is what the owner typed: the first word only,
+    control characters and braces out, a short length."""
     words = (first_name or "").split()
     word = "".join(
         ch for ch in (words[0] if words else "") if ch.isprintable() and ch not in "{}<>"
     )
-    word = word[:40]
+    return word[:40]
+
+
+def greeting(first_name: str | None) -> str:
+    """«Ciao Mario,» or «Ciao,». The name never goes into a subject."""
+    word = first_word(first_name)
     return f"Ciao {word}," if word else "Ciao,"
 
 

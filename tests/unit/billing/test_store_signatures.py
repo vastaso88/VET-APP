@@ -209,6 +209,75 @@ def test_google_subscription_v2_parsing() -> None:
     assert pending.state == StoreState.PENDING
 
 
+def _google_line(**extra: object) -> dict[str, object]:
+    plan = {
+        "autoRenewEnabled": True,
+        "recurringPrice": {"currencyCode": "EUR", "units": "85", "nanos": 990000000},
+        **extra.pop("plan", {}),  # type: ignore[dict-item]
+    }
+    return {
+        "productId": "quokka_pro",
+        "expiryTime": "2030-01-01T00:00:00Z",
+        "autoRenewingPlan": plan,
+        "offerDetails": {"basePlanId": "yearly"},
+        **extra,
+    }
+
+
+def _google_price(line: dict[str, object]) -> object:
+    return parse_subscription_v2(
+        "tok", {"subscriptionState": "SUBSCRIPTION_STATE_ACTIVE", "lineItems": [line]}
+    ).renewal_price
+
+
+def test_google_states_the_amount_of_the_next_renewal() -> None:
+    price = _google_price(_google_line())
+    assert price is not None
+    assert (price.micros, price.currency) == (85_990_000, "EUR")  # type: ignore[attr-defined]
+    whole = _google_price(
+        _google_line(plan={"recurringPrice": {"currencyCode": "JPY", "units": "12500"}})
+    )
+    assert whole is not None and whole.micros == 12_500_000_000  # type: ignore[attr-defined]
+    # A price change that has already been applied is the price.
+    applied = _google_line(plan={"priceChangeDetails": {"priceChangeState": "APPLIED"}})
+    assert _google_price(applied) is not None
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        _google_line(plan={"recurringPrice": None}),
+        _google_line(plan={"recurringPrice": {}}),
+        _google_line(plan={"recurringPrice": {"currencyCode": "EUR"}}),
+        _google_line(plan={"recurringPrice": {"currencyCode": "", "units": "85"}}),
+        _google_line(plan={"recurringPrice": {"currencyCode": "EUR", "units": "a lot"}}),
+        _google_line(plan={"recurringPrice": "85.99"}),
+        # The next charge may be another one.
+        _google_line(plan={"priceChangeDetails": {"priceChangeState": "OUTSTANDING"}}),
+        _google_line(plan={"priceChangeDetails": {"priceChangeState": "CONFIRMED"}}),
+        _google_line(plan={"installmentDetails": {"initialCommittedPaymentsCount": 12}}),
+        _google_line(deferredItemReplacement={"productId": "quokka_plus"}),
+        _google_line(offerDetails={"basePlanId": "yearly", "offerId": "trial"}),
+        _google_line(autoRenewingPlan="unexpected"),
+    ],
+)
+def test_google_s_amount_is_unknown_rather_than_invented(line: dict[str, object]) -> None:
+    if line["autoRenewingPlan"] == "unexpected":
+        # Not a plan at all: the verification itself keeps its old behaviour.
+        from packages.infrastructure.billing.google_play import _renewal_price
+
+        assert _renewal_price(line) is None
+        return
+    assert _google_price(line) is None
+
+
+def test_apple_s_amount_is_not_read_yet(apple: FakeApple) -> None:
+    """Until the field is checked on Apple's own reference the reminder does not go for Apple."""
+    decoder = AppleSignedDataDecoder(bundle_id="net.quokkapet.app", roots=[apple.root])
+    purchase = decoder.purchase(apple.sign(_tx()), apple.sign({"autoRenewStatus": 1}), 1)
+    assert purchase.renewal_price is None
+
+
 def test_rtdn_parsing_and_wrong_package() -> None:
     def envelope(data: dict[str, object]) -> dict[str, object]:
         return {

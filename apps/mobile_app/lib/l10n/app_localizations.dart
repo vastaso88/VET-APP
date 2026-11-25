@@ -13580,6 +13580,54 @@ abstract class AppLocalizations {
   /// **'Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L\'abbonamento si rinnova automaticamente finché non lo disdici nello store.'**
   String get storeBillingPricesFromStore;
 
+  /// No description provided for @renewMonthly.
+  ///
+  /// In it, this message translates to:
+  /// **'{price} al mese (imposte secondo lo store del tuo paese). Il piano si rinnova da solo ogni mese, il {date}, finché non lo disdici.'**
+  String renewMonthly(String price, String date);
+
+  /// No description provided for @renewYearly.
+  ///
+  /// In it, this message translates to:
+  /// **'{price} all\'anno (imposte secondo lo store del tuo paese). Il piano si rinnova da solo ogni anno, il {date}, finché non lo disdici.'**
+  String renewYearly(String price, String date);
+
+  /// No description provided for @renewCancelLine.
+  ///
+  /// In it, this message translates to:
+  /// **'Puoi disdire quando vuoi da Impostazioni → Abbonamento e pagamenti o dallo store, e usi il piano fino alla fine del periodo già pagato. Pagamento e rinnovo sono gestiti da {store}.'**
+  String renewCancelLine(String store);
+
+  /// No description provided for @subscribeButton.
+  ///
+  /// In it, this message translates to:
+  /// **'Abbonati e paga'**
+  String get subscribeButton;
+
+  /// No description provided for @planLimitsPro.
+  ///
+  /// In it, this message translates to:
+  /// **'{perChat} domande per chat · {perDay} al giorno'**
+  String planLimitsPro(int perChat, int perDay);
+
+  /// No description provided for @planLimitsUltra.
+  ///
+  /// In it, this message translates to:
+  /// **'{perChat} domande per chat · {perDay} al giorno · {devices} dispositivi'**
+  String planLimitsUltra(int perChat, int perDay, int devices);
+
+  /// No description provided for @cancelButton.
+  ///
+  /// In it, this message translates to:
+  /// **'Disdici l\'abbonamento'**
+  String get cancelButton;
+
+  /// No description provided for @cancelButtonNote.
+  ///
+  /// In it, this message translates to:
+  /// **'Si apre la pagina dello store dove disdici. Usi il piano fino alla fine del periodo già pagato.'**
+  String get cancelButtonNote;
+
   /// No description provided for @emergencyNoticeShort.
   ///
   /// In it, this message translates to:

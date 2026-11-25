@@ -32,10 +32,11 @@ def purge_deleted_accounts(
 def send_exit_notices(
     x_vetapp_scheduler: str | None = Header(default=None, alias="X-VetApp-Scheduler"),
 ) -> dict[str, object]:
-    """Writes the e-mails of the deletion sequence that are due (docs/compliance/18):
-    confirmation and reminders, the closing one comes with the erase. Off until
-    EMAIL_SENDING_ENABLED is true and the wording is configured: until then it only counts
-    and touches nothing. Counts only; scheduler token, no user session."""
+    """Writes the service e-mails that are due: the deletion sequence (docs/compliance/18:
+    confirmation and reminders, the closing one comes with the erase) and the reminder seven
+    days before a yearly plan renews. Off until EMAIL_SENDING_ENABLED is true and the wording
+    is configured: until then it only counts and touches nothing. Counts only; scheduler
+    token, no user session."""
     _require_scheduler_token(x_vetapp_scheduler)
     return get_container().exit_notice_service().run().model_dump()
 

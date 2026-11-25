@@ -16,7 +16,12 @@ from packages.core.application.ports.store_billing import (
     StoreRejectedError,
     StoreTemporaryError,
 )
-from packages.core.domain.subscription.store import Store, StoreState, VerifiedStorePurchase
+from packages.core.domain.subscription.store import (
+    Store,
+    StorePrice,
+    StoreState,
+    VerifiedStorePurchase,
+)
 from packages.infrastructure.billing.jose import (
     USER_AGENT,
     JoseError,
@@ -46,6 +51,28 @@ def _rfc3339(value: str | None) -> datetime | None:
     return datetime.fromisoformat(value.replace("Z", "+00:00")) if value else None
 
 
+def _renewal_price(item: dict[str, Any]) -> StorePrice | None:
+    """What Google says this line costs at the next renewal (`autoRenewingPlan.recurringPrice`, a
+    Money: units + nanos). None when it does not say, or when the next charge may be another: a
+    price change not applied yet, another product from the renewal on, a promotional offer (the
+    app never buys one: store trials are offers), a payment in instalments."""
+    try:
+        plan = item.get("autoRenewingPlan") or {}
+        change = plan.get("priceChangeDetails") or {}
+        if change and change.get("priceChangeState") != "APPLIED":
+            return None
+        if plan.get("installmentDetails") or item.get("deferredItemReplacement"):
+            return None
+        if (item.get("offerDetails") or {}).get("offerId"):
+            return None
+        price = plan["recurringPrice"]
+        micros = int(price.get("units") or 0) * 1_000_000 + int(price.get("nanos") or 0) // 1000
+        return StorePrice(micros=micros, currency=price["currencyCode"])
+    except (KeyError, TypeError, ValueError, AttributeError):
+        # A price we cannot read must never stop the verification of a purchase.
+        return None
+
+
 def parse_subscription_v2(token: str, body: dict[str, Any]) -> VerifiedStorePurchase:
     items = body.get("lineItems") or []
     if not items:
@@ -71,6 +98,7 @@ def parse_subscription_v2(token: str, body: dict[str, Any]) -> VerifiedStorePurc
         account_token=account.lower() if account else None,
         linked_previous_id=body.get("linkedPurchaseToken"),
         needs_acknowledgement=body.get("acknowledgementState") == "ACKNOWLEDGEMENT_STATE_PENDING",
+        renewal_price=_renewal_price(item),
     )
 
 
