@@ -97,7 +97,9 @@ _MOMENT = (
     rf"(?:{_DAY}[./-](?:(?:19|20)[0-9][0-9]|[0-9][0-9])|(?:19|20)[0-9][0-9]-[0-9][0-9]-[0-9][0-9]"
     rf"|{_DAY}|(?:[01]?[0-9]|2[0-3])\.[0-5][0-9])"
 )
-_WHEN = re.compile(rf"{_MOMENT}(?:(?:\s+|\s*[/-]\s*){_MOMENT})*")
+# At most eight of them: "10.10" reads both as a day and as a time, so without a limit the
+# ways to read a row double at every step and one message keeps the server busy for hours.
+_WHEN = re.compile(rf"{_MOMENT}(?:(?:\s+|\s*[/-]\s*){_MOMENT}){{0,7}}")
 _CLOCK = re.compile(r"(?<=[0-9]):(?=[0-9])")
 # A short link without "http": "bit.ly/abc", "t.me/name".
 _SHORT_LINK = re.compile(r"\b[a-z0-9-]{1,63}\.[a-z]{2,10}/[a-z0-9]", re.IGNORECASE)

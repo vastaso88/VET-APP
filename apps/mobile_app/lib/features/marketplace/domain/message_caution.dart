@@ -15,7 +15,9 @@ const _moment = '(?:$_day'
     r'[./-](?:(?:19|20)[0-9][0-9]|[0-9][0-9])|(?:19|20)[0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
     '|$_day'
     r'|(?:[01]?[0-9]|2[0-3])\.[0-5][0-9])';
-final _when = RegExp('^$_moment(?:(?:\\s+|\\s*[/-]\\s*)$_moment)*\$');
+// At most eight of them: "10.10" reads both as a day and as a time, so without a
+// limit the ways to read a row double at every step.
+final _when = RegExp('^$_moment(?:(?:\\s+|\\s*[/-]\\s*)$_moment){0,7}\$');
 final _clock = RegExp(r'(?<=[0-9]):(?=[0-9])');
 final _edges = RegExp(r'^[ \n./-]+|[ \n./-]+$');
 // A short link without "http": "bit.ly/abc", "t.me/name".

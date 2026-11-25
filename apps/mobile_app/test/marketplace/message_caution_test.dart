@@ -22,4 +22,18 @@ void main() {
   for (final text in read('fine')) {
     test('an ordinary message: $text', () => expect(messageNeedsCaution(text), isFalse));
   }
+
+  test('a long row of dates that ends badly is read quickly', () {
+    for (final moment in ['10.10', '1.1', '10/10', '10.10.10']) {
+      for (final gap in [' ', '-', ' - ', '/']) {
+        for (final count in [9, 40, 160]) {
+          final row = List.filled(count, moment).join(gap);
+          final text = '${row.length > 990 ? row.substring(0, 990) : row} 99';
+          final watch = Stopwatch()..start();
+          messageNeedsCaution(text);
+          expect(watch.elapsedMilliseconds, lessThan(500), reason: text);
+        }
+      }
+    }
+  });
 }

@@ -121,3 +121,15 @@ def test_a_long_message_is_read_quickly(unit: str) -> None:
     started = time.perf_counter()
     needs_caution(text)
     assert time.perf_counter() - started < 0.1
+
+
+@pytest.mark.parametrize("gap", [" ", "-", " - ", "/", "   "])
+@pytest.mark.parametrize("moment", ["10.10", "1.1", "10/10", "1-1-11", "10.10.10", "11/11/2011"])
+def test_a_long_row_of_dates_that_ends_badly_is_read_quickly(moment: str, gap: str) -> None:
+    # A row that is not a row of dates only at its very end: every way to read it is tried.
+    for count in (6, 9, 40, 160):
+        row = gap.join([moment] * count)[:990]
+        for text in (row + " 99", row + gap + "9", (row[:70] + " 99 a ") * 12):
+            started = time.perf_counter()
+            needs_caution(text[:1000])
+            assert time.perf_counter() - started < 0.5
