@@ -60,6 +60,20 @@ void main() {
       expect(isShownInSmallUnit(1, UnitSystem.metric), isFalse);
     });
 
+    test('a dog or a cat is always in kilos, a small animal in grams', () {
+      expect(formatMeasuredWeight(0.6, UnitSystem.metric, alwaysKg: true), '0,6 kg');
+      expect(formatMeasuredWeight(0.095, UnitSystem.metric, alwaysKg: true), '0,095 kg');
+      expect(formatMeasuredWeight(0.6, UnitSystem.metric), '600 g');
+      expect(formatWeightChange(0.04, UnitSystem.metric, alwaysKg: true), '+0,04 kg');
+      expect(weightLabelIn('600 g', UnitSystem.metric, alwaysKg: true), '0,6 kg');
+      expect(weightLabelIn('380 g', UnitSystem.metric), '380 g');
+      expect(weightLabelIn('17,8 kg', UnitSystem.metric), '17,8 kg');
+      expect(weightLabelIn('5,1 kg', UnitSystem.us), '11,24 lb');
+      expect(weightLabelIn('boh', UnitSystem.us), 'boh');
+      expect(weightChartUnit(0.6, UnitSystem.metric, alwaysKg: true), WeightUnit.kg);
+      expect(isShownInSmallUnit(0.6, UnitSystem.metric, alwaysKg: true), isFalse);
+    });
+
     test('twenty times the known weight is a likely slip, a growing puppy is not', () {
       expect(isWeightJump(385, 0.38), isTrue);
       expect(isWeightJump(0.012, 12), isTrue);

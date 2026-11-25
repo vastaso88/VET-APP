@@ -59,17 +59,6 @@ double kgToDisplay(double kg, UnitSystem system) => system.usesPounds ? kg / _kg
 double displayToKg(double value, UnitSystem system) =>
     system.usesPounds ? value * _kgPerPound : value;
 
-/// "17,8 kg" or "39,2 lb".
-String formatWeightIn(double kg, UnitSystem system) =>
-    '${formatDecimal(kgToDisplay(kg, system))} ${system.usesPounds ? 'lb' : 'kg'}';
-
-/// Re-renders a stored weight label ("17,8 kg") in the chosen system.
-/// Unreadable labels are returned untouched.
-String weightLabelIn(String storedLabel, UnitSystem system) {
-  final kg = parseWeightLabelKg(storedLabel);
-  return kg == null ? storedLabel : formatWeightIn(kg, system);
-}
-
 /// The kilograms inside a stored label such as "17,8 kg" (or "420 g", which
 /// is 0,42 kg).
 double? parseWeightLabelKg(String label) {

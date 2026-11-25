@@ -9,7 +9,7 @@ import '../../../monitoring/data/weight_measurements_repository.dart';
 import '../../../monitoring/domain/body_condition.dart';
 import '../../../monitoring/domain/body_condition_guide.dart';
 import '../../../settings/data/unit_settings_store.dart';
-import '../../../settings/domain/unit_conversion.dart';
+import '../../../monitoring/domain/weight_units.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/pet_details.dart';
 import '../../domain/pet_format.dart';
@@ -34,7 +34,11 @@ class PetDataSummaryRow extends StatelessWidget {
       if (pet.species != 'Pesce' && pet.sex.trim().isNotEmpty)
         localizedSexLabel(pet.sex),
       if (weight.isNotEmpty && speciesHasWeight(pet.species))
-        weightLabelIn(weight, UnitSettingsStore.instance.system),
+        weightLabelIn(
+          weight,
+          UnitSettingsStore.instance.system,
+          alwaysKg: isAlwaysWeighedInKg(pet.species, pet.breed),
+        ),
       if (pet.isSterilized == true && speciesHasNeutering(pet.species, breed: pet.breed))
         t.petsDataSummarySterilized,
     ];
@@ -235,7 +239,11 @@ class _PetDataPageState extends State<PetDataPage> {
           label: t.petsDataWeightLabel,
           value: _orNotProvided(
             context,
-            weight.isEmpty ? null : weightLabelIn(weight, UnitSettingsStore.instance.system),
+            weight.isEmpty ? null : weightLabelIn(
+          weight,
+          UnitSettingsStore.instance.system,
+          alwaysKg: isAlwaysWeighedInKg(pet.species, pet.breed),
+        ),
           ),
         ),
       // Corporatura exists only for species with a published guide.

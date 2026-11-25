@@ -98,8 +98,10 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
   /// The weight is typed in the unit it is shown in: grams (or ounces) for a light animal, so
   /// "385" is never 385 kg. With no weight yet, the species decides, as in the profile.
   late final bool _small = _knownKg > 0
-      ? isShownInSmallUnit(_knownKg, widget.system)
+      ? isShownInSmallUnit(_knownKg, widget.system, alwaysKg: _alwaysKg)
       : !widget.system.usesPounds && isWeighedInGrams(widget.pet.species, widget.pet.breed);
+
+  bool get _alwaysKg => isAlwaysWeighedInKg(widget.pet.species, widget.pet.breed);
 
   /// The birth date, only when it is a full date (day, month, year).
   DateTime? get _birthDate => parsePetBirthdayLabel(widget.pet.birthDateLabel);
@@ -166,8 +168,8 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         content: Text(l10n.monitoringWeightJump(
-          formatMeasuredWeight(typedKg, widget.system),
-          formatMeasuredWeight(_knownKg, widget.system),
+          formatMeasuredWeight(typedKg, widget.system, alwaysKg: _alwaysKg),
+          formatMeasuredWeight(_knownKg, widget.system, alwaysKg: _alwaysKg),
         )),
         actions: [
           TextButton(

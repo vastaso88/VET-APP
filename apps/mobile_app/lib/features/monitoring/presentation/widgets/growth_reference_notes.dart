@@ -23,14 +23,14 @@ String adultSizeLabel(AdultSizeClass sizeClass, UnitSystem system) {
   final from = sizeClass.fromKg;
   final to = sizeClass.toKg;
   if (from == null) {
-    return l10n.monitoringGrowthClassUnder(formatMeasuredWeight(to!, system));
+    return l10n.monitoringGrowthClassUnder(formatMeasuredWeight(to!, system, alwaysKg: true));
   }
   if (to == null) {
-    return l10n.monitoringGrowthClassOver(formatMeasuredWeight(from, system));
+    return l10n.monitoringGrowthClassOver(formatMeasuredWeight(from, system, alwaysKg: true));
   }
   return l10n.monitoringGrowthClassBetween(
-    formatMeasuredWeight(from, system),
-    formatMeasuredWeight(to, system),
+    formatMeasuredWeight(from, system, alwaysKg: true),
+    formatMeasuredWeight(to, system, alwaysKg: true),
   );
 }
 

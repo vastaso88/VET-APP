@@ -218,7 +218,7 @@ class WeightChartView extends StatelessWidget {
             '${context.l10n.monitoringTooltipAge(point.x.round())}'
         : formatAppDate(measurement.measuredOn, 'd MMM y');
     return LineTooltipItem(
-      '${formatMeasuredWeight(measurement.weightKg, system)}\n$when',
+      '${formatMeasuredWeight(measurement.weightKg, system, alwaysKg: data.alwaysKg)}\n$when',
       AppTextStyles.caption
           .copyWith(color: AppColors.onMedia, fontWeight: FontWeight.w700),
     );

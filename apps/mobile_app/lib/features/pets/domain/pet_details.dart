@@ -191,6 +191,13 @@ bool speciesHasVaccines(String? species, {String? breed}) {
 /// A weight is asked for every animal except fish (see `supportsWeightMonitoring`).
 bool speciesHasWeight(String? species) => species != 'Pesce';
 
+/// Dogs and cats are always weighed in kilos, kittens and puppies too (0,6 kg): owner decision
+/// of 25 November 2026. The other animals follow their weight.
+bool isAlwaysWeighedInKg(String? species, [String? breed]) => switch (petKindOf(species, breed)) {
+      PetKind.dog || PetKind.cat => true,
+      _ => false,
+    };
+
 /// Birds, small mammals, reptiles, amphibians and invertebrates are weighed
 /// in grams (a budgerigar is 35 g, not 0,035 kg). Rabbits, dogs, cats and
 /// the larger animals stay in kg; imperial owners keep their pounds.

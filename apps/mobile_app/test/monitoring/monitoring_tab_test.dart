@@ -145,7 +145,7 @@ void main() {
         tester.widget<Text>(find.byKey(const ValueKey('current-weight'))).data,
         '5,2 kg');
     expect(find.text('Misurato il 1 ott 2026'), findsOneWidget);
-    expect(find.text('+400 g dal 1 set'), findsOneWidget);
+    expect(find.text('+0,4 kg dal 1 set'), findsOneWidget);
     // The body condition is the last one that was recorded, with its date.
     expect(tester.widget<Text>(find.byKey(const ValueKey('current-bcs'))).data,
         '3/5 · Normale');

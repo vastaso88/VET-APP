@@ -15,6 +15,7 @@ import '../../../dog_walks/domain/walk_session.dart';
 import '../../../dog_walks/presentation/walk_labels.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_format.dart';
+import '../../../pets/domain/pet_details.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../../pets/presentation/widgets/pet_sections.dart';
 import '../../../settings/data/unit_settings_store.dart';
@@ -308,6 +309,7 @@ class _MonitoringTabState extends State<MonitoringTab> {
       now: _now,
       system: system,
       reference: reference,
+      alwaysKg: isAlwaysWeighedInKg(pet.species, pet.breed),
     );
     final byAge = chart?.mode == WeightChartMode.byAge;
     final l10n = context.l10n;
@@ -379,6 +381,7 @@ class _MonitoringTabState extends State<MonitoringTab> {
                 _HistoryRow(
                   measurement: measurement,
                   system: system,
+                  alwaysKg: isAlwaysWeighedInKg(pet.species, pet.breed),
                   onEdit: () => _editMeasurement(measurement),
                   onDelete: () => _deleteMeasurement(measurement),
                 ),
@@ -413,6 +416,7 @@ class _CurrentWeightCard extends StatelessWidget {
     final withCondition = latestWithBodyCondition(measurements);
     final change = weightChangeKg(measurements);
     final sorted = sortedByDate(measurements);
+    final alwaysKg = isAlwaysWeighedInKg(pet.species, pet.breed);
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -438,7 +442,7 @@ class _CurrentWeightCard extends StatelessWidget {
                     style: AppTextStyles.caption),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  formatMeasuredWeight(latest.weightKg, system),
+                  formatMeasuredWeight(latest.weightKg, system, alwaysKg: alwaysKg),
                   key: const ValueKey('current-weight'),
                   style: AppTextStyles.display,
                 ),
@@ -453,7 +457,7 @@ class _CurrentWeightCard extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 2),
                     child: Text(
                       l10n.monitoringChangeSince(
-                        formatWeightChange(change, system),
+                        formatWeightChange(change, system, alwaysKg: alwaysKg),
                         formatAppDate(
                             sorted[sorted.length - 2].measuredOn, 'd MMM'),
                       ),
@@ -513,12 +517,14 @@ class _HistoryRow extends StatelessWidget {
   const _HistoryRow({
     required this.measurement,
     required this.system,
+    required this.alwaysKg,
     required this.onEdit,
     required this.onDelete,
   });
 
   final WeightMeasurement measurement;
   final UnitSystem system;
+  final bool alwaysKg;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -573,7 +579,7 @@ class _HistoryRow extends StatelessWidget {
                       ),
                     Flexible(
                       child: Text(
-                        formatMeasuredWeight(measurement.weightKg, system),
+                        formatMeasuredWeight(measurement.weightKg, system, alwaysKg: alwaysKg),
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.text,

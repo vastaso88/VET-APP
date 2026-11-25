@@ -43,8 +43,10 @@ WeightUnit weightEntryUnit(UnitSystem system, {bool small = false}) => switch ((
       (true, true) => WeightUnit.oz,
     };
 
-/// Whether [kg] is shown in the small unit: "420 g", "1 oz".
-bool isShownInSmallUnit(double kg, UnitSystem system) {
+/// Whether [kg] is shown in the small unit: "420 g", "1 oz". Never for an animal that is
+/// always weighed in kilos ([alwaysKg]: a dog, a cat).
+bool isShownInSmallUnit(double kg, UnitSystem system, {bool alwaysKg = false}) {
+  if (alwaysKg) return false;
   final small = weightEntryUnit(system, small: true).fromKg(kg).roundToDouble();
   final bigLimit = system.usesPounds ? _ouncesPerPound : 1000;
   return weightEntryUnit(system).fromKg(kg) < 1 && small < bigLimit;
@@ -58,9 +60,9 @@ bool isWeightJump(double typedKg, double knownKg) =>
 /// The unit a chart is drawn in: the entry unit, or the small one (g / oz)
 /// when even the heaviest weighing is under one unit - a budgie would
 /// otherwise sit on a "0,03" axis.
-WeightUnit weightChartUnit(double maxKg, UnitSystem system) {
+WeightUnit weightChartUnit(double maxKg, UnitSystem system, {bool alwaysKg = false}) {
   final big = weightEntryUnit(system);
-  if (big.fromKg(maxKg) >= 1) return big;
+  if (alwaysKg || big.fromKg(maxKg) >= 1) return big;
   return system.usesPounds ? WeightUnit.oz : WeightUnit.g;
 }
 
@@ -83,18 +85,27 @@ String weightInputText(double kg, UnitSystem system, {bool small = false}) =>
     formatDecimal(weightEntryUnit(system, small: small).fromKg(kg), digits: 3);
 
 /// "23 kg", "10,25 kg", "420 g", "22,5 lb" or "1 oz": the weight in the
-/// owner's system, small weights in grams / ounces.
-String formatMeasuredWeight(double kg, UnitSystem system) {
-  if (isShownInSmallUnit(kg, system)) {
+/// owner's system, small weights in grams / ounces. An animal that is always weighed in kilos
+/// ([alwaysKg]) keeps them: "0,6 kg" for a kitten.
+String formatMeasuredWeight(double kg, UnitSystem system, {bool alwaysKg = false}) {
+  if (isShownInSmallUnit(kg, system, alwaysKg: alwaysKg)) {
     final small = weightEntryUnit(system, small: true);
     return '${small.fromKg(kg).round()} ${small.label}';
   }
   final big = weightEntryUnit(system);
-  return '${formatDecimal(big.fromKg(kg), digits: 2)} ${big.label}';
+  final value = big.fromKg(kg);
+  return '${formatDecimal(value, digits: value.abs() < 1 ? 3 : 2)} ${big.label}';
+}
+
+/// A stored weight label ("17,8 kg", "420 g") in the owner's system; an unreadable one is
+/// returned untouched.
+String weightLabelIn(String storedLabel, UnitSystem system, {bool alwaysKg = false}) {
+  final kg = parseWeightLabelKg(storedLabel);
+  return kg == null ? storedLabel : formatMeasuredWeight(kg, system, alwaysKg: alwaysKg);
 }
 
 /// A signed difference between two weights: "+0,5 kg", "-120 g".
-String formatWeightChange(double deltaKg, UnitSystem system) {
+String formatWeightChange(double deltaKg, UnitSystem system, {bool alwaysKg = false}) {
   final sign = deltaKg < 0 ? '-' : '+';
-  return '$sign${formatMeasuredWeight(deltaKg.abs(), system)}';
+  return '$sign${formatMeasuredWeight(deltaKg.abs(), system, alwaysKg: alwaysKg)}';
 }

@@ -73,9 +73,13 @@ class WeightChartData {
     required this.xInterval,
     required this.yInterval,
     this.reference,
+    this.alwaysKg = false,
   });
 
   final WeightChartMode mode;
+
+  /// A dog or a cat: its weights are always in kilos.
+  final bool alwaysKg;
 
   /// Reference bands behind the points; only in [WeightChartMode.byAge].
   final ChartReference? reference;
@@ -109,6 +113,7 @@ WeightChartData? buildWeightChart({
   required DateTime now,
   required UnitSystem system,
   GrowthReference? reference,
+  bool alwaysKg = false,
 }) {
   var sorted = sortedByDate(measurements);
   final bandMonths = reference == null
@@ -125,8 +130,11 @@ WeightChartData? buildWeightChart({
   }
   if (sorted.isEmpty) return null;
 
-  final unit =
-      weightChartUnit(sorted.map((m) => m.weightKg).reduce(math.max), system);
+  final unit = weightChartUnit(
+    sorted.map((m) => m.weightKg).reduce(math.max),
+    system,
+    alwaysKg: alwaysKg,
+  );
   final first = sorted.first.measuredOn;
   double xOf(WeightMeasurement m) => byAge
       ? ageInMonths(birthDate!, m.measuredOn)
@@ -205,6 +213,7 @@ WeightChartData? buildWeightChart({
     xInterval: xInterval,
     yInterval: yInterval,
     reference: chartReference,
+    alwaysKg: alwaysKg,
   );
 }
 

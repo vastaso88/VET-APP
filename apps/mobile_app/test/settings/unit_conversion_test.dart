@@ -24,14 +24,7 @@ void main() {
 
   group('weight', () {
     test('kg to lb and back', () {
-      expect(formatWeightIn(17.8, UnitSystem.metric), '17,8 kg');
-      expect(formatWeightIn(10, UnitSystem.us), '22 lb');
       expect(displayToKg(22.0462, UnitSystem.uk), closeTo(10, 0.001));
-    });
-
-    test('re-renders a stored label', () {
-      expect(weightLabelIn('5,1 kg', UnitSystem.us), '11,2 lb');
-      expect(weightLabelIn('boh', UnitSystem.us), 'boh');
     });
   });
 

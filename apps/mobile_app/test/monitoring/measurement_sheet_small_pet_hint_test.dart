@@ -5,10 +5,10 @@ import 'package:vet_app_mobile/features/pets/domain/pet_models.dart';
 import 'package:vet_app_mobile/features/settings/domain/unit_system.dart';
 import 'package:vet_app_mobile/l10n/app_localizations.dart';
 
-PetProfile _pet(String weightLabel) => PetProfile(
+PetProfile _pet(String weightLabel, {String species = 'Rettili e anfibi'}) => PetProfile(
       id: 'p-1',
       name: 'Axel',
-      species: 'Rettili e anfibi',
+      species: species,
       breed: '',
       birthDateLabel: '',
       sex: 'Maschio',
@@ -100,5 +100,12 @@ void main() {
     await tester.tap(find.widgetWithText(TextButton, 'Salva'));
     await tester.pumpAndSettle();
     expect(_saved.single!.weightKg, 385);
+  });
+
+  testWidgets('a kitten is weighed in kilos', (tester) async {
+    await _open(tester, _pet('600 g', species: 'Gatto'));
+    expect(find.text('Peso (kg)'), findsOneWidget);
+    await _type(tester, '0,62');
+    expect(_saved.single!.weightKg, 0.62);
   });
 }
