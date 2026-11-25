@@ -32,6 +32,7 @@ from packages.infrastructure.events.curated_events import (  # noqa: E402
     SOURCE_KEY,
     curated_event_to_row,
     load_curated_events,
+    with_the_same_columns,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -93,7 +94,9 @@ def main() -> int:
 
     client = build_client()
     imported_at = now_iso()
-    rows = [curated_event_to_row(event, now_iso=imported_at) for event in events]
+    rows = with_the_same_columns(
+        [curated_event_to_row(event, now_iso=imported_at) for event in events]
+    )
     try:
         client.table("events").upsert(rows, on_conflict="slug").execute()
     except Exception as exc:

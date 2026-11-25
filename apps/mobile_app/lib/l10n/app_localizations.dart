@@ -6614,6 +6614,24 @@ abstract class AppLocalizations {
   /// **'Scegli le date'**
   String get eventsSuggestPickDates;
 
+  /// No description provided for @eventsSuggestFieldCountry.
+  ///
+  /// In it, this message translates to:
+  /// **'Paese'**
+  String get eventsSuggestFieldCountry;
+
+  /// No description provided for @eventsSuggestFieldRegion.
+  ///
+  /// In it, this message translates to:
+  /// **'Regione (facoltativa)'**
+  String get eventsSuggestFieldRegion;
+
+  /// No description provided for @eventsSuggestRegionNone.
+  ///
+  /// In it, this message translates to:
+  /// **'Non indicata'**
+  String get eventsSuggestRegionNone;
+
   /// No description provided for @eventsSuggestFieldCity.
   ///
   /// In it, this message translates to:
@@ -6727,6 +6745,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Mostriamo solo gli eventi del tuo paese, quello della lingua scelta nell\'app.'**
   String get eventsCountryOnlyNote;
+
+  /// No description provided for @eventsScopeNote.
+  ///
+  /// In it, this message translates to:
+  /// **'Mostriamo gli eventi del tuo paese (quello della lingua scelta nell\'app), quelli internazionali e quelli oltre confine entro {distance} dalla località che hai scelto in Impostazioni.'**
+  String eventsScopeNote(String distance);
 
   /// No description provided for @eventsLevelLocal.
   ///
@@ -7235,7 +7259,7 @@ abstract class AppLocalizations {
   /// No description provided for @petNewsEmptyLocal.
   ///
   /// In it, this message translates to:
-  /// **'Per ora non ci sono notizie nella tua lingua e per il tuo paese. Non mostriamo notizie di altri paesi.'**
+  /// **'Per il tuo paese non abbiamo ancora notizie.'**
   String get petNewsEmptyLocal;
 
   /// No description provided for @petNewsCategoryAll.

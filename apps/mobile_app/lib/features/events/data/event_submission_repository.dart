@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../billing/data/subscription_required_signal.dart';
@@ -66,6 +67,7 @@ class EventSubmissionRepository {
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $token',
+              'Accept-Language': AppLocaleHolder.current.languageCode,
             },
             body: jsonEncode(draft.toJson()),
           )
@@ -80,8 +82,11 @@ class EventSubmissionRepository {
         return const EventSubmissionLimitReached();
       }
       if (response.statusCode == 400) {
-        final detail = (jsonDecode(response.body) as Map<String, dynamic>)['detail'];
-        if (detail is String && detail.isNotEmpty) return EventSubmissionRejected(detail);
+        // `message` is in the app's language; `detail` is the Italian sentence, all an
+        // older server sends.
+        final body = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+        final reason = body['message'] ?? body['detail'];
+        if (reason is String && reason.isNotEmpty) return EventSubmissionRejected(reason);
       }
       return const EventSubmissionFailed();
     } on TimeoutException {

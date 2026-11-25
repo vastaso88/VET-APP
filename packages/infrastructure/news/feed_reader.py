@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import logging
 import urllib.request
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from urllib.error import URLError
 
 from packages.core.application.ports.pet_news import PetNewsUnavailableError
 from packages.core.domain.pet_news.models import RawNewsEntry
-from packages.infrastructure.news.feeds import FEEDS_BY_AUDIENCE, NewsFeed
+from packages.infrastructure.news.feeds import FEEDS, NewsFeed, feeds_of
 from packages.infrastructure.news.rss import MAX_FEED_BYTES, FeedError, parse_feed
 
 logger = logging.getLogger(__name__)
@@ -39,16 +39,19 @@ class HttpPetNewsFeedReader:
         *,
         fetch: FetchBytes = fetch_bytes,
         disabled_feed_keys: frozenset[str] = frozenset(),
-        feeds_by_audience: Mapping[str, Sequence[NewsFeed]] | None = None,
+        feeds: Sequence[NewsFeed] = FEEDS,
     ) -> None:
         self._fetch = fetch
         self._disabled = disabled_feed_keys
-        self._feeds_by_audience = feeds_by_audience or FEEDS_BY_AUDIENCE
+        self._feeds = feeds
 
-    def read_all(self, key: str) -> list[RawNewsEntry]:
-        feeds = [f for f in self._feeds_by_audience.get(key, ()) if f.key not in self._disabled]
+    def has_feeds(self, country: str) -> bool:
+        return bool(feeds_of(country, self._feeds))
+
+    def read_all(self, country: str) -> list[RawNewsEntry]:
+        feeds = [f for f in feeds_of(country, self._feeds) if f.key not in self._disabled]
         if not feeds:
-            raise PetNewsUnavailableError(f"nessun feed attivo per '{key}'")
+            raise PetNewsUnavailableError(f"nessun feed attivo per '{country}'")
         with ThreadPoolExecutor(max_workers=min(8, len(feeds))) as pool:
             results = list(pool.map(self._read_one, feeds))
         if all(result is None for result in results):

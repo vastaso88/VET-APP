@@ -26,7 +26,7 @@ from packages.core.domain.pet_news.relevance import categories_for
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_AUDIENCE = "it"
+DEFAULT_COUNTRY = "IT"
 # After a failed read of the feeds, do not try again for this long: a dead
 # source must not make every request wait for its timeout.
 _RETRY_AFTER_FAILURE = timedelta(minutes=5)
@@ -42,6 +42,8 @@ class PetNewsResult:
     updated_at: datetime | None
     # True when the feeds could not be read and an older copy is served.
     stale: bool
+    # False: there is no feed of that country. The news of another one are never a fallback.
+    country_has_news: bool = True
 
 
 def classify_entries(raw_entries: list[RawNewsEntry]) -> list[PetNewsEntry]:
@@ -66,9 +68,9 @@ def classify_entries(raw_entries: list[RawNewsEntry]) -> list[PetNewsEntry]:
 
 
 class GetPetNewsService:
-    """Serves the headlines from a shared cache, refreshing it from the feeds
-    when it is older than `ttl`. If the feeds do not answer, the last good
-    snapshot keeps being served."""
+    """Serves the headlines of one country from a shared cache, refreshing it
+    from the feeds when it is older than `ttl`. If the feeds do not answer, the
+    last good snapshot keeps being served."""
 
     def __init__(
         self,
@@ -90,42 +92,48 @@ class GetPetNewsService:
         *,
         categories: list[str] | None = None,
         limit: int = 12,
-        audience: str = DEFAULT_AUDIENCE,
+        country: str = DEFAULT_COUNTRY,
     ) -> PetNewsResult:
+        country = country.strip().upper()
+        if not self._reader.has_feeds(country):
+            return PetNewsResult(
+                categories={}, updated_at=None, stale=False, country_has_news=False
+            )
         wanted = [c for c in (categories or NEWS_CATEGORIES) if c in NEWS_CATEGORIES]
-        snapshot, stale = self._current(audience)
+        snapshot, stale = self._current(country)
         return PetNewsResult(
             categories={c: snapshot.for_category(c, limit) for c in wanted} if snapshot else {},
             updated_at=snapshot.fetched_at if snapshot else None,
             stale=stale,
         )
 
-    def _current(self, audience: str) -> tuple[PetNewsSnapshot | None, bool]:
+    def _current(self, country: str) -> tuple[PetNewsSnapshot | None, bool]:
         now = self._clock()
-        snapshot = self._load(audience)
+        key = country.lower()  # of the snapshot ("it" since before there were countries)
+        snapshot = self._load(key)
         if snapshot is not None and now - snapshot.fetched_at < self._ttl:
             return snapshot, False
-        failed_at = self._last_failure.get(audience)
+        failed_at = self._last_failure.get(key)
         pause = _RETRY_AFTER_FAILURE if snapshot is not None else _RETRY_AFTER_FAILURE_NO_COPY
         if failed_at is not None and now - failed_at < pause:
             return snapshot, snapshot is not None
 
         with self._lock:
             # Another request may have refreshed it while this one waited.
-            snapshot = self._load(audience) or snapshot
+            snapshot = self._load(key) or snapshot
             if snapshot is not None and now - snapshot.fetched_at < self._ttl:
                 return snapshot, False
             try:
-                fresh = classify_entries(self._reader.read_all(audience))
+                fresh = classify_entries(self._reader.read_all(country))
                 if not fresh:
                     raise PetNewsUnavailableError("i feed non hanno restituito notizie utili")
             except PetNewsUnavailableError as exc:
                 logger.warning("pet_news refresh failed (%s): serving the last snapshot", exc)
-                self._last_failure[audience] = now
+                self._last_failure[key] = now
                 return snapshot, snapshot is not None
-            self._last_failure.pop(audience, None)
+            self._last_failure.pop(key, None)
             rebuilt = PetNewsSnapshot(
-                key=audience,
+                key=key,
                 fetched_at=now,
                 items=merge_entries(fresh, snapshot.items if snapshot else [], now=now),
             )
@@ -135,9 +143,9 @@ class GetPetNewsService:
                 logger.exception("pet_news snapshot could not be saved")
             return rebuilt, False
 
-    def _load(self, audience: str) -> PetNewsSnapshot | None:
+    def _load(self, key: str) -> PetNewsSnapshot | None:
         try:
-            return self._cache.get(audience)
+            return self._cache.get(key)
         except Exception:  # noqa: BLE001 - treat an unreadable cache as an empty one
             logger.exception("pet_news snapshot could not be read")
             return None

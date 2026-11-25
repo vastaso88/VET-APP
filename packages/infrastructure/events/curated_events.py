@@ -19,17 +19,16 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
+from pydantic import ValidationError
+
+from packages.core.domain.events.regions import COUNTRIES, DEFAULT_COUNTRY, regions_of
 from packages.core.domain.events.rules import (
     BLOCKED_SOURCE_DOMAINS,
     EVENT_TYPES,
     contains_personal_data,
+    is_valid_subdivision,
 )
-from packages.infrastructure.events.event_regions import (
-    COUNTRIES,
-    DEFAULT_COUNTRY,
-    ITALIAN_REGIONS,
-    REGIONS_BY_COUNTRY,
-)
+from packages.core.domain.geo.models import Coordinates
 
 LEVELS = ("local", "provincial", "regional", "national", "international")
 
@@ -52,14 +51,7 @@ _LEVEL_CAP_WITHOUT_DOCUMENT = {"organizer_claim": "regional", "default": "local"
 
 STATUSES = frozenset({"published", "cancelled", "postponed", "rejected", "draft"})
 
-# Italian regions, kept under the old name for callers that only deal with Italy.
-REGIONS = ITALIAN_REGIONS
-
 _SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
-_PROVINCE = re.compile(r"^[A-Z]{2}$")
-# Subdivision code of the other countries (US/AU state, DE Land, FR département,
-# ES province): one to three upper-case letters or digits ("NSW", "BY", "75", "2A").
-_SUBDIVISION = re.compile(r"^[A-Z0-9]{1,3}$")
 
 DEFAULT_LICENSE = "fatti pubblici verificati sul sito dell'organizzatore"
 SOURCE_KEY = "curated"
@@ -88,6 +80,9 @@ class CuratedEvent:
     venue_name: str | None = None
     organizer_name: str | None = None
     description: str | None = None
+    # Where it takes place, for the owners just over the border (rule of `abroad.py`). Optional:
+    # an event without it is never shown in another country, unless it is international.
+    place: Coordinates | None = None
 
 
 def _text(raw: dict[str, Any], key: str, *, required: bool = False) -> str | None:
@@ -108,6 +103,19 @@ def _date(raw: dict[str, Any], key: str) -> date:
         return date.fromisoformat(value)
     except ValueError as exc:
         raise CuratedEventError(f"{key} non è una data ISO (AAAA-MM-GG): {value!r}") from exc
+
+
+def _place(raw: dict[str, Any]) -> Coordinates | None:
+    latitude, longitude = raw.get("latitude"), raw.get("longitude")
+    if latitude is None and longitude is None:
+        return None
+    try:
+        return Coordinates.model_validate({"latitude": latitude, "longitude": longitude})
+    except ValidationError as exc:
+        raise CuratedEventError(
+            "latitude e longitude vanno date insieme, in gradi decimali "
+            "(da -90 a 90 e da -180 a 180)"
+        ) from exc
 
 
 def _reject_personal_data(key: str, value: str | None) -> None:
@@ -185,19 +193,16 @@ def validate_curated_event(raw: object, *, today: date | None = None) -> Curated
         )
 
     region = _text(raw, "region")
-    if region is not None and region not in REGIONS_BY_COUNTRY[country]:
+    if region is not None and region not in regions_of(country):
         raise CuratedEventError(f"region non è una regione nota per il paese {country}: {region!r}")
     province_code = _text(raw, "province_code")
-    if province_code is not None:
-        if country == DEFAULT_COUNTRY and not _PROVINCE.match(province_code):
-            raise CuratedEventError(
-                f"province_code deve essere una sigla di due lettere maiuscole: {province_code!r}"
-            )
-        if country != DEFAULT_COUNTRY and not _SUBDIVISION.match(province_code):
-            raise CuratedEventError(
-                f"province_code deve essere un codice di 1-3 lettere o cifre maiuscole: "
-                f"{province_code!r}"
-            )
+    if province_code is not None and not is_valid_subdivision(country, province_code):
+        expected = (
+            "una sigla di due lettere maiuscole"
+            if country == DEFAULT_COUNTRY
+            else "un codice di 1-3 lettere o cifre maiuscole"
+        )
+        raise CuratedEventError(f"province_code deve essere {expected}: {province_code!r}")
     city = _text(raw, "city")
     if status in ("published", "cancelled", "postponed") and not (city or region):
         raise CuratedEventError("serve almeno city o region per mostrare dove si svolge")
@@ -231,6 +236,7 @@ def validate_curated_event(raw: object, *, today: date | None = None) -> Curated
         venue_name=venue_name,
         organizer_name=organizer_name,
         description=description,
+        place=_place(raw),
     )
 
 
@@ -245,8 +251,12 @@ def curated_event_to_row(
     (`verified_on`, the day the date and link were checked on the official
     site), not the day the import ran. `source` and `license_text` name where
     the event came from when it is not a hand-curated file (feed importers,
-    suggestions of the users)."""
+    suggestions of the users). The coordinates are written only when known, so
+    an import works on a database without their columns
+    (scripts/setup/events_abroad.sql)."""
+    place = event.place
     return {
+        **({"latitude": place.latitude, "longitude": place.longitude} if place else {}),
         "slug": event.slug,
         "title": event.title,
         "description": event.description,
@@ -272,6 +282,14 @@ def curated_event_to_row(
         ).isoformat(),
         "updated_at": now_iso,
     }
+
+
+def with_the_same_columns(rows: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The rows of one import, written together: a list whose rows have different keys is not a
+    valid bulk write. When one event has coordinates the others say they have none; when nobody
+    has them the columns are not named at all."""
+    columns = list(dict.fromkeys(column for row in rows for column in row))
+    return [{column: row.get(column) for column in columns} for row in rows]
 
 
 def load_curated_events(

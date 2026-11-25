@@ -4,13 +4,15 @@ from typing import Any
 
 import pytest
 
+from packages.core.domain.events.regions import COUNTRIES, regions_of
+from packages.core.domain.territory.rules import KNOWN_COUNTRIES
 from packages.infrastructure.events.curated_events import (
     CuratedEventError,
     curated_event_to_row,
     load_curated_events,
     validate_curated_event,
+    with_the_same_columns,
 )
-from packages.infrastructure.events.event_regions import COUNTRIES, REGIONS_BY_COUNTRY
 
 TODAY = date(2026, 10, 14)
 EXAMPLES = Path(__file__).resolve().parents[2] / "scripts" / "events" / "examples"
@@ -52,15 +54,46 @@ def test_the_country_is_normalised_and_written_to_the_row() -> None:
     assert curated_event_to_row(event, now_iso="2026-10-14T00:00:00+00:00")["country"] == "GB"
 
 
+def test_one_import_writes_the_same_columns_in_every_row() -> None:
+    now = "2026-10-14T00:00:00+00:00"
+    plain = curated_event_to_row(validate_curated_event(_raw(), today=TODAY), now_iso=now)
+    placed = curated_event_to_row(
+        validate_curated_event(_raw(slug="placed", latitude=51.5, longitude=-0.1), today=TODAY),
+        now_iso=now,
+    )
+
+    mixed = with_the_same_columns([plain, placed])
+
+    assert mixed[0].keys() == mixed[1].keys()
+    assert [(row["latitude"], row["longitude"]) for row in mixed] == [(None, None), (51.5, -0.1)]
+    # Nobody has coordinates: the columns may not exist yet, so they are not named.
+    assert with_the_same_columns([plain, plain]) == [plain, plain]
+
+
+@pytest.mark.parametrize(
+    "wrong",
+    [
+        {"latitude": 45.0},
+        {"longitude": 9.0},
+        {"latitude": 91, "longitude": 9},
+        {"latitude": 45, "longitude": 181},
+        {"latitude": "nord", "longitude": 9},
+    ],
+)
+def test_coordinates_are_both_or_none_and_in_range(wrong: dict[str, Any]) -> None:
+    with pytest.raises(CuratedEventError, match="latitude"):
+        validate_curated_event(_raw(**wrong), today=TODAY)
+
+
 def test_an_unhandled_country_is_refused() -> None:
     with pytest.raises(CuratedEventError, match="country"):
         validate_curated_event(_raw(country="ZZ"), today=TODAY)
 
 
 def test_every_variant_country_has_regions() -> None:
-    assert {"IT", "GB", "US", "AU", "DE", "FR", "ES"} <= COUNTRIES
-    for country in COUNTRIES:
-        assert REGIONS_BY_COUNTRY[country], country
+    assert COUNTRIES == KNOWN_COUNTRIES
+    for country in COUNTRIES - {"AT", "BE", "CH"}:
+        assert regions_of(country), country
 
 
 @pytest.mark.parametrize(

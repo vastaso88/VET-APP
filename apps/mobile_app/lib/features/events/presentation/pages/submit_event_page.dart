@@ -4,13 +4,17 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../l10n/regional_defaults.dart' show appCountryName;
 import '../../../../shared/date/calendar_days.dart';
+import '../../../location/data/location_preference_store.dart';
+import '../../../territory/domain/territory.dart';
 import '../../data/event_submission_repository.dart';
 import '../../domain/event_entry.dart';
+import '../../domain/event_regions.dart';
 import '../../domain/event_submission.dart';
 import '../event_labels.dart';
 
-/// "Segnala un evento": titolo, tipo, date, luogo e link. L'invio va in
+/// "Segnala un evento": titolo, tipo, date, paese, luogo e link. L'invio va in
 /// moderazione (non compare subito nell'elenco) e non raccoglie dati di terzi.
 class SubmitEventPage extends StatefulWidget {
   const SubmitEventPage({super.key, this.repository, this.now = DateTime.now});
@@ -34,6 +38,9 @@ class _SubmitEventPageState extends State<SubmitEventPage> {
       widget.repository ?? EventSubmissionRepository();
 
   String _eventType = eventTypeCodes.first;
+  late String _country =
+      defaultEventCountry(LocationPreferenceStore.instance.preference.homeCountryCode);
+  String? _region;
   DateTimeRange? _dates;
   bool _datesMissing = false;
   bool _sending = false;
@@ -67,6 +74,18 @@ class _SubmitEventPageState extends State<SubmitEventPage> {
     });
   }
 
+  /// Only Italy writes the two letters of the province.
+  bool get _asksProvince => _country == sourceTerritoryCode;
+
+  void _chooseCountry(String? country) {
+    if (country == null || country == _country) return;
+    setState(() {
+      _country = country;
+      _region = null;
+      _province.clear();
+    });
+  }
+
   String? _optional(TextEditingController controller) {
     final value = controller.text.trim();
     return value.isEmpty ? null : value;
@@ -87,6 +106,8 @@ class _SubmitEventPageState extends State<SubmitEventPage> {
         eventType: _eventType,
         startsOn: dayOnly(_dates!.start),
         endsOn: dayOnly(_dates!.end),
+        country: _country,
+        region: _region,
         city: _city.text.trim(),
         provinceCode: _optional(_province)?.toUpperCase(),
         venueName: _optional(_venue),
@@ -121,6 +142,10 @@ class _SubmitEventPageState extends State<SubmitEventPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final countries = [
+      for (final code in knownTerritoryCodes) (code: code, name: appCountryName(code) ?? code),
+    ]..sort((a, b) => a.name.compareTo(b.name));
+    final regions = eventRegionsByCountry[_country] ?? const <String>[];
     String? required(String? value) =>
         value == null || value.trim().isEmpty ? l10n.eventsSuggestRequired : null;
 
@@ -183,31 +208,65 @@ class _SubmitEventPageState extends State<SubmitEventPage> {
                   ),
                 ),
               const SizedBox(height: AppSpacing.md),
+              DropdownButtonFormField<String>(
+                key: const ValueKey('event-country'),
+                initialValue: _country,
+                isExpanded: true,
+                decoration: InputDecoration(labelText: l10n.eventsSuggestFieldCountry),
+                items: [
+                  for (final country in countries)
+                    DropdownMenuItem(value: country.code, child: Text(country.name)),
+                ],
+                onChanged: _chooseCountry,
+              ),
+              if (regions.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.md),
+                DropdownButtonFormField<String?>(
+                  key: ValueKey('event-region-$_country'),
+                  initialValue: _region,
+                  isExpanded: true,
+                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldRegion),
+                  items: [
+                    DropdownMenuItem<String?>(child: Text(l10n.eventsSuggestRegionNone)),
+                    for (final region in regions)
+                      DropdownMenuItem<String?>(value: region, child: Text(region)),
+                  ],
+                  onChanged: (value) => setState(() => _region = value),
+                ),
+              ],
+              const SizedBox(height: AppSpacing.md),
               TextFormField(
+                // Keys: the fields below keep their own state when the region or the
+                // province comes and goes with the country.
+                key: const ValueKey('event-city'),
                 controller: _city,
                 maxLength: 80,
                 textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(labelText: l10n.eventsSuggestFieldCity),
                 validator: required,
               ),
+              if (_asksProvince)
+                TextFormField(
+                  key: const ValueKey('event-province'),
+                  controller: _province,
+                  maxLength: 2,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldProvince),
+                  validator: (value) {
+                    final text = value?.trim() ?? '';
+                    return text.isNotEmpty && text.length != 2
+                        ? l10n.eventsSuggestInvalidProvince
+                        : null;
+                  },
+                ),
               TextFormField(
-                controller: _province,
-                maxLength: 2,
-                textCapitalization: TextCapitalization.characters,
-                decoration: InputDecoration(labelText: l10n.eventsSuggestFieldProvince),
-                validator: (value) {
-                  final text = value?.trim() ?? '';
-                  return text.isNotEmpty && text.length != 2
-                      ? l10n.eventsSuggestInvalidProvince
-                      : null;
-                },
-              ),
-              TextFormField(
+                key: const ValueKey('event-venue'),
                 controller: _venue,
                 maxLength: 80,
                 decoration: InputDecoration(labelText: l10n.eventsSuggestFieldVenue),
               ),
               TextFormField(
+                key: const ValueKey('event-link'),
                 controller: _link,
                 keyboardType: TextInputType.url,
                 decoration: InputDecoration(labelText: l10n.eventsSuggestFieldLink),

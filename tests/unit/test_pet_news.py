@@ -7,7 +7,7 @@ from packages.core.application.services.get_pet_news import GetPetNewsService, c
 from packages.core.domain.pet_news.models import PetNewsEntry, PetNewsSnapshot, RawNewsEntry
 from packages.core.domain.pet_news.relevance import categories_for
 from packages.infrastructure.news.feed_reader import HttpPetNewsFeedReader
-from packages.infrastructure.news.feeds import NewsFeed
+from packages.infrastructure.news.feeds import FEEDS, NewsFeed
 from packages.infrastructure.news.rss import FeedError, parse_feed
 from packages.infrastructure.persistence.in_memory_pet_news import InMemoryPetNewsCacheRepository
 
@@ -80,7 +80,10 @@ class _Reader:
         self.fail = fail
         self.calls = 0
 
-    def read_all(self, key: str) -> list[RawNewsEntry]:
+    def has_feeds(self, country: str) -> bool:
+        return country == "IT"
+
+    def read_all(self, country: str) -> list[RawNewsEntry]:
         self.calls += 1
         if self.fail:
             raise PetNewsUnavailableError("down")
@@ -206,27 +209,67 @@ def test_merge_dedups_and_expires() -> None:
 
 
 def test_feed_reader_tolerates_a_broken_feed() -> None:
-    feeds = {
-        "it": (
-            NewsFeed("ok", "Ok", "https://ok.test/f", "t"),
-            NewsFeed("bad", "Bad", "https://bad.test/f", "t"),
-        )
-    }
+    feeds = (
+        NewsFeed("ok", "Ok", "https://ok.test/f", "t", "IT"),
+        NewsFeed("bad", "Bad", "https://bad.test/f", "t", "IT"),
+    )
 
     def fetch(url: str) -> bytes:
         if "bad" in url:
             raise OSError("boom")
         return RSS
 
-    entries = HttpPetNewsFeedReader(fetch=fetch, feeds_by_audience=feeds).read_all("it")
+    entries = HttpPetNewsFeedReader(fetch=fetch, feeds=feeds).read_all("IT")
     assert [e.source for e in entries] == ["Ok"]
 
     def always_down(_url: str) -> bytes:
         raise OSError("down")
 
     with pytest.raises(PetNewsUnavailableError):
-        HttpPetNewsFeedReader(fetch=always_down, feeds_by_audience=feeds).read_all("it")
+        HttpPetNewsFeedReader(fetch=always_down, feeds=feeds).read_all("IT")
     with pytest.raises(PetNewsUnavailableError):
         HttpPetNewsFeedReader(
-            fetch=fetch, disabled_feed_keys=frozenset({"ok", "bad"}), feeds_by_audience=feeds
-        ).read_all("it")
+            fetch=fetch, disabled_feed_keys=frozenset({"ok", "bad"}), feeds=feeds
+        ).read_all("IT")
+
+
+def test_a_feed_is_read_only_for_its_own_country() -> None:
+    asked: list[str] = []
+
+    def fetch(url: str) -> bytes:
+        asked.append(url)
+        return RSS
+
+    reader = HttpPetNewsFeedReader(
+        fetch=fetch,
+        feeds=(
+            NewsFeed("it", "It", "https://it.test/f", "t", "IT"),
+            NewsFeed("fr", "Fr", "https://fr.test/f", "t", "FR"),
+        ),
+    )
+
+    assert [e.source for e in reader.read_all("FR")] == ["Fr"]
+    assert asked == ["https://fr.test/f"]
+    assert (reader.has_feeds("IT"), reader.has_feeds("DE")) == (True, False)
+
+
+def test_a_country_without_feeds_has_no_news_and_nothing_is_read_for_it() -> None:
+    reader = _Reader([_raw("Il cane corre")])
+    service, cache = _service(reader, _Clock())
+
+    answer = service.get(categories=["Cane"], country="fr")
+
+    assert (answer.categories, answer.country_has_news, answer.stale) == ({}, False, False)
+    assert reader.calls == 0
+    assert cache.get("fr") is None
+
+
+def test_every_feed_of_today_is_italian_and_without_a_country_they_are_the_ones_served() -> None:
+    assert {feed.country for feed in FEEDS} == {"IT"}
+    service, cache = _service(_Reader([_raw("Il cane corre")]), _Clock())
+
+    answer = service.get(categories=["Cane"])
+
+    assert answer.country_has_news
+    assert [item.title for item in answer.categories["Cane"]] == ["Il cane corre"]
+    assert cache.get("it") is not None  # the key of the snapshots already stored

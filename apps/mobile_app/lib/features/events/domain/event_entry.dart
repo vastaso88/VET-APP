@@ -144,6 +144,7 @@ class EventEntry {
     this.sourceUrl,
     this.status = EventStatus.published,
     this.lastVerifiedAt,
+    this.nearBorder = false,
   });
 
   final String id;
@@ -153,9 +154,9 @@ class EventEntry {
   final DateTime startsOn;
   final DateTime endsOn;
 
-  /// ISO 3166-1 alpha-2 of the country the event takes place in. The app only
-  /// ever shows the owner's country (EventsRepository.loadEvents); rows
-  /// written before the column existed are Italian.
+  /// ISO 3166-1 alpha-2 of the country the event takes place in; rows written
+  /// before the column existed are Italian. Which countries the owner sees:
+  /// `filterEventsByCountry`.
   final String country;
   final String? description;
   final String? city;
@@ -169,6 +170,11 @@ class EventEntry {
   final String? sourceUrl;
   final EventStatus status;
   final DateTime? lastVerifiedAt;
+
+  /// The server's word that an event of another country is just over the
+  /// border, within its radius of the owner's Località. It says no more than
+  /// that: no position and no distance reach the app.
+  final bool nearBorder;
 
   /// Solo un http/https valido è apribile: qualunque altra cosa (vuoto, schema
   /// diverso, testo libero) vale come "nessun link".

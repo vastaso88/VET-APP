@@ -70,7 +70,7 @@ class PetNewsEntry(BaseModel):
 
 
 class PetNewsSnapshot(BaseModel):
-    """Everything the section shows, for one audience (`key`, today "it").
+    """Everything the section shows, for one country (`key`, its code in lower case: "it").
 
     A snapshot is rebuilt as a whole from the feeds and kept in the shared
     cache; `fetched_at` is when the feeds were last read successfully.

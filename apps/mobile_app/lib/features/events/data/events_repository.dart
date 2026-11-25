@@ -21,7 +21,8 @@ class EventsLoadResult {
       {required this.events,
       this.failed = false,
       this.needsPlan = false,
-      this.countryHasEvents = true});
+      this.countryHasEvents = true,
+      this.abroadRadiusKm});
 
   final List<EventEntry> events;
   final bool failed;
@@ -29,6 +30,11 @@ class EventsLoadResult {
   /// False when the server says the catalogue has no event at all for the owner's country
   /// (a server that does not say it yet counts as true): not the same as an empty period.
   final bool countryHasEvents;
+
+  /// How far from the owner's Località an event of another country may be when
+  /// it is not international. Null: the list is only of the own country (a
+  /// server that does not do more yet, or the direct read).
+  final double? abroadRadiusKm;
 
   /// The backend refused (402): the trial is over and the owner has no plan.
   /// Different from [failed]: retrying changes nothing.
@@ -77,6 +83,8 @@ class EventsRepository {
       'country': countryCode,
       'from': formatEventDate(from),
       'to': formatEventDate(to),
+      // The owner's position is not sent: the server has the saved Località.
+      'abroad': 'true',
     });
     try {
       final response = await (_http ?? http.Client()).get(uri,
@@ -90,7 +98,8 @@ class EventsRepository {
       final events = _parseRows(json['events'] as List<dynamic>? ?? const []);
       return EventsLoadResult(
           events: filterEventsByCountry(events, countryCode),
-          countryHasEvents: json['country_has_events'] != false);
+          countryHasEvents: json['country_has_events'] != false,
+          abroadRadiusKm: (json['abroad_radius_km'] as num?)?.toDouble());
     } catch (_) {
       return null;
     }
@@ -106,9 +115,9 @@ class EventsRepository {
   /// data di inizio. Regione e tipo si filtrano dopo, sul risultato: i volumi
   /// sono di decine o centinaia di righe.
   ///
-  /// Solo gli eventi di [country] (ISO alpha-2; predefinito: il paese
-  /// dell'utente, vedi `currentTerritory`): mai quelli di un altro paese, ne'
-  /// come ripiego quando il proprio e' vuoto.
+  /// Gli eventi che il proprietario di [country] (ISO alpha-2; predefinito: il
+  /// paese dell'utente, vedi `currentTerritory`) puo' vedere: regola in
+  /// `filterEventsByCountry`. La lettura diretta da' solo quelli del paese.
   Future<EventsLoadResult> loadEvents({
     required DateTime from,
     required DateTime to,
@@ -200,5 +209,6 @@ EventEntry? parseEventRow(Map<String, dynamic> row) {
     sourceUrl: text('source_url'),
     status: EventStatus.parse(row['status'] as String?),
     lastVerifiedAt: DateTime.tryParse((row['last_verified_at'] ?? '').toString()),
+    nearBorder: row['near_border'] == true,
   );
 }

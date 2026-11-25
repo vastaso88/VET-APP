@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from packages.core.application.ports.event_submission_repository import (
     EventSubmissionRepository,
 )
+from packages.core.domain.events.regions import DEFAULT_COUNTRY
 from packages.core.domain.events.submission import EventSubmission
 
 if TYPE_CHECKING:
@@ -21,7 +22,7 @@ class SupabaseEventSubmissionRepository(EventSubmissionRepository):
         self._table = "event_submissions"
 
     def add(self, submission: EventSubmission) -> None:
-        self._client.table(self._table).insert(submission.model_dump(mode="json")).execute()
+        self._client.table(self._table).insert(_row(submission)).execute()
 
     def count_since(self, owner_id: str, since: datetime) -> int:
         response = (
@@ -52,4 +53,13 @@ class SupabaseEventSubmissionRepository(EventSubmissionRepository):
         return EventSubmission.model_validate(response.data[0])
 
     def save(self, submission: EventSubmission) -> None:
-        self._client.table(self._table).upsert(submission.model_dump(mode="json")).execute()
+        self._client.table(self._table).upsert(_row(submission)).execute()
+
+
+def _row(submission: EventSubmission) -> dict[str, Any]:
+    """The country is written only when it is not the column's default, so the Italian
+    suggestions keep being stored before scripts/setup/events_abroad.sql has run."""
+    row = submission.model_dump(mode="json")
+    if submission.country == DEFAULT_COUNTRY:
+        del row["country"]
+    return row

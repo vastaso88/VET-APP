@@ -11,6 +11,7 @@ that goes against it (checked 2026-10-21).
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 
@@ -22,21 +23,34 @@ class NewsFeed:
     # When a feed is mostly about something else, only entries that pass the
     # pet relevance rules are kept anyway; this is documentation for people.
     topic: str
+    # ISO 3166-1 alpha-2: only the owners of this country read it.
+    country: str
 
 
-ITALIAN_FEEDS: tuple[NewsFeed, ...] = (
-    NewsFeed("petsblog", "Petsblog", "https://www.petsblog.it/feed", "cani e gatti"),
+FEEDS: tuple[NewsFeed, ...] = (
+    NewsFeed("petsblog", "Petsblog", "https://www.petsblog.it/feed", "cani e gatti", "IT"),
     NewsFeed(
         "amoreaquattrozampe",
         "Amoreaquattrozampe",
         "https://www.amoreaquattrozampe.it/feed/",
         "animali domestici",
+        "IT",
     ),
-    NewsFeed("veterinari-it", "Veterinari.it", "https://www.veterinari.it/feed", "veterinaria"),
-    NewsFeed("dogalize", "Dogalize", "https://www.dogalize.com/feed/", "cani"),
-    NewsFeed("fnovi", "FNOVI", "https://www.fnovi.it/rss.xml", "federazione ordini veterinari"),
-    NewsFeed("izsve", "IZS delle Venezie", "https://www.izsvenezie.it/feed/", "sanità animale"),
-    NewsFeed("oipa", "OIPA Italia", "https://www.oipa.org/italia/feed/", "protezione animali"),
+    NewsFeed(
+        "veterinari-it", "Veterinari.it", "https://www.veterinari.it/feed", "veterinaria", "IT"
+    ),
+    NewsFeed("dogalize", "Dogalize", "https://www.dogalize.com/feed/", "cani", "IT"),
+    NewsFeed(
+        "fnovi", "FNOVI", "https://www.fnovi.it/rss.xml", "federazione ordini veterinari", "IT"
+    ),
+    NewsFeed(
+        "izsve", "IZS delle Venezie", "https://www.izsvenezie.it/feed/", "sanità animale", "IT"
+    ),
+    NewsFeed(
+        "oipa", "OIPA Italia", "https://www.oipa.org/italia/feed/", "protezione animali", "IT"
+    ),
 )
 
-FEEDS_BY_AUDIENCE: dict[str, tuple[NewsFeed, ...]] = {"it": ITALIAN_FEEDS}
+
+def feeds_of(country: str, feeds: Sequence[NewsFeed] = FEEDS) -> tuple[NewsFeed, ...]:
+    return tuple(feed for feed in feeds if feed.country == country)

@@ -6,7 +6,11 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:vet_app_mobile/features/events/data/event_submission_repository.dart';
 import 'package:vet_app_mobile/features/events/domain/event_submission.dart';
+import 'package:vet_app_mobile/features/events/domain/event_regions.dart';
 import 'package:vet_app_mobile/features/events/presentation/pages/submit_event_page.dart';
+import 'package:vet_app_mobile/features/territory/domain/territory.dart';
+
+import '../territory/territory_test_helpers.dart';
 
 final _draft = EventSubmissionDraft(
   title: 'Giornata dell\'adozione',
@@ -46,6 +50,27 @@ class _FakeRepository extends EventSubmissionRepository {
 }
 
 void main() {
+  tearDown(resetTerritoryForTest);
+
+  group('the country of a suggestion', () {
+    test('starts from the home of the owner, else from the country of the account', () async {
+      await useLanguageVariant('de-CH');
+
+      expect(defaultEventCountry(null), 'CH');
+      expect(defaultEventCountry('fr'), 'FR');
+      expect(defaultEventCountry('PT'), 'CH', reason: 'the app does not support it');
+    });
+
+    test('every region on offer belongs to a supported country', () {
+      expect(knownTerritoryCodes, containsAll(eventRegionsByCountry.keys));
+    });
+
+    test('is always sent, the region only when there is one', () {
+      expect(_draft.toJson()['country'], 'IT');
+      expect(_draft.toJson().containsKey('region'), isFalse);
+    });
+  });
+
   group('EventSubmissionRepository', () {
     test('sends the draft with the token and reports success on 201', () async {
       http.Request? sent;
@@ -80,6 +105,22 @@ void main() {
         (_) => http.Response('{"detail":"Titolo: campo obbligatorio"}', 400),
       ).submit(_draft);
       expect((rejected as EventSubmissionRejected).message, 'Titolo: campo obbligatorio');
+    });
+
+    test('the refusal is asked and shown in the language of the app', () async {
+      await useLanguageVariant('de');
+      http.Request? sent;
+
+      final rejected = await _repository(
+        (_) => http.Response.bytes(
+          utf8.encode('{"detail":"Paese non riconosciuto","message":"Land ungültig"}'),
+          400,
+        ),
+        onRequest: (request) => sent = request,
+      ).submit(_draft);
+
+      expect(sent!.headers['Accept-Language'], 'de');
+      expect((rejected as EventSubmissionRejected).message, 'Land ungültig');
     });
 
     test('without a session it does not even call the server', () async {
@@ -137,6 +178,31 @@ void main() {
 
       expect(repository.received, isNull);
       expect(find.text('Campo obbligatorio'), findsOneWidget);
+    });
+
+    Future<void> choose(WidgetTester tester, Key field, String name) async {
+      await tester.tap(find.byKey(field));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(name).last);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('the regions follow the country and only Italy has the province', (tester) async {
+      await pump(tester, _FakeRepository(const EventSubmissionSent()));
+
+      expect(find.byKey(const ValueKey('event-region-IT')), findsOneWidget);
+      expect(find.textContaining('Provincia'), findsOneWidget);
+
+      await choose(tester, const ValueKey('event-country'), 'Francia');
+      expect(find.byKey(const ValueKey('event-region-FR')), findsOneWidget);
+      expect(find.textContaining('Provincia'), findsNothing);
+
+      await choose(tester, const ValueKey('event-region-FR'), 'Occitanie');
+      expect(find.text('Occitanie'), findsOneWidget);
+
+      await choose(tester, const ValueKey('event-country'), 'Svizzera');
+      expect(find.textContaining('Regione'), findsNothing, reason: 'no table for Switzerland');
+      expect(find.text('Occitanie'), findsNothing);
     });
 
     testWidgets('a link that is not http(s) is refused before sending', (tester) async {

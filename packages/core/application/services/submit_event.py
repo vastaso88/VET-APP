@@ -34,6 +34,7 @@ class SubmitEventInput(BaseModel):
     ends_on: date
     city: str
     source_url: str
+    country: str | None = None
     province_code: str | None = None
     region: str | None = None
     venue_name: str | None = None

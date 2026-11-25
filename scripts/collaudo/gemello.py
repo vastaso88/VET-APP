@@ -64,6 +64,8 @@ ORDINE_SCHEMA: tuple[str, ...] = (
     "scripts/setup/weight_no_future_dates.sql",
     # PROMEM: a reminder with an empty title is refused by the database.
     "scripts/setup/reminder_title_not_blank.sql",
+    # F42: the country of a suggested event, the coordinates of an event.
+    "scripts/setup/events_abroad.sql",
 )
 MIGRATIONS_DIR = "supabase/migrations"
 PIANO_COLLAUDO = "pro"

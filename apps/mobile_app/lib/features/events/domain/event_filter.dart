@@ -52,12 +52,18 @@ class EventFilter {
   }
 }
 
-/// Solo gli eventi di [country] (ISO alpha-2). Un evento di un altro paese non
-/// si mostra mai, nemmeno quando il proprio paese non ne ha: l'elenco resta
-/// vuoto e lo dice.
+/// The events the owner of [country] (ISO alpha-2) may see: those of the
+/// country and, of the others, the international ones and those the server
+/// marked as just over the border. Nothing else, not even when the own country
+/// has none: the list stays empty and says so.
 List<EventEntry> filterEventsByCountry(List<EventEntry> events, String country) {
   final code = country.toUpperCase();
-  return events.where((event) => event.country.toUpperCase() == code).toList();
+  return events
+      .where((event) =>
+          event.country.toUpperCase() == code ||
+          event.level == EventLevel.international ||
+          event.nearBorder)
+      .toList();
 }
 
 /// Un evento cade nella finestra se i due intervalli di giorni si

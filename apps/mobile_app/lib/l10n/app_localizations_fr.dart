@@ -4046,6 +4046,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get eventsSuggestPickDates => 'Choisir les dates';
 
   @override
+  String get eventsSuggestFieldCountry => 'Pays';
+
+  @override
+  String get eventsSuggestFieldRegion => 'Région (facultative)';
+
+  @override
+  String get eventsSuggestRegionNone => 'Non précisée';
+
+  @override
   String get eventsSuggestFieldCity => 'Ville';
 
   @override
@@ -4116,6 +4125,11 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get eventsCountryOnlyNote =>
       'Nous n\'affichons que les événements de votre pays, celui de la langue choisie dans l\'application.';
+
+  @override
+  String eventsScopeNote(String distance) {
+    return 'Nous affichons les événements de votre pays (celui de la langue choisie dans l\'application), les événements internationaux et ceux de l\'autre côté de la frontière à moins de $distance du lieu que vous avez indiqué dans les Paramètres.';
+  }
 
   @override
   String get eventsLevelLocal => 'Local';
@@ -4445,7 +4459,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get petNewsEmptyLocal =>
-      'Pour le moment, il n\'y a pas d\'actualités dans votre langue et pour votre pays. Nous n\'affichons pas d\'actualités d\'autres pays.';
+      'Nous n\'avons pas encore d\'actualités pour votre pays.';
 
   @override
   String get petNewsCategoryAll => 'Toutes';

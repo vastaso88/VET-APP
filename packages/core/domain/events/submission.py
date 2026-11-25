@@ -16,7 +16,12 @@ from urllib.parse import urlparse
 from pydantic import BaseModel
 
 from packages.core.domain.common.entity import new_id, utc_now
-from packages.core.domain.events.rules import EVENT_TYPES, REGIONS, contains_personal_data
+from packages.core.domain.events.regions import COUNTRIES, DEFAULT_COUNTRY, regions_of
+from packages.core.domain.events.rules import (
+    EVENT_TYPES,
+    contains_personal_data,
+    is_valid_subdivision,
+)
 from packages.core.domain.localized_errors import LocalizedValidationError, TextKey
 
 SubmissionStatus = Literal["pending", "approved", "rejected"]
@@ -38,6 +43,7 @@ class EventSubmission(BaseModel):
     event_type: str
     starts_on: date
     ends_on: date
+    country: str = DEFAULT_COUNTRY
     city: str
     province_code: str | None = None
     region: str | None = None
@@ -74,13 +80,15 @@ def build_submission(
     ends_on: date,
     city: str,
     source_url: str,
+    country: str | None = None,
     province_code: str | None = None,
     region: str | None = None,
     venue_name: str | None = None,
     today: date | None = None,
 ) -> EventSubmission:
     """Checks a suggestion and returns it as a pending submission, or raises
-    `ValidationError` with a message that can be shown to the user."""
+    `ValidationError` with a message that can be shown to the user. Without a
+    country (an app that does not ask for it yet) the event is Italian."""
     reference_day = today or utc_now().date()
 
     clean_title = _clean(
@@ -103,11 +111,14 @@ def build_submission(
     if (ends_on - starts_on).days > MAX_DURATION_DAYS:
         raise LocalizedValidationError("event_duration_too_long")
 
+    clean_country = (country or DEFAULT_COUNTRY).strip().upper()
+    if clean_country not in COUNTRIES:
+        raise LocalizedValidationError("event_country_invalid")
     province = (province_code or "").strip().upper() or None
-    if province is not None and not (len(province) == 2 and province.isalpha()):
+    if province is not None and not is_valid_subdivision(clean_country, province):
         raise LocalizedValidationError("event_province_invalid")
     clean_region = (region or "").strip() or None
-    if clean_region is not None and clean_region not in REGIONS:
+    if clean_region is not None and clean_region not in regions_of(clean_country):
         raise LocalizedValidationError("event_region_invalid")
 
     link = (source_url or "").strip()
@@ -128,6 +139,7 @@ def build_submission(
         event_type=event_type,
         starts_on=starts_on,
         ends_on=ends_on,
+        country=clean_country,
         city=clean_city,
         province_code=province,
         region=clean_region,

@@ -179,6 +179,7 @@ def ical_event_to_raw(event: IcalEvent, source: FeedSource, *, today: date) -> d
         "verified_on": today.isoformat(),
         "status": "published",
         "organizer_name": source.defaults.get("organizer_name"),
+        "country": source.defaults.get("country"),
         "city": source.defaults.get("city"),
         "province_code": source.defaults.get("province_code"),
         "region": source.defaults.get("region"),

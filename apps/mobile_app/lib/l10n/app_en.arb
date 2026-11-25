@@ -2437,6 +2437,9 @@
   "eventsSuggestFieldType": "Event type",
   "eventsSuggestFieldDates": "Dates",
   "eventsSuggestPickDates": "Choose dates",
+  "eventsSuggestFieldCountry": "Country",
+  "eventsSuggestFieldRegion": "Region (optional)",
+  "eventsSuggestRegionNone": "Not specified",
   "eventsSuggestFieldCity": "City",
   "eventsSuggestFieldProvince": "Province (code, e.g. MO)",
   "eventsSuggestFieldVenue": "Venue, for example the fairground (optional)",
@@ -2470,6 +2473,14 @@
   "eventsEmptyPeriod": "No events in the selected period",
   "eventsNoneInCountry": "We don't have any events for your country yet.",
   "eventsCountryOnlyNote": "We only show events from your country, based on the language you picked in the app.",
+  "eventsScopeNote": "We show events from your country (based on the language you picked in the app), international events, and events across the border within {distance} of the location you set in Settings.",
+  "@eventsScopeNote": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
   "eventsLevelLocal": "Local",
   "eventsLevelProvincial": "Provincial",
   "eventsLevelRegional": "Regional",
@@ -2633,7 +2644,7 @@
   "petNewsTitle": "News",
   "petNewsLoading": "Loading news...",
   "petNewsEmpty": "No news available for this category right now.",
-  "petNewsEmptyLocal": "There is no news in your language and country right now. We don't show news from other countries.",
+  "petNewsEmptyLocal": "We don't have any news for your country yet.",
   "petNewsCategoryAll": "All",
   "petNewsCategoryDog": "Dog",
   "petNewsCategoryCat": "Cat",

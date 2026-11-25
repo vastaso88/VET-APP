@@ -94,6 +94,16 @@ void main() {
     expect(await repository.fetchForSpecies('Cane'), isEmpty);
   });
 
+  test('a copy of another country is not shown', () async {
+    SharedPreferences.setMockInitialValues({
+      'vet_app.pet_news.last_body': _body('Le chien').replaceFirst('{', '{"country":"FR",'),
+      'vet_app.pet_news.last_at': DateTime.now().millisecondsSinceEpoch,
+    });
+    final repository = _repository(MockClient((_) async => http.Response('boom', 500)));
+
+    expect(await repository.fetchForSpecies('Cane'), isEmpty);
+  });
+
   test('signing out forgets the kept copy', () async {
     await _keepCopy('Da dimenticare');
 

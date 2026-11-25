@@ -125,3 +125,10 @@ class UserLocation(BaseModel):
     current_source: LocationSource | None = None
     current_captured_at: datetime | None = None
     updated_at: datetime = Field(default_factory=utc_now)
+
+    @property
+    def reference(self) -> Coordinates | None:
+        """The point distances are measured from: the one `mode` picks, else whichever is
+        saved (the app's `resolveReferenceLocation`). None: no Località."""
+        preferred = self.home if self.mode == "home_residence" else self.current
+        return preferred or self.current or self.home

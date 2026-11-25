@@ -14,10 +14,14 @@ class PetNewsCacheRepository(Protocol):
 
 
 class PetNewsFeedReader(Protocol):
-    """Reads every enabled feed for an audience and returns their entries.
-    Raises `PetNewsUnavailableError` when not a single feed could be read."""
+    """Reads every enabled feed of a country (ISO 3166-1 alpha-2) and returns their
+    entries. Raises `PetNewsUnavailableError` when not a single feed could be read."""
 
-    def read_all(self, key: str) -> list[RawNewsEntry]: ...
+    def has_feeds(self, country: str) -> bool:
+        """Whether there is a feed for that country at all (a disabled one counts)."""
+        ...
+
+    def read_all(self, country: str) -> list[RawNewsEntry]: ...
 
 
 class PetNewsUnavailableError(RuntimeError):

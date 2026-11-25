@@ -6,6 +6,7 @@ from datetime import date
 from fastapi.testclient import TestClient
 
 from apps.api.main import app
+from packages.core.application.services.get_user_location import GetUserLocationService
 from packages.core.application.services.list_events import (
     ListEventsInput,
     ListEventsOutput,
@@ -13,6 +14,9 @@ from packages.core.application.services.list_events import (
 )
 from packages.infrastructure.persistence.in_memory_event_catalog import (
     InMemoryEventCatalogRepository,
+)
+from packages.infrastructure.persistence.in_memory_repositories import (
+    InMemoryUserLocationRepository,
 )
 
 
@@ -30,7 +34,8 @@ def _event(**values: object) -> dict[str, object]:
 def _ask(
     repository: InMemoryEventCatalogRepository, country: str = "IT", year: int = 2026
 ) -> ListEventsOutput:
-    return ListEventsService(repository).execute(
+    locations = GetUserLocationService(InMemoryUserLocationRepository())
+    return ListEventsService(repository, locations).execute(
         ListEventsInput(country=country, from_day=date(year, 12, 1), to_day=date(year, 12, 31))
     )
 

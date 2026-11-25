@@ -7,6 +7,7 @@ from packages.core.application.ports.event_catalog_repository import EventCatalo
 from packages.core.application.ports.event_submission_repository import EventSubmissionRepository
 from packages.core.application.ports.pet_news import PetNewsCacheRepository
 from packages.core.application.services.get_pet_news import GetPetNewsService
+from packages.core.application.services.get_user_location import GetUserLocationService
 from packages.core.application.services.list_events import ListEventsService
 from packages.core.application.services.list_travel_cards import ListTravelCardsService
 from packages.core.application.services.submit_event import SubmitEventService
@@ -23,7 +24,9 @@ from packages.infrastructure.persistence.in_memory_pet_news import InMemoryPetNe
 
 class ContentWiring(ContainerState):
     def list_events_service(self) -> ListEventsService:
-        return ListEventsService(self.event_catalog_repository())
+        return ListEventsService(
+            self.event_catalog_repository(), GetUserLocationService(self.user_location_repository)
+        )
 
     def event_catalog_repository(self) -> EventCatalogRepository:
         """One per process (the in-memory double keeps its rows)."""

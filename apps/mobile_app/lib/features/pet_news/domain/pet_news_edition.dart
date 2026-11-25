@@ -6,7 +6,7 @@
 /// ('Cane', 'Gatto'...), never shown: the labels come from the ARB files.
 ///
 /// The phone never calls Google News (or any proxy) itself: headlines come
-/// from our backend (GET /news), which today serves only the Italian edition
+/// from our backend (GET /news), which today has feeds only for Italy
 /// (see `backendPetNewsEditions` in pet_news_repository.dart). The edition
 /// parameters, queries and filters here are kept for the backend's future
 /// per-country feeds.

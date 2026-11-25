@@ -544,6 +544,13 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "de": "Eine Veranstaltung dauert höchstens 31 Tage",
         "fr": "Un événement dure 31 jours au maximum",
     },
+    "event_country_invalid": {
+        "it": "Paese non riconosciuto",
+        "en": "Country not recognized",
+        "es": "País no reconocido",
+        "de": "Land nicht erkannt",
+        "fr": "Pays non reconnu",
+    },
     "event_province_invalid": {
         "it": "Provincia: usa la sigla di due lettere (es. MO)",
         "en": "Province: use the two-letter code (e.g. MO)",

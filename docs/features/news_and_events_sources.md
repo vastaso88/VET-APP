@@ -9,7 +9,7 @@ senza toccare il resto.
 
 Il backend legge i feed RSS, classifica e filtra i titoli (`packages/core/domain/pet_news/`),
 li unisce a quelli già in cache senza duplicati e tiene uno **snapshot condiviso** nella
-tabella `pet_news_snapshots` (una riga per pubblico, oggi `it`). L'app legge solo da lì.
+tabella `pet_news_snapshots` (una riga per paese, oggi `it`). L'app legge solo da lì.
 
 - **Cache**: Supabase (sopravvive ai riavvii serverless), TTL 120 minuti
   (`NEWS_CACHE_TTL_MINUTES`, 10–720). Il refresh avviene alla lettura, solo se la copia è
@@ -55,9 +55,10 @@ singoli siti non sono stati letti uno per uno: **rischio residuo basso e gestibi
 categoria animali non ha un feed dedicato), LifeGate (`/feed/` vietato dal robots.txt),
 LAV/ENPA (il feed risponde HTML), greenMe (feed generalista).
 
-Per aggiungere una fonte: una riga in `ITALIAN_FEEDS` (`feeds.py`), controllare robots.txt e
-termini, aggiungere la riga a questa tabella. Per un altro paese: nuova chiave in
-`FEEDS_BY_AUDIENCE` e `?audience=` nella rotta (oggi fissa a `it`).
+Per aggiungere una fonte: una riga in `FEEDS` (`feeds.py`) con il suo paese, controllare
+robots.txt e termini, aggiungere la riga a questa tabella. Ogni feed si legge solo per
+`GET /news?country=<paese>`. Per un altro paese servono anche le parole chiave nella sua lingua
+(`packages/core/domain/pet_news/relevance.py`) e l'edizione in `backendPetNewsEditions` nell'app.
 
 ## 2. Eventi (fiere e incontri pet-friendly)
 
@@ -110,6 +111,9 @@ uv run --with truststore python scripts/events/moderate_submissions.py list
 uv run --with truststore python scripts/events/moderate_submissions.py approve <id> --link-checked
 uv run --with truststore python scripts/events/moderate_submissions.py reject <id> --note "…"
 ```
+Con `approve`: `--level international --level-basis <documento>` per un evento internazionale
+(si vede in tutti i paesi), `--latitude` e `--longitude` perché lo veda chi abita appena oltre
+confine (30 km).
 Prima di `approve` aprire il link e verificare date e luogo; con un link social usare
 `--source-url` con la pagina dell'organizzatore. Limite: 3 segnalazioni/giorno per utente
 (429), solo utenti con accesso; `event_submissions` è cancellata con l'account.

@@ -9,8 +9,11 @@ suggestion and check date and place on the organizer's own page: the flag
 `--link-checked` is how you say you did. A link to a social network or an
 aggregator is refused by the project rules; pass the organizer's page with
 `--source-url`. The approved event is written to `events` (source
-'user_submission') as a local event; the author is never copied. Needs the
-Supabase service-role key, like the other import scripts.
+'user_submission') as a local event; the author is never copied. `--level` with
+its documented `--level-basis` raises it (an international event is the one shown
+in every country); `--latitude` and `--longitude` are what shows it to the owners
+just over the border. Needs the Supabase service-role key, like the other import
+scripts.
 """
 
 from __future__ import annotations
@@ -62,6 +65,12 @@ def main() -> int:
         "--source-url", help="the organizer's page, if the link sent is not usable"
     )
     approve.add_argument("--slug", help="override the generated slug")
+    approve.add_argument("--level", default="local", help="local (default) ... international")
+    approve.add_argument(
+        "--level-basis", default="default", help="the document behind a level above local"
+    )
+    approve.add_argument("--latitude", type=float, help="decimal degrees, with --longitude")
+    approve.add_argument("--longitude", type=float, help="decimal degrees, with --latitude")
     reject = commands.add_parser("reject", help="turn a suggestion down")
     reject.add_argument("id")
     reject.add_argument("--note", default="", help="reason, for the team's own records")
@@ -98,7 +107,7 @@ def _list(repository: SupabaseEventSubmissionRepository) -> int:
         place = f"{item.city} ({item.province_code})" if item.province_code else item.city
         print(
             f"{item.id}\n  {item.title} [{item.event_type}]\n"
-            f"  {item.starts_on} -> {item.ends_on}, {place}"
+            f"  {item.starts_on} -> {item.ends_on}, {place}, {item.country}"
             f"{', ' + item.venue_name if item.venue_name else ''}\n  {item.source_url}"
         )
     print(f"\n{len(pending)} in attesa.")
@@ -119,7 +128,15 @@ def _approve(
         )
         return 1
     try:
-        event = submission_to_curated(submission, source_url=args.source_url, slug=args.slug)
+        event = submission_to_curated(
+            submission,
+            source_url=args.source_url,
+            slug=args.slug,
+            level=args.level,
+            level_basis=args.level_basis,
+            latitude=args.latitude,
+            longitude=args.longitude,
+        )
     except CuratedEventError as exc:
         print(f"Non pubblicabile così: {exc}", file=sys.stderr)
         return 1

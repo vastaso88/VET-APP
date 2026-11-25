@@ -1,13 +1,15 @@
-"""Regions of the countries the curated events can be in.
+"""Countries and regions an event can be in.
 
-An event's ``region`` is checked against the table of its ``country``: a typo,
-or a region of another country, never reaches the database. The names are
-written the way the country writes them, because the app shows exactly this
-text in its region filter. One entry per country the app has a language
-variant for (docs/i18n/NOTIZIE_EVENTI_MERCATINO.md).
+An event's ``region`` is checked against the table of its ``country``, in the curated files and
+in the suggestions of the users alike: a typo, or a region of another country, never reaches the
+database. The names are written the way the country writes them, because the app shows exactly
+this text in its region filter. The app has the same table for its form
+(``features/events/domain/event_regions.dart``; a test keeps the two in step).
 """
 
 from __future__ import annotations
+
+from packages.core.domain.territory.rules import KNOWN_COUNTRIES
 
 ITALIAN_REGIONS = frozenset(
     {
@@ -96,4 +98,11 @@ REGIONS_BY_COUNTRY: dict[str, frozenset[str]] = {
 
 # Events written before the country existed are Italian.
 DEFAULT_COUNTRY = "IT"
-COUNTRIES = frozenset(REGIONS_BY_COUNTRY)
+
+# The countries the app has a variant for. Austria, Belgium and Switzerland have no table of
+# regions here: an event there has none.
+COUNTRIES = KNOWN_COUNTRIES
+
+
+def regions_of(country: str) -> frozenset[str]:
+    return REGIONS_BY_COUNTRY.get(country, frozenset())

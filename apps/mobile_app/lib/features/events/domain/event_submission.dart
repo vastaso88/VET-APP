@@ -1,3 +1,14 @@
+import '../../territory/domain/territory.dart';
+
+/// The country the form starts from: the one of the owner's home (Località)
+/// when the app knows it, else the account's.
+String defaultEventCountry(String? homeCountryCode) {
+  final home = homeCountryCode?.toUpperCase();
+  return home != null && knownTerritoryCodes.contains(home)
+      ? home
+      : currentTerritory().countryCode;
+}
+
 /// I dati del modulo "Segnala un evento", già ripuliti.
 class EventSubmissionDraft {
   const EventSubmissionDraft({
@@ -7,6 +18,8 @@ class EventSubmissionDraft {
     required this.endsOn,
     required this.city,
     required this.sourceUrl,
+    this.country = sourceTerritoryCode,
+    this.region,
     this.provinceCode,
     this.venueName,
   });
@@ -17,6 +30,12 @@ class EventSubmissionDraft {
   final DateTime endsOn;
   final String city;
   final String sourceUrl;
+
+  /// ISO 3166-1 alpha-2, one of `knownTerritoryCodes`.
+  final String country;
+
+  /// One of `eventRegionsByCountry[country]`.
+  final String? region;
   final String? provinceCode;
   final String? venueName;
 
@@ -27,6 +46,8 @@ class EventSubmissionDraft {
         'ends_on': _day(endsOn),
         'city': city,
         'source_url': sourceUrl,
+        'country': country,
+        if (region != null) 'region': region,
         if (provinceCode != null) 'province_code': provinceCode,
         if (venueName != null) 'venue_name': venueName,
       };

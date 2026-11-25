@@ -39,3 +39,35 @@ def test_invalid_suggestion_answers_400_with_a_message() -> None:
 
     assert response.status_code == 400
     assert "telefono" in response.json()["detail"]
+
+
+def test_the_country_is_stored_and_an_older_app_that_does_not_send_it_is_italian() -> None:
+    client = TestClient(app)
+    repository = get_container().event_submission_repository()
+
+    french = client.post(
+        "/events/submissions",
+        json=_body(country="FR", city="Nice", province_code=None, region="Occitanie"),
+    )
+    older = client.post("/events/submissions", json=_body())
+
+    stored = {item.id: item.country for item in repository.list_pending()}
+    assert stored[french.json()["submission_id"]] == "FR"
+    assert stored[older.json()["submission_id"]] == "IT"
+
+
+def test_a_wrong_country_is_refused_in_the_language_of_the_app() -> None:
+    response = TestClient(app).post(
+        "/events/submissions", json=_body(country="ZZ"), headers={"Accept-Language": "de"}
+    )
+
+    assert response.status_code == 400
+    assert response.json()["code"] == "event_country_invalid"
+    assert response.json()["detail"] == "Paese non riconosciuto"
+    assert response.json()["message"] == "Land nicht erkannt"
+
+
+def test_a_country_longer_than_its_code_is_refused_before_the_service() -> None:
+    response = TestClient(app).post("/events/submissions", json=_body(country="Francia"))
+
+    assert response.status_code == 422

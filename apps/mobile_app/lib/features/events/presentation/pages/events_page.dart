@@ -7,12 +7,16 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../shared/date/calendar_days.dart';
 import '../../../../shared/widgets/pet_loader.dart';
+import '../../../settings/data/unit_settings_store.dart';
+import '../../../settings/domain/unit_conversion.dart';
+import '../../../territory/domain/territory.dart';
 import '../../data/events_repository.dart';
 import '../../domain/event_entry.dart';
 import '../../domain/event_filter.dart';
 import '../event_labels.dart';
 import 'submit_event_page.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../l10n/regional_defaults.dart' show appCountryName;
 import '../../../../shared/widgets/min_tap_target.dart';
 
 typedef EventLinkLauncher = Future<void> Function(Uri url);
@@ -21,7 +25,8 @@ Future<void> _launchExternal(Uri url) async {
   await launchUrl(url, webOnlyWindowName: '_blank');
 }
 
-/// Sezione "Eventi": elenco nazionale di eventi per animali, senza mappa.
+/// Sezione "Eventi": elenco di eventi per animali, senza mappa: quelli del
+/// paese, gli internazionali e quelli appena oltre confine.
 /// Si apre sulla finestra "prossimi 30 giorni"; date, regione e tipo sono
 /// filtri dell'utente. Toccare una card apre il sito ufficiale dell'evento (se
 /// c'è un link: altrimenti la card non fa nulla). Date e link sono verificati
@@ -232,7 +237,7 @@ class _EventsPageState extends State<EventsPage> {
                           : context.l10n.eventsNoneInCountry,
                     ),
                     Text(
-                      context.l10n.eventsCountryOnlyNote,
+                      _scopeNote(context, result.abroadRadiusKm),
                       style: AppTextStyles.caption,
                       textAlign: TextAlign.center,
                     ),
@@ -265,6 +270,13 @@ class _EventsPageState extends State<EventsPage> {
       ),
     );
   }
+}
+
+/// Which events the list is made of, for an owner who finds it empty.
+String _scopeNote(BuildContext context, double? abroadRadiusKm) {
+  if (abroadRadiusKm == null) return context.l10n.eventsCountryOnlyNote;
+  return context.l10n
+      .eventsScopeNote(formatKilometersIn(abroadRadiusKm, UnitSettingsStore.instance.system));
 }
 
 /// Esito di una scelta in un foglio di selezione: "tutti" oppure un valore.
@@ -379,7 +391,11 @@ class _EventCard extends StatelessWidget {
     final cancelled = event.status == EventStatus.cancelled;
     final postponed = event.status == EventStatus.postponed;
     final place = event.placeLabel;
-    final showRegion = event.city != null && (event.region?.isNotEmpty ?? false);
+    final around = [
+      if (event.city != null && (event.region?.isNotEmpty ?? false)) event.region!,
+      if (event.country != currentTerritory().countryCode)
+        appCountryName(event.country) ?? event.country,
+    ];
 
     return Material(
       color: AppColors.surface,
@@ -439,9 +455,9 @@ class _EventCard extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                           ),
                           children: [
-                            if (showRegion)
+                            for (final name in around)
                               TextSpan(
-                                text: ' · ${event.region}',
+                                text: ' · $name',
                                 style: AppTextStyles.bodySmall,
                               ),
                           ],

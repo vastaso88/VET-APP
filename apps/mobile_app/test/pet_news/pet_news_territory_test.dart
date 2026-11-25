@@ -8,8 +8,9 @@ import 'package:vet_app_mobile/features/pet_news/domain/pet_news_edition.dart';
 
 import '../territory/territory_test_helpers.dart';
 
-http.Response _news(String title) => http.Response(
+http.Response _news(String title, {String? country}) => http.Response(
       jsonEncode({
+        if (country != null) 'country': country,
         'categories': {
           'Cane': [
             {'title': title, 'source': 'Petsblog', 'url': 'https://example.org/it'},
@@ -80,6 +81,7 @@ void main() {
 
       expect(petNewsEditionServed(), isTrue);
       expect(requested.single.path, endsWith('/news'));
+      expect(requested.single.queryParameters['country'], 'IT');
       expect(items.single.sourceUrl, 'https://example.org/it');
     });
 
@@ -97,6 +99,23 @@ void main() {
         expect(items, isEmpty, reason: '$variant: never Italian headlines as a fallback');
         expect(requests, 0, reason: '$variant: no call to the backend or to any feed');
       }
+    });
+
+    test('the headlines of another country are refused, whoever sends them', () async {
+      await useLanguageVariant('it');
+      final client = MockClient((_) async => _news('Le chien', country: 'FR'));
+
+      expect(await BackendPetNewsRepository(client: client).fetchForSpecies('Cane'), isEmpty);
+    });
+
+    test('a server that names the country is read like one that does not', () async {
+      await useLanguageVariant('it');
+      final client = MockClient((_) async => _news('Il cane corre', country: 'IT'));
+
+      expect(
+        (await BackendPetNewsRepository(client: client).fetchForSpecies('Cane')).single.title,
+        'Il cane corre',
+      );
     });
 
     test('switching from Italian to English never shows the cached Italian headlines', () async {

@@ -16,6 +16,9 @@ _COLUMNS = (
 )
 
 
+_ABROAD_COLUMNS = (*_COLUMNS.split(","), "latitude", "longitude")
+
+
 class SupabaseEventCatalogRepository(EventCatalogRepository):
     """`events`, read with the service role. The table is written only by the
     curation scripts; until scripts/setup/events_read_via_backend.sql has run
@@ -50,3 +53,25 @@ class SupabaseEventCatalogRepository(EventCatalogRepository):
             .execute()
         )
         return [dict(row) for row in response.data or [] if isinstance(row, dict)]
+
+    def list_public_abroad(
+        self, *, country: str, from_day: date, to_day: date
+    ) -> list[dict[str, Any]]:
+        # "*" and not the columns: until scripts/setup/events_abroad.sql has run the two
+        # coordinates do not exist, and a query naming them would fail.
+        response = (
+            self._client.table(self._table)
+            .select("*")
+            .in_("status", ["published", "cancelled", "postponed"])
+            .eq("audience", "public")
+            .neq("country", country)
+            .gte("ends_on", from_day.isoformat())
+            .lte("starts_on", to_day.isoformat())
+            .order("starts_on")
+            .execute()
+        )
+        return [
+            {column: row.get(column) for column in _ABROAD_COLUMNS}
+            for row in response.data or []
+            if isinstance(row, dict)
+        ]

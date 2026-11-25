@@ -9,6 +9,7 @@ from packages.core.application.services.submit_event import (
     SubmitEventService,
 )
 from packages.core.domain.events.submission import build_submission
+from packages.core.domain.localized_errors import LocalizedValidationError
 from packages.infrastructure.events.curated_events import (
     CuratedEventError,
     curated_event_to_row,
@@ -113,6 +114,68 @@ def test_approved_submission_is_a_local_event_with_its_own_source() -> None:
     assert (row["level"], row["level_basis"]) == ("local", "default")
     assert row["source"] == "user_submission"
     assert "user-1" not in str(row.values())
+
+
+def test_a_suggestion_without_a_country_is_italian_as_before() -> None:
+    submission = build_submission(**_fields(), today=TODAY)
+
+    assert submission.country == "IT"
+    assert submission_to_curated(submission, today=TODAY).country == "IT"
+
+
+def test_a_suggestion_of_another_country_keeps_it_up_to_the_public_event() -> None:
+    submission = build_submission(
+        **_fields(country="fr", city="Nice", province_code="06", region="Occitanie"),
+        today=TODAY,
+    )
+
+    event = submission_to_curated(submission, today=TODAY)
+    row = curated_event_to_row(event, now_iso="2026-10-21T00:00:00+00:00")
+
+    assert (row["country"], row["region"], row["province_code"]) == ("FR", "Occitanie", "06")
+    assert "latitude" not in row and "longitude" not in row
+
+
+def test_the_team_can_publish_a_suggestion_as_international_and_with_its_place() -> None:
+    submission = build_submission(
+        **_fields(country="CH", city="Lugano", province_code=None, region=None), today=TODAY
+    )
+
+    with pytest.raises(CuratedEventError):  # "international" needs a document
+        submission_to_curated(submission, today=TODAY, level="international")
+    with pytest.raises(CuratedEventError):  # both coordinates or none
+        submission_to_curated(submission, today=TODAY, latitude=46.0)
+    event = submission_to_curated(
+        submission,
+        today=TODAY,
+        level="international",
+        level_basis="federation_title",
+        latitude=46.0,
+        longitude=8.95,
+    )
+    row = curated_event_to_row(event, now_iso="2026-10-21T00:00:00+00:00")
+
+    assert (row["level"], row["country"]) == ("international", "CH")
+    assert (row["latitude"], row["longitude"]) == (46.0, 8.95)
+
+
+@pytest.mark.parametrize(
+    ("overrides", "key"),
+    [
+        ({"country": "ZZ"}, "event_country_invalid"),
+        ({"country": "Francia"}, "event_country_invalid"),
+        ({"country": "FR", "province_code": None}, "event_region_invalid"),
+        ({"country": "CH", "province_code": None}, "event_region_invalid"),
+        ({"country": "FR", "region": None, "province_code": "HAUT"}, "event_province_invalid"),
+    ],
+)
+def test_country_region_and_province_must_agree(overrides: dict[str, Any], key: str) -> None:
+    with pytest.raises(LocalizedValidationError) as refused:
+        build_submission(**_fields(**overrides), today=TODAY)
+
+    assert refused.value.key == key
+    sentences = {refused.value.message(language) for language in ("it", "en", "de", "fr", "es")}
+    assert len(sentences) == 5
 
 
 def test_social_links_cannot_be_published_without_the_organizers_page() -> None:

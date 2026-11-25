@@ -2437,6 +2437,9 @@
   "eventsSuggestFieldType": "Type d'événement",
   "eventsSuggestFieldDates": "Dates",
   "eventsSuggestPickDates": "Choisir les dates",
+  "eventsSuggestFieldCountry": "Pays",
+  "eventsSuggestFieldRegion": "Région (facultative)",
+  "eventsSuggestRegionNone": "Non précisée",
   "eventsSuggestFieldCity": "Ville",
   "eventsSuggestFieldProvince": "Province (sigle, ex. MO)",
   "eventsSuggestFieldVenue": "Lieu, par exemple le parc des expositions (facultatif)",
@@ -2470,6 +2473,14 @@
   "eventsEmptyPeriod": "Aucun événement sur la période choisie",
   "eventsNoneInCountry": "Nous n'avons pas encore d'événements pour votre pays.",
   "eventsCountryOnlyNote": "Nous n'affichons que les événements de votre pays, celui de la langue choisie dans l'application.",
+  "eventsScopeNote": "Nous affichons les événements de votre pays (celui de la langue choisie dans l'application), les événements internationaux et ceux de l'autre côté de la frontière à moins de {distance} du lieu que vous avez indiqué dans les Paramètres.",
+  "@eventsScopeNote": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
   "eventsLevelLocal": "Local",
   "eventsLevelProvincial": "Provincial",
   "eventsLevelRegional": "Régional",
@@ -2633,7 +2644,7 @@
   "petNewsTitle": "Actualités",
   "petNewsLoading": "Je charge les actualités...",
   "petNewsEmpty": "Aucune actualité disponible pour cette catégorie pour le moment.",
-  "petNewsEmptyLocal": "Pour le moment, il n'y a pas d'actualités dans votre langue et pour votre pays. Nous n'affichons pas d'actualités d'autres pays.",
+  "petNewsEmptyLocal": "Nous n'avons pas encore d'actualités pour votre pays.",
   "petNewsCategoryAll": "Toutes",
   "petNewsCategoryDog": "Chien",
   "petNewsCategoryCat": "Chat",

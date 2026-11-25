@@ -4018,6 +4018,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get eventsSuggestPickDates => 'Elige las fechas';
 
   @override
+  String get eventsSuggestFieldCountry => 'País';
+
+  @override
+  String get eventsSuggestFieldRegion => 'Región (opcional)';
+
+  @override
+  String get eventsSuggestRegionNone => 'Sin indicar';
+
+  @override
   String get eventsSuggestFieldCity => 'Ciudad';
 
   @override
@@ -4085,6 +4094,11 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get eventsCountryOnlyNote =>
       'Solo mostramos eventos de tu país, el del idioma que elegiste en la app.';
+
+  @override
+  String eventsScopeNote(String distance) {
+    return 'Mostramos los eventos de tu país (el del idioma que elegiste en la app), los internacionales y los del otro lado de la frontera a menos de $distance de la ubicación que indicaste en Ajustes.';
+  }
 
   @override
   String get eventsLevelLocal => 'Local';
@@ -4415,8 +4429,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'No hay noticias disponibles para esta categoría ahora.';
 
   @override
-  String get petNewsEmptyLocal =>
-      'Ahora mismo no hay noticias en tu idioma y para tu país. No mostramos noticias de otros países.';
+  String get petNewsEmptyLocal => 'Todavía no tenemos noticias para tu país.';
 
   @override
   String get petNewsCategoryAll => 'Todos';

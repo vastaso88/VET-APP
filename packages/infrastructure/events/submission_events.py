@@ -35,19 +35,26 @@ def submission_to_curated(
     today: date | None = None,
     source_url: str | None = None,
     slug: str | None = None,
+    level: str = "local",
+    level_basis: str = "default",
+    latitude: float | None = None,
+    longitude: float | None = None,
 ) -> CuratedEvent:
     """The submission as a validated event. Raises `CuratedEventError` when
     the project's rules refuse it (typically a social network as the link:
     pass the organizer's own page as `source_url`). New events from users are
-    always `local`/`default`: reach is decided by the team with a document,
-    never by a suggestion."""
+    `local`/`default`: reach (`level="international"` included) and coordinates
+    are decided by the team with a document, never by a suggestion."""
     checked_on = today or datetime.now(UTC).date()
     raw: dict[str, Any] = {
         "slug": slug or submission_slug(submission),
         "title": submission.title,
         "event_type": submission.event_type,
-        "level": "local",
-        "level_basis": "default",
+        "level": level,
+        "level_basis": level_basis,
+        "country": submission.country,
+        "latitude": latitude,
+        "longitude": longitude,
         "starts_on": submission.starts_on.isoformat(),
         "ends_on": submission.ends_on.isoformat(),
         "city": submission.city,

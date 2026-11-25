@@ -46,11 +46,12 @@ PetNewsEdition currentPetNewsEdition() {
 
 /// Editions our backend (GET /news) has feeds for. Today only the Italian
 /// one: the backend reads Italian pet magazines and veterinary bodies. Any
-/// other edition gets an empty list and the "no news in your language and
-/// country" message - never Italian headlines, never another country's
+/// other edition gets an empty list and the "no news for your country yet"
+/// message - never Italian headlines, never another country's
 /// (docs/i18n/NOTIZIE_EVENTI_MERCATINO.md) and never a call from the phone to
-/// a third-party feed or proxy. When the backend gains per-country feeds, add
-/// the edition here and pass it to /news.
+/// a third-party feed or proxy. When the backend gains the feeds of another
+/// country (feeds.py), add its edition here: an older server would answer it
+/// with the Italian headlines, which [BackendPetNewsRepository] refuses.
 const backendPetNewsEditions = <String>{'it-IT'};
 
 /// True when [edition] (default: the owner's) has news to show.
@@ -84,9 +85,9 @@ class BackendPetNewsRepository implements PetNewsRepository {
   // One request returns every category, so the whole answer is kept for a
   // while and shared by every repository instance (Home, News page, splash
   // warm-up): repeat navigation costs nothing. The backend refreshes its own
-  // copy from the feeds every couple of hours.
-  static _CacheEntry? _cache;
-  static Future<Map<String, List<PetNewsItem>>?>? _inFlight;
+  // copy from the feeds every couple of hours. One answer per country.
+  static final _cache = <String, _CacheEntry>{};
+  static final _inFlight = <String, Future<Map<String, List<PetNewsItem>>?>>{};
   static const _cacheTtl = Duration(minutes: 20);
   // The first request after a quiet spell makes the server read the feeds
   // (a few seconds, more on a slow line): a patient wait and one more try
@@ -114,31 +115,34 @@ class BackendPetNewsRepository implements PetNewsRepository {
 
   /// Forgets the shared answer (tests).
   static void resetCache() {
-    _cache = null;
-    _inFlight = null;
+    _cache.clear();
+    _inFlight.clear();
   }
 
   @override
   Future<List<PetNewsItem>> fetchForSpecies(String species, {int limit = 2}) async {
-    if (!petNewsEditionServed(_editionProvider())) return const [];
-    final byCategory = await _load();
+    final edition = _editionProvider();
+    if (!petNewsEditionServed(edition)) return const [];
+    final byCategory = await _load(edition.countryCode);
     return (byCategory[species] ?? const <PetNewsItem>[]).take(limit).toList(growable: false);
   }
 
-  Future<Map<String, List<PetNewsItem>>> _load() async {
-    final cached = _cache;
+  Future<Map<String, List<PetNewsItem>>> _load(String country) async {
+    final cached = _cache[country];
     if (cached != null && DateTime.now().difference(cached.fetchedAt) < _cacheTtl) {
       return cached.byCategory;
     }
 
-    final pending = _inFlight ??= _fetchAll().then((value) {
+    final pending = _inFlight[country] ??= _fetchAll(country).then((value) {
       // Kept even when the caller stopped waiting, so the next ask is instant.
-      if (value != null) _cache = _CacheEntry(value, DateTime.now());
+      if (value != null) _cache[country] = _CacheEntry(value, DateTime.now());
       return value;
-    }).whenComplete(() => _inFlight = null);
+    }).whenComplete(() {
+      _inFlight.remove(country);
+    });
 
     // A copy kept on the phone lets a slow request give way after a short wait.
-    final kept = cached == null ? await _keptCopy() : null;
+    final kept = cached == null ? await _keptCopy(country) : null;
     final fresh = kept == null
         ? await pending
         : await pending.timeout(_patience, onTimeout: () => null);
@@ -147,20 +151,20 @@ class BackendPetNewsRepository implements PetNewsRepository {
     return cached?.byCategory ?? kept?.byCategory ?? const {};
   }
 
-  /// The last good answer kept on the phone, parsed; null when there is none.
-  Future<_CacheEntry?> _keptCopy() async {
+  /// The last good answer of [country] kept on the phone, parsed; null when there is none.
+  Future<_CacheEntry?> _keptCopy(String country) async {
     final stored = await _disk.load();
     if (stored == null) return null;
-    final parsed = _parse(stored.body);
+    final parsed = _parse(stored.body, country);
     return parsed == null ? null : _CacheEntry(parsed, stored.savedAt);
   }
 
-  Future<Map<String, List<PetNewsItem>>?> _fetchAll() async {
+  Future<Map<String, List<PetNewsItem>>?> _fetchAll(String country) async {
     for (var attempt = 0; attempt < _attempts; attempt++) {
       if (attempt > 0 && retryPause > Duration.zero) {
         await Future<void>.delayed(retryPause * attempt);
       }
-      final result = await _fetchOnce(attempt == 0 ? _timeout : _retryTimeout);
+      final result = await _fetchOnce(country, attempt == 0 ? _timeout : _retryTimeout);
       if (result != null) return result;
     }
     return null;
@@ -171,15 +175,16 @@ class BackendPetNewsRepository implements PetNewsRepository {
   /// server that has not read its feeds yet sends). Null is tried again and never
   /// kept as the shared answer, so an empty first reply cannot hide the news for
   /// the next 20 minutes.
-  Future<Map<String, List<PetNewsItem>>?> _fetchOnce(Duration timeout) async {
+  Future<Map<String, List<PetNewsItem>>?> _fetchOnce(String country, Duration timeout) async {
     final baseUrl = _configLoader.load().apiBaseUrl;
     try {
       final response = await _client
-          .get(Uri.parse('$baseUrl/news').replace(queryParameters: {'limit': '$_itemsPerCategory'}))
+          .get(Uri.parse('$baseUrl/news')
+              .replace(queryParameters: {'limit': '$_itemsPerCategory', 'country': country}))
           .timeout(timeout);
       if (response.statusCode != 200) return null;
 
-      final parsed = _parse(response.body);
+      final parsed = _parse(response.body, country);
       if (parsed == null || !parsed.values.any((items) => items.isNotEmpty)) return null;
       unawaited(_disk.save(response.body, DateTime.now()));
       return parsed;
@@ -188,9 +193,12 @@ class BackendPetNewsRepository implements PetNewsRepository {
     }
   }
 
-  Map<String, List<PetNewsItem>>? _parse(String body) {
+  /// The headlines of [body]; null when it cannot be read or is the answer of another
+  /// country. A server that does not name the country (it knows only one) means Italy.
+  Map<String, List<PetNewsItem>>? _parse(String body, String country) {
     try {
       final json = jsonDecode(body) as Map<String, dynamic>;
+      if ((json['country'] ?? 'IT') != country) return null;
       final categories = json['categories'] as Map<String, dynamic>? ?? const {};
       return {
         for (final entry in categories.entries)

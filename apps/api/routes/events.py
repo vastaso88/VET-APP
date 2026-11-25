@@ -13,6 +13,7 @@ from packages.core.application.services.submit_event import (
     SubmissionLimitReachedError,
     SubmitEventInput,
 )
+from packages.core.domain.events.abroad import ABROAD_RADIUS_KM
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -22,16 +23,34 @@ def list_events(
     country: Annotated[str, Query(min_length=2, max_length=2)],
     from_day: Annotated[date, Query(alias="from")],
     to_day: Annotated[date, Query(alias="to")],
+    abroad: bool = False,
 ) -> dict[str, object]:
     """The public events of [country] that touch the window. Part of what a
     plan includes: after the trial an owner without a plan gets 402.
 
-    `country_has_events` tells an empty month from a country the catalogue does not cover."""
+    `country_has_events` tells an empty month from a country the catalogue does not cover.
+
+    With [abroad] (the app sends it; without it nothing changes) also the international events
+    of other countries and those within `abroad_radius_km` of the signed-in owner's saved
+    Località. The position is read here from the owner's own row: it is never a parameter,
+    and neither it nor a distance is in the answer."""
     container = get_container()
+    user = container.auth_provider.get_current_user()
     result = container.list_events_service().execute(
-        ListEventsInput(country=country, from_day=from_day, to_day=to_day)
+        ListEventsInput(
+            country=country,
+            from_day=from_day,
+            to_day=to_day,
+            abroad_for_owner=user.id if abroad else None,
+        )
     )
-    return {"events": result.events, "country_has_events": result.country_has_events}
+    answer: dict[str, object] = {
+        "events": result.events,
+        "country_has_events": result.country_has_events,
+    }
+    if abroad:
+        answer["abroad_radius_km"] = ABROAD_RADIUS_KM
+    return answer
 
 
 class SubmitEventRequest(BaseModel):
@@ -41,6 +60,7 @@ class SubmitEventRequest(BaseModel):
     ends_on: date
     city: Annotated[str, Field(max_length=200)]
     source_url: Annotated[str, Field(max_length=500)]
+    country: Annotated[str | None, Field(max_length=2)] = None
     province_code: Annotated[str | None, Field(max_length=4)] = None
     region: Annotated[str | None, Field(max_length=60)] = None
     venue_name: Annotated[str | None, Field(max_length=200)] = None

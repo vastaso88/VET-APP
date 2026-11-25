@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 class SupabasePetNewsCacheRepository(PetNewsCacheRepository):
-    """One row per audience in `pet_news_snapshots`, written only by the
+    """One row per country in `pet_news_snapshots`, written only by the
     backend (service role): the app never reads the table directly."""
 
     def __init__(self, client: Client) -> None:

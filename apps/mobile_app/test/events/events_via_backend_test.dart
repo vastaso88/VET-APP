@@ -28,11 +28,18 @@ EventsRepository _repository(MockClient client, {String? token = 'jwt'}) => Even
       tokenProvider: () => token,
     );
 
-Map<String, dynamic> _row(String id, {String country = 'IT'}) => {
+Map<String, dynamic> _row(
+  String id, {
+  String country = 'IT',
+  String level = 'local',
+  bool? nearBorder,
+}) =>
+    {
       'id': id,
       'title': 'Giornata dell adozione',
       'event_type': 'adoption_day',
-      'level': 'local',
+      'level': level,
+      if (nearBorder != null) 'near_border': nearBorder,
       'country': country,
       'starts_on': '2026-11-20',
       'ends_on': '2026-11-20',
@@ -61,17 +68,43 @@ void main() {
     final result = await _repository(client).loadEvents(from: _from, to: _to, country: 'IT');
 
     expect(seen.url.path, '/events');
-    expect(seen.url.queryParameters, {'country': 'IT', 'from': '2026-11-01', 'to': '2026-11-30'});
+    // No position among them: the server has the saved Località.
+    expect(seen.url.queryParameters,
+        {'country': 'IT', 'from': '2026-11-01', 'to': '2026-11-30', 'abroad': 'true'});
     expect(seen.headers['Authorization'], 'Bearer jwt');
     expect(result.events.map((e) => e.id), ['ev-1']);
     expect(result.needsPlan, isFalse);
     expect(result.failed, isFalse);
   });
 
-  test('an event of another country is never shown, even if the backend sent it', () async {
+  test('of another country: international or marked as near by the server, never anything else',
+      () async {
     final client = MockClient((request) async => http.Response(
           jsonEncode({
-            'events': [_row('ev-it'), _row('ev-fr', country: 'FR')]
+            'events': [
+              _row('ev-it'),
+              _row('ev-fr', country: 'FR', level: 'national'),
+              _row('ev-de', country: 'DE', level: 'international', nearBorder: false),
+              _row('ev-ch', country: 'CH', nearBorder: true),
+              _row('ev-at', country: 'AT', nearBorder: false),
+            ],
+            'country_has_events': true,
+            'abroad_radius_km': 30.0,
+          }),
+          200,
+        ));
+
+    final result = await _repository(client).loadEvents(from: _from, to: _to, country: 'IT');
+
+    expect(result.events.map((e) => e.id), ['ev-it', 'ev-de', 'ev-ch']);
+    expect(result.abroadRadiusKm, 30);
+  });
+
+  test('a server that does not know the rule yet: the list of the country, as before', () async {
+    final client = MockClient((request) async => http.Response(
+          jsonEncode({
+            'events': [_row('ev-it'), _row('ev-fr', country: 'FR')],
+            'country_has_events': true,
           }),
           200,
         ));
@@ -79,6 +112,7 @@ void main() {
     final result = await _repository(client).loadEvents(from: _from, to: _to, country: 'IT');
 
     expect(result.events.map((e) => e.id), ['ev-it']);
+    expect(result.abroadRadiusKm, isNull);
   });
 
   test('a country with no events at all is told apart; an older server says nothing', () async {

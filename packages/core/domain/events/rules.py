@@ -4,6 +4,8 @@ hand-curated files, the feed importers and the suggestions of the users.
 
 import re
 
+from packages.core.domain.events.regions import DEFAULT_COUNTRY
+
 EVENT_TYPES = frozenset(
     {
         "pet_fair",
@@ -28,31 +30,6 @@ EVENT_TYPES = frozenset(
     }
 )
 
-REGIONS = frozenset(
-    {
-        "Abruzzo",
-        "Basilicata",
-        "Calabria",
-        "Campania",
-        "Emilia-Romagna",
-        "Friuli-Venezia Giulia",
-        "Lazio",
-        "Liguria",
-        "Lombardia",
-        "Marche",
-        "Molise",
-        "Piemonte",
-        "Puglia",
-        "Sardegna",
-        "Sicilia",
-        "Toscana",
-        "Trentino-Alto Adige",
-        "Umbria",
-        "Valle d'Aosta",
-        "Veneto",
-    }
-)
-
 # Social networks and commercial aggregators: never an acceptable source
 # (terms of use, no reuse, no way to tell who wrote what).
 BLOCKED_SOURCE_DOMAINS = (
@@ -66,9 +43,19 @@ BLOCKED_SOURCE_DOMAINS = (
     "twitter.com",
 )
 
+# Italy: the two letters of the province. Elsewhere the code of the state, Land, département or
+# province, one to three letters or digits ("NSW", "BY", "75", "2A").
+_ITALIAN_PROVINCE = re.compile(r"[A-Z]{2}")
+_SUBDIVISION = re.compile(r"[A-Z0-9]{1,3}")
+
 _EMAIL = re.compile(r"\S+@\S+")
 # Seven or more digits, allowing the usual separators: a telephone number.
 _PHONE = re.compile(r"(?:\+?\d[\s./-]?){7,}")
+
+
+def is_valid_subdivision(country: str, code: str) -> bool:
+    pattern = _ITALIAN_PROVINCE if country == DEFAULT_COUNTRY else _SUBDIVISION
+    return pattern.fullmatch(code) is not None
 
 
 def contains_personal_data(value: str | None) -> bool:
