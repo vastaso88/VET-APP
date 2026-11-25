@@ -29,7 +29,8 @@ from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
-from urllib.robotparser import RobotFileParser
+
+from scripts.sources.robots9309 import Robots9309
 
 USER_AGENT = (
     "QuokkaCercafonti/0.1 (lettura rispettosa di fonti pubbliche; una richiesta alla volta)"
@@ -76,7 +77,7 @@ class Page:
 
 @dataclass
 class RobotsInfo:
-    allowed_parser: RobotFileParser
+    allowed_parser: Robots9309
     crawl_delay: float = 0.0
     ai_train_no: bool = False
     ai_input_no: bool = False
@@ -151,7 +152,7 @@ def main_text(host: str, raw: str) -> str | None:
 # modifica richiede il parere della Normativa e l'aggiornamento del test.
 UMBRELLA_SUFFIXES = {
     "co.uk", "org.uk", "gov.uk", "ac.uk", "com.au", "gov.au", "org.au", "edu.au", "govt.nz",
-    "co.nz", "gov.it", "gv.at", "co.at", "gob.es", "com.es", "europa.eu",
+    "co.nz", "gov.it", "gv.at", "co.at", "gob.es", "com.es", "europa.eu", "gouv.fr",
 }  # fmt: skip
 
 
@@ -421,10 +422,13 @@ class Fetcher:
                 self._stop_host(host, f"robots.txt {status}")
                 raise Blocked(host, f"robots.txt risponde {status}")
             self._robots_store(host, status, text)
-        parser = RobotFileParser()
+        is_file = status == 200 and not re.search(r"<html|<!doctype", text[:300], re.IGNORECASE)
+        parser = Robots9309(text if is_file else "")
         info = RobotsInfo(parser)
-        if status == 200 and not re.search(r"<html|<!doctype", text[:300], re.IGNORECASE):
-            parser.parse(text.splitlines())
+        if is_file:
+            if parser.ambiguous:  # file ambiguo o illeggibile: stop (doc 20 §23.1)
+                self._stop_host(host, f"robots.txt ambiguo: {parser.reason}")
+                raise Blocked(host, f"robots.txt ambiguo ({parser.reason}): l'host resta fuori")
             delays = re.findall(r"(?im)^\s*crawl-delay:\s*(\d+(?:\.\d+)?)", text)
             info.crawl_delay = float(delays[0]) if delays else 0.0
             signals = re.findall(r"(?im)^\s*content-signal:\s*(.+)$", text)
@@ -432,7 +436,6 @@ class Fetcher:
             info.ai_train_no = bool(re.search(r"ai-train\s*=\s*no", " ".join(signals), re.I))
             info.ai_input_no = bool(re.search(r"ai-input\s*=\s*no", " ".join(signals), re.I))
         else:  # nessun robots.txt (404 e simili): nessun divieto dichiarato
-            parser.parse([])
             info.present = False
         self._robots[host] = info
         return info

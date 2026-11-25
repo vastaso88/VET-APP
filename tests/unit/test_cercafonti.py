@@ -627,7 +627,7 @@ def test_attribution_line_depends_on_host_and_kind_of_text() -> None:
 def test_umbrella_suffix_list_is_closed() -> None:
     expected = {
         "co.uk", "org.uk", "gov.uk", "ac.uk", "com.au", "gov.au", "org.au", "edu.au", "govt.nz",
-        "co.nz", "gov.it", "gv.at", "co.at", "gob.es", "com.es", "europa.eu",
+        "co.nz", "gov.it", "gv.at", "co.at", "gob.es", "com.es", "europa.eu", "gouv.fr",
     }  # fmt: skip
     assert F.UMBRELLA_SUFFIXES == expected  # cambiare l'elenco richiede il parere della Normativa
     assert F.umbrella_of("www.ecdc.europa.eu") == "europa.eu"
