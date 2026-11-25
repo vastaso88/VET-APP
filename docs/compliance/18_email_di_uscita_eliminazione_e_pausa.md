@@ -65,6 +65,8 @@ Tolti: la finestra «Mettilo in pausa», le e-mail P1, P3, P4, P5 e P6, il prome
 
 **Modifiche al [12](12_avvisi_prima_della_cancellazione.md) del 25 novembre 2026:** tolta la pausa (`{blocco_come_evitarlo}`, regole 4, 7 e 11, e-mail E2–E8). Restano il blocco comune S (con i tre blocchi sopra) e la regola che scaricare i dati non ferma la cancellazione.
 
+**Piè di pagina di tutte le e-mail** (approvato dal proprietario il 25 novembre 2026, sulla proposta della Normativa): firma «Il team di Quokka» e, sotto, in piccolo e in grigio, «Quokka è un servizio di {titolare} · {contatto}»; se l'art. 2250 c.c. vale anche per le e-mail (non l'ho verificato ⚖️), anche la sede e il numero di iscrizione al registro delle imprese. I valori vengono dalla configurazione e la riga si compila quando la società c'è. Nei testi di questo documento la frase finale «{titolare}, {contatto}.» del corpo dice già la stessa cosa: quando il piè di pagina è nel codice, la si toglie da qui e dai testi in un colpo solo, insieme al test di Registrazione.
+
 ## 7. Età
 
 - **14–17 anni:** gli stessi testi, **solo versione S** (regola 5 del [12](12_avvisi_prima_della_cancellazione.md)), con un linguaggio semplice e breve (art. 12(1) GDPR). `{nota_minorenni}` («Se hai meno di 18 anni, per sottoscrivere un piano serve l'autorizzazione di un genitore») solo dove si cita un piano, cioè nelle 8 e-mail dei 120 giorni: non in D1–D4, che non lo citano.

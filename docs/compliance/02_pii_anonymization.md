@@ -2,7 +2,7 @@
 
 ## Confine (deciso esplicitamente)
 
-L'anonimizzazione si applica **al testo inviato al provider LLM esterno** (Anthropic; dal 25 novembre 2026 Groq non è più un fornitore: niente analisi delle immagini e niente trascrizione vocale) e ai testi derivati che conserviamo per uso interno della chat o del team (trascrizione degli allegati, segnalazioni delle risposte). I dati inseriti dal proprietario nel database restano identificabili: servono per finalità di cura reale (storico clinico del pet). Non c'è anonimizzazione at-rest di quei dati — è una scelta deliberata, non una dimenticanza.
+L'anonimizzazione si applica **al testo inviato al provider LLM esterno** (Anthropic; dal 25 novembre 2026 Groq non è più un fornitore: niente analisi delle immagini, e la voce la trascrive il telefono) e ai testi derivati che conserviamo per uso interno della chat o del team (trascrizione degli allegati, segnalazioni delle risposte). I dati inseriti dal proprietario nel database restano identificabili: servono per finalità di cura reale (storico clinico del pet). Non c'è anonimizzazione at-rest di quei dati — è una scelta deliberata, non una dimenticanza.
 
 La ricerca delle evidenze (`_evidence_retriever.retrieve(...)`) chiama servizi esterni di letteratura (Europe PMC, PubMed, Crossref, OpenAlex): riceve solo le parole chiave ricavate dal testo anonimizzato o, se non ci sono, il testo anonimizzato (dal 2026-11-08; prima ripiegava sulle parole originali). Il controllo di pertinenza e i recuperi locali continuano a usare il testo originale, senza uscire dal processo. La risposta del modello non viene anonimizzata: torna al client così com'è.
 
@@ -14,7 +14,7 @@ La ricerca delle evidenze (`_evidence_retriever.retrieve(...)`) chiama servizi e
 | [document_summarizer.py](../../packages/core/application/services/document_summarizer.py) | testo estratto da un PDF, prima di inviarlo al modello |
 | [upload_chat_attachment.py](../../packages/core/application/services/upload_chat_attachment.py) | trascrizione di foto/PDF, prima di salvarla (è il testo che la chat rilegge in seguito) |
 | [groq_image_analyzer.py](../../packages/infrastructure/vision/groq_image_analyzer.py) | l'immagine parte intera, non filtrabile; il prompt chiede al modello di omettere nomi, indirizzi, telefoni e numeri di microchip o di identificazione dalla lettura, che poi passa dal filtro in `upload_chat_attachment.py` **[tolto con Groq il 25 novembre 2026: file da cancellare dal codice]** |
-| [speech_to_text.py](../../apps/api/routes/speech_to_text.py) | l'audio parte intero verso la trascrizione e non viene salvato; il testo trascritto torna al client e passa dal filtro quando viene inviato come messaggio in chat **[tolto con Groq il 25 novembre 2026: rotta da cancellare dal codice]** |
+| [speech_to_text.py](../../apps/api/routes/speech_to_text.py) | l'audio parte intero verso la trascrizione e non viene salvato; il testo trascritto torna al client e passa dal filtro quando viene inviato come messaggio in chat **[25 novembre 2026: la trascrizione passa al telefono, la rotta si cancella dal codice]** |
 | [report_chat_response.py](../../packages/core/application/services/report_chat_response.py) | risposta segnalata e dettagli della segnalazione, prima di salvarli |
 
 In tutti questi punti viene passato anche il **nome del proprietario** (`display_name` dell'account, letto dai metadati Supabase), così viene rimosso anche quando compare senza etichetta. Se coincide con il nome del pet non viene rimosso (cancellerebbe il nome di cui si sta parlando).
@@ -30,13 +30,13 @@ In tutti questi punti viene passato anche il **nome del proprietario** (`display
 
 Email, telefoni italiani (cellulari e fissi, con o senza +39), codice fiscale, partita IVA, IBAN, URL e domini, indirizzi con numero civico (via/viale/piazza/corso… + civico, con CAP e comune se presenti), nomi preceduti da un'etichetta o un titolo ("Proprietario:", "Sig.", "Dott.ssa"…), nome e cognome del proprietario noti dall'account. Ogni valore è sostituito da un segnaposto (`[EMAIL]`, `[TELEFONO]`, `[INDIRIZZO]`, `[NOME]`…).
 
-Non tocca mai: dosaggi, date, valori di laboratorio, pesi. Il **numero di microchip** invece viene sempre sostituito con `[MICROCHIP]` (decisione del proprietario, 2026-11-08): attraverso l'anagrafe identifica il proprietario, e alla risposta non serve. Vale in chat, nel riepilogo per il veterinario, nel testo estratto da documenti e foto, nella cache delle risposte e nelle ricerche nelle banche dati scientifiche. Resta fuori solo ciò che il filtro non può toccare: i pixel di una foto, che dal 25 novembre 2026 non vanno a nessun fornitore (vedi sotto).
+Non tocca mai: dosaggi, date, valori di laboratorio, pesi. Il **numero di microchip** invece viene sempre sostituito con `[MICROCHIP]` (decisione del proprietario, 2026-11-08): attraverso l'anagrafe identifica il proprietario, e alla risposta non serve. Vale in chat, nel riepilogo per il veterinario, nel testo estratto da documenti e foto, nella cache delle risposte e nelle ricerche nelle banche dati scientifiche. Resta fuori solo ciò che il filtro non può toccare: i pixel di una foto, che dal 25 novembre 2026 non vanno a nessun fornitore, e la voce, che la trascrive il telefono (vedi sotto).
 
 ## Cosa NON copre (rischio residuo)
 
 - Nomi di persona senza etichetta e non noti dall'account (es. il nome di un familiare o del veterinario scritto in mezzo a una frase): servirebbe un modello NER (Presidio).
 - Indirizzi senza numero civico o scritti tutti in minuscolo; telefoni esteri o in formati insoliti.
-- **Immagini**: dal 25 novembre 2026 nessuna foto va a un fornitore (niente analisi delle immagini e niente messaggi vocali): il filtro non ha pixel da ripulire. Se la lettura delle foto tornerà con un fornitore, le foto partiranno così come sono e questa regola va riscritta; l'informativa lo dirà (`it/02_informativa_privacy_it.md`, §6).
+- **Immagini e voce**: dal 25 novembre 2026 nessuna foto va a un fornitore (niente analisi delle immagini) e la voce non arriva ai nostri server: la trascrive il riconoscimento vocale del telefono e il filtro lavora sul testo che ne risulta, come su ogni altro testo. Se la lettura delle foto tornerà con un fornitore, le foto partiranno così come sono e questa regola va riscritta; l'informativa lo dirà (`it/02_informativa_privacy_it.md`, §6).
 - Il nome del proprietario è rimosso solo se l'account ha un `display_name`.
 
 È un livello di riduzione del rischio, non una garanzia assoluta.

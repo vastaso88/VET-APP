@@ -9,7 +9,7 @@ Documentazione sulla conformità normativa di Quokka (AI Act, protezione dati) e
 - `02_pii_anonymization.md` — confine e funzionamento dell'anonimizzazione dei dati sensibili.
 - `03_consenso_cartella_clinica.md` — testo e revisione del consenso per l'accesso della chat alla cartella clinica del pet.
 - `04_termini_e_consensi.md` — quadro normativo su Termini di Servizio, consensi opt-in (GDPR art. 6/7) e permessi OS; architettura dei consensi a livello di account.
-- `05_permessi_dispositivo_os.md` — catalogo permessi OS per l'app nativa Android (fotocamera, posizione, notifiche; il microfono si toglie con i messaggi vocali, 25 novembre 2026): cosa dichiarare ora, testo di richiesta, e il flusso "aggiorna per continuare" quando un permesso non è già dichiarato.
+- `05_permessi_dispositivo_os.md` — catalogo permessi OS per l'app nativa Android (fotocamera, microfono, posizione, notifiche): cosa dichiarare ora, testo di richiesta, e il flusso "aggiorna per continuare" quando un permesso non è già dichiarato.
 - `06_radar_mappe_sponsorizzazioni.md` — parere operativo su radar servizi OSM: licenza ODbL, policy Overpass/tile, pubblicità veterinaria, trasparenza commerciale, privacy posizione; sponsorizzazioni rimandate.
 - `07_contributi_utenti.md` — parere su contributi degli utenti nel radar (perimetro ridotto: segnalazioni e stelle sulle aree cani): obblighi DSA per piccole imprese, rischi residui, regole d'uso v2, licenze dei dataset comunali, bozze privacy.
 - `08_punti_aperti_prima_del_lancio.md` — registro unico dei punti da decidere prima del lancio pubblico: cosa, perché, chi decide, quando.

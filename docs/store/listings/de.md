@@ -39,6 +39,9 @@ Quokka ist ein Informationsangebot: kein tierärztlicher Dienst und kein Ersatz 
 
 IHRE DATEN, IHRE WAHL
 Die Krankenakte kann der Assistent nur lesen, wenn Sie es für dieses Tier erlauben; die Einwilligung können Sie jederzeit widerrufen. Ihre Fragen durchlaufen Datenschutzfilter, bevor sie an den KI-Dienst gesendet werden. Der Standort wird nur verwendet, während Sie die App nutzen oder einen Spaziergang aufzeichnen.
+
+ABO
+Abo mit automatischer Verlängerung: jederzeit im Store kündbar.
 ```
 
 ### Novità di questa versione (max 500)
@@ -86,6 +89,9 @@ Quokka ist ein Informationsangebot: kein tierärztlicher Dienst und kein Ersatz 
 
 IHRE DATEN, IHRE WAHL
 Die Krankenakte kann der Assistent nur lesen, wenn Sie es für dieses Tier erlauben; die Einwilligung können Sie jederzeit widerrufen. Ihre Fragen durchlaufen Datenschutzfilter, bevor sie an den KI-Dienst gesendet werden. Der Standort wird nur verwendet, während Sie die App nutzen oder einen Spaziergang aufzeichnen.
+
+ABO
+Abo mit automatischer Verlängerung: jederzeit im Store kündbar.
 ```
 
 ### Parole chiave (max 100)

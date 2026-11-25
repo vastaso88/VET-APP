@@ -1,4 +1,4 @@
-> **25 novembre 2026, Groq tolto:** Groq non è più un fornitore e i messaggi vocali non ci sono più (decisione del proprietario). In questa bozza ho tolto la riga di Groq e la sua nota; le frasi su messaggi vocali, microfono, audio e immagini inviate ai fornitori vanno allineate a [it/02](../it/02_informativa_privacy_it.md) (stessi tagli) prima della traduzione e della revisione locale.
+> **25 novembre 2026, Groq tolto:** Groq non è più un fornitore e la voce non arriva più a nessun fornitore: la trascrive il telefono e arriva solo testo (decisione del proprietario). In questa bozza ho tolto la riga di Groq e la sua nota; le frasi su messaggi vocali, microfono, audio e immagini inviate ai fornitori vanno allineate a [it/02](../it/02_informativa_privacy_it.md) (stessi tagli) prima della traduzione e della revisione locale.
 
 > **BOZZA — non è consulenza legale; da rivedere da un solicitor australiano prima della pubblicazione**
 

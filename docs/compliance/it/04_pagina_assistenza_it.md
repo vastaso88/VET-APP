@@ -21,6 +21,8 @@ Dall'app: Impostazioni → Contattaci.
 
 **Se smetto di pagare, che cosa succede ai miei dati?** Il tuo account resta, ma puoi solo consultare i dati, scaricarli o eliminare l'account. Li conserviamo per 4 mesi dalla scadenza e prima di cancellarli ti avvisiamo più volte. Se scegli di nuovo un piano in questo periodo, ritrovi i tuoi dati e riprendi a usare l'app [in attesa del codice].
 
+**Il piano si rinnova da solo? Come disdico?** Sì: il piano, mensile o annuale, si rinnova da solo alla data indicata finché non lo disdici. Per disdire vai in Impostazioni → Abbonamento e pagamenti e tocca «Disdici l'abbonamento», oppure disdici dallo store dove hai sottoscritto. Usi il piano fino alla fine del periodo già pagato. Se il piano è annuale, sette giorni prima del rinnovo ti scriviamo per ricordartelo [in attesa del codice].
+
 **Come cambio o tolgo il numero di telefono e la foto profilo?** Dal tuo profilo («Il tuo profilo», dal tuo nome in Impostazioni). Sono facoltativi: nessuna funzione usa il telefono.
 
 **Come revoco un consenso?** Impostazioni → Permessi e consensi. La lettura della cartella clinica da parte della chat si controlla animale per animale, dalla scheda dell'animale. La revoca vale per le richieste successive.

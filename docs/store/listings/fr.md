@@ -39,6 +39,9 @@ Quokka est un outil d'information : ce n'est pas un service vétérinaire et il 
 
 VOS DONNÉES, VOTRE CHOIX
 L'assistant ne lit le dossier médical que si vous l'autorisez pour cet animal, et vous pouvez retirer votre consentement à tout moment. Des filtres de confidentialité s'appliquent à vos questions avant l'envoi au service d'IA. La position n'est utilisée que pendant que vous utilisez l'application ou enregistrez une promenade.
+
+ABONNEMENT
+Abonnement à renouvellement automatique : résiliez quand vous voulez depuis la boutique.
 ```
 
 ### Novità di questa versione (max 500)
@@ -86,6 +89,9 @@ Quokka est un outil d'information : ce n'est pas un service vétérinaire et il 
 
 VOS DONNÉES, VOTRE CHOIX
 L'assistant ne lit le dossier médical que si vous l'autorisez pour cet animal, et vous pouvez retirer votre consentement à tout moment. Des filtres de confidentialité s'appliquent à vos questions avant l'envoi au service d'IA. La position n'est utilisée que pendant que vous utilisez l'application ou enregistrez une promenade.
+
+ABONNEMENT
+Abonnement à renouvellement automatique : résiliez quand vous voulez depuis la boutique.
 ```
 
 ### Parole chiave (max 100)

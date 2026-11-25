@@ -39,6 +39,9 @@ Quokka is an information tool: it is not a veterinary service and does not repla
 
 YOUR DATA, YOUR CHOICE
 The assistant can read the health record only if you allow it for that animal, and you can withdraw consent at any time. Privacy filters are applied to your questions before they are sent to the AI service. Location is used only while you use the app or record a walk.
+
+SUBSCRIPTION
+Subscription with automatic renewal: cancel any time in the store.
 ```
 
 ### Novità di questa versione (max 500)
@@ -86,6 +89,9 @@ Quokka is an information tool: it is not a veterinary service and does not repla
 
 YOUR DATA, YOUR CHOICE
 The assistant can read the health record only if you allow it for that animal, and you can withdraw consent at any time. Privacy filters are applied to your questions before they are sent to the AI service. Location is used only while you use the app or record a walk.
+
+SUBSCRIPTION
+Subscription with automatic renewal: cancel any time in the store.
 ```
 
 ### Parole chiave (max 100)

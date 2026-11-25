@@ -15,7 +15,7 @@ Versione di prova: 2026-10-28 (aggiunti cognome, telefono facoltativo e foto pro
 | Account | Email, nome e cognome, data di registrazione, scelte di consenso con data e versione. Facoltativi: numero di telefono (nessuna funzione lo usa: resta nel profilo e lo puoi modificare o togliere) e foto profilo (la vedi solo tu, in uno spazio privato del tuo account; la puoi cambiare o togliere). Telefono e foto si cancellano con l'account | Tu, in registrazione o dal profilo. La password è gestita dal fornitore di autenticazione |
 | Animali | Nome, specie, razza, età, peso, note, foto e video | Tu |
 | Documenti e cartella clinica | Documenti caricati, eventi clinici. Possono contenere dati tuoi o di terzi (es. nome, codice fiscale) | Tu |
-| Chat | Domande, risposte, allegati | Tu e il sistema |
+| Chat | Domande (scritte o dettate: la voce la trascrive il telefono), risposte, allegati | Tu e il sistema |
 | Posizione | Posizione GPS, solo con il permesso del dispositivo; oppure indirizzo inserito a mano. Per le passeggiate, il percorso: punti GPS con data, ora e precisione, collegati al tuo account e al tuo animale | Tu, tramite il dispositivo |
 | Contributi | Segnalazioni di luoghi, stelle sulle aree cani, voti. Associati a uno pseudonimo, non al tuo nome | Tu |
 | Mercatino | Gli annunci che pubblichi: titolo, descrizione, prezzo, foto, categoria, specie, città e posizione approssimata (circa 1 km). Gli altri utenti li vedono nella loro zona; il tuo nome e la tua e-mail non vengono mostrati | Tu |
@@ -31,6 +31,7 @@ L'app chiede un permesso solo quando usi la funzione che lo richiede. Se lo negh
 | Permesso | Quando serve | Cosa riceviamo |
 |---|---|---|
 | Posizione, mentre usi l'app | Impostare la tua zona, vedere luoghi e attività vicini, registrare le passeggiate | Le coordinate rilevate. Durante una passeggiata attiva la posizione continua a essere rilevata anche con l'app in secondo piano, e una notifica visibile lo segnala [verificare nel codice che il rilevamento si fermi alla fine della passeggiata] |
+| Microfono | Dettare un messaggio nella chat | La voce, che la trascrive il riconoscimento vocale del telefono; a noi arriva solo il testo [verificare: le pagine di Google e di Apple] |
 | Notifiche | Ricordarti vaccini e cure | Nessun dato: serve solo a mostrare gli avvisi |
 | Foto, video e documenti | Aggiungere foto e video dei tuoi animali, allegare documenti | Solo i file che scegli. Per sceglierli l'app usa il selettore del sistema e non legge la tua galleria; per scattare usa la fotocamera del sistema [valido dopo la correzione del manifest, registro punto 25] |
 
@@ -65,7 +66,7 @@ L'app chiede un permesso solo quando usi la funzione che lo richiede. Se lo negh
 
 ## 5. Come usiamo l'IA
 
-Le risposte della chat sono generate da un sistema di IA. Prima di inviare il testo al fornitore, il sistema toglie automaticamente alcuni dati personali riconoscibili: email, telefoni, codice fiscale, indirizzi con numero civico, nomi preceduti da un'etichetta o noti dall'account. Non può riconoscerli tutti: per esempio un nome di persona scritto in mezzo a una frase. Le foto non vengono lette da nessun fornitore. [Nota per il revisore: due chiamate al fornitore ricevono il riepilogo della cartella clinica senza filtro, registro 08, punto 28. Finché non è corretto, non scrivere che la cartella clinica viene filtrata.]
+Le risposte della chat sono generate da un sistema di IA. Prima di inviare il testo al fornitore, il sistema toglie automaticamente alcuni dati personali riconoscibili: email, telefoni, codice fiscale, indirizzi con numero civico, nomi preceduti da un'etichetta o noti dall'account. Non può riconoscerli tutti: per esempio un nome di persona scritto in mezzo a una frase. Le foto non vengono lette da nessun fornitore; la voce la trascrive il telefono e a noi arriva solo il testo. [Nota per il revisore: due chiamate al fornitore ricevono il riepilogo della cartella clinica senza filtro, registro 08, punto 28. Finché non è corretto, non scrivere che la cartella clinica viene filtrata.]
 
 ## 6. Per quanto tempo conserviamo i dati
 

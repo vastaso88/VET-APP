@@ -79,7 +79,7 @@ Il meccanismo c'è: `CURRENT_VERSIONS` in `packages/core/domain/consent/account_
 
 ## 5. Che cosa deve mostrare la schermata (domanda d)
 
-Decide l'Orchestratore dopo questo parere; i requisiti legali:
+Decide l'Orchestratore dopo questo parere; i requisiti legali (dal 25 novembre 2026 titolo e testo sono quelli del §9):
 
 1. **Titolo**: «Quokka non gestisce le urgenze».
 2. **Testo**: la versione breve, **sempre visibile senza scorrere** (non solo un collegamento ai Termini).
@@ -119,3 +119,22 @@ Decide l'Orchestratore dopo questo parere; i requisiti legali:
 2. **Che cosa c'è oggi** (`chat_notice.dart`, `set_account_consent.py`): l'app manda solo «accettato»; il server scrive la versione *corrente* e la data di *ricezione*. Con l'applicazione dei consensi sul server accesa, le rotte della chat non rispondono finché la registrazione non c'è: la data del server precede sempre la prima risposta e la data del tocco serve poco. Con l'applicazione spenta (oggi) la chat risponde anche senza registrazione: la data del tocco è l'unico modo per mostrare che l'avviso veniva prima.
 3. **Proposta.** Al tocco l'app salva la **versione mostrata** e l'**ora del telefono** e le manda insieme all'accettazione. Il server tiene la **propria data di ricezione come data ufficiale** (`decided_at`) e registra il resto come dato dichiarato (per esempio `client_decided_at` e la versione mostrata): scarta l'ora del telefono se è nel futuro o più vecchia di 30 giorni e, se la versione mostrata non è la corrente, registra quella mostrata (la schermata ricompare alla chat successiva). L'orologio del telefono può essere sbagliato o modificato: per questo affianca la data del server e non la sostituisce. Chiude anche il dubbio di Cybersicurezza (il server stampa la versione corrente, non quella mostrata).
 4. **Se non arriva mai** (telefono perso, app disinstallata prima dell'invio): resta un'accettazione data davvero e senza prova sul server. Rischio basso: è la conseguenza della scelta di non fermare la chat per un server che non risponde (24 novembre).
+
+
+## 9. Una sola schermata alla prima chat, con il fornitore di IA (25 novembre 2026)
+
+**Approvata dal proprietario il 25 novembre 2026, ore 11:45** («dove non ho dato altre risposte approva la tua proposta», riferito dall'Orchestratore). Sostituisce l'avviso `chatAi` e, con le foto e la voce che non vanno a nessun fornitore, rende inutili `chatMedia` e `chatPhoto`: tre avvisi diventano una schermata.
+
+**Perché.** La chat è l'unico punto in cui chi scrive vede che le domande vanno a un fornitore di IA negli Stati Uniti. L'art. 13 GDPR chiede di dire chi riceve i dati quando li si raccoglie; Apple (linea guida 5.1.2(i), da novembre 2025) chiede di nominare il fornitore e di ottenere il permesso esplicito prima del primo invio (fonte secondaria, `docs/store/03` B3: ⚖️ da confermare sulla pagina di Apple). Una riga nell'informativa non basta.
+
+**Testo** (italiano):
+- Titolo: «Prima della tua prima chat».
+- Testo: «Ti risponde un'intelligenza artificiale e può sbagliare. Le tue domande, ripulite dai dati personali che riconosciamo, vanno ad Anthropic, il nostro fornitore di IA, con server negli Stati Uniti: i dettagli sono nell'informativa. Quokka non gestisce le urgenze: in emergenza rivolgiti subito a un veterinario, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Non aspettare la risposta dell'app.»
+- Casella, non pre-spuntata: «Ho capito che Quokka non gestisce le urgenze e non lo uso in caso di emergenza.»
+- Pulsanti: «Accetto e inizio la chat» (attivo solo con la casella spuntata) e «Non accetto» (stesso peso visivo; chiude la sola chat, con l'avviso del §4, punto 4). Collegamenti: «Leggi l'informativa» e il testo completo nei Termini.
+
+**Versioni.** La conferma `emergency_notice` resta v1: il testo della clausola non cambia. La parte sul fornitore ha un **proprio id di avviso** (per esempio `chat_ai_provider`): la vede una volta alla prima chat dopo l'aggiornamento, anche chi aveva già accettato la clausola, e riappare con un id nuovo se il fornitore cambia. Quando la lettura delle foto tornerà con un fornitore, l'avviso sulle foto torna come avviso nuovo e l'informativa ne ha la riga.
+
+**Voce.** Il microfono resta: la voce la trascrive il riconoscimento vocale del telefono e a Quokka arriva solo il testo ([05](05_permessi_dispositivo_os.md)); per questo non serve un avviso d'invio nella chat. Le parole sul riconoscimento vocale stanno nel testo del permesso del sistema e nell'informativa.
+
+**Il resto del §5 vale** (accessibilità, quando, dove altro); l'accettazione registrata dopo il tocco è nel §8. Le traduzioni in inglese, spagnolo, tedesco e francese sono bozze non riviste.

@@ -39,6 +39,9 @@ Quokka es una herramienta de divulgación: no es un servicio veterinario y no su
 
 TUS DATOS, TU DECISIÓN
 El asistente solo puede leer el historial clínico si lo autorizas para ese animal, y puedes retirar el consentimiento cuando quieras. A tus preguntas se les aplican filtros de privacidad antes de enviarlas al servicio de IA. La ubicación se usa solo mientras usas la aplicación o registras un paseo.
+
+SUSCRIPCIÓN
+Suscripción con renovación automática: cancela cuando quieras desde la tienda.
 ```
 
 ### Novità di questa versione (max 500)
@@ -86,6 +89,9 @@ Quokka es una herramienta de divulgación: no es un servicio veterinario y no su
 
 TUS DATOS, TU DECISIÓN
 El asistente solo puede leer el historial clínico si lo autorizas para ese animal, y puedes retirar el consentimiento cuando quieras. A tus preguntas se les aplican filtros de privacidad antes de enviarlas al servicio de IA. La ubicación se usa solo mientras usas la aplicación o registras un paseo.
+
+SUSCRIPCIÓN
+Suscripción con renovación automática: cancela cuando quieras desde la tienda.
 ```
 
 ### Parole chiave (max 100)

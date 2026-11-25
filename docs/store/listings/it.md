@@ -39,6 +39,9 @@ Quokka è uno strumento di divulgazione: non è un servizio veterinario e non so
 
 I TUOI DATI, LA TUA SCELTA
 La cartella clinica è accessibile all'assistente solo se lo consenti per quell'animale, e puoi revocare il consenso quando vuoi. Alle tue domande si applicano filtri per la privacy prima dell'invio al servizio di IA. La posizione viene usata solo mentre usi l'app o registri una passeggiata.
+
+ABBONAMENTO
+Abbonamento con rinnovo automatico: disdici quando vuoi dallo store.
 ```
 
 ### Novità di questa versione (max 500)
@@ -86,6 +89,9 @@ Quokka è uno strumento di divulgazione: non è un servizio veterinario e non so
 
 I TUOI DATI, LA TUA SCELTA
 La cartella clinica è accessibile all'assistente solo se lo consenti per quell'animale, e puoi revocare il consenso quando vuoi. Alle tue domande si applicano filtri per la privacy prima dell'invio al servizio di IA. La posizione viene usata solo mentre usi l'app o registri una passeggiata.
+
+ABBONAMENTO
+Abbonamento con rinnovo automatico: disdici quando vuoi dallo store.
 ```
 
 ### Parole chiave (max 100)
