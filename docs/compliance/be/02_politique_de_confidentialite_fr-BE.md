@@ -1,3 +1,5 @@
+> **25 novembre 2026, Groq tolto:** Groq non è più un fornitore e i messaggi vocali non ci sono più (decisione del proprietario). In questa bozza ho tolto la riga di Groq e la sua nota; le frasi su messaggi vocali, microfono, audio e immagini inviate ai fornitori vanno allineate a [it/02](../it/02_informativa_privacy_it.md) (stessi tagli) prima della traduzione e della revisione locale.
+
 > **BOZZA — non è consulenza legale; da rivedere da un avvocato locale prima della pubblicazione**
 > PROJET — ne constitue pas un conseil juridique ; à faire relire avant publication par un avocat en Belgique.
 
@@ -68,7 +70,7 @@ L'application ne demande une autorisation que lorsque vous utilisez une fonction
 |---|---|---|
 | Supabase | Base de données, connexion, stockage des pièces jointes et photos | [Région : à confirmer ; à notre connaissance, Irlande] |
 | Vercel | Hébergement de notre serveur | [Région : à confirmer ; à notre connaissance, Dublin] |
-| Groq | Texte de vos questions et documents pour rédiger les réponses ; audio pour la transcription ; images pour l'analyse | [États-Unis : pays et garanties à confirmer] |
+| Anthropic Ireland, Limited (groupe Anthropic) | Texte de vos questions et documents pour rédiger les réponses | [États-Unis : pays et garanties à confirmer ; contrat avec la société irlandaise du groupe, traitement aux États-Unis, clauses contractuelles types] |
 | Nominatim (OpenStreetMap) | Une adresse que vous saisissez pour trouver des coordonnées | [à confirmer] |
 | Serveurs de cartes OpenStreetMap | Votre adresse IP et les zones de carte demandées | [à confirmer] |
 | Overpass (données OpenStreetMap) | Le centre d'une cellule de grille et votre adresse IP ; pas votre position exacte | [à confirmer] |
@@ -129,7 +131,7 @@ Nous pouvons modifier cette politique. Nous vous informons dans l'application [p
 ## Points à vérifier (à supprimer avant publication)
 
 1. Confirmer le Garante comme autorité chef de file (article 56 du RGPD) et les coordonnées de l'APD/GBA.
-2. Groq : vérifier la certification DPF ou conclure des clauses contractuelles types ; analyse du risque du transfert.
+2. *(Supprimé le 25 novembre 2026 : Groq n'est plus un prestataire.)*
 3. Identifier la disposition belge sur les traceurs (article 129 de la loi du 13 juin 2005 ou article 10/2 de la loi du 30 juillet 2018) et sur la prospection par e-mail.
 4. Ne pas affirmer l'anonymisation complète, des paiements actifs ou des outils de mesure inutilisés.
 5. Durées de conservation : espaces réservés. L'analyse d'impact (article 35 du RGPD) est un document distinct, à rédiger.

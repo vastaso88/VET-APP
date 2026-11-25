@@ -1,3 +1,5 @@
+> **25 novembre 2026, Groq tolto:** Groq non è più un fornitore e i messaggi vocali non ci sono più (decisione del proprietario). In questa bozza ho tolto la riga di Groq e la sua nota; le frasi su messaggi vocali, microfono, audio e immagini inviate ai fornitori vanno allineate a [it/02](../it/02_informativa_privacy_it.md) (stessi tagli) prima della traduzione e della revisione locale.
+
 > **BOZZA — non è consulenza legale; da rivedere da un solicitor del Regno Unito prima della pubblicazione**
 > DRAFT — not legal advice; to be reviewed by a UK solicitor before publication.
 
@@ -66,7 +68,7 @@ The app asks for a permission only when you use a feature that needs it. If you 
 |---|---|---|
 | Supabase | Database, sign-in, storage of attachments and photos | [region: to confirm; understood to be Ireland] |
 | Vercel | Hosting of our server | [region: to confirm; understood to be Dublin] |
-| Groq | Text of your questions and documents to write answers; audio to transcribe; images to analyse | [United States: confirm country and safeguards] |
+| Anthropic Ireland, Limited (Anthropic group) | Text of your questions and documents to write answers | [United States: confirm country and safeguards; contract with the group's Irish company, processing in the United States, standard contractual clauses] |
 | Nominatim (OpenStreetMap) | An address you type, to find coordinates | [to confirm] |
 | OpenStreetMap map servers | Your IP address and the map areas requested | [to confirm] |
 | Overpass (OpenStreetMap data) | The centre of a grid cell and your IP address; not your exact position | [to confirm] |
@@ -127,7 +129,7 @@ We may change this notice. We will tell you in the app [method to be defined] an
 ## Reviewer notes (delete before publication)
 
 1. Check whether we need a UK representative (Article 27 UK GDPR) and whether the ICO data protection fee applies to our company. See `01_ricerca_normativa.md` §1–§2.
-2. Check Groq's UK–US data bridge certification (or use the IDTA / UK Addendum).
+2. *(Removed on 25 November 2026: Groq is no longer a provider.)*
 3. Do not claim full anonymisation, active payments, or analytics tools we do not use.
 4. Complaints process (new duty since June 2026): decide the channel and name an owner.
 5. Retention periods are placeholders.

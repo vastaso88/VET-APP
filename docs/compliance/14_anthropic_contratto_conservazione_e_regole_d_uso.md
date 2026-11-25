@@ -35,7 +35,7 @@ Data: 2026-11-15. Risposta alla richiesta dell'Orchestratore dopo la creazione d
 4. **Area di lavoro «produzione»:** area predefinita `us` e consentire solo `us`, così nessuna richiesta parte con `global` per errore (costa il 10% in più). Nel codice resta `inference_geo="us"` su ogni richiesta.
 5. **Non chiedere la conservazione zero**: non serve ed è solo su richiesta alle vendite. Tenere spento il feedback verso Anthropic.
 6. **Sub-responsabili:** iscriversi agli aggiornamenti del Trust Center (pulsante «Subscribe to updates») per sapere dei cambi; si hanno 15 giorni per opporsi.
-7. **Continuità:** aggiungere crediti acquistati o la ricarica automatica sull'organizzazione, perché i crediti dell'abbonamento non si accumulano e finiscono con l'abbonamento. La riserva Groq copre il disservizio, con le sue garanzie.
+7. **Continuità:** aggiungere crediti acquistati o la ricarica automatica sull'organizzazione, perché i crediti dell'abbonamento non si accumulano e finiscono con l'abbonamento. Dal 25 novembre 2026 non c'è più la riserva Groq: se i crediti finiscono o Anthropic non risponde, la chat dà errore.
 
 ## 3. Cosa ho cambiato nei testi
 

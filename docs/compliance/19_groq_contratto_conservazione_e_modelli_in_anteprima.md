@@ -1,5 +1,7 @@
 # Groq: contratto sui dati, conservazione e modelli in anteprima
 
+> **25 novembre 2026: documento storico.** Groq non è più un fornitore (decisione del proprietario): niente di quanto segue è più in uso. Restano da fare, a cura dell'Orchestratore e del proprietario, la chiusura dell'account Groq e la rimozione delle chiavi da Vercel e dai segreti; i registri di Groq (fino a 30 giorni) non richiedono altro.
+
 Data: 2026-11-16. Verifica sulle pagine ufficiali di Groq (nessun accesso con credenziali, niente accettato): un primo giro con un agente di ricerca, poi **riletti a mano sul testo originale** i punti che cambiano una conclusione (§3.6 e §6 del contratto, elenco dei modelli). Non è consulenza legale: i punti ⚖️ vanno confermati da un legale. Serve a chiudere i segnaposto `[GARANZIE_GROQ]` e «giorni di conservazione» di it/02 e a dire all'Orchestratore che cosa non regge. Gemello del [14](14_anthropic_contratto_conservazione_e_regole_d_uso.md) per Anthropic.
 
 ## 1. Fatti verificati

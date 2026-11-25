@@ -23,7 +23,7 @@ Por qué lo hace, cómo cuidarlo, tus deberes y cuándo acudir al veterinario.
 ### Descrizione completa (max 4000)
 
 ```text
-Quokka te ayuda a entender a tu animal y a cuidarlo bien cada día: por qué se comporta así, qué necesita, cuáles son tus deberes y cuándo hace falta el veterinario. Las respuestas se basan en fuentes científicas y posiciones oficiales y están pensadas para su especie.
+Quokka te ayuda a entender a tu animal y a cuidarlo bien cada día: por qué se comporta así, qué necesita, cuáles son tus deberes y cuándo hace falta el veterinario. Las respuestas están en palabras sencillas y pensadas para su especie.
 
 QUÉ PUEDES HACER
 • Pregunta al asistente de IA: comportamiento, convivencia, alimentación, entorno, prevención, obligaciones legales. Explica el porqué, dice qué hacer en el día a día y cuándo conviene acudir al veterinario. Las respuestas siempre se indican como generadas por IA.
@@ -64,13 +64,13 @@ Entiéndelo y cuídalo bien
 ### Testo promozionale (max 170)
 
 ```text
-Entiende a tu animal: por qué lo hace, cómo cuidarlo, tus deberes y cuándo acudir al veterinario. Respuestas basadas en fuentes científicas, para cada especie.
+Entiende a tu animal: por qué lo hace, cómo cuidarlo, tus deberes y cuándo acudir al veterinario. Respuestas en palabras sencillas, para cada especie.
 ```
 
 ### Descrizione (identica alla descrizione completa di Google Play) (max 4000)
 
 ```text
-Quokka te ayuda a entender a tu animal y a cuidarlo bien cada día: por qué se comporta así, qué necesita, cuáles son tus deberes y cuándo hace falta el veterinario. Las respuestas se basan en fuentes científicas y posiciones oficiales y están pensadas para su especie.
+Quokka te ayuda a entender a tu animal y a cuidarlo bien cada día: por qué se comporta así, qué necesita, cuáles son tus deberes y cuándo hace falta el veterinario. Las respuestas están en palabras sencillas y pensadas para su especie.
 
 QUÉ PUEDES HACER
 • Pregunta al asistente de IA: comportamiento, convivencia, alimentación, entorno, prevención, obligaciones legales. Explica el porqué, dice qué hacer en el día a día y cuándo conviene acudir al veterinario. Las respuestas siempre se indican como generadas por IA.

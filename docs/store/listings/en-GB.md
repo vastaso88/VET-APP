@@ -23,7 +23,7 @@ Why they do it, how to care for them, your duties, when to see the vet.
 ### Descrizione completa (max 4000)
 
 ```text
-Quokka helps you understand your pet and care for them well every day: why they behave the way they do, what they need, what your duties are and when to see the vet. Answers are based on scientific sources and official positions, and written for your pet's species.
+Quokka helps you understand your pet and care for them well every day: why they behave the way they do, what they need, what your duties are and when to see the vet. Answers are written in plain words and made for your pet's species.
 
 WHAT YOU CAN DO
 • Ask the AI assistant: behaviour, living together, feeding, environment, prevention, legal duties. It explains why, says what to do day to day and when it is worth seeing the vet. Answers are always labelled as AI-generated.
@@ -64,13 +64,13 @@ Know your pet, care well
 ### Testo promozionale (max 170)
 
 ```text
-Understand your pet: why they do it, how to care for them, your duties and when to see the vet. Answers based on scientific sources, for every species.
+Understand your pet: why they do it, how to care for them, your duties and when to see the vet. Answers in plain words, for every species.
 ```
 
 ### Descrizione (identica alla descrizione completa di Google Play) (max 4000)
 
 ```text
-Quokka helps you understand your pet and care for them well every day: why they behave the way they do, what they need, what your duties are and when to see the vet. Answers are based on scientific sources and official positions, and written for your pet's species.
+Quokka helps you understand your pet and care for them well every day: why they behave the way they do, what they need, what your duties are and when to see the vet. Answers are written in plain words and made for your pet's species.
 
 WHAT YOU CAN DO
 • Ask the AI assistant: behaviour, living together, feeding, environment, prevention, legal duties. It explains why, says what to do day to day and when it is worth seeing the vet. Answers are always labelled as AI-generated.

@@ -15,7 +15,7 @@ Versione di prova: 2026-10-28 (aggiunti cognome, telefono facoltativo e foto pro
 | Account | Email, nome e cognome, data di registrazione, scelte di consenso con data e versione. Facoltativi: numero di telefono (nessuna funzione lo usa: resta nel profilo e lo puoi modificare o togliere) e foto profilo (la vedi solo tu, in uno spazio privato del tuo account; la puoi cambiare o togliere). Telefono e foto si cancellano con l'account | Tu, in registrazione o dal profilo. La password è gestita dal fornitore di autenticazione |
 | Animali | Nome, specie, razza, età, peso, note, foto e video | Tu |
 | Documenti e cartella clinica | Documenti caricati, eventi clinici. Possono contenere dati tuoi o di terzi (es. nome, codice fiscale) | Tu |
-| Chat | Domande, risposte, allegati, messaggi vocali (trascritti per la risposta) | Tu e il sistema |
+| Chat | Domande, risposte, allegati | Tu e il sistema |
 | Posizione | Posizione GPS, solo con il permesso del dispositivo; oppure indirizzo inserito a mano. Per le passeggiate, il percorso: punti GPS con data, ora e precisione, collegati al tuo account e al tuo animale | Tu, tramite il dispositivo |
 | Contributi | Segnalazioni di luoghi, stelle sulle aree cani, voti. Associati a uno pseudonimo, non al tuo nome | Tu |
 | Mercatino | Gli annunci che pubblichi: titolo, descrizione, prezzo, foto, categoria, specie, città e posizione approssimata (circa 1 km). Gli altri utenti li vedono nella loro zona; il tuo nome e la tua e-mail non vengono mostrati | Tu |
@@ -31,7 +31,6 @@ L'app chiede un permesso solo quando usi la funzione che lo richiede. Se lo negh
 | Permesso | Quando serve | Cosa riceviamo |
 |---|---|---|
 | Posizione, mentre usi l'app | Impostare la tua zona, vedere luoghi e attività vicini, registrare le passeggiate | Le coordinate rilevate. Durante una passeggiata attiva la posizione continua a essere rilevata anche con l'app in secondo piano, e una notifica visibile lo segnala [verificare nel codice che il rilevamento si fermi alla fine della passeggiata] |
-| Microfono | Registrare un messaggio vocale per la chat | La registrazione, che viene trascritta [verificare il fornitore: oggi risulta Groq] |
 | Notifiche | Ricordarti vaccini e cure | Nessun dato: serve solo a mostrare gli avvisi |
 | Foto, video e documenti | Aggiungere foto e video dei tuoi animali, allegare documenti | Solo i file che scegli. Per sceglierli l'app usa il selettore del sistema e non legge la tua galleria; per scattare usa la fotocamera del sistema [valido dopo la correzione del manifest, registro punto 25] |
 
@@ -55,7 +54,7 @@ L'app chiede un permesso solo quando usi la funzione che lo richiede. Se lo negh
 |---|---|---|
 | Supabase | Database, autenticazione, archiviazione di allegati e foto | [regione del progetto: da indicare] |
 | Vercel | Hosting del server applicativo | [da verificare] |
-| Groq | Testo delle domande e dei documenti per la risposta; audio per la trascrizione; immagini per l'analisi | [da verificare: paese e garanzie] |
+| Anthropic Ireland, Limited (gruppo Anthropic) | Testo delle domande e dei documenti per la risposta | [da verificare: contratto con la società irlandese del gruppo, dati trattati negli Stati Uniti, clausole contrattuali standard; vedi it/02] |
 | Nominatim (OpenStreetMap) | Indirizzo inserito a mano, per trovarne le coordinate | [da verificare] |
 | Server di tile OpenStreetMap | Indirizzo IP e aree di mappa richieste | [da sostituire o confermare, registro punto 1] |
 | Overpass (dati OpenStreetMap) | Centro di una cella di griglia e indirizzo IP della richiesta; non la tua posizione precisa | [da verificare] |
@@ -66,7 +65,7 @@ L'app chiede un permesso solo quando usi la funzione che lo richiede. Se lo negh
 
 ## 5. Come usiamo l'IA
 
-Le risposte della chat sono generate da un sistema di IA. Prima di inviare il testo al fornitore, il sistema toglie automaticamente alcuni dati personali riconoscibili: email, telefoni, codice fiscale, indirizzi con numero civico, nomi preceduti da un'etichetta o noti dall'account. Non può riconoscerli tutti: per esempio un nome di persona scritto in mezzo a una frase. Immagini e audio partono così come sono. [Nota per il revisore: due chiamate al fornitore ricevono il riepilogo della cartella clinica senza filtro, registro 08, punto 28. Finché non è corretto, non scrivere che la cartella clinica viene filtrata.]
+Le risposte della chat sono generate da un sistema di IA. Prima di inviare il testo al fornitore, il sistema toglie automaticamente alcuni dati personali riconoscibili: email, telefoni, codice fiscale, indirizzi con numero civico, nomi preceduti da un'etichetta o noti dall'account. Non può riconoscerli tutti: per esempio un nome di persona scritto in mezzo a una frase. Le foto non vengono lette da nessun fornitore. [Nota per il revisore: due chiamate al fornitore ricevono il riepilogo della cartella clinica senza filtro, registro 08, punto 28. Finché non è corretto, non scrivere che la cartella clinica viene filtrata.]
 
 ## 6. Per quanto tempo conserviamo i dati
 
@@ -104,7 +103,7 @@ Questa informativa può cambiare. Ti avvisiamo nell'app [modalità da definire].
 1. Non dichiarare anonimizzazione completa, pagamenti attivi o analisi d'uso: il filtro a regole (default in produzione) è una riduzione del rischio, non una garanzia; non ci sono pagamenti reali; `pubspec.yaml` non contiene SDK di analisi.
 2. Foursquare: aggiungerlo alla tabella 4 solo se e quando il dato viene importato (registro, punto 19).
 3. Il link all'informativa dalle Impostazioni e dalla registrazione è un prerequisito del primo invito.
-4. Trasferimenti extra-UE (Groq, Vercel, Google): verificare le garanzie, per esempio le clausole contrattuali standard.
+4. Trasferimenti extra-UE (Vercel, Google; Groq è tolto dal 25 novembre 2026): verificare le garanzie, per esempio le clausole contrattuali standard.
 5. Il contatto privacy è un segnaposto: vedi registro, punto 9.
 6. Testo di riferimento del consenso «Privacy»: `packages/core/domain/consent/account_consent_text.py` (v3, 2026-10-28). È una sintesi che deve restare coerente con questa informativa e dice che quella completa è «in preparazione»: alla pubblicazione sostituire la frase e passare a v4.
 7. Permessi del dispositivo: le frasi su foto, video e fotocamera valgono solo dopo la correzione del manifest Android. Oggi il manifest dichiara ancora `READ_MEDIA_IMAGES` e, tramite il plugin `open_filex`, `READ_MEDIA_VIDEO` e `READ_MEDIA_AUDIO` (registro, punto 25; dettagli in [05](05_permessi_dispositivo_os.md)). Se `CAMERA` resta dichiarato, citare anche la fotocamera tra i permessi richiesti.

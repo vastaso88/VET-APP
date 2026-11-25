@@ -1,5 +1,7 @@
 # Consenso per l'accesso alla cartella clinica da parte della chat
 
+> **25 novembre 2026, Groq tolto.** Groq non è più un fornitore (decisione del proprietario): la **v6** (proposta, in attesa del sì) nomina solo Anthropic, vedi «Che cosa dirà la v6» più sotto. Le frasi su Groq nei testi v1–v5 e nei pareri qui sotto sono storia: il testo in uso resta la v5 finché il codice non passa alla v6.
+
 > **Parere della sessione normativa (2026-11-08).** Il testo v4 (note della scheda e promemoria) è giusto nella sostanza. Il bump era necessario, perché il v3 non diceva che anche note e promemoria partono per il fornitore, e contare i consensi v3 come «non deciso» è corretto: il consenso vale per ciò che la persona ha letto (artt. 4(11) e 7 GDPR). Restano due imprecisioni, da correggere in una v5. Il bump lo decide il proprietario: fa rifare il consenso a tutti gli iscritti, e costa meno prima del pubblico che dopo.
 >
 > 1. **Finalità.** «Quokka lo usa solo per risponderti» non nomina il riepilogo per il veterinario (`vet_summary.py`), che manda al fornitore le stesse note con lo stesso consenso. Rischio basso, perché il riepilogo nasce da una richiesta della persona, ma il testo dice «solo». Scrivere «Quokka lo usa solo per risponderti e per preparare il riepilogo per il veterinario che puoi chiedere».
@@ -30,7 +32,7 @@ La v1 (approvata il 2026-09-17) diceva che l'assistente usa «solo le informazio
 | Domande di chiarimento (intervista) | Lo stesso riepilogo delle tre voci, tenuto nello stato della conversazione (`SituationModel.known_medical_context`) | come sopra | `chat_orchestrator.py` |
 | Senza consenso, o dopo la revoca | Solo il numero dei documenti presenti: né titoli né contenuto | | `_medical_context_for_prompt` |
 
-Destinatario: il fornitore esterno di IA che scrive la risposta (oggi Groq). Il riepilogo resta anche nello stato della conversazione salvato da Quokka.
+Destinatario: il fornitore esterno di IA che scrive la risposta (Anthropic; Groq è tolto dal 25 novembre 2026). Il riepilogo resta anche nello stato della conversazione salvato da Quokka.
 
 ### Che cosa dice la v2
 
@@ -69,6 +71,20 @@ La v5 corregge le due imprecisioni del parere dell'8 novembre (finalità e desti
 5. Il passaggio da un modello Claude all'altro (Haiku, Sonnet) non cambia il testo: nomina il fornitore, non il modello. Ma `inference_geo="us"` va inviato su ogni richiesta, per ogni modello e anche per i modelli di riserva, altrimenti la frase sugli Stati Uniti non è più vera (parere [13](13_parere_fonti_scientifiche_e_diritto_d_autore.md) §9).
 
 **Per il codice (sessione Chat):** `CURRENT_VERSION = "v5"` in `consent_text.py` e `_currentConsentVersion = 'v5'` in `pet_demo_store.dart` (un test li tiene uguali); i due testi sopra in `CONSENT_TEXT_IT` e `INLINE_QUESTION_IT`, nelle ARB (`petsConsentFullText`) e in `localization.py` (`consent_request`) nelle cinque lingue, con traduzioni riviste dall'Orchestratore; docstring della v5. In `test_consent_texts_match_behaviour.py`: `v5` come versione corrente, le decisioni `v1`–`v4` non contano, e un nuovo controllo che scheda e domanda dicano «Anthropic» e «Stati Uniti» (la scheda anche «riepilogo per il veterinario»). Restano valide le frasi già verificate: «tre voci», «al massimo due», «al massimo cinque», «malattie pregresse ancora in corso», «note che hai scritto nella scheda», «promemoria attivi, terapie comprese», «intelligenza artificiale». L'istantanea dei testi italiani si aggiorna di proposito.
+
+### Che cosa dirà la v6 (proposta del 25 novembre 2026, in attesa del sì del proprietario)
+
+Groq non è più un fornitore (decisione del proprietario, 25 novembre 2026): il testo nomina solo Anthropic. La modifica restringe i destinatari, quindi per legge non servirebbe chiedere di nuovo il consenso; ma la regola del progetto è una sola, ogni modifica di significato alza la versione (la versione dice «il testo che hai visto»), e `effective_decision` fa ridecidere una volta chi aveva dato il consenso (oggi solo i tester). Applico anche la correzione della nota del 16 novembre: la controparte è la società irlandese del gruppo Anthropic (la capogruppo è statunitense), quindi «Fa capo a una società statunitense» è più esatto di «È una società statunitense», e coincide con la riga Anthropic dell'informativa.
+
+**Scheda dell'animale (`CONSENT_TEXT_IT`, `petsConsentFullText`):** come la v5, con la frase dei destinatari sostituita da:
+
+> Ciò che legge viene inviato a un fornitore esterno di intelligenza artificiale che scrive la risposta: Anthropic. Fa capo a una società statunitense e tratta i dati negli Stati Uniti, fuori dall'Unione europea: l'invio è vincolato da un contratto e protetto dalle garanzie che la legge europea prevede per questi trasferimenti.
+
+**Domanda in chat (`INLINE_QUESTION_IT`, `consent_request`):** come la v5, con «…e le invierò ai servizi di intelligenza artificiale che scrivono la risposta: Anthropic e, di riserva, Groq, con server negli Stati Uniti.» sostituito da «…e le invierò al servizio di intelligenza artificiale che scrive la risposta: Anthropic, con server negli Stati Uniti.»
+
+**Per il codice (sessione Chat):** `CURRENT_VERSION = "v6"` in `consent_text.py` e `_currentConsentVersion = 'v6'` in `pet_demo_store.dart` (un test li tiene uguali); i due testi sopra in `CONSENT_TEXT_IT` e `INLINE_QUESTION_IT`, nelle ARB (`petsConsentFullText`), nella copia dell'app (`_approvedConsentText`) e in `localization.py` (`consent_request`) nelle cinque lingue; in `test_consent_texts_match_behaviour.py`: `v6` come versione corrente, le decisioni `v1`–`v5` non contano, e un controllo nuovo: nessun testo di consenso nomina «Groq». Le traduzioni sono bozze finché qualcuno non le rilegge.
+
+**Cosa decade dal «Perché il testo sia vero» della v5:** l'ultima frase del punto 2 («Per Groq vale lo stesso»), l'ultima frase del punto 3 (foto e voce su Groq) e tutto il punto 4 (la riserva automatica non esiste più: se Anthropic non risponde, la chat dà errore). Restano i punti 1 e 5, e il punto 3 per il filtro.
 
 ## Punti aperti
 

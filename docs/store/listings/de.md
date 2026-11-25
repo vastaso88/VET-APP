@@ -23,7 +23,7 @@ Warum es das tut, wie Sie es versorgen, Ihre Pflichten, wann zum Tierarzt.
 ### Descrizione completa (max 4000)
 
 ```text
-Quokka hilft Ihnen, Ihr Tier zu verstehen und jeden Tag gut zu versorgen: warum es sich so verhält, was es braucht, welche Pflichten Sie haben und wann ein Tierarztbesuch nötig ist. Die Antworten stützen sich auf wissenschaftliche Quellen und offizielle Positionen und sind auf die Tierart abgestimmt.
+Quokka hilft Ihnen, Ihr Tier zu verstehen und jeden Tag gut zu versorgen: warum es sich so verhält, was es braucht, welche Pflichten Sie haben und wann ein Tierarztbesuch nötig ist. Die Antworten sind in einfachen Worten formuliert und auf die Tierart abgestimmt.
 
 WAS SIE TUN KÖNNEN
 • Fragen Sie den KI-Assistenten: Verhalten, Zusammenleben, Fütterung, Umgebung, Vorsorge, gesetzliche Pflichten. Er erklärt das Warum, sagt, was im Alltag zu tun ist und wann es sich lohnt, zur Tierärztin oder zum Tierarzt zu gehen. Antworten sind immer als KI-generiert gekennzeichnet.
@@ -64,13 +64,13 @@ Verstehen und gut versorgen
 ### Testo promozionale (max 170)
 
 ```text
-Verstehen Sie Ihr Tier: warum es das tut, wie Sie es versorgen, Ihre Pflichten, wann zum Tierarzt. Antworten auf wissenschaftlicher Grundlage, für jede Tierart.
+Verstehen Sie Ihr Tier: warum es das tut, wie Sie es versorgen, Ihre Pflichten, wann zum Tierarzt. Antworten in einfachen Worten, für jede Tierart.
 ```
 
 ### Descrizione (identica alla descrizione completa di Google Play) (max 4000)
 
 ```text
-Quokka hilft Ihnen, Ihr Tier zu verstehen und jeden Tag gut zu versorgen: warum es sich so verhält, was es braucht, welche Pflichten Sie haben und wann ein Tierarztbesuch nötig ist. Die Antworten stützen sich auf wissenschaftliche Quellen und offizielle Positionen und sind auf die Tierart abgestimmt.
+Quokka hilft Ihnen, Ihr Tier zu verstehen und jeden Tag gut zu versorgen: warum es sich so verhält, was es braucht, welche Pflichten Sie haben und wann ein Tierarztbesuch nötig ist. Die Antworten sind in einfachen Worten formuliert und auf die Tierart abgestimmt.
 
 WAS SIE TUN KÖNNEN
 • Fragen Sie den KI-Assistenten: Verhalten, Zusammenleben, Fütterung, Umgebung, Vorsorge, gesetzliche Pflichten. Er erklärt das Warum, sagt, was im Alltag zu tun ist und wann es sich lohnt, zur Tierärztin oder zum Tierarzt zu gehen. Antworten sind immer als KI-generiert gekennzeichnet.

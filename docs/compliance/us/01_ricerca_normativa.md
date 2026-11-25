@@ -1,3 +1,5 @@
+> **25 novembre 2026:** Groq non è più un fornitore (decisione del proprietario): le righe di questo documento che lo nominano sono storia.
+
 > **BOZZA — non è consulenza legale; da rivedere da un avvocato abilitato negli USA prima della pubblicazione**
 
 # USA — ricerca normativa (Quokka)

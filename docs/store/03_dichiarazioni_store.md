@@ -11,7 +11,7 @@ nelle console. Ho letto le pagine ufficiali di Google solo tramite ricerca; per 
 |---|---|---|---|
 | B1 | **Eliminazione dell'account**: fatta nell'app (Impostazioni → Account → Elimina account, con nuova verifica della password; `DELETE /account` cancella ogni tabella e file, test di copertura sullo schema). **Manca ancora la pagina web** per chiedere la cancellazione senza l'app, richiesta da Play (link da inserire nel modulo Data safety) | Google Play la richiede per ogni app con account; App Store 5.1.1(v) | `apps/api/routes/account.py`, `delete_account_page.dart`; da fare: una pagina statica (es. sul sito o nel portale) con istruzioni e un contatto e-mail |
 | B2 | **Abbonamenti non reali**: i metodi di pagamento sono dimostrativi, i prezzi segnaposto | Un abbonamento digitale deve passare dalla fatturazione dello store (Google Play Billing / acquisti in-app Apple). Nelle schede non c'è alcun prezzo né prova gratuita per questo | `docs/auth/01_brainstorm.md` (trial e piani), `features/billing` |
-| B3 | **Consenso esplicito prima di inviare dati personali a un'IA di terze parti** (App Store, 5.1.2(i), in vigore da novembre 2025) | Apple chiede di dire dove i dati vanno, anche a IA di terze parti, e di ottenere un permesso esplicito prima. Una riga nell'informativa non basta secondo le fonti consultate. Oggi c'è il consenso per la cartella clinica per animale (`03_…`), ma non ho trovato una schermata che nomini il fornitore (oggi Groq) e cosa gli viene inviato prima della prima domanda in chat | `docs/compliance/04_termini_e_consensi.md`, `09_…` riga 53 |
+| B3 | **Consenso esplicito prima di inviare dati personali a un'IA di terze parti** (App Store, 5.1.2(i), in vigore da novembre 2025) | Apple chiede di dire dove i dati vanno, anche a IA di terze parti, e di ottenere un permesso esplicito prima. Una riga nell'informativa non basta secondo le fonti consultate. Oggi c'è il consenso per la cartella clinica per animale (`03_…`), ma non ho trovato una schermata che nomini il fornitore (oggi Anthropic) e cosa gli viene inviato prima della prima domanda in chat | `docs/compliance/04_termini_e_consensi.md`, `09_…` riga 53 |
 | B4 | **Segnalazione di contenuti IA offensivi nell'app** (Google Play, norma sui contenuti generati dall'IA) | La norma chiede una segnalazione dentro l'app per le app con IA generativa al centro (la chat lo è). Esiste il servizio `report_chat_response` (backend) e `docs/compliance/02_…` lo cita: da verificare che sia raggiungibile da ogni risposta dell'assistente, in tutte le lingue | `packages/core/application/services/report_chat_response.py` |
 | B5 | Anonimizzazione solo per l'italiano | Vedi `README.md`: le schede non italiane dicono che si applicano filtri per la privacy | `docs/i18n/BACKEND_ITALIAN_CLASSIFIERS.md` |
 | B6 | Dichiarazione dei servizi in primo piano (posizione) per Play | La passeggiata usa `FOREGROUND_SERVICE_LOCATION`: serve il video/descrizione richiesti da Play | `docs/compliance/05_permessi_dispositivo_os.md`, punto 26 di `08_…` |
@@ -44,9 +44,8 @@ vale il caso più severo.
 
 Google Play considera **"condivisione"** il trasferimento a una terza parte che tratta i dati per conto proprio. **Non** è
 condivisione il trasferimento a un **fornitore che tratta i dati solo per conto nostro** su istruzione contrattuale
-(service provider): Supabase (database, autenticazione, file), Vercel (hosting del backend), Groq (modelli per chat,
-visione, trascrizione) e Firebase App Distribution (solo tester) rientrano qui, **a condizione** che esista il contratto
-di trattamento (DPA) con ciascuno (vedi inventario fornitori: Groq da firmare). Vanno comunque nominati nell'informativa.
+(service provider): Supabase (database, autenticazione, file), Vercel (hosting del backend), Anthropic (modello della chat) e Firebase App Distribution (solo tester) rientrano qui, **a condizione** che esista il contratto
+di trattamento (DPA) con ciascuno (vedi inventario fornitori). Vanno comunque nominati nell'informativa.
 Sono invece **condivisione** vera e propria: **OpenStreetMap Foundation** (Nominatim riceve l'indirizzo scritto a mano e
 l'IP del telefono; il server delle mappe riceve l'IP e l'area visualizzata) e, se si attivasse, un servizio di crash
 reporting non coperto da DPA. Non sono condivisione: i trasferimenti richiesti dalla legge, quelli anonimizzati, quelli
@@ -68,10 +67,10 @@ Finalità (voci del modulo Play). "Funzionalità" = App functionality; "Sicurezz
 | Informazioni personali → Altre info | sì (specie, razza, nome, dati clinici degli **animali**) | no | no | no | Funzionalità | Non sono dati sanitari dell'utente: dichiarare qui, non in "Salute e fitness" |
 | Posizione → **Posizione approssimativa** | sì | **sì**: il server delle mappe OSM riceve l'IP e l'area visualizzata | no | no | Funzionalità | Mercatino usa coordinate arrotondate a ~1 km |
 | Posizione → **Posizione precisa** | sì (GPS per passeggiate, servizi vicini, posizione attuale) | no (il backend interroga Overpass con il centro di una cella, non con la posizione dell'utente) | no | no | Funzionalità | Percorsi in `dog_walks`; nessuna posizione in background |
-| Messaggi → **Altri messaggi in-app** | sì (conversazioni con l'assistente) | no (Groq = fornitore) | no | no | Funzionalità | Testo anonimizzato prima dell'invio al modello; salvato in `conversations` |
-| Foto e video → **Foto** / **Video** | sì (profilo animale, galleria, allegati chat/cartella, foto profilo, foto annunci) | no (Groq = fornitore per l'analisi delle foto in chat); le foto degli annunci sono **pubbliche** per scelta dell'utente | no | no | Funzionalità | Metadati EXIF/posizione rimossi; bucket privati tranne `marketplace-photos` |
-| Audio → **Registrazioni vocali** | sì (dettatura in chat) | no (Groq = fornitore per la trascrizione) | **sì**: l'audio non è salvato, resta solo il testo | no | Funzionalità | `speech_to_text.py`: niente persistenza |
-| File e documenti | sì (referti PDF e immagini della cartella clinica) | no (Groq = fornitore, solo con consenso per animale) | no | no | Funzionalità | Bucket privato `chat-attachments`; testo anonimizzato |
+| Messaggi → **Altri messaggi in-app** | sì (conversazioni con l'assistente) | no (Anthropic = fornitore) | no | no | Funzionalità | Testo anonimizzato prima dell'invio al modello; salvato in `conversations` |
+| Foto e video → **Foto** / **Video** | sì (profilo animale, galleria, allegati chat/cartella, foto profilo, foto annunci) | no (le foto restano nell'account e nessun fornitore le legge); le foto degli annunci sono **pubbliche** per scelta dell'utente | no | no | Funzionalità | Metadati EXIF/posizione rimossi; bucket privati tranne `marketplace-photos` |
+| Audio → **Registrazioni vocali** | **no** (i messaggi vocali sono tolti il 25 novembre 2026) | — | — | — | — | Si dichiara «no» quando codice e permesso del microfono sono tolti dall'app |
+| File e documenti | sì (referti PDF e immagini della cartella clinica) | no (Anthropic = fornitore, solo con consenso per animale) | no | no | Funzionalità | Bucket privato `chat-attachments`; testo anonimizzato |
 | Salute e fitness | **no** | — | — | — | — | I dati clinici sono degli animali |
 | Informazioni finanziarie | **no** | — | — | — | — | Nessun pagamento reale oggi; quando arriva: Play Billing, nessun dato di carta nell'app |
 | Contatti | no | — | — | — | — | Nessun accesso alla rubrica |
@@ -96,7 +95,7 @@ Finalità (voci del modulo Play). "Funzionalità" = App functionality; "Sicurezz
 
 ### 3.4 Cosa deve essere vero prima di inviare la scheda
 
-1. DPA firmati o accettati con Supabase, Vercel, Google (Firebase) e **Groq**: senza DPA, Groq va dichiarato come "condiviso" per messaggi, foto, audio e documenti.
+1. DPA firmati o accettati con Supabase, Vercel, Google (Firebase) e **Anthropic**: senza DPA, Anthropic va dichiarato come "condiviso" per messaggi e documenti.
 2. Pagina web per la richiesta di cancellazione (B1) pubblicata e linkata nel modulo.
 3. Informativa privacy pubblicata a un URL stabile (la scheda la richiede) che nomini tutti i fornitori, OSM/Nominatim compreso.
 4. Se si attiva il crash reporting: aggiornare la riga "Log di arresto anomalo" e l'informativa.

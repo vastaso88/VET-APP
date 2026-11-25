@@ -23,7 +23,7 @@ Le comprendre, bien s'en occuper, vos devoirs, quand consulter.
 ### Descrizione completa (max 4000)
 
 ```text
-Quokka vous aide à comprendre votre animal et à bien vous en occuper chaque jour : pourquoi il se comporte ainsi, de quoi il a besoin, quels sont vos devoirs et quand consulter le vétérinaire. Les réponses s'appuient sur des sources scientifiques et des positions officielles et sont pensées pour son espèce.
+Quokka vous aide à comprendre votre animal et à bien vous en occuper chaque jour : pourquoi il se comporte ainsi, de quoi il a besoin, quels sont vos devoirs et quand consulter le vétérinaire. Les réponses sont rédigées en mots simples et pensées pour son espèce.
 
 CE QUE VOUS POUVEZ FAIRE
 • Interrogez l'assistant IA : comportement, vie commune, alimentation, environnement, prévention, obligations légales. Il explique le pourquoi, dit ce qu'il faut faire au quotidien et quand il vaut la peine de consulter. Les réponses sont toujours signalées comme générées par l'IA.
@@ -64,13 +64,13 @@ Comprendre et bien s'occuper
 ### Testo promozionale (max 170)
 
 ```text
-Comprenez votre animal : pourquoi il fait ça, comment s'en occuper, vos devoirs, quand consulter. Des réponses fondées sur des sources scientifiques, pour chaque espèce.
+Comprenez votre animal : pourquoi il fait ça, comment s'en occuper, vos devoirs, quand consulter. Des réponses en mots simples, pour chaque espèce.
 ```
 
 ### Descrizione (identica alla descrizione completa di Google Play) (max 4000)
 
 ```text
-Quokka vous aide à comprendre votre animal et à bien vous en occuper chaque jour : pourquoi il se comporte ainsi, de quoi il a besoin, quels sont vos devoirs et quand consulter le vétérinaire. Les réponses s'appuient sur des sources scientifiques et des positions officielles et sont pensées pour son espèce.
+Quokka vous aide à comprendre votre animal et à bien vous en occuper chaque jour : pourquoi il se comporte ainsi, de quoi il a besoin, quels sont vos devoirs et quand consulter le vétérinaire. Les réponses sont rédigées en mots simples et pensées pour son espèce.
 
 CE QUE VOUS POUVEZ FAIRE
 • Interrogez l'assistant IA : comportement, vie commune, alimentation, environnement, prévention, obligations légales. Il explique le pourquoi, dit ce qu'il faut faire au quotidien et quand il vaut la peine de consulter. Les réponses sont toujours signalées comme générées par l'IA.

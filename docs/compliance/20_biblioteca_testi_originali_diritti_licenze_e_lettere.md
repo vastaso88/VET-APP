@@ -90,7 +90,7 @@ L'art. 70-quater (e 70-septies per l'IA) consente l'estrazione di testo e dati s
 1. **La base è la licenza.** Un articolo CC BY è offerto dai suoi autori ed editori a chiunque, anche per uso commerciale e con adattamenti. Il gestore del sito non è il titolare degli articoli (lo dice Europe PMC stessa) e non può togliere ciò che la licenza concede. Il segnale protegge i diritti del gestore o riserva quelli per cui non c'è licenza: è la funzione dell'opt-out dell'art. 4, che serve proprio dove non c'è altro permesso.
 2. **Il segnale è `ai-train=no`.** Riguarda l'addestramento e la rifinitura di modelli. Noi non addestriamo né rifiniamo: leggiamo i passi al momento della domanda. Su quell'uso il gestore non si esprime (`use=reference` non è definito con precisione: la lettura più ragionevole è che consenta l'uso come riferimento).
 3. **L'API è il canale che Europe PMC stessa indica** per lo scarico automatico del sottoinsieme aperto, e il suo host non porta alcun segnale.
-4. **I fornitori non addestrano sui nostri dati** (Anthropic, termini commerciali; Groq: [14](14_anthropic_contratto_conservazione_e_regole_d_uso.md), [19](19_groq_contratto_conservazione_e_modelli_in_anteprima.md)): nessun uso dei testi per addestrare, né da parte nostra né dei fornitori.
+4. **I fornitori non addestrano sui nostri dati** (Anthropic, termini commerciali: [14](14_anthropic_contratto_conservazione_e_regole_d_uso.md)): nessun uso dei testi per addestrare, né da parte nostra né dei fornitori.
 
 ### 3.3 Regole di scarico
 
@@ -160,7 +160,7 @@ Per i testi di legge: ente, atto e data, «GU n. …», «Fonte: Normattiva (tes
 
 ### 5.1 Licenze
 
-Nessun limite per le licenze aperte. CC BY 4.0 è mondiale, gratuita e non esclusiva: consente di riprodurre il materiale **in tutto o in parte**, in qualsiasi formato, e di produrre e condividere materiale adattato; non lega l'uso a un luogo. Il database in Irlanda (Supabase) è riproduzione; mandare un passo a un fornitore perché generi la risposta **non è «condividere con il pubblico»**: il fornitore agisce per noi come servizio tecnico e per contratto non addestra sui nostri dati. Gli atti ufficiali non sono protetti. I termini dei fornitori fanno carico al cliente dei contenuti che invia (da verificare nel testo di Anthropic e di Groq): per i testi senza diritti non li avremmo, un motivo in più per tenerli fuori.
+Nessun limite per le licenze aperte. CC BY 4.0 è mondiale, gratuita e non esclusiva: consente di riprodurre il materiale **in tutto o in parte**, in qualsiasi formato, e di produrre e condividere materiale adattato; non lega l'uso a un luogo. Il database in Irlanda (Supabase) è riproduzione; mandare un passo a un fornitore perché generi la risposta **non è «condividere con il pubblico»**: il fornitore agisce per noi come servizio tecnico e per contratto non addestra sui nostri dati. Gli atti ufficiali non sono protetti. I termini dei fornitori fanno carico al cliente dei contenuti che invia (da verificare nel testo di Anthropic): per i testi senza diritti non li avremmo, un motivo in più per tenerli fuori.
 
 ### 5.2 Dati personali
 

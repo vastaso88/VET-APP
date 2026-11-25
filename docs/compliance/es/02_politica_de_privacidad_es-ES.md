@@ -1,3 +1,5 @@
+> **25 novembre 2026, Groq tolto:** Groq non è più un fornitore e i messaggi vocali non ci sono più (decisione del proprietario). In questa bozza ho tolto la riga di Groq e la sua nota; le frasi su messaggi vocali, microfono, audio e immagini inviate ai fornitori vanno allineate a [it/02](../it/02_informativa_privacy_it.md) (stessi tagli) prima della traduzione e della revisione locale.
+
 > **BOZZA — non è consulenza legale, da far rivedere a un legale locale**
 > BORRADOR — no constituye asesoramiento jurídico; debe revisarlo un abogado o una abogada en España antes de su publicación.
 
@@ -79,7 +81,7 @@ La aplicación solo pide un permiso cuando usted usa una función que lo necesit
 |---|---|---|
 | Supabase | Base de datos, inicio de sesión, almacenamiento de archivos y fotos | [Región: confirmar; según nuestro conocimiento, Irlanda] |
 | Vercel | Alojamiento de nuestro servidor | [Región: confirmar; según nuestro conocimiento, Dublín] |
-| Groq | Texto de sus preguntas y documentos para redactar respuestas; audio para transcribirlo; imágenes para analizarlas | [EE. UU.: confirmar país y garantías] |
+| Anthropic Ireland, Limited (grupo Anthropic) | Texto de sus preguntas y documentos para redactar respuestas | [EE. UU.: confirmar país y garantías; contrato con la sociedad irlandesa del grupo, tratamiento en EE. UU., cláusulas contractuales tipo] |
 | Nominatim (OpenStreetMap) | Una dirección que usted escribe para obtener coordenadas | [confirmar] |
 | Servidores de mapas de OpenStreetMap | Su dirección IP y las zonas de mapa solicitadas | [confirmar] |
 | Overpass (datos de OpenStreetMap) | El centro de una cuadrícula y su dirección IP; no su posición exacta | [confirmar] |
@@ -140,7 +142,7 @@ Podemos modificar esta política. Se lo comunicaremos en la aplicación [procedi
 ## Notas para la revisión (eliminar antes de publicar)
 
 1. Confirmar al Garante como autoridad principal (art. 56 RGPD) y el procedimiento de reclamación ante la AEPD.
-2. Groq: comprobar la certificación DPF o suscribir cláusulas contractuales tipo; evaluación del riesgo de la transferencia.
+2. *(Eliminado el 25 de noviembre de 2026: Groq ya no es un proveedor.)*
 3. No afirmar anonimización completa, pagos activos ni herramientas de analítica que no se usen.
 4. Los plazos de conservación son marcadores de posición.
 5. La evaluación de impacto (art. 35 RGPD) es un documento aparte y está por redactar.

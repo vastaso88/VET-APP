@@ -1,3 +1,5 @@
+> **25 novembre 2026:** Groq non è più un fornitore (decisione del proprietario): le righe di questo documento che lo nominano sono storia.
+
 > **BOZZA — non è consulenza legale, da far rivedere a un legale locale**
 
 # Domande per il proprietario — Spagna

@@ -1,3 +1,5 @@
+> **25 novembre 2026, Groq tolto:** Groq non è più un fornitore e i messaggi vocali non ci sono più (decisione del proprietario). In questa bozza ho tolto la riga di Groq e la sua nota; le frasi su messaggi vocali, microfono, audio e immagini inviate ai fornitori vanno allineate a [it/02](../it/02_informativa_privacy_it.md) (stessi tagli) prima della traduzione e della revisione locale.
+
 > **BOZZA — non è consulenza legale; da rivedere da un solicitor australiano prima della pubblicazione**
 
 *Nota (italiano): testo per gli utenti in inglese australiano. I campi tra [parentesi quadre] vanno compilati o verificati. Le "Note per il revisore" in fondo vanno tolte prima della pubblicazione. Base: `docs/compliance/09_informativa_privacy_bozza.md` (Italia, GDPR) adattata agli Australian Privacy Principles (APP). Ricerca e fonti: `01_ricerca_normativa.md`.*
@@ -57,7 +59,7 @@ If you opt in, we may email you news about Quokka and tips for your pets. Every 
 |---|---|---|
 | Supabase | Database, sign-in, storage of attachments and photos | [region: Ireland — confirm] |
 | Vercel | Hosting of the app's server | [region — confirm] |
-| Groq | The text of your questions and documents, voice recordings and images, to write the reply and to transcribe | [country: United States? — confirm] |
+| Anthropic Ireland, Limited (Anthropic group) | The text of your questions and documents, to write the reply | [country: United States — confirm] |
 | Nominatim (OpenStreetMap) | An address you type in, to find coordinates | [confirm] |
 | OpenStreetMap map tile servers and Overpass | Your IP address and the map areas you request. Not your exact location | [confirm] |
 | Google (Firebase App Distribution) | Tester email, only for test versions | [confirm] |
@@ -116,7 +118,7 @@ We may update this policy. We will tell you in the app [method to be defined]. T
 ## Note per il revisore (da eliminare prima della pubblicazione)
 
 1. **Soglia A$3 mln:** testo scritto *come se* gli APP si applicassero (consigliato). Se il solicitor conferma l'esenzione e vuole un testo più leggero, ridurre; ma Apple/Google e il *tort* privacy restano. V. `01_ricerca_normativa.md`, sez. 1.
-2. **APP 8 / s 16C:** i fornitori esteri vanno nominati con il Paese reale. Groq e Vercel sono «da verificare» anche nel testo italiano.
+2. **APP 8 / s 16C:** i fornitori esteri vanno nominati con il Paese reale. Vercel è «da verificare» anche nel testo italiano.
 3. **Anonimizzazione:** nel testo italiano due chiamate al fornitore ricevono il riepilogo della cartella clinica senza filtro (registro 08, punto 28). Non scrivere che la cartella viene filtrata finché non è corretto.
 4. **Salute:** i dati sono su animali; i dati personali del titolare (nome, email, posizione) sono personali. Chiedere al solicitor se il *health service provider* possa applicarsi per i dosaggi o le informazioni sanitarie che riguardano la persona.
 5. **Decisioni automatizzate:** dal 10/12/2026 l'APP 1 richiede di descriverle se incidono in modo significativo su diritti o interessi. La chat consiglia e non decide; la frase è prudente. Verificare con il solicitor.

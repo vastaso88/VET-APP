@@ -1,3 +1,5 @@
+> **25 novembre 2026, Groq tolto:** Groq non è più un fornitore e i messaggi vocali non ci sono più (decisione del proprietario). In questa bozza ho tolto la riga di Groq e la sua nota; le frasi su messaggi vocali, microfono, audio e immagini inviate ai fornitori vanno allineate a [it/02](../it/02_informativa_privacy_it.md) (stessi tagli) prima della traduzione e della revisione locale.
+
 > **BOZZA — non è consulenza legale; da rivedere da un avvocato locale prima della pubblicazione**
 > ENTWURF — keine Rechtsberatung; vor der Veröffentlichung von einer Rechtsanwältin oder einem Rechtsanwalt in Österreich prüfen zu lassen.
 
@@ -68,7 +70,7 @@ Die App fragt eine Berechtigung nur, wenn Sie eine Funktion nutzen, die sie brau
 |---|---|---|
 | Supabase | Datenbank, Anmeldung, Speicherung von Anhängen und Fotos | [Region: bestätigen; nach unserem Kenntnisstand Irland] |
 | Vercel | Hosting unseres Servers | [Region: bestätigen; nach unserem Kenntnisstand Dublin] |
-| Groq | Text Ihrer Fragen und Dokumente, um Antworten zu schreiben; Audio zur Transkription; Bilder zur Analyse | [USA: Land und Garantien bestätigen] |
+| Anthropic Ireland, Limited (Anthropic-Gruppe) | Text Ihrer Fragen und Dokumente, um Antworten zu schreiben | [USA: Land und Garantien bestätigen; Vertrag mit der irischen Gesellschaft der Gruppe, Verarbeitung in den USA, Standardvertragsklauseln] |
 | Nominatim (OpenStreetMap) | Eine Adresse, die Sie eingeben, um Koordinaten zu finden | [bestätigen] |
 | OpenStreetMap-Kartenserver | Ihre IP-Adresse und die angeforderten Kartenbereiche | [bestätigen] |
 | Overpass (OpenStreetMap-Daten) | Der Mittelpunkt einer Rasterzelle und Ihre IP-Adresse; nicht Ihre genaue Position | [bestätigen] |
@@ -129,7 +131,7 @@ Wir können diese Erklärung ändern. Wir informieren Sie in der App [Verfahren 
 ## Hinweise für die Prüfung (vor der Veröffentlichung löschen)
 
 1. Garante als federführende Behörde bestätigen (Art. 56 DSGVO); DSB-Kontaktdaten im RIS/auf dsb.gv.at prüfen.
-2. Groq: DPF-Zertifizierung prüfen oder Standardvertragsklauseln abschließen; Prüfung der Risiken der Übermittlung.
+2. *(Entfällt seit dem 25. November 2026: Groq ist kein Anbieter mehr.)*
 3. Weder vollständige Anonymisierung noch aktive Zahlungen oder nicht eingesetzte Analyse-Werkzeuge behaupten.
 4. Aufbewahrungsfristen sind Platzhalter.
 5. DSFA (Art. 35 DSGVO) ist ein eigenes Dokument und noch zu schreiben.

@@ -4,18 +4,18 @@ Data: 2026-11-16. Richiesta dell'Orchestratore, con la volontà del proprietario
 
 ## 1. Risposta in breve
 
-**Quando l'utente chiede di cancellare, il massimo lecito è 30 giorni.** L'art. 17(1) GDPR chiede di cancellare «senza ingiustificato ritardo» e l'art. 12(3) di dare seguito alla richiesta «senza ingiustificato ritardo e comunque entro un mese». La proroga di altri due mesi esiste solo per richieste complesse o numerose e va comunicata entro il primo mese, con i motivi: non si può usare come regola né come finestra di ripensamento. Quindi **quattro mesi di recupero dopo «Elimina account» non sono leciti**; trenta giorni sì (è già ciò che usa la sessione Registrazione). **Eccezione voluta dal proprietario il 23 novembre, con il numero di 7 giorni approvato la sera alle 22:30 (⚖️):** se l'avviso finale non è partito per un guasto nostro, la cancellazione aspetta fino a 7 giorni dopo il giorno 30 e poi avviene comunque: non ha base nell'art. 12(3), è tenuta la più corta possibile ([18](18_email_di_uscita_eliminazione_e_pausa.md) §8, punto 9). Vale solo per «Elimina»: l'attesa per la pausa scaduta non è stata sottoposta al proprietario.
+**Quando l'utente chiede di cancellare, il massimo lecito è 30 giorni.** L'art. 17(1) GDPR chiede di cancellare «senza ingiustificato ritardo» e l'art. 12(3) di dare seguito alla richiesta «senza ingiustificato ritardo e comunque entro un mese». La proroga di altri due mesi esiste solo per richieste complesse o numerose e va comunicata entro il primo mese, con i motivi: non si può usare come regola né come finestra di ripensamento. Quindi **quattro mesi di recupero dopo «Elimina account» non sono leciti**; trenta giorni sì (è già ciò che usa la sessione Registrazione). **Eccezione voluta dal proprietario il 23 novembre, con il numero di 7 giorni approvato la sera alle 22:30 (⚖️):** se l'avviso finale non è partito per un guasto nostro, la cancellazione aspetta fino a 7 giorni dopo il giorno 30 e poi avviene comunque: non ha base nell'art. 12(3), è tenuta la più corta possibile ([18](18_email_di_uscita_eliminazione_e_pausa.md) §8, punto 9). La pausa non esiste più (25 novembre 2026): l'attesa riguarda solo «Elimina».
 
 **Frase nei Termini di servizio** (italiano approvato dal proprietario alle 22:30; scritto in [it/03](it/03_termini_di_servizio_it.md) §12, con «[in attesa del codice]»): «Se un guasto nostro ritarda l'avviso finale, la cancellazione definitiva può slittare di qualche giorno (al massimo 7) e ti scriviamo la nuova data.» Bozze **non riviste** (nessuna persona le ha lette; la sessione Revisione traduzioni non è più attiva; ES e DE nel registro formale dei testi legali): EN `If a fault on our side delays the final notice, the permanent deletion may be postponed by a few days (7 at most), and we will write to you with the new date.`; ES `Si un fallo por nuestra parte retrasa el aviso final, la eliminación definitiva puede aplazarse unos días (7 como máximo) y le escribiremos para comunicarle la nueva fecha.`; DE `Verzögert sich die abschließende Benachrichtigung durch einen Fehler auf unserer Seite, kann sich die endgültige Löschung um einige Tage (höchstens 7) verschieben; wir teilen Ihnen das neue Datum mit.`; FR `Si un incident de notre côté retarde l'avis final, la suppression définitive peut être reportée de quelques jours (7 au maximum) et nous vous écrivons pour vous indiquer la nouvelle date.`. Le bozze dei Termini per Paese non hanno il paragrafo dei 30 giorni e il testo che l'app fa accettare (`account_consent_text.py`) non lo ha nemmeno: la frase entra nelle altre lingue quando si traduce it/03 §12.
 
-**Il risultato voluto dal proprietario si ottiene lecitamente con due strade distinte, scelte dall'utente:**
+**Il risultato voluto dal proprietario si ottiene lecitamente con una strada, scelta dall'utente** (la seconda, «Metti in pausa», è stata tolta il 25 novembre 2026, decisione del proprietario):
 
 1. **«Elimina l'account»**: da subito l'account è congelato e, fino a 30 giorni dopo, chi accede con la stessa e-mail può ripristinarlo. Al 30º giorno la cancellazione è definitiva.
-2. **«Metti in pausa»**: l'account resta inattivo, **senza che sia stata chiesta nessuna cancellazione**, finché l'utente non torna, fino a un massimo di **24 mesi senza accessi** (impostazione da 12 a 36, mai vuota); poi si cancella da solo, con gli avvisi del [doc 18](18_email_di_uscita_eliminazione_e_pausa.md). Non è lo stato «account senza piano» (4 mesi, [doc 12](12_avvisi_prima_della_cancellazione.md); [it/02](it/02_informativa_privacy_it.md) §7; [10](10_pareri_dal_2026_11_06.md) §4): è una scelta esplicita dell'utente, più lunga e con un tetto proprio. **Decisione A del proprietario (16 novembre): voleva «senza limite»; alla lettera non regge l'art. 5(1)(e), la formula lecita è nel [doc 18](18_email_di_uscita_eliminazione_e_pausa.md) §2.** Chi è in pausa può cancellare quando vuole: parte allora la strada 1.
+2. *(Tolta il 25 novembre 2026: «Metti in pausa» non esiste. Il ragionamento del 16 novembre, con il tetto di 24 mesi e l'art. 5(1)(e), è nella storia di git di questo documento e del [doc 18](18_email_di_uscita_eliminazione_e_pausa.md).)*
 
 Resta sempre il link «Elimina subito», senza recupero.
 
-**Perché la pausa regge:** non è una cancellazione rimandata, ma una scelta dell'utente di non essere cancellato ancora, informata, annullabile e con un tetto (24 mesi senza accessi, dopo gli avvisi). La base è il contratto e il legittimo interesse a fargli ritrovare i suoi dati, come per chi non rinnova. Resta ⚖️ il rapporto con il limite di conservazione (art. 5(1)(e)): il rischio è basso se la pausa non è mai la scelta preimpostata e il tetto resta un massimo; senza tetto la valutazione non vale più ([18](18_email_di_uscita_eliminazione_e_pausa.md) §2).
+**Pausa: tolta il 25 novembre 2026.** Chi non ha un piano ha i 4 mesi dei [doc 12](12_avvisi_prima_della_cancellazione.md), con gli avvisi; non c'è una conservazione più lunga a scelta dell'utente.
 
 ## 2. Cosa deve fare il sistema nei 30 giorni
 
@@ -39,11 +39,9 @@ Resta sempre il link «Elimina subito», senza recupero.
 ## 5. Testi pronti (italiano)
 
 **Finestra «Elimina account»** (dopo la conferma della password):
-- Titolo: «Cosa vuoi fare con il tuo account?»
-- «**Mettilo in pausa.** L'account resta inattivo, senza promemoria né notifiche, e conserviamo i tuoi dati finché non torni, fino a {mesi_pausa} mesi senza accessi: poi li cancelliamo. [Ti scriviamo una volta l'anno e prima di cancellare.] Per tornare basta accedere con la stessa e-mail.» → «Metti in pausa» (testo aggiornato il 16 novembre, decisione A; la frase tra parentesi solo quando l'invio delle e-mail esiste: [18](18_email_di_uscita_eliminazione_e_pausa.md) §4)
+- *(25 novembre 2026: la finestra a due scelte non esiste più, perché la pausa è tolta: resta il solo testo di «Elimina l'account».)*
 - «**Eliminalo.** Cancelliamo tutto entro 30 giorni. Fino ad allora puoi cambiare idea accedendo con la stessa e-mail. Dopo non si recupera più.» → «Elimina l'account»
 - In piccolo: «Vuoi eliminare subito, senza possibilità di recupero? **Elimina subito**». E: «Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.» (testo corretto il 16 novembre sera dopo il registro delle cancellazioni: [18](18_email_di_uscita_eliminazione_e_pausa.md) §6)
-- Nessuna delle due strade preselezionata.
 
 **E-mail dopo «Elimina l'account»** (messaggio di servizio, nessuna offerta; **testo definitivo in [18](18_email_di_uscita_eliminazione_e_pausa.md) §5, D1–D4**). Oggetto: «Abbiamo ricevuto la tua richiesta: eliminiamo il tuo account Quokka». Testo: «Ciao {nome}, il {data} ci hai chiesto di eliminare il tuo account. Lo cancelliamo definitivamente il {data_fine}. Se hai cambiato idea, fino a quel giorno basta accedere con questa e-mail e ripristinarlo. Dopo non potremo più recuperare nulla. Se non sei stato tu, accedi subito e cambia la password, oppure scrivici.»
 
@@ -51,20 +49,19 @@ Resta sempre il link «Elimina subito», senza recupero.
 
 **E-mail finale** (testo definitivo: D4 in [18](18_email_di_uscita_eliminazione_e_pausa.md) §5): (la bozza di questo paragrafo è sostituita da D4: «abbiamo eliminato il tuo account e i dati che conteneva» più il blocco «Cosa resta», con `{N}` = 30).
 
-**E-mail all'inizio e durante la pausa:** testi P1, P3 e P4–P6 in [18](18_email_di_uscita_eliminazione_e_pausa.md) §4 (la pausa ha il suo calendario e non usa la sequenza del doc 12).
+*(Tolto il 25 novembre 2026: le e-mail della pausa, P1 e P3–P6, non esistono più.)*
 
 **Informativa (da inserire in it/02 solo quando il codice esiste, con il marcatore «in attesa del codice»):**
 - §7, riga nuova: «Account eliminato, in attesa della cancellazione definitiva | 30 giorni dalla richiesta. In questo periodo l'account non è visibile e non lo usiamo; puoi ripristinarlo accedendo con la stessa e-mail. Poi cancelliamo tutto, tranne ciò che la legge ci obbliga a conservare».
-- §7, riga esistente «Account senza piano»: aggiungere «o messo in pausa da te».
 - §8: «Quando elimini l'account, per 30 giorni puoi ripristinarlo; se vuoi che sia subito definitivo, scegli “Elimina subito”.»
 
 ## 6. Altre vie di richiesta
 
-Una richiesta di cancellazione arrivata per e-mail o tramite il Garante segue la stessa regola (30 giorni, art. 12(3)) e non offre la pausa: si verifica l'identità di chi scrive e si cancella. Gli account chiusi per età (meno di 14 anni) restano fuori: nessun recupero, procedura del [08](08_punti_aperti_prima_del_lancio.md), punto 53.
+Una richiesta di cancellazione arrivata per e-mail o tramite il Garante segue la stessa regola (30 giorni, art. 12(3)): si verifica l'identità di chi scrive e si cancella. Gli account chiusi per età (meno di 14 anni) restano fuori: nessun recupero, procedura del [08](08_punti_aperti_prima_del_lancio.md), punto 53.
 
 ## 7. Punti aperti ⚖️
 
-1. La pausa come scelta dell'utente, con tetto di 24 mesi senza accessi: conferma del legale ([18](18_email_di_uscita_eliminazione_e_pausa.md) §2 e §8).
+1. *(Tolto il 25 novembre 2026: la pausa non esiste più.)*
 2. Il congelamento di 30 giorni come finestra di ripensamento: è prassi diffusa tra le piattaforme, non una regola scritta: va dichiarato con chiarezza e l'utente deve poter chiedere la cancellazione immediata.
 3. Giorni dei backup di Supabase, per l'e-mail finale e l'informativa.
 
@@ -72,8 +69,8 @@ Una richiesta di cancellazione arrivata per e-mail o tramite il Garante segue la
 
 La sessione ha costruito il ripensamento con la durata in un'impostazione (`ACCOUNT_DELETION_GRACE_DAYS`) e ha chiesto conferma.
 
-1. **Durata.** 30 giorni è il massimo per «Elimina account». L'impostazione deve avere un **tetto a 30** (controllo all'avvio, valore predefinito 30), così un valore più alto non entra per errore. Il bisogno del proprietario di tenere i dati più a lungo si ottiene con la pausa (§1 e [18](18_email_di_uscita_eliminazione_e_pausa.md)), che è una funzione a parte.
-2. **Base giuridica del ripensamento.** Entro i 30 giorni non serve un consenso: è il tempo che la legge dà per eseguire la cancellazione, usato nell'interesse dell'utente a poter revocare. I dati restano bloccati (nessuna funzione, nessun invio, nessun uso per altro) e l'utente lo sa. **Oltre i 30 giorni** non è più l'esecuzione di una cancellazione, ma una conservazione diversa: richiede la scelta esplicita dell'utente (la pausa), non preselezionata e annullabile con la cancellazione immediata. Un consenso nascosto nella finestra di eliminazione non basta.
+1. **Durata.** 30 giorni è il massimo per «Elimina account». L'impostazione deve avere un **tetto a 30** (controllo all'avvio, valore predefinito 30), così un valore più alto non entra per errore.
+2. **Base giuridica del ripensamento.** Entro i 30 giorni non serve un consenso: è il tempo che la legge dà per eseguire la cancellazione, usato nell'interesse dell'utente a poter revocare. I dati restano bloccati (nessuna funzione, nessun invio, nessun uso per altro) e l'utente lo sa. **Oltre i 30 giorni** non è più l'esecuzione di una cancellazione, ma una conservazione diversa, che non offriamo (la pausa è stata tolta il 25 novembre 2026): un consenso nascosto nella finestra di eliminazione non basterebbe.
 3. **Testo.** La proposta della sessione va bene, con due aggiunte: «tutti i dati» diventa «i tuoi dati, tranne quelli che la legge ci obbliga a conservare, per esempio le fatture» (altrimenti la frase non è vera) e il collegamento «Elimina subito». Versione: «L'account verrà disattivato subito. Per {N} giorni puoi cambiare idea: accedi con la stessa e-mail (se serve, reimposta la password) e annulla l'eliminazione. Dopo il {data} cancelliamo l'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.» + «Elimina subito, senza possibilità di recupero». (Frase finale corretta il 16 novembre sera, dopo il registro delle cancellazioni: [18](18_email_di_uscita_eliminazione_e_pausa.md) §6.)
 4. **Account chiusi per età (meno di 14 anni).** Nessun ripensamento: non c'è base per trattare quei dati (art. 17(1)(d)) e la cancellazione senza attesa è lecita e la più prudente. Ma **cambia la decisione del 9 novembre** ([08](08_punti_aperti_prima_del_lancio.md), punto 53: nessun lavoro automatico, cancellazione entro 30 giorni con la procedura del team, data corretta solo dopo aver verificato chi scrive): con la cancellazione immediata un errore di battitura nella data non si corregge più. È una scelta di prodotto: la confermano Orchestratore e proprietario.
 5. **E-mail occupata durante l'attesa.** Accettabile se: chi prova a iscriversi con quell'e-mail vede un suggerimento («Recupera account») che **non rivela** se l'account esiste né che è in eliminazione (la soluzione della sessione Registrazione è migliore del messaggio specifico che avevo proposto, che permetteva di scoprire chi è iscritto); e se all'accesso c'è «Elimina subito», che libera l'e-mail. «Dati bloccati» vale come nel §2.
@@ -84,8 +81,8 @@ La sessione Registrazione ha scritto il ripensamento di 30 giorni (non ancora in
 
 6. **Il lavoro che cancella al 30º giorno deve essere acceso insieme al congelamento.** Un account congelato che non viene mai cancellato supera il limite di un mese dell'art. 12(3): senza il lavoro (o un'esecuzione manuale documentata, con un controllo che segnali le scadenze superate) il congelamento non va in produzione. Decisione dell'Orchestratore.
 7. **Registro duraturo delle cancellazioni** (oggi solo il numero nel log, che dura poco): serve prima del lancio pubblico, per dimostrare l'adempimento (art. 5(2)) e per riapplicare le cancellazioni dopo un ripristino da backup. **Approvato da Sicurezza il 16 novembre e costruito da Registrazione: vedi §9.**
-8. **E-mail** (richiesta di eliminazione, finale, inizio pausa): non obbligatorie per legge; finché il backend non può inviarle, la schermata che conferma l'eliminazione deve mostrare la data della cancellazione definitiva e come ripristinare. Un'e-mail «se non sei stato tu» resta consigliata per la sicurezza.
-9. **Pausa e finestra a due scelte:** decisione A del proprietario (16 novembre), non ancora costruite. Finché mancano, il testo della finestra non deve promettere la pausa né una durata; condizioni e testi in [18](18_email_di_uscita_eliminazione_e_pausa.md).
+8. **E-mail** (richiesta di eliminazione, finale): non obbligatorie per legge; finché il backend non può inviarle, la schermata che conferma l'eliminazione deve mostrare la data della cancellazione definitiva e come ripristinare. Un'e-mail «se non sei stato tu» resta consigliata per la sicurezza.
+9. *(Tolto il 25 novembre 2026: la pausa e la finestra a due scelte non esistono più.)*
 
 ## 9. Registro delle cancellazioni e copie manuali del database (2026-11-16)
 

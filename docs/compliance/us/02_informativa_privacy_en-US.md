@@ -1,3 +1,5 @@
+> **25 novembre 2026, Groq tolto:** Groq non è più un fornitore e i messaggi vocali non ci sono più (decisione del proprietario). In questa bozza ho tolto la riga di Groq e la sua nota; le frasi su messaggi vocali, microfono, audio e immagini inviate ai fornitori vanno allineate a [it/02](../it/02_informativa_privacy_it.md) (stessi tagli) prima della traduzione e della revisione locale.
+
 > **BOZZA — non è consulenza legale; da rivedere da un avvocato abilitato negli USA prima della pubblicazione**
 
 **Note per il team (da eliminare prima della pubblicazione):** testo destinato agli utenti USA, in inglese americano semplice. Parti tra [parentesi quadre] da compilare o verificare; i punti "VERIFY" sono fatti da confermare nel codice/contratti. Basato su docs/compliance/09_informativa_privacy_bozza.md (informativa italiana) e sulla ricerca in 01_ricerca_normativa.md. Fonti e incertezze: vedi 01. Nessun dato personale reale: indirizzi e nomi sono segnaposto.
@@ -65,7 +67,7 @@ We do **not** sell your personal information, and we do **not** share it for cro
 |---|---|---|
 | Supabase | Database, sign-in, storage of attachments and photos | [Region: VERIFY] |
 | Vercel | App server hosting | [VERIFY] |
-| Groq (AI provider) | Text of your questions and documents, audio for transcription, images for analysis | [VERIFY: country and contract terms] |
+| Anthropic (AI provider) | Text of your questions and documents | [VERIFY: country and contract terms] |
 | OpenStreetMap services (Nominatim, map tiles, Overpass) | An address you type (to find coordinates); your IP address and map areas requested; a grid-cell center, not your exact location | [VERIFY] |
 | Google (Firebase App Distribution) | Test versions only: tester's email | [VERIFY] |
 | Sentry (Functional Software, Inc.) | Only if you opt in: a technical error report (type of error, what the app was doing, phone model, Android and app versions, language and time zone). Never message text, photos, location, your name or email | EU (Frankfurt, Germany); the company is based in the U.S. [VERIFY: data processing agreement and certifications; whether Sentry stores IP addresses] |

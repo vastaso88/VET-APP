@@ -23,7 +23,7 @@ Perché lo fa, come gestirlo, i tuoi doveri, quando serve il veterinario.
 ### Descrizione completa (max 4000)
 
 ```text
-Quokka ti aiuta a capire il tuo animale e a gestirlo bene ogni giorno: perché si comporta così, di cosa ha bisogno, quali sono i tuoi doveri e quando serve il veterinario. Le risposte si basano su fonti scientifiche e posizioni ufficiali e sono pensate per la sua specie.
+Quokka ti aiuta a capire il tuo animale e a gestirlo bene ogni giorno: perché si comporta così, di cosa ha bisogno, quali sono i tuoi doveri e quando serve il veterinario. Le risposte sono in parole semplici e pensate per la sua specie.
 
 COSA PUOI FARE
 • Chiedi all'assistente IA: comportamento, convivenza, alimentazione, ambiente, prevenzione, obblighi di legge. Spiega il perché, dice cosa fare nel quotidiano e quando è il caso di sentire il veterinario. Le risposte sono sempre indicate come generate dall'IA.
@@ -64,13 +64,13 @@ Capirlo e gestirlo bene
 ### Testo promozionale (max 170)
 
 ```text
-Capisci il tuo animale: perché lo fa, come gestirlo, i tuoi doveri, quando serve il veterinario. Risposte basate su fonti scientifiche, per ogni specie.
+Capisci il tuo animale: perché lo fa, come gestirlo, i tuoi doveri, quando serve il veterinario. Risposte in parole semplici, per ogni specie.
 ```
 
 ### Descrizione (identica alla descrizione completa di Google Play) (max 4000)
 
 ```text
-Quokka ti aiuta a capire il tuo animale e a gestirlo bene ogni giorno: perché si comporta così, di cosa ha bisogno, quali sono i tuoi doveri e quando serve il veterinario. Le risposte si basano su fonti scientifiche e posizioni ufficiali e sono pensate per la sua specie.
+Quokka ti aiuta a capire il tuo animale e a gestirlo bene ogni giorno: perché si comporta così, di cosa ha bisogno, quali sono i tuoi doveri e quando serve il veterinario. Le risposte sono in parole semplici e pensate per la sua specie.
 
 COSA PUOI FARE
 • Chiedi all'assistente IA: comportamento, convivenza, alimentazione, ambiente, prevenzione, obblighi di legge. Spiega il perché, dice cosa fare nel quotidiano e quando è il caso di sentire il veterinario. Le risposte sono sempre indicate come generate dall'IA.
