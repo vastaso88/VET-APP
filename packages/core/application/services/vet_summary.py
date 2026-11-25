@@ -10,6 +10,7 @@ prompt; the owner's own name is never part of the summary.
 
 from __future__ import annotations
 
+import logging
 import re
 from datetime import UTC, datetime
 
@@ -22,11 +23,14 @@ from packages.core.application.ports.pii_anonymizer import PiiAnonymizationReque
 from packages.core.application.services.finished_text import generate_finished_lines
 from packages.core.application.services.llm_budget import (
     LlmBudget,
+    QuotaExhausted,
+    format_wait,
     refund_if_our_failure,
     require_feature_allowance,
 )
 from packages.core.application.services.medical_record_context_retriever import italian_date
 from packages.core.application.services.send_chat_message import owner_names_for_anonymization
+from packages.core.domain.common.language import normalize_language
 from packages.core.domain.conversation.models import (
     ChatMessage,
     Conversation,
@@ -35,7 +39,12 @@ from packages.core.domain.conversation.models import (
 from packages.core.domain.localization import language_name, translate
 from packages.core.domain.medical_record.consent_text import effective_decision
 from packages.core.domain.pet_profile.models import PetProfile
-from packages.shared.errors.base import ValidationError
+from packages.core.domain.safety.harmful_requests import QUOTA_TEXTS
+from packages.shared.errors.base import ServiceUnavailableError, ValidationError
+
+logger = logging.getLogger("vetgpt.vet_summary")
+# The owner waits 20 seconds at most (owner's rule), a second writing included.
+SUMMARY_SECONDS = 19
 
 VET_SUMMARY_MARKER = "a vet from a chat the owner had with the app's assistant"
 
@@ -120,21 +129,21 @@ class VetSummaryService:
         )
         now = datetime.now(UTC)
 
-        body = generate_finished_lines(
-            self._llm_client,
-            LLMGenerationRequest(
-                system_prompt=self._system_prompt(data.language),
-                user_prompt=self._user_prompt(
-                    conversation,
-                    pet,
-                    owner_names,
-                    notes_allowed=self._record_allowed(conversation, pet),
-                ),
-                temperature=0.1,
-                max_tokens=1200,
-                purpose="vet_summary",
+        request = LLMGenerationRequest(
+            system_prompt=self._system_prompt(data.language),
+            user_prompt=self._user_prompt(
+                conversation,
+                pet,
+                owner_names,
+                notes_allowed=self._record_allowed(conversation, pet),
             ),
+            temperature=0.1,
+            max_tokens=1200,
+            purpose="vet_summary",
+            timeout_seconds=SUMMARY_SECONDS,
+            second_attempt=True,
         )
+        body = self._written(request, data.language)
         return VetSummaryOutput(
             summary=(
                 self._header(pet, conversation, now, data.language)
@@ -145,6 +154,23 @@ class VetSummaryService:
             ),
             generated_at=now,
         )
+
+    def _written(self, request: LLMGenerationRequest, language: str) -> str:
+        """The text, or the reason why not in the owner's language: the model down, too slow,
+        or past its ceiling of today (a 502 in Italian only before, 25/11/2026)."""
+        try:
+            return generate_finished_lines(self._llm_client, request)
+        except QuotaExhausted as exc:
+            code = normalize_language(language)
+            raise ServiceUnavailableError(
+                QUOTA_TEXTS.get(code, QUOTA_TEXTS["it"]).format(
+                    wait=format_wait(exc.retry_after_seconds, code)
+                ),
+                retry_after_seconds=exc.retry_after_seconds,
+            ) from exc
+        except Exception as exc:  # noqa: BLE001 - whatever failed, the owner reads a sentence
+            logger.warning("vet summary: %s", type(exc).__name__)
+            raise ServiceUnavailableError(translate("provider_failure", language)) from exc
 
     @staticmethod
     def _system_prompt(language: str = "it") -> str:

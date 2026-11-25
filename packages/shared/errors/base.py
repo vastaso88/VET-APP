@@ -73,6 +73,16 @@ class ProviderError(VetAppError):
     paid_calls: tuple[PaidCall, ...] = ()
 
 
+class ServiceUnavailableError(ProviderError):
+    """A provider could not answer, or its ceiling of today is reached: the API answers 502
+    with [message], written for the owner in their language, instead of the generic line."""
+
+    def __init__(self, message: str, *, retry_after_seconds: int | None = None) -> None:
+        super().__init__(message)
+        self.message = message
+        self.retry_after_seconds = retry_after_seconds
+
+
 class SubscriptionRequiredError(VetAppError):
     """The trial is over and the owner has no plan: the API answers 402
     `subscription_required` and the app shows the paywall."""

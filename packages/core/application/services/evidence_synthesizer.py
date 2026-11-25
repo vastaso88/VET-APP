@@ -74,7 +74,11 @@ class EvidenceSynthesizer:
         self._system_prompt = _build_system_prompt(response_language)
 
     def synthesize(
-        self, user_prompt: str, *, response_language: str | None = None
+        self,
+        user_prompt: str,
+        *,
+        response_language: str | None = None,
+        timeout_seconds: int | None = None,
     ) -> tuple[EvidenceSynthesis, LLMResponse]:
         """Returns the parsed synthesis alongside the raw LLMResponse, so
         the caller can still report which provider/model produced it."""
@@ -98,6 +102,8 @@ class EvidenceSynthesizer:
                 # theoretical margin.
                 max_tokens=2000,
                 purpose="evidence_synthesis",
+                timeout_seconds=timeout_seconds,
+                second_attempt=timeout_seconds is not None,
             )
         )
         return self._parse(response.content), response

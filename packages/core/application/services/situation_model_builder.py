@@ -65,6 +65,7 @@ class SituationModelBuilder:
                     # including presenting_problem, turn after turn.
                     max_tokens=1500,
                     purpose="situation_model",
+                    timeout_seconds=6,
                     model_class="light",
                     json_mode=True,
                 )

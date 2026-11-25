@@ -248,6 +248,7 @@ class InterviewPlanner:
                     ),
                     max_tokens=120,
                     purpose="interview_question",
+                    timeout_seconds=6,
                     model_class="light",
                 )
             )

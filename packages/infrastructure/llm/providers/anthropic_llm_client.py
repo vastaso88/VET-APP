@@ -28,7 +28,9 @@ client adds or withholds:
   LLMRefusal: a decision, not an outage;
 * every SDK error becomes a ProviderError that names the status only,
   never the response body or the prompt; a deadline the caller set
-  (urgency classifier, urgent answer) is honoured without SDK retries.
+  (every call the owner waits for) is honoured without SDK retries, for the
+  whole call: one more attempt only inside it, and only when asked
+  (`second_attempt`).
 """
 
 from __future__ import annotations
@@ -67,6 +69,8 @@ PROVIDER_NAME = "anthropic"
 MIN_THINKING_HEADROOM_TOKENS = 1200
 # Below this many seconds left of the caller's deadline, no second attempt is started.
 MIN_SECONDS_FOR_A_SECOND_WRITING = 3
+# The pause before the second attempt after a failure that came at once.
+_PAUSE_SECONDS = 0.4
 JSON_ONLY_INSTRUCTION = "\n\nReply with one JSON object only: no other text, no code fence."
 _FINISH_REASONS = {"end_turn": "stop", "stop_sequence": "stop", "max_tokens": "length"}
 
@@ -77,6 +81,25 @@ class _BudgetSpentOnReasoning(ProviderError):
     def __init__(self, paid: PaidCall) -> None:
         super().__init__("Anthropic spent the whole token budget before writing")
         self.paid_calls = (paid,)
+
+
+def _deadline(seconds: float) -> anthropic.Timeout:
+    """[seconds] for the whole call. A bare number is the time of EACH phase (connecting, then
+    reading): thirty seconds could become sixty (owner's rule, 25/11/2026: 20 s at most)."""
+    connect = min(2.0, seconds / 3)
+    return anthropic.Timeout(connect=connect, read=seconds - connect, write=connect, pool=connect)
+
+
+def _came_at_once(exc: anthropic.APIError) -> bool:
+    """A failure worth a second attempt: the provider overloaded or failing, a dropped
+    connection. Not a timeout (the time is gone), not a refused request."""
+    if isinstance(exc, anthropic.APITimeoutError):
+        return False
+    if isinstance(exc, anthropic.APIConnectionError):
+        return True
+    return isinstance(exc, anthropic.APIStatusError) and (
+        exc.status_code >= 500 or exc.status_code in (408, 409, 429)
+    )
 
 
 def split_system_prompt(system_prompt: str, cacheable_chars: int) -> tuple[str, str]:
@@ -176,15 +199,47 @@ class AnthropicLLMClient(LLMClient):
             )
 
     def _generate(self, req: LLMGenerationRequest) -> LLMResponse:
-        client = self._client
-        if req.timeout_seconds is not None:
-            client = client.with_options(timeout=req.timeout_seconds, max_retries=0)
+        started = time.monotonic()
+        try:
+            return self._attempt(req, started)
+        except anthropic.APIError as exc:
+            left = self._left(req, started)
+            if (
+                not req.second_attempt
+                or left is None
+                or left - _PAUSE_SECONDS < MIN_SECONDS_FOR_A_SECOND_WRITING
+                or not _came_at_once(exc)
+            ):
+                raise _provider_error(exc) from exc
+            logger.warning(
+                "anthropic: %s for a %s call; tried once more", type(exc).__name__, req.purpose
+            )
+            time.sleep(_PAUSE_SECONDS)
+            try:
+                return self._attempt(req, started)
+            except anthropic.APIError as again:
+                raise _provider_error(again) from again
+
+    @staticmethod
+    def _left(req: LLMGenerationRequest, started: float) -> float | None:
+        if req.timeout_seconds is None:
+            return None
+        return req.timeout_seconds - (time.monotonic() - started)
+
+    def _within(self, req: LLMGenerationRequest, started: float) -> Any:
+        """The client with what is left of the caller's deadline."""
+        left = self._left(req, started)
+        if left is None:
+            return self._client
+        return self._client.with_options(timeout=_deadline(max(0.5, left)), max_retries=0)
+
+    def _attempt(self, req: LLMGenerationRequest, started: float) -> LLMResponse:
         body = self.payload(req, structured=True)
         try:
-            message = client.messages.create(**body)
+            message = self._within(req, started).messages.create(**body)
         except anthropic.BadRequestError as exc:
             if "format" not in body["output_config"]:
-                raise _provider_error(exc) from exc
+                raise
             # The schema was not accepted: the same call, the JSON asked
             # for in words (the callers parse the object out of the text).
             logger.warning(
@@ -192,12 +247,9 @@ class AnthropicLLMClient(LLMClient):
                 exc.status_code,
                 req.purpose,
             )
-            try:
-                message = client.messages.create(**self.payload(req, structured=False))
-            except anthropic.APIError as retry_exc:
-                raise _provider_error(retry_exc) from retry_exc
-        except anthropic.APIError as exc:
-            raise _provider_error(exc) from exc
+            message = self._within(req, started).messages.create(
+                **self.payload(req, structured=False)
+            )
         return self._response(message, req)
 
     def payload(self, req: LLMGenerationRequest, *, structured: bool) -> dict[str, Any]:

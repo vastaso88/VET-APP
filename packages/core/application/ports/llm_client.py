@@ -25,6 +25,9 @@ class LLMGenerationRequest(BaseModel):
     # A deadline shorter than the provider's default, for calls that must
     # not hold the answer up (the urgency classifier). None = the default.
     timeout_seconds: int | None = None
+    # Within timeout_seconds, once more after a failure that came at once (overloaded, a
+    # dropped connection). Never after a timeout: the time is gone.
+    second_attempt: bool = False
     # Write at once, with no reasoning first: a second attempt after a reply whose
     # reasoning spent the token budget (collaudo, wave 0). A provider that cannot switch
     # reasoning off ignores it.

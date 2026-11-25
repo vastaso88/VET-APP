@@ -19,6 +19,7 @@ from fastapi.testclient import TestClient
 
 from apps.api.main import app
 from packages.bootstrap.container import get_container, reset_container
+from packages.core.application.services import vet_summary
 from packages.core.application.services.llm_usage_recorder import InstrumentedLLMClient
 from packages.core.domain.localization import translate
 from packages.core.domain.safety.harmful_requests import QUOTA_TEXTS
@@ -230,9 +231,10 @@ def test_an_emergency_past_the_cap_still_gets_a_reply(client: TestClient) -> Non
 # --- the other features that call Claude --------------------------------------------------------
 
 
+@pytest.mark.parametrize("language", LANGUAGES)
 @pytest.mark.parametrize("over_the_cap", [False, True])
 def test_the_summary_for_the_vet_fails_kindly_and_is_given_back(
-    client: TestClient, over_the_cap: bool
+    client: TestClient, over_the_cap: bool, language: str
 ) -> None:
     _claude(lambda _: _message("Può bere circa mezzo litro di acqua al giorno, sempre fresca."))
     asked = _ask(client, _pet(client))
@@ -241,13 +243,38 @@ def test_the_summary_for_the_vet_fails_kindly_and_is_given_back(
     if over_the_cap:
         _spend_the_cap()
 
-    response = client.get(f"/conversations/{conversation_id}/summary")
+    response = client.get(
+        f"/conversations/{conversation_id}/summary", headers={"Accept-Language": language}
+    )
 
     assert response.status_code == 502
-    assert (
-        response.json()["detail"] == "Servizio temporaneamente non disponibile. Riprova tra poco."
-    )
+    detail = response.json()["detail"]
+    if over_the_cap:
+        assert detail.startswith(QUOTA_TEXTS[language].split("{wait}")[0])
+        assert int(response.headers["Retry-After"]) > 0
+    else:
+        assert detail == translate("provider_failure", language)
     assert "provider says no" not in response.text
+    assert _used("summary") == 0
+
+
+def test_the_summary_never_ends_in_an_error_of_ours(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _claude(lambda _: _message("Può bere circa mezzo litro di acqua al giorno, sempre fresca."))
+    conversation_id = _ask(client, _pet(client)).json()["conversation"]["id"]
+
+    def broken(*_: object) -> str:
+        raise RuntimeError("secret detail")
+
+    monkeypatch.setattr(vet_summary, "generate_finished_lines", broken)
+    response = client.get(
+        f"/conversations/{conversation_id}/summary", headers={"Accept-Language": "de"}
+    )
+
+    assert response.status_code == 502
+    assert response.json()["detail"] == translate("provider_failure", "de")
+    assert "secret" not in response.text
     assert _used("summary") == 0
 
 

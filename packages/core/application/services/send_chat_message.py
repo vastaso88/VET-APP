@@ -1,5 +1,6 @@
 import logging
 import threading
+import time
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import UTC, date, datetime, timedelta
@@ -506,6 +507,7 @@ class SendChatMessageService:
         data: SendChatMessageInput,
         pet_profile: PetProfile | None = None,
     ) -> SendChatMessageOutput:
+        turn_started_at = time.monotonic()
         if pet_profile is None:
             pet_profile = self._pet_profile_repository.get(conversation.pet_id)
             if pet_profile is None:
@@ -555,6 +557,7 @@ class SendChatMessageService:
 
         orchestrator_result = self._orchestrator.answer(
             ChatOrchestratorInput(
+                turn_started_at=turn_started_at,
                 user_message=data.user_message.strip(),
                 species=pet_profile.species,
                 pet_name=pet_profile.name,

@@ -19,6 +19,7 @@ from packages.core.application.ports.llm_client import (
 )
 from packages.core.application.services.llm_budget import LlmBudget, QuotaExhausted
 from packages.core.application.services.llm_usage_recorder import InstrumentedLLMClient
+from packages.infrastructure.llm.providers import anthropic_llm_client as client_module
 from packages.infrastructure.llm.providers.anthropic_llm_client import (
     JSON_ONLY_INSTRUCTION,
     AnthropicLLMClient,
@@ -219,7 +220,54 @@ def test_a_deadline_set_by_the_caller_disables_the_sdk_retries() -> None:
 
     _client(fake).generate(LIGHT)
 
-    assert fake.options == [{"timeout": 6, "max_retries": 0}]
+    (options,) = fake.options
+    assert options["max_retries"] == 0
+    # the whole call, connecting included: not six seconds for each phase
+    timeout = options["timeout"]
+    assert timeout.connect + timeout.read == pytest.approx(6, abs=0.1)
+
+
+ORDINARY = ANSWER.model_copy(update={"timeout_seconds": 16, "second_attempt": True})
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        _status_error(529, anthropic.InternalServerError),
+        _status_error(503, anthropic.InternalServerError),
+        anthropic.APIConnectionError(request=_httpx.Request("POST", "https://example.com")),
+    ],
+)
+def test_a_failure_that_came_at_once_is_tried_once_more_inside_the_deadline(
+    failure: Exception, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(client_module, "_PAUSE_SECONDS", 0.0)
+    fake = FakeAnthropic(failure, _message("ok"))
+    assert _client(fake).generate(ORDINARY).content == "ok"
+    assert len(fake.calls) == 2
+    for options in fake.options:
+        assert options["max_retries"] == 0
+        assert options["timeout"].connect + options["timeout"].read <= 16.01
+
+
+def test_a_timeout_is_never_tried_again(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(client_module, "_PAUSE_SECONDS", 0.0)
+    request = _httpx.Request("POST", "https://example.com")
+    fake = FakeAnthropic(anthropic.APITimeoutError(request=request), _message("late"))
+    with pytest.raises(ProviderError, match="timed out"):
+        _client(fake).generate(ORDINARY)
+    assert len(fake.calls) == 1
+
+
+def test_no_second_attempt_when_the_time_is_almost_gone_or_nobody_asked(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(client_module, "_PAUSE_SECONDS", 0.0)
+    for update in ({"timeout_seconds": 2}, {"second_attempt": False}):
+        fake = FakeAnthropic(_status_error(529, anthropic.InternalServerError), _message("ok"))
+        with pytest.raises(ProviderError):
+            _client(fake).generate(ORDINARY.model_copy(update=update))
+        assert len(fake.calls) == 1
 
 
 def test_split_system_prompt_keeps_the_whole_prompt_stable_without_a_split_point() -> None:

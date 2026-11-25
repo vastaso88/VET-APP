@@ -280,6 +280,8 @@ def test_with_no_time_left_the_long_answer_is_not_shortened(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(orchestrator_module, "_seconds_left", lambda: 2.0)
+    # the reply itself had been written before
+    monkeypatch.setattr(orchestrator_module, "_seconds_for_the_answer", lambda: 16)
     client = CuttingClient(answer=[(_LONG, "stop")])
     result = _ask(client, _PLAIN)
     assert client.of("shorten") == [] and "annota ogni giorno" in result.answer
@@ -289,6 +291,8 @@ def test_the_severity_check_never_starts_past_the_owners_wait(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(orchestrator_module, "_seconds_left", lambda: 4.0)
+    # the reply itself had been written before
+    monkeypatch.setattr(orchestrator_module, "_seconds_for_the_answer", lambda: 16)
     delayed = "Con la pancia dura va visto oggi stesso. Chiama il veterinario e descrivi tutto."
     client = CuttingClient(answer=[(delayed, "stop")])
     _ask(client, "Ha la pancia dura", species="Cane", name="Ringo")

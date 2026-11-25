@@ -63,6 +63,7 @@ from packages.shared.errors.base import (
     ProviderError,
     QuotaExceededError,
     RequirementMissingError,
+    ServiceUnavailableError,
     SubscriptionRequiredError,
     ValidationError,
 )
@@ -373,6 +374,14 @@ async def handle_provider_error(_: Request, exc: ProviderError) -> JSONResponse:
     # correlation id to quote when reporting the problem.
     error_id = uuid.uuid4().hex[:12]
     logger.warning("provider error %s: %s", error_id, exc)
+    if isinstance(exc, ServiceUnavailableError):
+        # A fixed text of ours, already in the owner's language.
+        wait = exc.retry_after_seconds
+        return JSONResponse(
+            status_code=502,
+            headers={"Retry-After": str(wait)} if wait is not None else None,
+            content={"detail": exc.message, "error_id": error_id},
+        )
     return JSONResponse(
         status_code=502,
         content={

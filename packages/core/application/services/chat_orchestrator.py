@@ -5,7 +5,8 @@ import time
 import zlib
 from collections.abc import Callable, Iterable
 from concurrent.futures import Future, ThreadPoolExecutor
-from contextvars import ContextVar
+from concurrent.futures import TimeoutError as FutureTimeout
+from contextvars import ContextVar, copy_context
 from datetime import UTC, date, datetime, timedelta
 
 from pydantic import BaseModel, Field
@@ -948,6 +949,8 @@ _URGENT_ANSWER_MAX_TOKENS = 320
 # cut, and the severity check with its own second attempt (collaudo, wave 0, 23/11/2026).
 _TURN_SECONDS = 19.0
 _SECONDS_FOR_THE_CHECKS = 3.0
+# What is kept for the answer itself: a helper that is late is left behind.
+_SECONDS_FOR_THE_ANSWER = 9.0
 _MIN_SECONDS_FOR_A_CALL = 3.0
 _MIN_SECONDS_FOR_A_SECOND_WRITING = 4.0
 # A reply closed at its last finished sentence shorter than this says nothing.
@@ -959,6 +962,33 @@ def _seconds_left() -> float:
     """Of the owner's wait, for this turn (a path with no turn has all of it)."""
     started = _turn_started.get()
     return _TURN_SECONDS if started is None else _TURN_SECONDS - (time.monotonic() - started)
+
+
+def _seconds_for_the_answer() -> int:
+    """What a call that writes to the owner may take: the checks after it keep their part."""
+    return max(0, round(_seconds_left() - _SECONDS_FOR_THE_CHECKS))
+
+
+def _answer_deadline(seconds: int | None = None) -> int:
+    allowed = _seconds_for_the_answer() if seconds is None else seconds
+    if allowed < _MIN_SECONDS_FOR_A_CALL:
+        raise ProviderError("the owner's wait is over: no call is started")
+    return allowed
+
+
+def _wait_for_a_helper() -> float:
+    return max(0.1, _seconds_left() - _SECONDS_FOR_THE_ANSWER)
+
+
+def _bounded[T](job: Callable[[], T]) -> T:
+    """[job], left behind when it takes the time of the answer (raises ProviderError)."""
+    pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="chat-bounded")
+    try:
+        return pool.submit(copy_context().run, job).result(timeout=_wait_for_a_helper())
+    except FutureTimeout as exc:
+        raise ProviderError("a helper of the answer took too long") from exc
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
 
 
 class _Prefetch:
@@ -1006,7 +1036,11 @@ class _Prefetch:
     def urgency(self) -> UrgencyVerdict | None:
         if self._urgency is None:
             return None
-        verdict = self._urgency.result()
+        try:
+            verdict = self._urgency.result(timeout=_wait_for_a_helper())
+        except FutureTimeout:
+            logger.warning("chat prefetch: urgency verdict too late; answering normally")
+            return None
         return verdict if isinstance(verdict, UrgencyVerdict) else None
 
     def evidence(self, key: tuple[str, str, str]) -> list[EvidenceSource] | None:
@@ -1014,7 +1048,11 @@ class _Prefetch:
         species they were fetched for; None means "fetch now"."""
         if self._evidence is None or key != self._evidence_key:
             return None
-        sources = self._evidence.result()
+        try:
+            sources = self._evidence.result(timeout=_wait_for_a_helper())
+        except FutureTimeout:
+            logger.warning("chat prefetch: literature search too late; answering without it")
+            return []
         return list(sources) if isinstance(sources, list) else []
 
     def close(self) -> None:
@@ -1025,6 +1063,8 @@ class _Prefetch:
 
 
 class ChatOrchestratorInput(BaseModel):
+    # When the owner's wait began (time.monotonic()); None = when the turn starts here.
+    turn_started_at: float | None = None
     user_message: str
     species: str
     pet_name: str
@@ -1291,7 +1331,9 @@ class ChatOrchestrator:
         self._history_last_reply_chars = max(self._history_message_chars, history_last_reply_chars)
 
     def answer(self, data: ChatOrchestratorInput) -> ChatOrchestratorResult:
-        _turn_started.set(time.monotonic())
+        _turn_started.set(
+            time.monotonic() if data.turn_started_at is None else data.turn_started_at
+        )
         if data.photo_reading_off and not data.user_message.strip():
             # Only a photo, and photos cannot be read: the honest sentence.
             return ChatOrchestratorResult(
@@ -2105,6 +2147,8 @@ class ChatOrchestrator:
                     max_tokens=220,
                     purpose="guard_follow_up",
                     model_class="main",
+                    timeout_seconds=_answer_deadline(),
+                    second_attempt=True,
                 )
             )
         except Exception:  # noqa: BLE001 - the fixed text alone is still a safe reply
@@ -3172,7 +3216,10 @@ class ChatOrchestrator:
                     # Plan "fratello maggiore": the more capable model writes the
                     # free part when the plan allows it; the fixed steps never change.
                     model_class="strong" if self._strong_allowed(data) else "main",
-                    timeout_seconds=self._urgent_answer_timeout_seconds,
+                    timeout_seconds=_answer_deadline(
+                        min(self._urgent_answer_timeout_seconds, _seconds_for_the_answer())
+                    ),
+                    second_attempt=True,
                     cacheable_system_chars=len(stable_prefix(None, v2=self._answer_v2)),
                 )
             )
@@ -3815,9 +3862,15 @@ class ChatOrchestrator:
             if intent == "husbandry_question"
             else EvidenceRetrievalRequest.model_fields["max_results"].default
         )
-        ranked = self._rank_evidence(
-            case_text, effective_species, intent, max_results, data.owner_names
-        )
+        try:
+            ranked = _bounded(
+                lambda: self._rank_evidence(
+                    case_text, effective_species, intent, max_results, data.owner_names
+                )
+            )
+        except ProviderError:
+            logger.warning("evidence search failed or too late: answering without it")
+            ranked = RankedEvidence(sources=[], top_score=0.0, breakdowns=[])
         sources = ranked.sources
         if not sources:
             return ChatOrchestratorResult(
@@ -3840,6 +3893,7 @@ class ChatOrchestrator:
                 f"Question: {anonymized_message}\n"
                 f"Evidence:\n{evidence_block}",
                 response_language=data.language,
+                timeout_seconds=_answer_deadline(),
             )
         except QuotaExhausted as exc:
             return self._quota_result(
@@ -4043,9 +4097,7 @@ class ChatOrchestrator:
             sources = (
                 prefetched
                 if prefetched is not None
-                else self._retrieve_optional_evidence(
-                    query, intent, effective_species, data.owner_names
-                )
+                else self._evidence_in_time(query, intent, effective_species, data.owner_names)
             )
         # Two sources at most go into the prompt, the duty notes of the country named
         # (natural_answer_preparation.select_prompt_sources).
@@ -4180,7 +4232,8 @@ class ChatOrchestrator:
                     model_class="strong" if escalated else "main",
                     cacheable_system_chars=prompts.cacheable_system_chars,
                     without_reasoning=seconds is not None,
-                    timeout_seconds=seconds,
+                    timeout_seconds=_answer_deadline(seconds),
+                    second_attempt=True,
                 )
             )
 
@@ -4200,7 +4253,11 @@ class ChatOrchestrator:
                 # has already answered two rounds of questions: a reply of
                 # questions only is not acceptable. One more attempt, told
                 # so in as many words.
-                response = generate(system_prompt + ANSWER_NOW_REMINDER, "answer_retry")
+                try:
+                    response = generate(system_prompt + ANSWER_NOW_REMINDER, "answer_retry")
+                except ProviderError as exc:
+                    # no time, or the provider gone: the first reply is still a reply
+                    logger.warning("answer retry: %s", type(exc).__name__)
         except QuotaExhausted as exc:
             return self._quota_result(
                 data,
@@ -4600,6 +4657,20 @@ class ChatOrchestrator:
                 message, effective_species, intent, default_max_results, owner_names
             ).sources
         except ProviderError:
+            return []
+
+    def _evidence_in_time(
+        self, query: str, intent: str, effective_species: str, owner_names: list[str] | None
+    ) -> list[EvidenceSource]:
+        """The optional lookup, when it was not prefetched; late, it is done without."""
+        try:
+            return _bounded(
+                lambda: self._retrieve_optional_evidence(
+                    query, intent, effective_species, owner_names
+                )
+            )
+        except ProviderError:
+            logger.warning("literature search too late: answering without it")
             return []
 
     def _rank_evidence(
