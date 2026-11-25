@@ -190,6 +190,35 @@ class Store:
             and s.get("prossimo_controllo", "9999") <= today.isoformat()
         ]
 
+    def add_topics(self, source_id: str, topics: list[str]) -> str:
+        """Collega una fonte in uso a degli argomenti (unione; mai su fonti non in uso)."""
+        with self._locked():
+            data = self.load()
+            if source_id not in data:
+                return f"SCONOSCIUTA {source_id}"
+            src = data[source_id]
+            if src["stato"] != "in_uso":
+                return f"NON_IN_USO {source_id}"
+            if not all(isinstance(x, str) and x.startswith("ARG-") for x in topics):
+                return "ARGOMENTI_NON_VALIDI: servono id del tipo ARG-Sxx-Tyy-NNN"
+            merged = sorted(set(src.get("argomenti", [])) | set(topics))
+            src["argomenti"] = merged
+            self.save(data)
+            return f"OK {source_id} {len(merged)} argomenti"
+
+    def remove_topics(self, source_id: str, topics: list[str]) -> str:
+        """Scollega una fonte da degli argomenti (i collegamenti deboli si tolgono)."""
+        with self._locked():
+            data = self.load()
+            if source_id not in data:
+                return f"SCONOSCIUTA {source_id}"
+            src = data[source_id]
+            before = set(src.get("argomenti", []))
+            after = before - set(topics)
+            src["argomenti"] = sorted(after)
+            self.save(data)
+            return f"OK {source_id} tolti {len(before) - len(after)}, restano {len(after)}"
+
     def topic_coverage(self) -> dict[str, int]:
         """Fonti verdi in uso per argomento (identificativi dell'elenco degli argomenti comuni)."""
         counts: dict[str, int] = {}

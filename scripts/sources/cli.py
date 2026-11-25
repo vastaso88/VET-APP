@@ -7,6 +7,12 @@
   python -m scripts.sources.cli scarta <id> <motivo>      fonte letta e non adatta
   python -m scripts.sources.cli controlla [--da ISO]      distanza minima per host nel registro
   python -m scripts.sources.cli coverage-argomenti [--elenco f.json]  fonti per argomento
+  python -m scripts.sources.cli seconda-lettura prepara | confronta <lotto> <risposte.json>
+  python -m scripts.sources.cli lista [--casella S-T] [--specie S]   fonti in uso
+  python -m scripts.sources.cli argomenti <id> <ARG-...>  collega una fonte agli argomenti
+  python -m scripts.sources.cli scollega <id> <ARG-...>   toglie un collegamento debole
+  python -m scripts.sources.cli indipendenti [--elenco f.json] [--csv f.csv]  fonti indipendenti
+  python -m scripts.sources.cli nota-prodotto <schede.json>  note prodotto (non farmaci)
   python -m scripts.sources.cli hosts                     enti con licenza e host fermati
   python -m scripts.sources.cli source <file.json>        propone fonti (prova dal registro)
 
@@ -22,7 +28,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scripts.sources import licenses, pipeline
+from scripts.sources import independence, licenses, pipeline, product_notes, second_read
 from scripts.sources.fetcher import Blocked, CapReached, Fetcher
 from scripts.sources.store import SourceError, Store, slug
 
@@ -174,6 +180,18 @@ def main(argv: list[str]) -> None:
         path = DATA / "pagina_sync.json"
         done = set(json.loads(path.read_text("utf-8"))) if path.exists() else set()
         path.write_text(json.dumps(sorted(done | set(rest))), "utf-8")
+    elif (
+        cmd == "nota-prodotto"
+    ):  # nota-prodotto <schede.json>: note per la chat, prodotti non farmaci
+        fetcher = Fetcher(DATA, max_requests=_max_requests())
+        hosts = product_notes.load_hosts(DATA / "host_prodotti.json")
+        out_dir = ROOT / ".local" / "consegne" / "note_prodotti"
+        for spec in json.loads(Path(rest[0]).read_text("utf-8")):
+            try:
+                outcome, _ = product_notes.make_note(fetcher, spec, hosts, out_dir)
+            except (Blocked, CapReached) as err:
+                outcome = f"FERMATO: {err}"
+            print(spec.get("id", "?"), outcome, flush=True)
     elif cmd == "scarta":
         Store(DATA / "fonti.json").discard(rest[0], " ".join(rest[1:]) or "non pertinente")
         print("scartata", rest[0])
@@ -197,6 +215,68 @@ def main(argv: list[str]) -> None:
                 "FERMATI (nessuna richiesta):",
                 ", ".join(sorted(json.loads(stop.read_text("utf-8")))),
             )
+    elif cmd == "seconda-lettura":
+        sub, extra = rest[0], rest[1:]
+        folder = DATA / "seconda_lettura"
+        reviewed = DATA / "seconda_lettura.json"
+        store = Store(DATA / "fonti.json")
+        if sub == "prepara":
+            made = second_read.prepare_batches(store, DATA / "pagine", folder, reviewed)
+            print(json.dumps(made))
+        elif sub == "confronta":  # confronta <lotto_NN> <risposte.json>
+            mapping = json.loads((folder / f"{extra[0]}.json").read_text("utf-8"))
+            answers = json.loads(Path(extra[1]).read_text("utf-8"))
+            flagged = second_read.compare(store, mapping, answers)
+            second_read.mark_reviewed(reviewed, mapping, flagged)
+            print(json.dumps(flagged, ensure_ascii=False, indent=1))
+    elif cmd == "lista":  # lista [--casella S11-T02] [--specie S11]
+        store = Store(DATA / "fonti.json")
+        cell, specie = _opt(rest, "--casella"), _opt(rest, "--specie")
+        for sid, src in sorted(store.load().items()):
+            if src["stato"] != "in_uso" or src["classe"] not in ("V", "VR"):
+                continue
+            cells = {f"{s}-{t}" for s in src["specie"] for t in src["temi"]}
+            if (cell and cell not in cells) or (specie and specie not in src["specie"]):
+                continue
+            topics = ",".join(src.get("argomenti", []))
+            print(f"{sid} | {src['titolo'][:70]} | {src['paese']} | {topics}")
+    elif cmd == "argomenti":  # argomenti <id fonte> <ARG-...> [<ARG-...> ...]
+        store = Store(DATA / "fonti.json")
+        print(store.add_topics(rest[0], rest[1:]))
+    elif cmd == "scollega":  # scollega <id fonte> <ARG-...> [<ARG-...> ...]
+        print(Store(DATA / "fonti.json").remove_topics(rest[0], rest[1:]))
+    elif cmd == "indipendenti":  # indipendenti [--elenco f.json] [--csv uscita.csv]
+        store = Store(DATA / "fonti.json")
+        manual = independence.load_manual(DATA / "famiglie_manuali.json")
+        fam = independence.families(store, DATA / "pagine", manual)
+        per_topic = independence.topic_independence(store, fam)
+        wanted = _opt(rest, "--elenco")
+        topics = json.loads(Path(wanted).read_text("utf-8")) if wanted else []
+        ids = [x["id"] if isinstance(x, dict) else x for x in topics] or sorted(per_topic)
+        rows = [
+            (i, per_topic.get(i, {}).get("fonti", 0), per_topic.get(i, {}).get("indipendenti", 0))
+            for i in ids
+        ]
+        summary = {
+            "argomenti": len(rows),
+            "con_3_fonti": sum(1 for r in rows if r[1] >= 3),
+            "con_3_indipendenti": sum(1 for r in rows if r[2] >= 3),
+            "con_2_indipendenti": sum(1 for r in rows if r[2] == 2),
+            "con_1_indipendente": sum(1 for r in rows if r[2] == 1),
+            "senza_fonti": sum(1 for r in rows if r[1] == 0),
+            "famiglie": len(set(fam.values())),
+            "fonti_in_uso": len(fam),
+        }
+        csv_path = _opt(rest, "--csv")
+        if csv_path:
+            meta = {x["id"]: x for x in topics if isinstance(x, dict)}
+            lines = ["id,casella,argomento,domande,fonti,indipendenti"]
+            for i, n, k in rows:
+                m = meta.get(i, {})
+                title = str(m.get("argomento", "")).replace('"', "'")
+                lines.append(f'{i},{m.get("casella", "")},"{title}",{m.get("domande", "")},{n},{k}')
+            Path(csv_path).write_text("\n".join(lines) + "\n", "utf-8")
+        print(json.dumps(summary, ensure_ascii=False, indent=1))
     elif cmd == "coverage-argomenti":
         counts = Store(DATA / "fonti.json").topic_coverage()
         wanted = _opt(rest, "--elenco")

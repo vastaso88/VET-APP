@@ -673,3 +673,81 @@ def test_topics_are_optional_validated_and_counted(tmp_path: Path) -> None:
     assert S.page_doc(good(argomenti=["x"]))["argomenti"] == ["x"]
     store.discard("altra", "non adatta")
     assert store.topic_coverage()["gatto-lettiera"] == 1  # le scartate non contano
+
+
+def test_second_read_prepares_clean_batches_and_flags_disagreements(tmp_path: Path) -> None:
+    from scripts.sources import second_read as R
+
+    store = S.Store(tmp_path / "f.json")
+    store.add(good(id="uno", specie=["S11"] if False else ["S01", "S02"]))
+    store.add(good(id="due", specie=["S03"]))
+    pages = tmp_path / "pagine"
+    pages.mkdir()
+    (pages / "uno.txt").write_text(
+        "Cani e gatti. Scrivi a mario@example.com o chiama +39 333 1234567."
+    )
+    (pages / "due.txt").write_text("Conigli: fieno sempre disponibile.")
+    out, reviewed = tmp_path / "lotti", tmp_path / "riviste.json"
+    assert R.prepare_batches(store, pages, out, reviewed, size=20) == ["lotto_01"]
+    text = (out / "lotto_01.txt").read_text()
+    assert "mario@example.com" not in text and "1234567" not in text and "[EMAIL]" in text
+    mapping = json.loads((out / "lotto_01.json").read_text())
+    assert mapping == {"01": "due", "02": "uno"}  # in ordine di id
+    answers = [
+        {"n": 1, "specie": ["S03"], "temi": ["T01"], "per_proprietari": True, "adatto": True},
+        {"n": 2, "specie": ["S01"], "temi": ["T02"], "per_proprietari": False, "adatto": False,
+         "perche": "per le autorità"},
+    ]  # fmt: skip
+    flagged = R.compare(store, mapping, answers)
+    assert [f["id"] for f in flagged] == ["uno"]
+    assert any("non adatta" in x for x in flagged[0]["flags"])
+    assert any("S02" in x for x in flagged[0]["flags"])  # S02 dichiarata ma non nel testo
+    R.mark_reviewed(reviewed, mapping, flagged)
+    assert R.prepare_batches(store, pages, out, reviewed) == []  # già riviste: nessun nuovo lotto
+
+
+def test_add_topics_merges_and_refuses_sources_not_in_use(tmp_path: Path) -> None:
+    store = S.Store(tmp_path / "f.json")
+    store.add(good())
+    assert store.add_topics("uk-defra-fish", ["ARG-S11-T02-001"]).startswith("OK")
+    assert store.add_topics("uk-defra-fish", ["ARG-S11-T02-002", "ARG-S11-T02-001"]).endswith(
+        "2 argomenti"
+    )
+    assert store.add_topics("uk-defra-fish", ["pesci"]).startswith("ARGOMENTI_NON_VALIDI")
+    assert store.add_topics("manca", ["ARG-S11-T02-001"]).startswith("SCONOSCIUTA")
+    store.discard("uk-defra-fish", "x")
+    assert store.add_topics("uk-defra-fish", ["ARG-S11-T02-001"]).startswith("NON_IN_USO")
+    assert store.topic_coverage() == {}
+
+
+def test_weak_topic_links_can_be_removed(tmp_path: Path) -> None:
+    store = S.Store(tmp_path / "f.json")
+    store.add(good())
+    store.add_topics("uk-defra-fish", ["ARG-S11-T02-001", "ARG-S11-T02-002"])
+    assert store.remove_topics("uk-defra-fish", ["ARG-S11-T02-002"]).endswith("restano 1")
+    assert store.topic_coverage() == {"ARG-S11-T02-001": 1}
+    assert store.remove_topics("manca", ["ARG-X"]).startswith("SCONOSCIUTA")
+
+
+def test_independent_sources_count_families_not_copies(tmp_path: Path) -> None:
+    from scripts.sources import independence as I  # noqa: E741
+
+    base = " ".join(f"parola{i}" for i in range(120))
+    pages = tmp_path / "pagine"
+    pages.mkdir()
+    store = S.Store(tmp_path / "f.json")
+    for sid, text in {
+        "codice-inghilterra": base,
+        "codice-galles": base.replace("parola5", "altro5"),  # quasi uguale
+        "legge-austriaca": " ".join(f"diverso{i}" for i in range(120)),
+        "breve": "poche parole",
+    }.items():
+        store.add(good(id=sid, argomenti=["ARG-S01-T01-001"]))
+        (pages / f"{sid}.txt").write_text(text)
+    fam = I.families(store, pages)
+    assert fam["codice-inghilterra"] == fam["codice-galles"] != fam["legge-austriaca"]
+    assert fam["breve"] == "breve"  # testo troppo corto: resta da solo
+    info = I.topic_independence(store, fam)["ARG-S01-T01-001"]
+    assert info["fonti"] == 4 and info["indipendenti"] == 3
+    fam2 = I.families(store, pages, manual={"legge-austriaca": "codice-inghilterra"})
+    assert I.topic_independence(store, fam2)["ARG-S01-T01-001"]["indipendenti"] == 2
