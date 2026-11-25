@@ -39,7 +39,7 @@ Riferimento: `docs/security/` (audit, checklist, registro rischi, procedura viol
   (`supabase_account_eraser`) + riga in `docs/security/06_inventario_dati_fornitori.md`.
   Tabelle pubbliche per scelta vanno commentate come tali e aggiunte
   all'allowlist di `scripts/security/check_anon_exposure.py`.
-- Tutto ciò che esce verso Groq o altri provider passa da `_anonymize_for_provider`
+- Tutto ciò che esce verso Anthropic o altri provider passa da `_anonymize_for_provider`
   (o dall'anonimizzatore) prima dell'invio; mai e-mail, id utente, telefono,
   posizione, microchip nel prompt. Nuovo fornitore o nuovo paese = riga
   nell'inventario fornitori prima del rilascio.
