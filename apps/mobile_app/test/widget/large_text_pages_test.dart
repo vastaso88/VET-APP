@@ -115,13 +115,15 @@ class _NoTravelCards implements TravelCardsRepository {
 
 Future<void> _loadRoboto() async {
   final root = Platform.environment['FLUTTER_ROOT'];
-  if (root == null) return;
-  final dir = '$root/bin/cache/artifacts/material_fonts';
+  // The name of the file changes case from a Flutter version to another.
   final files = [
-    for (final weight in ['light', 'regular', 'medium', 'bold', 'black'])
-      File('$dir/roboto-$weight.ttf'),
-  ].where((file) => file.existsSync()).toList();
-  if (files.isEmpty) return;
+    for (final entity in Directory('$root/bin/cache/artifacts/material_fonts').listSync())
+      if (entity is File &&
+          RegExp(r'[/\\]roboto-(light|regular|medium|bold|black)\.ttf$', caseSensitive: false)
+              .hasMatch(entity.path))
+        entity,
+  ];
+  if (files.isEmpty) fail('No Roboto in Flutter: the pages would be measured with the test font.');
   // The names google_fonts gives to the app's own faces, so that the pages are
   // measured with a phone's proportions and not with the test font's squares.
   for (final family in [
