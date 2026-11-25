@@ -814,7 +814,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get chatNewConversationPrompt =>
-      'Escribe lo que observas o lo que quieres entender: te respondo enseguida.';
+      'Escribe lo que observas o lo que quieres entender.';
 
   @override
   String get chatTypingText => 'Escribiendo una respuesta…';
@@ -916,10 +916,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get chatSummaryDisclaimer =>
       'Este resumen se genera automáticamente y no es un diagnóstico. Consulta al veterinario para decisiones clínicas.';
-
-  @override
-  String get chatAiNotice =>
-      'Respondo con una inteligencia artificial: no sustituyo al veterinario. En una emergencia, llama enseguida a una clínica.';
 
   @override
   String get chatOwnHealthNotice =>
@@ -4173,11 +4169,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get localEventsCoverageLimited =>
-      'Los datos de servicios de esta zona aún se están preparando: puede que veas pocos lugares o que tarde más.';
+      'Los datos de servicios de esta zona aún se están preparando: puede que veas pocos lugares o ninguno.';
 
   @override
   String get localEventsCoverageUnsupported =>
-      'El radar aún no cubre este país: solo ves lo que OpenStreetMap conoce, sin otras comprobaciones.';
+      'El radar aún no cubre este país.';
 
   @override
   String get localEventsStale =>
@@ -8224,7 +8220,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get chatFixedLine =>
-      'Responde una IA y puede equivocarse. No gestiona urgencias: ante la duda, llama al veterinario.';
+      'Responde una IA y puede equivocarse. No sustituye al veterinario ni gestiona urgencias: ante la duda, llámalo.';
 
   @override
   String get authRegisterCheckEmailTitle => 'Revisa tu correo';

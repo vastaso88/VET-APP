@@ -379,7 +379,7 @@
       }
     }
   },
-  "chatNewConversationPrompt": "Schreiben Sie, was Sie beobachten oder verstehen möchten: Ich antworte sofort.",
+  "chatNewConversationPrompt": "Schreiben Sie, was Sie beobachten oder verstehen möchten.",
   "chatTypingText": "Schreibt gerade eine Antwort...",
   "chatTypingSlowText": "Das dauert etwas länger als sonst, die Antwort kommt gleich...",
   "chatDefaultTitle": "Chat mit {pet}",
@@ -431,7 +431,6 @@
   "chatSummaryLoading": "Ich erstelle die Zusammenfassung…",
   "chatSummaryTitle": "Zusammenfassung für die Tierarztpraxis",
   "chatSummaryDisclaimer": "Diese Zusammenfassung wird automatisch erstellt und ist keine Diagnose. Für medizinische Entscheidungen wenden Sie sich bitte an einen Tierarzt.",
-  "chatAiNotice": "Ich antworte mit einer künstlichen Intelligenz: Ich ersetze die Tierärztin bzw. den Tierarzt nicht. Rufen Sie im Notfall sofort eine Klinik an.",
   "chatOwnHealthNotice": "Schreiben Sie hier keine Angaben zu Ihrer eigenen Gesundheit: Hier geht es nur um Ihr Tier.",
   "chatSummaryEmpty": "Keine Zusammenfassung verfügbar.",
   "chatDeleteTitle": "Diesen Chat löschen?",
@@ -2432,8 +2431,8 @@
     }
   },
   "localEventsSearchingNearby": "Ich suche Services in Ihrer Gegend. Beim ersten Mal kann es einige Sekunden dauern.",
-  "localEventsCoverageLimited": "Die Daten zu den Diensten in dieser Gegend werden noch vorbereitet: Sie sehen möglicherweise nur wenige Orte oder müssen länger warten.",
-  "localEventsCoverageUnsupported": "Der Radar deckt dieses Land noch nicht ab: Sie sehen nur, was OpenStreetMap kennt, ohne weitere Prüfungen.",
+  "localEventsCoverageLimited": "Die Daten zu den Diensten in dieser Gegend werden noch vorbereitet: Sie sehen möglicherweise nur wenige oder gar keine Orte.",
+  "localEventsCoverageUnsupported": "Der Radar deckt dieses Land noch nicht ab.",
   "localEventsStale": "Ich konnte die Services dieser Gegend nicht aktualisieren: Sie sehen die zuletzt verfügbaren Daten, die möglicherweise nicht aktuell sind.",
   "localEventsPartialRadius": "Aktuell sind Services im Umkreis von {radius} verfügbar. Versuchen Sie es gleich noch einmal für den vollen Umkreis.",
   "@localEventsPartialRadius": {
@@ -4560,7 +4559,7 @@
   "emergencyNoticeFullLink": "Den vollständigen Text in den Nutzungsbedingungen lesen",
   "emergencyNoticeDecline": "Ich stimme nicht zu",
   "emergencyNoticeDeclineTitle": "Ohne diese Bestätigung können Sie den Chat nicht nutzen. Der Rest der App bleibt verfügbar.",
-  "chatFixedLine": "Eine KI antwortet und kann sich irren. Sie ist nicht für Notfälle zuständig: Rufen Sie im Zweifel die Tierärztin oder den Tierarzt an.",
+  "chatFixedLine": "Eine KI antwortet und kann sich irren. Sie ersetzt die Tierärztin oder den Tierarzt nicht und ist nicht für Notfälle zuständig: Rufen Sie im Zweifel die Tierarztpraxis an.",
   "authRegisterCheckEmailTitle": "Prüfen Sie Ihr Postfach",
   "authRegisterCheckEmailMessage": "Wir haben einen Bestätigungslink an {email} geschickt. Öffnen Sie ihn, um das Konto zu aktivieren, und melden Sie sich dann an. Wenn Sie ihn nicht finden, sehen Sie auch im Spam-Ordner nach.",
   "@authRegisterCheckEmailMessage": {

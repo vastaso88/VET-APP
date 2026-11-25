@@ -1445,7 +1445,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatNewConversationPrompt.
   ///
   /// In it, this message translates to:
-  /// **'Scrivi cosa osservi o cosa vuoi capire: ti rispondo subito.'**
+  /// **'Scrivi cosa osservi o cosa vuoi capire.'**
   String get chatNewConversationPrompt;
 
   /// No description provided for @chatTypingText.
@@ -1633,12 +1633,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Questo riassunto è generato automaticamente e non è una diagnosi. Per decisioni cliniche consulta il veterinario.'**
   String get chatSummaryDisclaimer;
-
-  /// No description provided for @chatAiNotice.
-  ///
-  /// In it, this message translates to:
-  /// **'Rispondo con un\'intelligenza artificiale: non sostituisco il veterinario. In emergenza chiama subito una clinica.'**
-  String get chatAiNotice;
 
   /// No description provided for @chatOwnHealthNotice.
   ///
@@ -6923,13 +6917,13 @@ abstract class AppLocalizations {
   /// No description provided for @localEventsCoverageLimited.
   ///
   /// In it, this message translates to:
-  /// **'I dati dei servizi per questa zona sono ancora in preparazione: potresti vedere pochi luoghi o aspettare di più.'**
+  /// **'I dati dei servizi per questa zona sono ancora in preparazione: potresti vedere pochi luoghi o nessuno.'**
   String get localEventsCoverageLimited;
 
   /// No description provided for @localEventsCoverageUnsupported.
   ///
   /// In it, this message translates to:
-  /// **'Il radar non copre ancora questo paese: vedi solo ciò che OpenStreetMap conosce, senza altri controlli.'**
+  /// **'Il radar non copre ancora questo paese.'**
   String get localEventsCoverageUnsupported;
 
   /// No description provided for @localEventsStale.
@@ -13643,7 +13637,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatFixedLine.
   ///
   /// In it, this message translates to:
-  /// **'Risponde un\'IA e può sbagliare. Non gestisce le urgenze: nel dubbio, chiama il veterinario.'**
+  /// **'Risponde un\'IA e può sbagliare. Non sostituisce il veterinario e non gestisce le urgenze: nel dubbio, chiamalo.'**
   String get chatFixedLine;
 
   /// No description provided for @authRegisterCheckEmailTitle.

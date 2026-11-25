@@ -379,7 +379,7 @@
       }
     }
   },
-  "chatNewConversationPrompt": "Escribe lo que observas o lo que quieres entender: te respondo enseguida.",
+  "chatNewConversationPrompt": "Escribe lo que observas o lo que quieres entender.",
   "chatTypingText": "Escribiendo una respuesta…",
   "chatTypingSlowText": "Está tardando más de lo habitual. La respuesta llegará pronto...",
   "chatDefaultTitle": "Chat con {pet}",
@@ -431,7 +431,6 @@
   "chatSummaryLoading": "Preparando el resumen…",
   "chatSummaryTitle": "Resumen para el veterinario",
   "chatSummaryDisclaimer": "Este resumen se genera automáticamente y no es un diagnóstico. Consulta al veterinario para decisiones clínicas.",
-  "chatAiNotice": "Respondo con una inteligencia artificial: no sustituyo al veterinario. En una emergencia, llama enseguida a una clínica.",
   "chatOwnHealthNotice": "No escribas aquí datos sobre tu salud: aquí hablamos solo de tu animal.",
   "chatSummaryEmpty": "No hay resumen disponible.",
   "chatDeleteTitle": "¿Eliminar este chat?",
@@ -2432,8 +2431,8 @@
     }
   },
   "localEventsSearchingNearby": "Buscando servicios en tu zona. La primera búsqueda puede tardar unos segundos.",
-  "localEventsCoverageLimited": "Los datos de servicios de esta zona aún se están preparando: puede que veas pocos lugares o que tarde más.",
-  "localEventsCoverageUnsupported": "El radar aún no cubre este país: solo ves lo que OpenStreetMap conoce, sin otras comprobaciones.",
+  "localEventsCoverageLimited": "Los datos de servicios de esta zona aún se están preparando: puede que veas pocos lugares o ninguno.",
+  "localEventsCoverageUnsupported": "El radar aún no cubre este país.",
   "localEventsStale": "No pude actualizar los servicios de esta zona. Ves los últimos datos disponibles, que podrían estar desactualizados.",
   "localEventsPartialRadius": "Por ahora hay servicios disponibles en {radius}. Reintenta pronto para el radio completo.",
   "@localEventsPartialRadius": {
@@ -4560,7 +4559,7 @@
   "emergencyNoticeFullLink": "Lee el texto completo en los Términos del servicio",
   "emergencyNoticeDecline": "No acepto",
   "emergencyNoticeDeclineTitle": "Sin esta confirmación no puedes usar el chat. El resto de la aplicación sigue disponible.",
-  "chatFixedLine": "Responde una IA y puede equivocarse. No gestiona urgencias: ante la duda, llama al veterinario.",
+  "chatFixedLine": "Responde una IA y puede equivocarse. No sustituye al veterinario ni gestiona urgencias: ante la duda, llámalo.",
   "authRegisterCheckEmailTitle": "Revisa tu correo",
   "authRegisterCheckEmailMessage": "Te hemos enviado un enlace de confirmación a {email}. Ábrelo para activar la cuenta y luego inicia sesión. Si no lo encuentras, mira también en spam.",
   "@authRegisterCheckEmailMessage": {

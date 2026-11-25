@@ -379,7 +379,7 @@
       }
     }
   },
-  "chatNewConversationPrompt": "Write what you're seeing or what you want to understand: I'll answer right away.",
+  "chatNewConversationPrompt": "Write what you're seeing or what you want to understand.",
   "chatTypingText": "Writing a response…",
   "chatTypingSlowText": "This is taking longer than usual. Your reply will arrive shortly...",
   "chatDefaultTitle": "Chat with {pet}",
@@ -431,7 +431,6 @@
   "chatSummaryLoading": "Preparing the summary…",
   "chatSummaryTitle": "Summary for the veterinarian",
   "chatSummaryDisclaimer": "This summary is automatically generated and is not a diagnosis. Consult your veterinarian for clinical decisions.",
-  "chatAiNotice": "I answer with artificial intelligence: I do not replace your vet. In an emergency, call a clinic right away.",
   "chatOwnHealthNotice": "Do not write details about your own health here: we only talk about your animal.",
   "chatSummaryEmpty": "No summary available.",
   "chatDeleteTitle": "Delete this chat?",
@@ -2432,8 +2431,8 @@
     }
   },
   "localEventsSearchingNearby": "Finding services in your area. The first search may take a few seconds.",
-  "localEventsCoverageLimited": "The data for services in this area is still being prepared: you may see few places or wait longer.",
-  "localEventsCoverageUnsupported": "The radar does not cover this country yet: you only see what OpenStreetMap knows, with no other checks.",
+  "localEventsCoverageLimited": "The data for services in this area is still being prepared: you may see few places or none.",
+  "localEventsCoverageUnsupported": "The radar does not cover this country yet.",
   "localEventsStale": "I couldn't update services in this area. You are seeing the last available data, which may be outdated.",
   "localEventsPartialRadius": "Services are currently available within {radius}. Try again shortly for the full radius.",
   "@localEventsPartialRadius": {
@@ -4560,7 +4559,7 @@
   "emergencyNoticeFullLink": "Read the full text in the Terms of service",
   "emergencyNoticeDecline": "I do not accept",
   "emergencyNoticeDeclineTitle": "Without this confirmation you cannot use the chat. The rest of the app stays available.",
-  "chatFixedLine": "Answers come from an AI, which can make mistakes. It does not handle emergencies: if in doubt, call the vet.",
+  "chatFixedLine": "Answers come from an AI, which can make mistakes. It does not replace the vet and does not handle emergencies: if in doubt, call the vet.",
   "authRegisterCheckEmailTitle": "Check your email",
   "authRegisterCheckEmailMessage": "We sent a confirmation link to {email}. Open it to activate your account, then sign in. If you can't find it, check your spam folder too.",
   "@authRegisterCheckEmailMessage": {

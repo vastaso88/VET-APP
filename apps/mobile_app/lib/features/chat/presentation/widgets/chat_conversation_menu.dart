@@ -101,7 +101,7 @@ class ChatConversationMenuButton extends StatelessWidget {
         '${message.author == ChatMessageAuthor.user ? you : assistant}: ${message.text}',
     ];
     // The transparency notice travels with the conversation (AI Act, art. 50).
-    final notice = context.l10n.chatAiNotice;
+    final notice = context.l10n.chatFixedLine;
     await SharePlus.instance.share(
       ShareParams(
         text: '$displayTitle\n$notice\n\n${lines.join('\n\n')}',
@@ -198,7 +198,7 @@ class ChatConversationMenuButton extends StatelessWidget {
                     FilledButton.icon(
                       onPressed: () => SharePlus.instance.share(
                         ShareParams(
-                          text: '${context.l10n.chatAiNotice}\n\n$summary',
+                          text: '${context.l10n.chatFixedLine}\n\n$summary',
                           subject: displayTitle,
                         ),
                       ),

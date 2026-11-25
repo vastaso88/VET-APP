@@ -810,7 +810,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatNewConversationPrompt =>
-      'Write what you\'re seeing or what you want to understand: I\'ll answer right away.';
+      'Write what you\'re seeing or what you want to understand.';
 
   @override
   String get chatTypingText => 'Writing a response…';
@@ -910,10 +910,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatSummaryDisclaimer =>
       'This summary is automatically generated and is not a diagnosis. Consult your veterinarian for clinical decisions.';
-
-  @override
-  String get chatAiNotice =>
-      'I answer with artificial intelligence: I do not replace your vet. In an emergency, call a clinic right away.';
 
   @override
   String get chatOwnHealthNotice =>
@@ -4148,11 +4144,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localEventsCoverageLimited =>
-      'The data for services in this area is still being prepared: you may see few places or wait longer.';
+      'The data for services in this area is still being prepared: you may see few places or none.';
 
   @override
   String get localEventsCoverageUnsupported =>
-      'The radar does not cover this country yet: you only see what OpenStreetMap knows, with no other checks.';
+      'The radar does not cover this country yet.';
 
   @override
   String get localEventsStale =>
@@ -8172,7 +8168,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatFixedLine =>
-      'Answers come from an AI, which can make mistakes. It does not handle emergencies: if in doubt, call the vet.';
+      'Answers come from an AI, which can make mistakes. It does not replace the vet and does not handle emergencies: if in doubt, call the vet.';
 
   @override
   String get authRegisterCheckEmailTitle => 'Check your email';

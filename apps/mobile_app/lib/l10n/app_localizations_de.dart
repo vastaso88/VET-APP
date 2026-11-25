@@ -818,7 +818,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get chatNewConversationPrompt =>
-      'Schreiben Sie, was Sie beobachten oder verstehen möchten: Ich antworte sofort.';
+      'Schreiben Sie, was Sie beobachten oder verstehen möchten.';
 
   @override
   String get chatTypingText => 'Schreibt gerade eine Antwort...';
@@ -921,10 +921,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get chatSummaryDisclaimer =>
       'Diese Zusammenfassung wird automatisch erstellt und ist keine Diagnose. Für medizinische Entscheidungen wenden Sie sich bitte an einen Tierarzt.';
-
-  @override
-  String get chatAiNotice =>
-      'Ich antworte mit einer künstlichen Intelligenz: Ich ersetze die Tierärztin bzw. den Tierarzt nicht. Rufen Sie im Notfall sofort eine Klinik an.';
 
   @override
   String get chatOwnHealthNotice =>
@@ -4198,11 +4194,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get localEventsCoverageLimited =>
-      'Die Daten zu den Diensten in dieser Gegend werden noch vorbereitet: Sie sehen möglicherweise nur wenige Orte oder müssen länger warten.';
+      'Die Daten zu den Diensten in dieser Gegend werden noch vorbereitet: Sie sehen möglicherweise nur wenige oder gar keine Orte.';
 
   @override
   String get localEventsCoverageUnsupported =>
-      'Der Radar deckt dieses Land noch nicht ab: Sie sehen nur, was OpenStreetMap kennt, ohne weitere Prüfungen.';
+      'Der Radar deckt dieses Land noch nicht ab.';
 
   @override
   String get localEventsStale =>
@@ -8253,7 +8249,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get chatFixedLine =>
-      'Eine KI antwortet und kann sich irren. Sie ist nicht für Notfälle zuständig: Rufen Sie im Zweifel die Tierärztin oder den Tierarzt an.';
+      'Eine KI antwortet und kann sich irren. Sie ersetzt die Tierärztin oder den Tierarzt nicht und ist nicht für Notfälle zuständig: Rufen Sie im Zweifel die Tierarztpraxis an.';
 
   @override
   String get authRegisterCheckEmailTitle => 'Prüfen Sie Ihr Postfach';

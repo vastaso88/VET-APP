@@ -70,7 +70,9 @@ class _HomeCalendarSectionState extends State<HomeCalendarSection> {
     return _future!;
   }
 
-  void _retry() => setState(() => _future = null);
+  void _retry() => setState(() {
+        _future = null;
+      });
 
   @override
   Widget build(BuildContext context) {

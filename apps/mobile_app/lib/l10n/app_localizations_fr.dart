@@ -817,7 +817,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get chatNewConversationPrompt =>
-      'Écrivez ce que vous observez ou ce que vous voulez comprendre : je vous réponds tout de suite.';
+      'Écrivez ce que vous observez ou ce que vous voulez comprendre.';
 
   @override
   String get chatTypingText => 'Rédige une réponse...';
@@ -919,10 +919,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get chatSummaryDisclaimer =>
       'Ce résumé est généré automatiquement et ne constitue pas un diagnostic. Pour toute décision clinique, consultez le vétérinaire.';
-
-  @override
-  String get chatAiNotice =>
-      'Je réponds grâce à une intelligence artificielle : je ne remplace pas le vétérinaire. En cas d\'urgence, appelez tout de suite une clinique.';
 
   @override
   String get chatOwnHealthNotice =>
@@ -4200,11 +4196,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get localEventsCoverageLimited =>
-      'Les données des services de cette zone sont encore en préparation : vous verrez peut-être peu de lieux ou devrez attendre plus longtemps.';
+      'Les données des services de cette zone sont encore en préparation : vous verrez peut-être peu de lieux, voire aucun.';
 
   @override
   String get localEventsCoverageUnsupported =>
-      'Le radar ne couvre pas encore ce pays : vous ne voyez que ce que connaît OpenStreetMap, sans autre vérification.';
+      'Le radar ne couvre pas encore ce pays.';
 
   @override
   String get localEventsStale =>
@@ -8268,7 +8264,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get chatFixedLine =>
-      'C\'est une IA qui répond, et elle peut se tromper. Elle ne gère pas les urgences : dans le doute, appelez le vétérinaire.';
+      'C\'est une IA qui répond, et elle peut se tromper. Elle ne remplace pas le vétérinaire et ne gère pas les urgences : dans le doute, appelez-le.';
 
   @override
   String get authRegisterCheckEmailTitle => 'Vérifiez votre e-mail';
