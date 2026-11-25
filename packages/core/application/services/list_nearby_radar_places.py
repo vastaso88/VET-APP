@@ -106,12 +106,15 @@ class ListNearbyRadarPlacesService:
 
     - the offline catalog (scripts/radar/): OpenStreetMap and Overture
       imported in bulk for a whole country, read by bounding box;
-    - the per-cell cache of live OpenStreetMap/Overpass calls, used only
-      where the offline OSM import does not reach.
+    - the per-cell cache of OpenStreetMap/Overpass calls, used only where
+      the offline OSM import does not reach.
 
-    A live provider call is therefore the last resort. When even that
-    fails, whatever else is available for the area is served instead of
-    an error; only an area with no data from any source can fail."""
+    Nobody waits for a public server (collaudo F29, owner decision of
+    2026-11-25: the places are downloaded beforehand): an area with nothing
+    imported answers at once with what there is, possibly nothing, and
+    `coverage_level` says so. `live_search` (RADAR_LIVE_SEARCH_ENABLED, off)
+    brings back the live call as a last resort; when it fails, whatever else
+    is available is served, and only an area with no data can fail."""
 
     def __init__(
         self,
@@ -124,6 +127,7 @@ class ListNearbyRadarPlacesService:
         freshness_ttl_hours: int,
         open_sources: frozenset[str] | None = None,
         exotic_name_matching: bool = False,
+        live_search: bool = False,
     ) -> None:
         self._repository = repository
         self._ingestion_service = ingestion_service
@@ -137,6 +141,7 @@ class ListNearbyRadarPlacesService:
         # Read exotic-animal competence from practice names too
         # (RADAR_EXOTIC_NAME_MATCHING, off until the owner decides).
         self._exotic_name_matching = exotic_name_matching
+        self._live_search = live_search
 
     def _with_competences(
         self, places: list[RadarPlace], confirmed_claims: list[RadarCompetenceClaim]
@@ -211,7 +216,7 @@ class ListNearbyRadarPlacesService:
         ]
         # A country's rectangle also holds bits of its neighbours (Dublin
         # lies in the one of Great Britain), where its catalog has nothing:
-        # an area with no place at all is asked of the live provider instead.
+        # an area with no place at all is looked up in the per-cell cache.
         if osm_from_catalog and not legacy_covered and not catalog_osm_places and not open_places:
             osm_from_catalog = False
 
@@ -280,15 +285,15 @@ class ListNearbyRadarPlacesService:
             sources=[
                 source
                 for name, source in sources.items()
-                if name != OSM_SOURCE_NAME or osm.coverage_key.startswith("catalog:")
+                if name != OSM_SOURCE_NAME or osm_from_catalog
             ],
         )
 
     def _osm_from_cells(
         self, data: ListNearbyRadarPlacesInput, tier: RadarCoverageTier, search_radius_km: float
     ) -> _OsmPlaces:
-        """OSM places from the per-cell cache, importing the cell from the
-        live provider only when nothing cached covers the request."""
+        """OSM places from the per-cell cache. With `live_search`, the cell is
+        imported from the live provider when nothing cached covers the request."""
         tiers = [
             item
             for item in RADAR_COVERAGE_TIERS
@@ -309,19 +314,35 @@ class ListNearbyRadarPlacesService:
             if coverage is not None and coverage.is_fresh():
                 return self._cached(coverage, "fresh", search_radius_km)
 
-        try:
-            result = self._ingestion_service.execute(own_request)
-        except ProviderError:
-            for coverage in (own_coverage, *wider_coverages):
-                if coverage is not None:
-                    return self._cached(coverage, "stale", search_radius_km)
-            for item in reversed(narrower):
-                coverage = self._cached_coverage(item, data)
-                if coverage is not None:
-                    return self._cached(
-                        coverage, "partial", min(search_radius_km, item.search_radius_km)
-                    )
-            raise
+        failure: ProviderError | None = None
+        if self._live_search:
+            try:
+                return self._imported_now(own_request, search_radius_km)
+            except ProviderError as error:
+                failure = error
+        for coverage in (own_coverage, *wider_coverages):
+            if coverage is not None:
+                return self._cached(coverage, "stale", search_radius_km)
+        for item in reversed(narrower):
+            coverage = self._cached_coverage(item, data)
+            if coverage is not None:
+                return self._cached(
+                    coverage, "partial", min(search_radius_km, item.search_radius_km)
+                )
+        if failure is not None:
+            raise failure
+        return _OsmPlaces(
+            places=[],
+            status="partial",
+            search_radius_km=search_radius_km,
+            coverage_key="catalog:none",
+            refreshed_at=None,
+        )
+
+    def _imported_now(
+        self, request: RequestRadarPlacesIngestionInput, search_radius_km: float
+    ) -> _OsmPlaces:
+        result = self._ingestion_service.execute(request)
         return _OsmPlaces(
             places=result.places,
             status="refreshed",

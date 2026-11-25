@@ -385,6 +385,7 @@ def _service(catalog: InMemoryRadarCatalogRepository, source: _FakeSource) -> An
         catalog,
         max_search_radius_km=50,
         freshness_ttl_hours=168,
+        live_search=True,
     )
 
 

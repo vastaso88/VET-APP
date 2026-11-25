@@ -40,6 +40,7 @@ class RadarWiring(ContainerState):
             freshness_ttl_hours=self.settings.radar_freshness_ttl_hours,
             open_sources=self.radar_open_sources(),
             exotic_name_matching=self.settings.radar_exotic_name_matching,
+            live_search=self.settings.radar_live_search_enabled,
         )
 
     def radar_report_settings(self) -> RadarReportSettings | None:

@@ -16,11 +16,12 @@ from packages.core.domain.coverage.models import (
     ingestion_radius_km,
     tier_for_radius,
 )
-from packages.core.domain.radar_places.models import RadarDataSource, RadarPlace
+from packages.core.domain.radar_places.models import OSM_SOURCE_NAME, RadarDataSource, RadarPlace
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryRadarCatalogRepository,
     InMemoryRadarPlacesRepository,
 )
+from packages.shared.config.settings import Settings
 from packages.shared.errors.base import ProviderError
 
 MILAN_LAT, MILAN_LON = 45.4642, 9.1900
@@ -70,6 +71,7 @@ def _service(
     *,
     max_search_radius_km: float = 50,
     catalog: InMemoryRadarCatalogRepository | None = None,
+    live_search: bool = True,
 ) -> ListNearbyRadarPlacesService:
     return ListNearbyRadarPlacesService(
         repository,
@@ -77,6 +79,7 @@ def _service(
         catalog or InMemoryRadarCatalogRepository(),
         max_search_radius_km=max_search_radius_km,
         freshness_ttl_hours=168,
+        live_search=live_search,
     )
 
 
@@ -435,3 +438,63 @@ def test_only_the_listed_open_sources_are_served() -> None:
 
 def test_no_open_source_listed_leaves_openstreetmap_alone() -> None:
     assert _served(frozenset()) == (["openstreetmap_overpass"], ["openstreetmap_overpass"])
+
+
+# --- Collaudo F29: nobody waits for a public server -------------------------
+
+
+def test_the_live_search_is_off_unless_switched_on() -> None:
+    assert Settings().radar_live_search_enabled is False
+
+
+def test_without_live_search_an_area_not_downloaded_answers_at_once_and_says_so() -> None:
+    source = _FakeSource()
+    service = _service(InMemoryRadarPlacesRepository(), source, live_search=False)
+
+    result = service.execute(ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON))
+
+    assert source.requests == []
+    assert result.places == []
+    assert result.coverage_status == "partial"
+    assert result.coverage_level == "live"
+    assert result.sources == []
+
+
+def test_without_live_search_the_places_of_the_other_sources_are_served() -> None:
+    catalog = InMemoryRadarCatalogRepository()
+    catalog.sources = [
+        _source("overture", covers_italy=False),
+        _source(OSM_SOURCE_NAME, covers_italy=False),
+    ]
+    catalog.open_places = [
+        _catalog_place("Ambulatorio Lotto", "veterinary", 45.4700, 9.1950, source="overture"),
+    ]
+    source = _FakeSource()
+    service = _service(InMemoryRadarPlacesRepository(), source, catalog=catalog, live_search=False)
+
+    result = service.execute(ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON))
+
+    assert source.requests == []
+    assert [item.place.name for item in result.places] == ["Ambulatorio Lotto"]
+    # Nothing came from OpenStreetMap: it is not credited.
+    assert [item.source for item in result.sources] == ["overture"]
+
+
+def test_without_live_search_an_expired_cell_is_still_served() -> None:
+    repository = InMemoryRadarPlacesRepository()
+    source = _FakeSource()
+    first = _service(repository, source).execute(
+        ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON)
+    )
+    coverage = repository.get_coverage(first.coverage_key)
+    assert coverage is not None
+    expired = coverage.model_copy(update={"expires_at": utc_now() - timedelta(days=1)})
+    repository.replace_coverage(expired, repository.list_places(expired.coverage_key))
+
+    result = _service(repository, source, live_search=False).execute(
+        ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON)
+    )
+
+    assert len(source.requests) == 1
+    assert result.coverage_status == "stale"
+    assert result.places

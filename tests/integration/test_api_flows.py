@@ -125,7 +125,7 @@ def test_account_consents_flow() -> None:
     assert revoke_terms.status_code == 400
 
 
-def test_local_services_places_flow() -> None:
+def test_local_services_places_flow(monkeypatch: pytest.MonkeyPatch) -> None:
     from apps.api.dependencies.container import get_container
     from packages.core.application.services.request_radar_places_ingestion import (
         RequestRadarPlacesIngestionInput,
@@ -152,6 +152,13 @@ def test_local_services_places_flow() -> None:
     get_container().radar_places_source = _FakeSource()
     client = TestClient(app)
 
+    # Nothing downloaded for the area: an answer at once, empty, that says so (collaudo F29).
+    empty = client.get("/local-services/places", params={"latitude": 45.4642, "longitude": 9.19})
+    assert empty.status_code == 200
+    assert empty.json()["places"] == []
+    assert empty.json()["context"]["coverage_level"] == "live"
+
+    monkeypatch.setattr(get_container().settings, "radar_live_search_enabled", True)
     response = client.get("/local-services/places", params={"latitude": 45.4642, "longitude": 9.19})
 
     assert response.status_code == 200

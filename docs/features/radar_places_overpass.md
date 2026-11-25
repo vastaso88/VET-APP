@@ -13,7 +13,7 @@ Il radar risponde dal nostro database. Due archivi aperti vengono importati peri
 | Overture Maps Places | `radar_places_open` | veterinari, toelettature, negozi, pensioni, pet sitter, addestratori, allevamenti | `scripts/radar/import_overture_places.py` |
 | OpenStreetMap | `radar_places_osm` | aree cani (con i dettagli) e le stesse categorie viste dai volontari | `scripts/radar/import_osm_places.py` |
 
-`data_sources` registra per ogni fonte versione, licenza, attribuzione, data dell'import e area coperta. Dove l'import OSM copre la posizione dell'utente (tutta Italia dopo un import completo) Overpass non viene più chiamato mentre l'utente aspetta. Fuori da quell'area resta il vecchio percorso: cache per cella e, come ultima risorsa, Overpass in diretta.
+`data_sources` registra per ogni fonte versione, licenza, attribuzione, data dell'import e area coperta. Dal 25 novembre 2026 (collaudo F29, decisione del proprietario: luoghi scaricati prima) nessuna richiesta aspetta un server pubblico: dove non c'è nulla di scaricato il radar risponde subito con ciò che ha (cache per cella comprese, anche scadute) e l'app dice che i dati della zona sono in preparazione. La chiamata in diretta a Overpass esiste ancora solo con `RADAR_LIVE_SEARCH_ENABLED=true` (spenta).
 
 Le due tabelle non vengono mai unite nel database: OpenStreetMap ha una licenza con obbligo di condivisione (ODbL), Overture no. L'unione avviene in memoria, per singola richiesta, con le regole di `packages/core/domain/radar_places/dedup.py` (campione di taratura: `docs/features/radar_dedup_sample.md`). Quando due fonti hanno lo stesso luogo resta una scheda con i dati di una sola fonte e l'indicazione "Presente anche in".
 
@@ -237,7 +237,7 @@ Tolti dalla pagina il 2026-10-04: niente sezione "In programma", niente categori
 1. Il raggio richiesto sceglie un gradino della scala in `packages/core/domain/coverage/models.py`.
 2. La posizione viene agganciata a una cella della griglia di quel gradino.
 3. Se la cella è in cache ed è valida, la risposta arriva da Supabase.
-4. Altrimenti il backend interroga Overpass attorno al **centro della cella**, salva i luoghi e segna la cella valida per `RADAR_FRESHNESS_TTL_HOURS` (7 giorni).
+4. Altrimenti, solo con `RADAR_LIVE_SEARCH_ENABLED=true`, il backend interroga Overpass attorno al **centro della cella**, salva i luoghi e segna la cella valida per `RADAR_FRESHNESS_TTL_HOURS` (7 giorni).
 5. I luoghi vengono filtrati per distanza dalla posizione reale, ordinati, e limitati a `per_type_limit` per categoria (default 40).
 
 | Raggio servito | Cella | Raggio importato (circa) | Tempo del primo import (Milano) |

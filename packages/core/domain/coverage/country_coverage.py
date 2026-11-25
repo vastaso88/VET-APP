@@ -3,12 +3,11 @@
 - complete: the whole country's OpenStreetMap import is in our database,
   so the radar answers from it (plus Overture where imported).
 - partial: something is imported (Overture, or some OpenStreetMap regions)
-  but not the full OpenStreetMap catalog; the live per-cell cache fills in.
-- live: a supported country with nothing imported yet: served from the
-  live per-cell cache alone (slower, sometimes busy).
-- unsupported: not one of the radar's countries. The live cache answers
-  here too, so the app can show whatever OpenStreetMap knows, but nothing
-  has been prepared for the place.
+  but not the full OpenStreetMap catalog.
+- live: a supported country with nothing imported yet. The name comes from
+  when such a country was asked of OpenStreetMap while the owner waited; today
+  (RADAR_LIVE_SEARCH_ENABLED off) only the per-cell cache answers, often empty.
+- unsupported: not one of the radar's countries: nothing has been prepared.
 """
 
 from typing import Literal

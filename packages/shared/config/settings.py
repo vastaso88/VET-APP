@@ -350,10 +350,14 @@ class Settings(BaseSettings):
     # says honestly it cannot see it, nothing leaves. "echo" is the local test
     # double, honoured outside production only; any other value means off.
     vision_provider: ProviderName = Field(default="echo", alias="VISION_PROVIDER")
-    # Nearby pet-services radar ("cosa c'e' attorno"). OpenStreetMap via
-    # Overpass is the only provider; results are cached per geographic cell
-    # in Supabase (radar_coverage_cells / radar_places_cache), so Overpass
-    # is called at most once per cell per RADAR_FRESHNESS_TTL_HOURS. The
+    # Nearby pet-services radar ("cosa c'e' attorno"). The places are
+    # downloaded beforehand (scripts/radar/); a request never waits for a
+    # public server unless this is switched on (off: collaudo F29).
+    radar_live_search_enabled: bool = Field(default=False, alias="RADAR_LIVE_SEARCH_ENABLED")
+    # OpenStreetMap via Overpass is the only provider; with the live search
+    # on, results are cached per geographic cell in Supabase
+    # (radar_coverage_cells / radar_places_cache), so Overpass is called at
+    # most once per cell per RADAR_FRESHNESS_TTL_HOURS. The
     # radius ladder (10/25/50 km) and its cell sizes live in
     # packages/core/domain/coverage/models.py; RADAR_SEARCH_RADIUS_KM only
     # caps how far up that ladder the app may go.
