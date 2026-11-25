@@ -28,17 +28,16 @@ def purge_deleted_accounts(
     return report.model_dump()
 
 
-@router.post("/purge-expired-pauses")
-def purge_expired_pauses(
+@router.post("/send-exit-notices")
+def send_exit_notices(
     x_vetapp_scheduler: str | None = Header(default=None, alias="X-VetApp-Scheduler"),
 ) -> dict[str, object]:
-    """Erases the paused accounts that ran PAUSE_MAX_MONTHS without a sign-in,
-    after their warnings. Off until PAUSE_PURGE_ENABLED is true: until then it only
-    counts. Counts only; scheduler token, no user session."""
+    """Writes the e-mails of the deletion sequence that are due (docs/compliance/18):
+    confirmation and reminders, the closing one comes with the erase. Off until
+    EMAIL_SENDING_ENABLED is true and the wording is configured: until then it only counts
+    and touches nothing. Counts only; scheduler token, no user session."""
     _require_scheduler_token(x_vetapp_scheduler)
-    container = get_container()
-    report = container.account_pause_service().purge_expired(container.settings.pause_purge_enabled)
-    return report.model_dump()
+    return get_container().exit_notice_service().run().model_dump()
 
 
 @router.post("/prune-deletion-log")

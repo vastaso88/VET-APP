@@ -25,8 +25,6 @@ import 'change_password_page.dart';
 /// Account deletion (required by the App Store, Google Play and GDPR art. 17).
 /// The owner must type their password and tick that they understand; the
 /// backend then erases their data and the sign-in account.
-enum _Leave { pause, delete }
-
 class DeleteAccountPage extends StatefulWidget {
   const DeleteAccountPage({super.key});
 
@@ -38,9 +36,6 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
   final _formKey = GlobalKey<FormState>();
   final _password = TextEditingController();
 
-  /// Nothing is chosen at first: neither road is preselected (docs/auth/02).
-  _Leave? _choice;
-  bool _pausing = false;
   bool _understood = false;
   bool _deleting = false;
   String? _passwordError;
@@ -129,100 +124,9 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
     );
   }
 
-  Future<void> _pause() async {
-    if (_pausing || _deleting) return;
-    final l10n = context.l10n;
-    setState(() {
-      _pausing = true;
-      _failure = null;
-    });
-    final result = await HttpAccountDeletionRemoteDataSource().pause();
-    if (!mounted) return;
-    await result.fold(
-      onSuccess: (deleteAfter) async {
-        // The account is inactive now: nothing of it stays on the phone, and the
-        // session that asked is refused by the server from here on.
-        unawaited(NotificationScheduler.instance.clearAll());
-        unawaited(PetPhotoRepository.clearLocalCaches());
-        ProfilePhotoRepository.clearLocalCache();
-        await const AuthRepositoryFactory().create().signOut();
-        if (!mounted) return;
-        final navigator = Navigator.of(context, rootNavigator: true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              l10n.accountPauseDone(
-                formatAppDate(
-                  deleteAfter ?? DateTime.now().add(const Duration(days: 730)),
-                  appNumericDatePattern(),
-                ),
-              ),
-            ),
-          ),
-        );
-        navigator.pushNamedAndRemoveUntil(AppRouter.auth, (route) => false);
-      },
-      onFailure: (_) async => setState(() {
-        _pausing = false;
-        _failure = l10n.accountPauseFailed;
-      }),
-    );
-  }
-
-  Widget _choiceCard({
-    required _Leave value,
-    required String title,
-    required String body,
-    required Color accent,
-  }) {
-    final selected = _choice == value;
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        onTap: _pausing || _deleting ? null : () => setState(() => _choice = value),
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(
-              color: selected ? accent : AppColors.border,
-              width: selected ? 2 : 1,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                    color: selected ? accent : AppColors.mutedText,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(title, style: AppTextStyles.title.copyWith(fontSize: 17)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(body, style: AppTextStyles.bodySmall),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    // A closed account (declared age under the minimum) cannot pause: the server
-    // refuses everything but deleting itself, so the card is not offered.
-    final canPause = AgeStore.instance.status.band != AgeBand.underMinimum;
-
     return AccountPageScaffold(
       title: l10n.accountDeleteTitle,
       child: Form(
@@ -230,39 +134,7 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(l10n.accountLeaveQuestion, style: AppTextStyles.title),
-            const SizedBox(height: AppSpacing.md),
-            if (canPause) ...[
-              _choiceCard(
-                value: _Leave.pause,
-                title: l10n.accountPauseOptionTitle,
-                // The number is the server's setting; 24 only until it is read.
-                body: l10n.accountPauseOptionBody(_period?.pauseMaxMonths ?? 24),
-                accent: AppColors.primary,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-            ],
-            _choiceCard(
-              value: _Leave.delete,
-              title: l10n.accountDeleteOptionTitle,
-              body: l10n.accountDeleteOptionBody,
-              accent: AppColors.danger,
-            ),
-            if (_choice == _Leave.pause) ...[
-              const SizedBox(height: AppSpacing.lg),
-              if (_failure != null) ...[
-                Text(
-                  _failure!,
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.danger),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-              ],
-              FilledButton(
-                onPressed: _pausing ? null : () => unawaited(_pause()),
-                child: _pausing ? const PetLoader.small() : Text(l10n.accountPauseSubmit),
-              ),
-            ],
-            if (_choice == _Leave.delete) ...[
+            ...[
             const SizedBox(height: AppSpacing.lg),
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),

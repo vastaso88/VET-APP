@@ -2839,13 +2839,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other':
-            'Si la puce de $name était enregistrée dans un fichier des animaux de compagnie, le décès doit en général être déclaré : votre vétérinaire ou l\'organisme qui tient le fichier dans votre pays (en Italie, l\'ASL ou la commune) vous dira comment et dans quel délai.',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other':
+          'Si la puce de $name était enregistrée dans un fichier des animaux de compagnie, le décès doit en général être déclaré : votre vétérinaire ou l\'organisme qui tient le fichier dans votre pays (en Italie, l\'ASL ou la commune) vous dira comment et dans quel délai.',
+    });
     return '$_temp0';
   }
 
@@ -2871,13 +2868,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'female': 'Déplacée par erreur ? Remettre dans Animaux',
-        'other': 'Déplacé par erreur ? Remettre dans Animaux',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'female': 'Déplacée par erreur ? Remettre dans Animaux',
+      'other': 'Déplacé par erreur ? Remettre dans Animaux',
+    });
     return '$_temp0';
   }
 
@@ -7961,50 +7955,11 @@ class AppLocalizationsFr extends AppLocalizations {
       'Si vous l\'avez supprimé récemment et que le délai d\'attente n\'est pas écoulé, utilisez « Récupérer le compte » : vous pouvez annuler la suppression ou le supprimer tout de suite pour recommencer.';
 
   @override
-  String get accountLeaveQuestion => 'Que voulez-vous faire de votre compte ?';
-
-  @override
-  String get accountPauseOptionTitle => 'Mettre en pause';
-
-  @override
-  String accountPauseOptionBody(int months) {
-    return 'Le compte reste inactif, sans rappels ni notifications, et nous conservons vos données jusqu\'à votre retour, dans la limite de $months mois sans connexion ; ensuite nous les supprimons. Pour revenir, il suffit de vous connecter avec le même e-mail.';
-  }
-
-  @override
   String get accountDeleteOptionTitle => 'Supprimer le compte';
 
   @override
   String get accountDeleteOptionBody =>
       'Nous le désactivons tout de suite. Pendant un certain temps, vous pouvez changer d\'avis en vous connectant avec le même e-mail ; ensuite nous supprimons vos données. Quelques données restent, par exemple les factures, que la loi nous oblige à conserver, et un code, sans votre nom ni votre e-mail, qui prouve la suppression.';
-
-  @override
-  String get accountPauseSubmit => 'Mettre en pause';
-
-  @override
-  String accountPauseDone(String date) {
-    return 'Votre compte est en pause. Si vous ne vous connectez pas d\'ici le $date, nous le supprimons avec vos données. Pour revenir, il suffit de vous connecter avec le même e-mail.';
-  }
-
-  @override
-  String get accountPauseFailed =>
-      'Nous n\'avons pas pu mettre le compte en pause. Réessayez dans un instant.';
-
-  @override
-  String get accountPausedElsewhere =>
-      'Votre compte a été mis en pause depuis un autre appareil. Pour le réactiver, connectez-vous à nouveau avec le même e-mail.';
-
-  @override
-  String get accountPauseEndedTitle => 'La pause est terminée';
-
-  @override
-  String get accountPauseEndedBody =>
-      'Bon retour parmi nous : votre compte est de nouveau actif et vos données sont telles que vous les avez laissées.';
-
-  @override
-  String accountPauseEndedNoPlan(String date) {
-    return 'Vous n\'avez pas d\'offre : nous conservons vos données jusqu\'au $date. Choisissez une offre pour garder le compte, ou remettez-le en pause depuis les Paramètres.';
-  }
 
   @override
   String get consentGateTitle => 'Avant de continuer';
@@ -8314,8 +8269,4 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get consentGateOtherOptions => 'Autres possibilités';
-
-  @override
-  String get consentGatePauseOrDelete =>
-      'Mettre le compte en pause ou le supprimer';
 }

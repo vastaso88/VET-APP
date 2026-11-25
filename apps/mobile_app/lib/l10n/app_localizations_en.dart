@@ -2803,13 +2803,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other':
-            'If $name\'s microchip was registered with a pet registry, the death usually has to be reported: your vet or the body that keeps the registry in your country (in Italy, the ASL or the municipality) can tell you how and by when.',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other':
+          'If $name\'s microchip was registered with a pet registry, the death usually has to be reported: your vet or the body that keeps the registry in your country (in Italy, the ASL or the municipality) can tell you how and by when.',
+    });
     return '$_temp0';
   }
 
@@ -2835,12 +2832,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other': 'Moved by mistake? Bring back to Pets',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other': 'Moved by mistake? Bring back to Pets',
+    });
     return '$_temp0';
   }
 
@@ -7868,57 +7862,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'If you deleted it recently and the waiting period isn\'t over, use \"Recover account\": you can cancel the deletion or delete it right away to start over.';
 
   @override
-  String get accountLeaveQuestion =>
-      'What do you want to do with your account?';
-
-  @override
-  String get accountPauseOptionTitle => 'Pause it';
-
-  @override
-  String accountPauseOptionBody(int months) {
-    String _temp0 = intl.Intl.pluralLogic(
-      months,
-      locale: localeName,
-      other: '$months months',
-      one: '1 month',
-    );
-    return 'The account stays inactive, with no reminders or notifications, and we keep your data until you come back, for up to $_temp0 without signing in; then we delete your data. To come back, just sign in with the same email.';
-  }
-
-  @override
   String get accountDeleteOptionTitle => 'Delete the account';
 
   @override
   String get accountDeleteOptionBody =>
       'We deactivate it right away. For a while you can change your mind by signing in with the same email; then we delete your data. Some data remains, for example invoices, which the law requires us to keep, and a code, without your name or email, that proves the deletion.';
-
-  @override
-  String get accountPauseSubmit => 'Pause';
-
-  @override
-  String accountPauseDone(String date) {
-    return 'Your account is paused. If you don\'t sign in by $date, we delete it together with your data. To come back, just sign in with the same email.';
-  }
-
-  @override
-  String get accountPauseFailed =>
-      'We couldn\'t pause the account. Please try again in a moment.';
-
-  @override
-  String get accountPausedElsewhere =>
-      'Your account was paused from another device. To resume it, sign in again with the same email.';
-
-  @override
-  String get accountPauseEndedTitle => 'The pause is over';
-
-  @override
-  String get accountPauseEndedBody =>
-      'Welcome back: your account is active again and your data is as you left it.';
-
-  @override
-  String accountPauseEndedNoPlan(String date) {
-    return 'You don\'t have a plan: we keep your data until $date. Choose a plan to keep the account, or pause it again from Settings.';
-  }
 
   @override
   String get consentGateTitle => 'Before you continue';
@@ -8227,7 +8175,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentGateOtherOptions => 'Other options';
-
-  @override
-  String get consentGatePauseOrDelete => 'Pause or delete the account';
 }

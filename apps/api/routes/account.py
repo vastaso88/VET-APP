@@ -1,11 +1,9 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, BackgroundTasks, Query
+from fastapi.responses import JSONResponse
 
 from apps.api.dependencies.container import get_container
 from packages.core.application.services.delete_account import DeleteAccountInput
 from packages.core.application.services.export_account_data import ExportAccountDataInput
-from packages.core.application.services.get_or_create_subscription import (
-    GetOrCreateSubscriptionInput,
-)
 from packages.core.domain.account_deletion.log import DeletionReason
 from packages.core.domain.age.models import AgeBand
 from packages.infrastructure.auth.age_guarded_auth_provider import (
@@ -40,7 +38,9 @@ def export_account_data() -> dict[str, object]:
 
 
 @router.delete("")
-def delete_account(immediate: bool = Query(default=False)) -> dict[str, object]:
+def delete_account(
+    background: BackgroundTasks, immediate: bool = Query(default=False)
+) -> dict[str, object]:
     """Deletes the signed-in owner's account and every piece of data they
     created. Only ever acts on the caller's own id, taken from the access
     token: there is no way to name another account. Deleting also needs a
@@ -64,7 +64,9 @@ def delete_account(immediate: bool = Query(default=False)) -> dict[str, object]:
                 reason=(
                     DeletionReason.CLOSED_BY_AGE_USER if under_minimum else DeletionReason.USER_NOW
                 ),
-            )
+            ),
+            # The closing e-mail (D4) goes after the answer, never in the way of the deletion.
+            defer=background.add_task,
         )
         container.account_deletion_repository.delete(user.id)
         return {
@@ -88,36 +90,30 @@ def delete_account(immediate: bool = Query(default=False)) -> dict[str, object]:
     }
 
 
+# The pause of the account does not exist any more (owner decision, 25 November 2026). An older
+# app that still asks for it gets a calm, clear answer instead of a crash: nothing is changed.
 @router.post("/pause")
-def pause_account() -> dict[str, object]:
-    """The owner puts the account aside, with nothing deleted: it becomes
-    inactive (the session that asked is refused from now on, ads hidden) and the
-    data is kept. Signing in again ends the pause. Starting it also clears the
-    120-day clock, like choosing a plan. Acts only on the caller's own id. Open also
-    while a mandatory consent is missing: whoever does not want to accept a new version
-    of the Terms can put the account aside instead (a paused or closed one is still
-    refused)."""
-    container = get_container()
-    with allow_missing_consent():
-        user = container.auth_provider.get_current_user()
-    service = container.account_pause_service()
-    pause = service.start(user.id)
-    _forget_cached_answer(user.id)
-    return {
-        "paused": True,
-        "paused_at": pause.paused_at.isoformat(),
-        # The latest day the account is erased if the owner never signs in.
-        "delete_after": service.delete_after(pause).isoformat(),
-        "max_months": service.max_months,
-    }
+def pause_not_available() -> JSONResponse:
+    """No pause: 410 with a short code and a sentence an old app can show as it is."""
+    return JSONResponse(
+        status_code=410,
+        content={
+            "detail": "pause_not_available",
+            "code": "pause_not_available",
+            "message": (
+                "La pausa dell'account non è più prevista: "
+                "puoi continuare a usare Quokka o eliminare l'account."
+            ),
+        },
+    )
 
 
 @router.get("/session")
 def check_session() -> dict[str, object]:
     """A cheap check the app makes when it opens or comes back to the front. It
     goes through the same guard as every other route, so an account that was
-    paused or deactivated from another device answers 403 `account_paused` /
-    `account_deactivated` here and the app can sign out and clear its notices."""
+    deactivated from another device answers 403 `account_deactivated` here and the app can
+    clear its notices."""
     container = get_container()
     with allow_missing_consent():
         container.auth_provider.get_current_user()
@@ -126,38 +122,14 @@ def check_session() -> dict[str, object]:
 
 @router.get("/pause/notice")
 def get_pause_notice() -> dict[str, object]:
-    """Whether the caller's pause ended at the last sign-in and the app has not
-    said so yet. If so, whether they have a plan and, if not, the day their data
-    would be erased now (the 120-day clock restarts when the pause ends). Only
-    ever about the caller's own account."""
-    container = get_container()
-    user = container.auth_provider.get_current_user()
-    pause = container.account_pause_service().ended_pause(user.id)
-    if pause is None:
-        return {"resumed": False}
-    subscription = container.get_or_create_subscription_service().execute(
-        GetOrCreateSubscriptionInput(
-            owner_id=user.id,
-            email=user.email or "",
-            email_verified=getattr(user, "email_verified", None),
-        )
-    )
-    kept_until = subscription.data_kept_until
-    return {
-        "resumed": True,
-        "resumed_at": pause.resumed_at.isoformat() if pause.resumed_at else None,
-        "has_access": subscription.has_access,
-        "data_kept_until": kept_until.isoformat() if kept_until else None,
-    }
+    """No pause, so nothing ever "ended": the answer an older app polls after sign-in."""
+    return {"resumed": False}
 
 
 @router.post("/pause/notice/ack")
 def acknowledge_pause_notice() -> dict[str, object]:
-    """The app showed that the pause is over: the ended row is removed. Only the
-    caller's own."""
-    container = get_container()
-    user = container.auth_provider.get_current_user()
-    return {"acknowledged": container.account_pause_service().acknowledge_end(user.id)}
+    """Nothing to acknowledge any more (older apps still call it)."""
+    return {"acknowledged": False}
 
 
 @router.get("/deletion")
@@ -168,12 +140,11 @@ def get_deletion_status() -> dict[str, object]:
     with allow_closed_account():
         user = container.auth_provider.get_current_user()
     status = container.account_deletion_service().status(user.id).model_dump(mode="json")
-    # The pause window's number (a setting) is said by the server, never kept in the app.
-    return {**status, "pause_max_months": container.settings.pause_max_months}
+    return status
 
 
 @router.post("/deletion/cancel")
-def cancel_deletion() -> dict[str, object]:
+def cancel_deletion(background: BackgroundTasks) -> dict[str, object]:
     """The owner changed their mind within the period. Needs a recent sign-in
     (signing in again, or the e-mail link of a password reset)."""
     container = get_container()
@@ -183,6 +154,8 @@ def cancel_deletion() -> dict[str, object]:
         user.id, container.auth_provider.last_sign_in_at()
     )
     _forget_cached_answer(user.id)
+    # The security message (R1) goes after the answer: never delays or breaks the request.
+    background.add_task(container.account_deletion_service().send_restore_notice, user.id)
     return status.model_dump(mode="json")
 
 

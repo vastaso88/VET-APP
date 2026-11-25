@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vet_app_mobile/app/router/app_router.dart';
 import 'package:vet_app_mobile/features/account/application/account_session_guard.dart';
-import 'package:vet_app_mobile/features/account/data/account_pause_remote_data_source.dart';
+import 'package:vet_app_mobile/features/account/data/account_session_remote_data_source.dart';
 import 'package:vet_app_mobile/features/account/data/device_registry.dart';
 import 'package:vet_app_mobile/l10n/l10n.dart';
 import 'package:vet_app_mobile/shared/errors/app_network_error.dart';
@@ -16,29 +16,16 @@ int signedOut = 0;
 
 Future<void> _signOut() async => signedOut++;
 
-class _Backend implements AccountPauseRemoteDataSource {
-  _Backend({this.sessionCode, this.notice});
+class _Backend implements AccountSessionRemoteDataSource {
+  _Backend({this.sessionCode});
 
   /// The code the session check fails with; null = the account is fine.
   final String? sessionCode;
-  final PauseNotice? notice;
-  int acknowledged = 0;
-  int sessionChecks = 0;
 
   @override
   Future<Result<void>> checkSession() async {
-    sessionChecks++;
     if (sessionCode == null) return Result.success(null);
     return Result.failure(AppNetworkError(code: sessionCode!));
-  }
-
-  @override
-  Future<Result<PauseNotice?>> fetchNotice() async => Result.success(notice);
-
-  @override
-  Future<Result<void>> acknowledgeNotice() async {
-    acknowledged++;
-    return Result.success(null);
   }
 }
 
@@ -83,30 +70,6 @@ void main() {
   });
 
   group('an account refused by the backend from another device', () {
-    testWidgets('paused: signed out, told why, sent to the sign-in page', (tester) async {
-      final visited = <String>[];
-      SessionOutcome? outcome;
-      await tester.pumpWidget(
-        _app((context) async {
-          outcome = await checkAccountSession(
-            context,
-            dataSource: _Backend(sessionCode: kAccountPausedCode),
-            clearLocalTraces: _clear,
-            signOut: _signOut,
-          );
-        }, visited: visited),
-      );
-
-      await tester.tap(find.text('go'));
-      await tester.pumpAndSettle();
-
-      expect(outcome, SessionOutcome.paused);
-      expect(cleared, 1); // the notices and caches of this phone went
-      expect(signedOut, 1);
-      expect(visited, contains(AppRouter.auth));
-      expect(find.textContaining('messo in pausa da un altro dispositivo'), findsOneWidget);
-    });
-
     testWidgets('waiting to be erased: stays put and lets the restore page take over', (
       tester,
     ) async {
@@ -143,7 +106,7 @@ void main() {
           outcomes.add(
             await checkAccountSession(
               context,
-              dataSource: _Backend(sessionCode: 'account_pause_timeout'),
+              dataSource: _Backend(sessionCode: 'account_session_timeout'),
               clearLocalTraces: _clear,
             ),
           );
@@ -156,50 +119,6 @@ void main() {
       expect(outcomes, [SessionOutcome.ok, SessionOutcome.ok]);
       expect(cleared, 0);
       expect(visited, isNot(contains(AppRouter.auth)));
-    });
-  });
-
-  group('"the pause is over"', () {
-    testWidgets('with a plan: says so once and tells the backend', (tester) async {
-      final backend = _Backend(notice: const PauseNotice(hasAccess: true));
-      await tester.pumpWidget(_app((context) => showPauseEndedIfAny(context, dataSource: backend)));
-
-      await tester.tap(find.text('go'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('La pausa è finita'), findsOneWidget);
-      expect(find.textContaining('di nuovo attivo'), findsOneWidget);
-      expect(find.textContaining('Non hai un piano'), findsNothing);
-
-      await tester.tap(find.text('OK'));
-      await tester.pumpAndSettle();
-      expect(backend.acknowledged, 1);
-    });
-
-    testWidgets('without a plan: also gives the new day the data would be erased', (
-      tester,
-    ) async {
-      final backend = _Backend(
-        notice: PauseNotice(hasAccess: false, dataKeptUntil: DateTime(2027, 3, 14)),
-      );
-      await tester.pumpWidget(_app((context) => showPauseEndedIfAny(context, dataSource: backend)));
-
-      await tester.tap(find.text('go'));
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('Non hai un piano'), findsOneWidget);
-      expect(find.textContaining('14'), findsWidgets);
-    });
-
-    testWidgets('nothing to say: no dialog, nothing acknowledged', (tester) async {
-      final backend = _Backend();
-      await tester.pumpWidget(_app((context) => showPauseEndedIfAny(context, dataSource: backend)));
-
-      await tester.tap(find.text('go'));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AlertDialog), findsNothing);
-      expect(backend.acknowledged, 0);
     });
   });
 

@@ -503,14 +503,13 @@ def test_the_report_quotes_no_name_no_number_and_no_birth_date() -> None:
         assert number not in dumped
 
 
-# --- who asked to leave, and who paused ------------------------------------------------
+# --- who asked to leave ------------------------------------------------
 
 
 def _with_lists(
     setup: _Setup,
     *,
     pending: list[str] | None = None,
-    paused: list[str] | None = None,
 ) -> RetentionDryRunService:
     return RetentionDryRunService(
         setup.subscriptions,
@@ -519,7 +518,6 @@ def _with_lists(
         setup.consents,
         AccountDataCounter(setup.pets, setup.events, setup.reminders, setup.walks),
         pending_deletions=(lambda: pending) if pending is not None else None,
-        paused=(lambda: paused) if paused is not None else None,
     )
 
 
@@ -537,28 +535,6 @@ def test_an_owner_who_asked_to_leave_is_left_out_of_the_sequence() -> None:
     assert report.past_retention == 0 and report.erasable_now == 0
     assert report.commercial_notices == 0 and report.service_notices == 1
     assert len(report.sample) == 1
-
-
-def test_a_paused_owner_is_left_out_of_the_sequence() -> None:
-    setup = _Setup()
-    setup.lapsed("paused", 30, ADULT)
-    setup.lapsed("other", 30, ADULT)
-
-    report = _with_lists(setup, paused=["paused"]).execute(now=NOW)
-
-    assert report.paused == 1
-    assert report.clock_started == 1
-    assert sum(report.notices_due.values()) == 1
-
-
-def test_the_request_to_leave_comes_before_the_pause() -> None:
-    setup = _Setup()
-    setup.lapsed("both", 30, ADULT)
-
-    report = _with_lists(setup, pending=["both"], paused=["both"]).execute(now=NOW)
-
-    assert (report.deletion_pending, report.paused) == (1, 0)
-    assert report.clock_started == 0
 
 
 def test_left_out_owners_cost_no_contact_lookup() -> None:
@@ -579,7 +555,7 @@ def test_without_the_lists_nothing_is_left_out() -> None:
 
     report = setup.service().execute(now=NOW)
 
-    assert (report.deletion_pending, report.paused) == (0, 0)
+    assert report.deletion_pending == 0
     assert report.clock_started == 1
 
 

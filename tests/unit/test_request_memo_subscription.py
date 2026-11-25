@@ -8,12 +8,10 @@ time, 402 unchanged) is in tests/integration/test_subscription_once_per_request.
 from __future__ import annotations
 
 from datetime import timedelta
-from typing import Any, cast
+from typing import Any
 
 import pytest
 
-from packages.core.application.ports.account_eraser import AccountEraser
-from packages.core.application.services.account_pause import AccountPauseService
 from packages.core.application.services.get_or_create_subscription import (
     GetOrCreateSubscriptionInput,
     GetOrCreateSubscriptionService,
@@ -28,9 +26,6 @@ from packages.core.domain.subscription.store import (
     VerifiedStorePurchase,
 )
 from packages.infrastructure.billing.fake_store import FakeStore
-from packages.infrastructure.persistence.in_memory_account_pause_repository import (
-    InMemoryAccountPauseRepository,
-)
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemorySubscriptionRepository,
 )
@@ -360,31 +355,6 @@ def test_a_change_of_one_owner_leaves_the_other_owners_entry_alone() -> None:
         assert world.subscriptions.reads == reads
         _ask(world.service, OWNER_A)  # asked again
         assert world.subscriptions.reads > reads
-
-
-def test_pausing_the_account_in_the_same_request_drops_the_remembered_outcome() -> None:
-    subscriptions = _Reads()
-    subscriptions.save(Subscription(owner_id=OWNER_A, trial_ends_at=utc_now() - timedelta(days=1)))
-    service = GetOrCreateSubscriptionService(subscriptions, frozenset())
-    pauses = AccountPauseService(
-        InMemoryAccountPauseRepository(),
-        subscriptions,
-        24,
-        cast(AccountEraser, object()),
-        None,
-    )
-
-    with access_token_context("token-a"):
-        _ask(service)
-        _ask(service)
-        reads = subscriptions.reads
-
-        pauses.start(OWNER_A)  # the pause clears the 120-day clock: the state changed
-
-        # Not served from memory: the subscription is read again (what it then says is the
-        # service's own rule, the same as without any memo).
-        _ask(service)
-        assert subscriptions.reads > reads
 
 
 def test_entries_of_one_owner_never_disagree_after_a_lookup_that_saved_something() -> None:

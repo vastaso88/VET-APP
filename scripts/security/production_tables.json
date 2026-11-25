@@ -6,7 +6,6 @@
     "account_consents": null,
     "account_deletion_log": null,
     "account_deletion_requests": null,
-    "account_pauses": null,
     "admin_ingestion_schedules": null,
     "admin_plan_changes": null,
     "admin_plan_totp_attempts": null,

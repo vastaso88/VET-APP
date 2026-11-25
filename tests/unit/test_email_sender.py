@@ -72,18 +72,22 @@ def test_a_commercial_message_carries_a_one_click_unsubscribe_and_a_service_one_
 def test_a_failure_returns_a_code_and_logs_neither_the_address_nor_the_text(
     monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
 ) -> None:
+    address = (
+        "person@sandbox-mail.org"  # not reserved: the guard lets it reach the (fake) connection
+    )
+
     class Boom:
         def __init__(self, *args: Any, **kwargs: Any) -> None:
-            raise smtplib.SMTPRecipientsRefused({"owner@example.com": (550, b"owner@example.com")})
+            raise smtplib.SMTPRecipientsRefused({address: (550, address.encode())})
 
     monkeypatch.setattr(smtplib, "SMTP", Boom)
     with caplog.at_level(logging.DEBUG):
-        result = _smtp().send(SERVICE)
+        result = _smtp().send(SERVICE.model_copy(update={"to": address}))
 
-    assert (result.sent, result.reason) == (False, "failed")
+    assert (result.sent, result.reason) == (False, "not_sent")
     logged = " ".join(record.getMessage() for record in caplog.records)
-    assert "owner@example.com" not in logged and "Testo" not in logged and "Ciao" not in logged
-    assert "owner@example.com" not in repr(result)
+    assert address not in logged and "Testo" not in logged and "Ciao" not in logged
+    assert address not in repr(result)
 
 
 def test_wiring_is_off_by_default_and_a_real_provider_needs_its_settings() -> None:
@@ -99,3 +103,29 @@ def test_wiring_is_off_by_default_and_a_real_provider_needs_its_settings() -> No
         update={"smtp_host": "smtp.example.com", "email_from": "no-reply@example.com"}
     )
     assert isinstance(container._build_email_sender(), SmtpEmailSender)
+
+
+def test_an_html_message_carries_its_logo_inside_it_never_as_a_link() -> None:
+    """The quokka of the exit e-mails travels in the message (multipart/related, `cid:`)."""
+    from email import message_from_bytes
+
+    from packages.infrastructure.email.logo import quokka_head_png
+
+    sender = SmtpEmailSender(
+        host="smtp.example.com", port=587, username="u", password="p", sender="noreply@example.com"
+    )
+    mime = sender.build(
+        EmailMessage(
+            to="a@example.com",
+            subject="Oggetto",
+            text="testo",
+            html='<p>ciao</p><img src="cid:quokka-logo">',
+            inline_images={"quokka-logo": quokka_head_png()},
+        )
+    )
+    parsed = message_from_bytes(mime.as_bytes())
+    kinds = [part.get_content_type() for part in parsed.walk()]
+    assert "multipart/related" in kinds and "image/png" in kinds
+    image = next(part for part in parsed.walk() if part.get_content_type() == "image/png")
+    assert image["Content-ID"] == "<quokka-logo>"
+    assert image.get_payload(decode=True) == quokka_head_png()

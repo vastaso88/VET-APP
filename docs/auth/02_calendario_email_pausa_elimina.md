@@ -1,5 +1,7 @@
 # E-mail per chi lascia l'app: calendario e testi (decisione A, build 40)
 
+> **SUPERATO PER LA PAUSA (25 novembre 2026).** Il proprietario ha deciso che **la pausa dell'account non è prevista**: nessun pulsante «Metti in pausa», nessuna rotta, nessuna tabella, nessuna e-mail di pausa (P1–P6). Restano solo l'eliminazione (D1–D4) e il ripristino (R1). Chi non usa l'app e continua a pagare l'abbonamento non ha bisogno di una pausa: il rinnovo è automatico e va dichiarato alla sottoscrizione. Le parti di questo documento sulla pausa sono storiche. Lo script di produzione che elimina la tabella è `scripts/setup/drop_account_pauses.sql` (lo lancia il proprietario nel rilascio, dopo il nuovo backend).
+
 Data: 2026-11-16. Proposta della sessione Registrazione, **da approvare**: i testi li decide la Normativa ([12](../compliance/12_avvisi_prima_della_cancellazione.md), [16](../compliance/16_recupero_account_dopo_la_cancellazione.md)), il calendario dei 120 giorni è codice della sessione Pricing (`packages/core/domain/subscription/retention.py`). Nel backend **non esiste ancora un invio di e-mail**: oggi ci sono solo il calendario, la scelta S/P e la prova a secco.
 
 ## 1. Le tre strade e cosa fa ciascuna
@@ -91,3 +93,12 @@ Nell'e-mail D1–D3 il terzo blocco è «Se hai cambiato idea, accedi con questa
 - Per D1–D3: una colonna `last_notice` su `account_deletion_requests` (SQL idempotente) e un passo del lavoro programmato; D4 parte dal lavoro di cancellazione, con l'indirizzo letto prima di cancellare l'identità.
 - Per la pausa: una tabella `account_pauses` (id, data inizio, ultimo avviso; RLS, riga nel test della cancellazione, riga nell'inventario) e due pulsanti nella finestra «Elimina account». La pausa ferma l'orologio dei 120 giorni (codice Pricing).
 - Nessun testo di e-mail né conteggio nei log.
+
+## 9. Stato del codice al 24 novembre 2026 (aggiornamento di Registrazione)
+
+Costruito e **spento** (`EMAIL_NOTICES_REQUIRED`, invio, lavoro di cancellazione: impostazioni); in `qk18-email`, in attesa del sì del proprietario ai testi e ai tempi.
+
+- **Testi**: i corpi delle 11 e-mail (D1, D2, D3, D4, D_LATE, P1, P3, P4, P_LATE, R1, D4 «pausa scaduta») sono quelli del doc 18 riscritto la sera del 23 novembre (più caldi, una sola cosa da fare), copiati parola per parola e marcati **PROPOSTA** nel codice finché il proprietario non li legge: al suo sì si tolgono solo le etichette. Il test `test_exit_notice_texts_follow_doc18` fallisce se un corpo si scosta dal doc.
+- **Due attese distinte**: «Elimina» aspetta al massimo **7 giorni** dopo la data prevista se l'avviso finale non è registrato (`MAX_WAIT_AFTER_DUE`, approvata dal proprietario); «pausa scaduta» **30 giorni** poi decide una persona (`PAUSE_NOTICE_WAIT_DAYS`, proposta). Il «7» scritto in D1 («al massimo 7») è controllato da un test contro la costante; il nome del pulsante «Annulla l'eliminazione» in D1, D2, D3 e D_LATE è controllato contro `accountRestoreCancel` dell'app.
+- **Guardia**: con gli avvisi obbligatori ma impossibili da inviare (invio spento o non configurato) non si cancella nulla fino al termine duro, con allarme a ogni giro; poi si cancella con il motivo `notice_not_sent`.
+

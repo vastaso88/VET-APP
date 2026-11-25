@@ -76,6 +76,7 @@ class PlatformWiring(ContainerState):
             return InMemoryEmailSender()
         if not (settings.smtp_host and settings.email_from):
             return DisabledEmailSender()
+        from packages.infrastructure.email.rules import parse_allowed_recipients
         from packages.infrastructure.email.smtp_email_sender import SmtpEmailSender
 
         return SmtpEmailSender(
@@ -85,6 +86,7 @@ class PlatformWiring(ContainerState):
             settings.smtp_password,
             settings.email_from,
             use_ssl=settings.smtp_use_ssl,
+            allowed_recipients=parse_allowed_recipients(settings.email_allowed_recipients),
         )
 
     def _build_auth_provider(self) -> AuthProvider:
@@ -95,7 +97,6 @@ class PlatformWiring(ContainerState):
             self._build_inner_auth_provider(),
             lambda: self.account_age_repository,
             lambda: self.account_deletion_repository,
-            lambda: self.account_pause_service(),
             lambda: self.account_consents_repository,
             lambda: self.settings.consent_enforcement_enabled,
         )

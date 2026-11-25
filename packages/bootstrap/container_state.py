@@ -15,7 +15,6 @@ from typing import TYPE_CHECKING
 from packages.core.application.ports.account_age_repository import AccountAgeRepository
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
 from packages.core.application.ports.account_deletion_repository import AccountDeletionRepository
-from packages.core.application.ports.account_pause_repository import AccountPauseRepository
 from packages.core.application.ports.answer_cache_repository import AnswerCacheRepository
 from packages.core.application.ports.auth_provider import AuthProvider
 from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
@@ -61,7 +60,6 @@ from packages.core.application.ports.user_location_repository import UserLocatio
 from packages.core.application.ports.weight_measurement_repository import (
     WeightMeasurementRepository,
 )
-from packages.core.application.services.account_pause import AccountPauseService
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
 from packages.core.application.services.deletion_log import DeletionLogService
 from packages.core.application.services.geocoding import GeocodingService
@@ -96,7 +94,6 @@ class ContainerState:
     account_age_repository: AccountAgeRepository
     account_deletion_repository: AccountDeletionRepository
     deletion_log_service: DeletionLogService
-    account_pause_repository: AccountPauseRepository
     email_sender: EmailSender
     owner_contact_lookup: OwnerContactLookup
     developer_emails: frozenset[str]
@@ -135,5 +132,3 @@ class ContainerState:
         def hidden_owner_ids(self) -> set[str]: ...
 
         def radar_report_settings(self) -> RadarReportSettings | None: ...
-
-        def account_pause_service(self) -> AccountPauseService: ...

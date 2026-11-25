@@ -33,7 +33,6 @@ IN_MEMORY = {
     "account_age_repository": "InMemoryAccountAgeRepository",
     "account_consents_repository": "InMemoryAccountConsentsRepository",
     "account_deletion_repository": "InMemoryAccountDeletionRepository",
-    "account_pause_repository": "InMemoryAccountPauseRepository",
     "answer_cache_repository": "InMemoryAnswerCacheRepository",
     "auth_provider": "AgeGuardedAuthProvider",
     "chat_attachment_repository": "InMemoryChatAttachmentRepository",
@@ -79,7 +78,6 @@ SUPABASE = {
     "account_age_repository": "SupabaseAccountAgeRepository",
     "account_consents_repository": "SupabaseAccountConsentsRepository",
     "account_deletion_repository": "SupabaseAccountDeletionRepository",
-    "account_pause_repository": "SupabaseAccountPauseRepository",
     "answer_cache_repository": "SupabaseAnswerCacheRepository",
     "auth_provider": "AgeGuardedAuthProvider",
     "chat_attachment_repository": "SupabaseChatAttachmentRepository",
@@ -138,7 +136,6 @@ PROPERTIES = ["marketplace_photo_base", "photo_reading_enabled"]
 PUBLIC_NAMES = [
     "account_deletion_service",
     "account_eraser",
-    "account_pause_service",
     "age_gate_service",
     "age_review_admin_service",
     "apple_signed_data_decoder",
@@ -154,6 +151,7 @@ PUBLIC_NAMES = [
     "edit_chat_message_service",
     "event_catalog_repository",
     "event_submission_repository",
+    "exit_notice_service",
     "export_account_data_service",
     "get_account_consents_service",
     "get_or_create_subscription_service",
@@ -172,6 +170,7 @@ PUBLIC_NAMES = [
     "marketplace_messaging_moderation_service",
     "marketplace_messaging_service",
     "marketplace_photo_base",
+    "notice_mailer",
     "owner_can_write_on_marketplace",
     "owner_limits_lookup",
     "pet_news_service",
@@ -212,7 +211,6 @@ BUILD_HOOKS = [
     "_build_account_deletion_repository",
     "_build_account_eraser",
     "_build_account_exporter",
-    "_build_account_pause_repository",
     "_build_answer_cache_repository",
     "_build_auth_provider",
     "_build_chat_attachment_repository",
@@ -455,7 +453,7 @@ def test_get_container_is_cached_per_process_and_reset_starts_a_new_one() -> Non
 # --- what tests and jobs override on the instance --------------------------------
 
 
-def test_replacing_the_eraser_hook_reaches_both_services_that_erase_accounts(
+def test_replacing_the_eraser_hook_reaches_the_service_that_erases_accounts(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     container = ApplicationContainer(_settings())
@@ -463,7 +461,6 @@ def test_replacing_the_eraser_hook_reaches_both_services_that_erase_accounts(
     monkeypatch.setattr(container, "_build_account_eraser", lambda: fake)
 
     assert _holds(container.account_deletion_service(), fake)
-    assert _holds(container.account_pause_service(), fake)
 
 
 def test_replacing_a_repository_or_the_settings_changes_what_the_next_factory_builds(
@@ -527,7 +524,7 @@ def test_supabase_configuration_wires_supabase_collaborators_with_fake_clients(
     assert type(inner).__name__ == "SupabaseAuthProvider"
     # Construction asks for the service-role client once per collaborator and for the
     # anon client once (the auth provider); `client.py` turns the former into one per process.
-    assert (fake_supabase.service, fake_supabase.public) == (33, 1)
+    assert (fake_supabase.service, fake_supabase.public) == (32, 1)
 
 
 def test_calling_every_factory_builds_only_the_lazy_collaborators_and_no_public_client(
@@ -537,7 +534,8 @@ def test_calling_every_factory_builds_only_the_lazy_collaborators_and_no_public_
     for name in _factories():
         getattr(container, name)()
 
-    assert (fake_supabase.service, fake_supabase.public) == (42, 1)
+    # Every factory builds its lazy collaborators too (the notices build the deletion service).
+    assert (fake_supabase.service, fake_supabase.public) == (41, 1)
     assert type(container._event_catalog_repository).__name__ == "SupabaseEventCatalogRepository"
     submissions = type(container._event_submission_repository).__name__
     assert submissions == "SupabaseEventSubmissionRepository"

@@ -14,6 +14,10 @@ class OwnerContact:
     # not declared (today no screen records it), which callers treat as "not
     # known to be an adult".
     birth_date: date | None = None
+    # The name the owner gave (for the greeting) and the language of the account;
+    # None = unknown (callers treat the language as Italian, the product's).
+    display_name: str | None = None
+    language: str | None = None
 
 
 class OwnerContactLookup(Protocol):

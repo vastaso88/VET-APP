@@ -24,14 +24,6 @@ class _Backend implements AccountDeletionRemoteDataSource {
     return Result.success(null);
   }
 
-  int pauseCalls = 0;
-
-  @override
-  Future<Result<DateTime?>> pause() async {
-    pauseCalls++;
-    return Result.success(null);
-  }
-
   @override
   Future<Result<DeletionStatus>> fetch() async =>
       Result.success(const DeletionStatus(pending: true, graceDays: 30));

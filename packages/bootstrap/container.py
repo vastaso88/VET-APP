@@ -168,7 +168,6 @@ class ApplicationContainer(
         self.account_age_repository = self._build_account_age_repository()
         self.account_deletion_repository = self._build_account_deletion_repository()
         self.deletion_log_service = self._build_deletion_log_service()
-        self.account_pause_repository = self._build_account_pause_repository()
         self.email_sender = self._build_email_sender()
         self.owner_contact_lookup = self._build_owner_contact_lookup()
         # A blank entry (a trailing comma) must not make "" a developer: an
@@ -411,7 +410,6 @@ class ApplicationContainer(
             ),
             test_plan=self.subscription_test_plan,
             pending_deletions=self.account_deletion_repository.pending_owner_ids,
-            paused=self.account_pause_repository.paused_owner_ids,
         )
 
     def register_device_service(self) -> RegisterDeviceService:

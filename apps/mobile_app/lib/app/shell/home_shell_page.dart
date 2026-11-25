@@ -176,8 +176,8 @@ class _HomeShellPageState extends State<HomeShellPage> {
   /// A deactivated account (waiting to be erased) is offered the cancellation
   /// and nothing else; otherwise the declared age is checked.
   Future<void> _checkAccountAfterSignIn() async {
-    // Paused or put in deletion from another device: nothing of it may run here.
-    if (await checkAccountSession(context) == SessionOutcome.paused) return;
+    // Put in deletion from another device: nothing of it may run here.
+    await checkAccountSession(context);
     if (!mounted) return;
     if (await checkPendingDeletionAfterSignIn(context)) return;
     if (!mounted) return;
@@ -193,13 +193,11 @@ class _HomeShellPageState extends State<HomeShellPage> {
     if (!mounted) return;
     await checkAgeAfterSignIn(context);
     if (!mounted) return;
-    // The pause is over: said once, with the new date for an account without a plan.
-    await showPauseEndedIfAny(context);
   }
 
   DateTime? _lastSessionCheck;
 
-  /// Back from the background: an account paused or put in deletion elsewhere
+  /// Back from the background: an account put in deletion elsewhere
   /// meanwhile is found out here (at most once a minute).
   Future<void> _checkSessionOnResume() async {
     final now = DateTime.now();

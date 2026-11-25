@@ -2828,17 +2828,14 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'male':
-            'Se $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-        'female':
-            'Se $name era iscritta all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-        'other':
-            'Se il microchip di $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'male':
+          'Se $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+      'female':
+          'Se $name era iscritta all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+      'other':
+          'Se il microchip di $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+    });
     return '$_temp0';
   }
 
@@ -2864,13 +2861,10 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'female': 'Spostata per errore? Riporta tra gli animali',
-        'other': 'Spostato per errore? Riporta tra gli animali',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'female': 'Spostata per errore? Riporta tra gli animali',
+      'other': 'Spostato per errore? Riporta tra gli animali',
+    });
     return '$_temp0';
   }
 
@@ -7923,56 +7917,11 @@ class AppLocalizationsIt extends AppLocalizations {
       'Se l\'hai eliminato da poco e il periodo di attesa non è finito, usa «Recupera account»: puoi annullare l\'eliminazione oppure eliminarlo subito per ricominciare.';
 
   @override
-  String get accountLeaveQuestion => 'Cosa vuoi fare con il tuo account?';
-
-  @override
-  String get accountPauseOptionTitle => 'Metti in pausa';
-
-  @override
-  String accountPauseOptionBody(int months) {
-    String _temp0 = intl.Intl.pluralLogic(
-      months,
-      locale: localeName,
-      other: '# mesi',
-      one: '# mese',
-    );
-    return 'L\'account resta inattivo, senza promemoria né notifiche, e conserviamo i tuoi dati finché non torni, fino a $_temp0 senza accessi: poi li cancelliamo. Per tornare basta accedere con la stessa email.';
-  }
-
-  @override
   String get accountDeleteOptionTitle => 'Elimina l\'account';
 
   @override
   String get accountDeleteOptionBody =>
       'Lo disattiviamo subito. Per un periodo puoi cambiare idea accedendo con la stessa email; poi cancelliamo i tuoi dati. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua email, che prova la cancellazione.';
-
-  @override
-  String get accountPauseSubmit => 'Metti in pausa';
-
-  @override
-  String accountPauseDone(String date) {
-    return 'Il tuo account è in pausa. Se non accedi entro il $date, lo cancelliamo insieme ai tuoi dati. Per tornare basta accedere con la stessa email.';
-  }
-
-  @override
-  String get accountPauseFailed =>
-      'Non siamo riusciti a mettere l\'account in pausa. Riprova tra poco.';
-
-  @override
-  String get accountPausedElsewhere =>
-      'Il tuo account è stato messo in pausa da un altro dispositivo. Per riprenderlo, accedi di nuovo con la stessa email.';
-
-  @override
-  String get accountPauseEndedTitle => 'La pausa è finita';
-
-  @override
-  String get accountPauseEndedBody =>
-      'Bentornato: il tuo account è di nuovo attivo e i tuoi dati sono come li hai lasciati.';
-
-  @override
-  String accountPauseEndedNoPlan(String date) {
-    return 'Non hai un piano: conserviamo i tuoi dati fino al $date. Scegli un piano per tenere l\'account, oppure rimettilo in pausa da Impostazioni.';
-  }
 
   @override
   String get consentGateTitle => 'Prima di continuare';
@@ -8280,7 +8229,4 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get consentGateOtherOptions => 'Altre possibilità';
-
-  @override
-  String get consentGatePauseOrDelete => 'Metti in pausa o elimina l\'account';
 }

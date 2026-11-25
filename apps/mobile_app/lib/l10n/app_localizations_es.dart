@@ -2820,13 +2820,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other':
-            'Si el microchip de $name estaba inscrito en un registro de animales de compañía, normalmente hay que comunicar el fallecimiento: tu veterinario o el organismo que lleva el registro en tu país (en Italia, la ASL o el ayuntamiento) te dirán cómo y en qué plazo.',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other':
+          'Si el microchip de $name estaba inscrito en un registro de animales de compañía, normalmente hay que comunicar el fallecimiento: tu veterinario o el organismo que lleva el registro en tu país (en Italia, la ASL o el ayuntamiento) te dirán cómo y en qué plazo.',
+    });
     return '$_temp0';
   }
 
@@ -2852,13 +2849,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'female': '¿La has movido por error? Devolver a Animales',
-        'other': '¿Lo has movido por error? Devolver a Animales',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'female': '¿La has movido por error? Devolver a Animales',
+      'other': '¿Lo has movido por error? Devolver a Animales',
+    });
     return '$_temp0';
   }
 
@@ -7920,56 +7914,11 @@ class AppLocalizationsEs extends AppLocalizations {
       'Si la eliminaste hace poco y el periodo de espera no ha terminado, usa «Recuperar cuenta»: puedes cancelar la eliminación o eliminarla ahora para empezar de nuevo.';
 
   @override
-  String get accountLeaveQuestion => '¿Qué quieres hacer con tu cuenta?';
-
-  @override
-  String get accountPauseOptionTitle => 'Ponla en pausa';
-
-  @override
-  String accountPauseOptionBody(int months) {
-    String _temp0 = intl.Intl.pluralLogic(
-      months,
-      locale: localeName,
-      other: '$months meses',
-      one: '1 mes',
-    );
-    return 'La cuenta queda inactiva, sin recordatorios ni notificaciones, y conservamos tus datos hasta que vuelvas, con un máximo de $_temp0 sin accesos; después los eliminamos. Para volver basta con iniciar sesión con el mismo correo.';
-  }
-
-  @override
   String get accountDeleteOptionTitle => 'Eliminar la cuenta';
 
   @override
   String get accountDeleteOptionBody =>
       'La desactivamos de inmediato. Durante un tiempo puedes cambiar de opinión iniciando sesión con el mismo correo; después eliminamos tus datos. Quedan algunos datos, por ejemplo las facturas, que la ley nos obliga a conservar, y un código, sin tu nombre ni tu correo, que prueba la eliminación.';
-
-  @override
-  String get accountPauseSubmit => 'Poner en pausa';
-
-  @override
-  String accountPauseDone(String date) {
-    return 'Tu cuenta está en pausa. Si no inicias sesión a más tardar el $date, la eliminamos junto con tus datos. Para volver basta con iniciar sesión con el mismo correo.';
-  }
-
-  @override
-  String get accountPauseFailed =>
-      'No hemos podido poner la cuenta en pausa. Inténtalo de nuevo en un momento.';
-
-  @override
-  String get accountPausedElsewhere =>
-      'Tu cuenta se ha puesto en pausa desde otro dispositivo. Para reanudarla, inicia sesión de nuevo con el mismo correo.';
-
-  @override
-  String get accountPauseEndedTitle => 'La pausa ha terminado';
-
-  @override
-  String get accountPauseEndedBody =>
-      'Te damos la bienvenida de nuevo: tu cuenta vuelve a estar activa y tus datos están como los dejaste.';
-
-  @override
-  String accountPauseEndedNoPlan(String date) {
-    return 'No tienes ningún plan: conservamos tus datos hasta el $date. Elige un plan para conservar la cuenta o vuelve a ponerla en pausa desde Ajustes.';
-  }
 
   @override
   String get consentGateTitle => 'Antes de continuar';
@@ -8278,7 +8227,4 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get consentGateOtherOptions => 'Otras opciones';
-
-  @override
-  String get consentGatePauseOrDelete => 'Poner en pausa o eliminar la cuenta';
 }

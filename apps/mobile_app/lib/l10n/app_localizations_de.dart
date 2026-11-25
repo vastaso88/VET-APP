@@ -2841,13 +2841,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other':
-            'Wenn der Mikrochip von $name in einem Heimtierregister eingetragen war, muss der Tod in der Regel gemeldet werden: Ihre Tierärztin bzw. Ihr Tierarzt oder die Stelle, die in Ihrem Land das Register führt (in Italien die ASL oder die Gemeinde), sagt Ihnen, wie und bis wann.',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other':
+          'Wenn der Mikrochip von $name in einem Heimtierregister eingetragen war, muss der Tod in der Regel gemeldet werden: Ihre Tierärztin bzw. Ihr Tierarzt oder die Stelle, die in Ihrem Land das Register führt (in Italien die ASL oder die Gemeinde), sagt Ihnen, wie und bis wann.',
+    });
     return '$_temp0';
   }
 
@@ -2873,12 +2870,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other': 'Versehentlich verschoben? Zurück zu den Tieren',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other': 'Versehentlich verschoben? Zurück zu den Tieren',
+    });
     return '$_temp0';
   }
 
@@ -7949,56 +7943,11 @@ class AppLocalizationsDe extends AppLocalizations {
       'Falls Sie es gerade erst gelöscht haben und die Wartezeit noch nicht abgelaufen ist, nutzen Sie „Konto wiederherstellen“: Sie können die Löschung abbrechen oder das Konto sofort löschen, um neu zu beginnen.';
 
   @override
-  String get accountLeaveQuestion => 'Was möchten Sie mit Ihrem Konto tun?';
-
-  @override
-  String get accountPauseOptionTitle => 'Pausieren';
-
-  @override
-  String accountPauseOptionBody(int months) {
-    String _temp0 = intl.Intl.pluralLogic(
-      months,
-      locale: localeName,
-      other: '$months Monate',
-      one: '1 Monat',
-    );
-    return 'Das Konto bleibt inaktiv, ohne Erinnerungen und Benachrichtigungen, und wir bewahren Ihre Daten auf, bis Sie zurückkehren, höchstens $_temp0 ohne Anmeldung; danach löschen wir sie. Um zurückzukehren, melden Sie sich einfach mit derselben E-Mail-Adresse an.';
-  }
-
-  @override
   String get accountDeleteOptionTitle => 'Konto löschen';
 
   @override
   String get accountDeleteOptionBody =>
       'Wir deaktivieren es sofort. Eine Zeit lang können Sie es sich anders überlegen, indem Sie sich mit derselben E-Mail-Adresse anmelden; danach löschen wir Ihre Daten. Es bleiben einige Daten, zum Beispiel Rechnungen, die wir von Gesetzes wegen aufbewahren müssen, und ein Code ohne Ihren Namen und Ihre E-Mail-Adresse, der die Löschung belegt.';
-
-  @override
-  String get accountPauseSubmit => 'Pausieren';
-
-  @override
-  String accountPauseDone(String date) {
-    return 'Ihr Konto ist pausiert. Wenn Sie sich nicht bis zum $date anmelden, löschen wir es zusammen mit Ihren Daten. Um zurückzukehren, melden Sie sich einfach mit derselben E-Mail-Adresse an.';
-  }
-
-  @override
-  String get accountPauseFailed =>
-      'Wir konnten das Konto nicht pausieren. Bitte versuchen Sie es gleich noch einmal.';
-
-  @override
-  String get accountPausedElsewhere =>
-      'Ihr Konto wurde auf einem anderen Gerät pausiert. Um es wieder zu aktivieren, melden Sie sich erneut mit derselben E-Mail-Adresse an.';
-
-  @override
-  String get accountPauseEndedTitle => 'Die Pause ist beendet';
-
-  @override
-  String get accountPauseEndedBody =>
-      'Willkommen zurück: Ihr Konto ist wieder aktiv und Ihre Daten sind so, wie Sie sie verlassen haben.';
-
-  @override
-  String accountPauseEndedNoPlan(String date) {
-    return 'Sie haben keinen Tarif: Wir bewahren Ihre Daten bis zum $date auf. Wählen Sie einen Tarif, um das Konto zu behalten, oder pausieren Sie es in den Einstellungen erneut.';
-  }
 
   @override
   String get consentGateTitle => 'Bevor Sie fortfahren';
@@ -8307,7 +8256,4 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get consentGateOtherOptions => 'Weitere Möglichkeiten';
-
-  @override
-  String get consentGatePauseOrDelete => 'Konto pausieren oder löschen';
 }

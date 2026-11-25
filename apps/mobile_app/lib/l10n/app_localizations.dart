@@ -66,7 +66,7 @@ import 'app_localizations_it.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -89,11 +89,11 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -101,7 +101,7 @@ abstract class AppLocalizations {
     Locale('en'),
     Locale('es'),
     Locale('fr'),
-    Locale('it')
+    Locale('it'),
   ];
 
   /// No description provided for @petsConsentFullText.
@@ -13130,24 +13130,6 @@ abstract class AppLocalizations {
   /// **'Se l\'hai eliminato da poco e il periodo di attesa non è finito, usa «Recupera account»: puoi annullare l\'eliminazione oppure eliminarlo subito per ricominciare.'**
   String get authRegisterEmailInUseRecoverHint;
 
-  /// No description provided for @accountLeaveQuestion.
-  ///
-  /// In it, this message translates to:
-  /// **'Cosa vuoi fare con il tuo account?'**
-  String get accountLeaveQuestion;
-
-  /// No description provided for @accountPauseOptionTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Metti in pausa'**
-  String get accountPauseOptionTitle;
-
-  /// No description provided for @accountPauseOptionBody.
-  ///
-  /// In it, this message translates to:
-  /// **'L\'account resta inattivo, senza promemoria né notifiche, e conserviamo i tuoi dati finché non torni, fino a {months, plural, one{# mese} other{# mesi}} senza accessi: poi li cancelliamo. Per tornare basta accedere con la stessa email.'**
-  String accountPauseOptionBody(int months);
-
   /// No description provided for @accountDeleteOptionTitle.
   ///
   /// In it, this message translates to:
@@ -13159,48 +13141,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Lo disattiviamo subito. Per un periodo puoi cambiare idea accedendo con la stessa email; poi cancelliamo i tuoi dati. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua email, che prova la cancellazione.'**
   String get accountDeleteOptionBody;
-
-  /// No description provided for @accountPauseSubmit.
-  ///
-  /// In it, this message translates to:
-  /// **'Metti in pausa'**
-  String get accountPauseSubmit;
-
-  /// No description provided for @accountPauseDone.
-  ///
-  /// In it, this message translates to:
-  /// **'Il tuo account è in pausa. Se non accedi entro il {date}, lo cancelliamo insieme ai tuoi dati. Per tornare basta accedere con la stessa email.'**
-  String accountPauseDone(String date);
-
-  /// No description provided for @accountPauseFailed.
-  ///
-  /// In it, this message translates to:
-  /// **'Non siamo riusciti a mettere l\'account in pausa. Riprova tra poco.'**
-  String get accountPauseFailed;
-
-  /// No description provided for @accountPausedElsewhere.
-  ///
-  /// In it, this message translates to:
-  /// **'Il tuo account è stato messo in pausa da un altro dispositivo. Per riprenderlo, accedi di nuovo con la stessa email.'**
-  String get accountPausedElsewhere;
-
-  /// No description provided for @accountPauseEndedTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'La pausa è finita'**
-  String get accountPauseEndedTitle;
-
-  /// No description provided for @accountPauseEndedBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Bentornato: il tuo account è di nuovo attivo e i tuoi dati sono come li hai lasciati.'**
-  String get accountPauseEndedBody;
-
-  /// No description provided for @accountPauseEndedNoPlan.
-  ///
-  /// In it, this message translates to:
-  /// **'Non hai un piano: conserviamo i tuoi dati fino al {date}. Scegli un piano per tenere l\'account, oppure rimettilo in pausa da Impostazioni.'**
-  String accountPauseEndedNoPlan(String date);
 
   /// No description provided for @consentGateTitle.
   ///
@@ -13711,12 +13651,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Altre possibilità'**
   String get consentGateOtherOptions;
-
-  /// No description provided for @consentGatePauseOrDelete.
-  ///
-  /// In it, this message translates to:
-  /// **'Metti in pausa o elimina l\'account'**
-  String get consentGatePauseOrDelete;
 }
 
 class _AppLocalizationsDelegate
@@ -13752,8 +13686,9 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

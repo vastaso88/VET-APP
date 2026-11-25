@@ -101,16 +101,19 @@ def test_the_routes_to_accept_leave_or_look_stay_open(world: _World) -> None:
     assert client.get("/account/age").status_code == 200
 
 
-def test_whoever_declines_a_new_version_can_still_pause_or_cancel_a_deletion(
+def test_whoever_declines_a_new_version_can_still_cancel_a_deletion_or_leave(
     world: _World,
 ) -> None:
+    """The pause of the account does not exist any more (owner, 25 November 2026): whoever does
+    not accept can download the data, delete the account or cancel a deletion already asked."""
     client = TestClient(app)
 
     assert client.get("/pets").status_code == 403
-    paused = client.post("/account/pause")
-    assert paused.status_code == 200 and paused.json()["paused"] is True
-    # The cancellation of a deletion was already open (the closed-account door).
+    # The cancellation of a deletion was already open (the closed-account door), and so is the
+    # deletion status the app reads.
     assert client.post("/account/deletion/cancel").status_code != 403
+    assert client.get("/account/deletion").status_code == 200
+    assert client.get("/account/export").status_code != 403
 
 
 def test_a_text_shown_at_another_version_is_refused_on_the_route_with_a_400(

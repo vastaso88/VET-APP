@@ -25,6 +25,19 @@ WAITING_SEQUENCE: tuple[str, ...] = (CONFIRMED, WEEK_LEFT, TOMORROW)
 
 _LEAD = {WEEK_LEFT: timedelta(days=7), TOMORROW: timedelta(days=1)}
 
+# After the day the erasure is due, how long it may still wait for the final notice to be
+# registered, when the notice did not go out because of OUR fault (the sender is down, a
+# password expired, a daily limit). Then the system erases by itself, writes why in the
+# register and tells the team. ONE place for the number; a proposal of the Normativa
+# (23 November) waiting for the owner's yes and the lawyer (docs/compliance/18 §8).
+MAX_WAIT_AFTER_DUE = timedelta(days=7)
+
+
+def final_notice(requested_at: datetime, purge_after: datetime) -> str:
+    """The last notice of the sequence that exists for this request: «tomorrow», or the
+    confirmation when the period was too short for any other."""
+    return TOMORROW if purge_after - _LEAD[TOMORROW] > requested_at else CONFIRMED
+
 
 def due_waiting_notice(
     requested_at: datetime,

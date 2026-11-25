@@ -1,19 +1,21 @@
-"""Account lifecycle: deletion, pause, declared age, export, eraser (QK-20, verbatim)."""
+"""Account lifecycle: deletion, declared age, export, eraser (QK-20, verbatim)."""
 
 from packages.bootstrap.container_state import ContainerState
 from packages.core.application.ports.account_age_repository import AccountAgeRepository
 from packages.core.application.ports.account_deletion_repository import AccountDeletionRepository
 from packages.core.application.ports.account_eraser import AccountEraser
 from packages.core.application.ports.account_exporter import AccountExporter
-from packages.core.application.ports.account_pause_repository import AccountPauseRepository
 from packages.core.application.services.account_deletion import AccountDeletionService
-from packages.core.application.services.account_pause import AccountPauseService
 from packages.core.application.services.age_gate import AgeGateService
 from packages.core.application.services.age_review_admin import AgeReviewAdminService
 from packages.core.application.services.delete_account import DeleteAccountService
 from packages.core.application.services.deletion_log import DeletionLogService
+from packages.core.application.services.exit_notices import ExitNoticeService
 from packages.core.application.services.export_account_data import ExportAccountDataService
+from packages.core.application.services.notice_mailer import NoticeConfig, NoticeMailer
 from packages.core.application.services.underage_review_dry_run import UnderageReviewDryRunService
+from packages.infrastructure.email.logo import quokka_head_png
+from packages.infrastructure.email.rules import check_recipient, parse_allowed_recipients
 from packages.infrastructure.persistence.in_memory_account_age_repository import (
     InMemoryAccountAgeRepository,
 )
@@ -22,9 +24,6 @@ from packages.infrastructure.persistence.in_memory_account_deletion_repository i
 )
 from packages.infrastructure.persistence.in_memory_account_eraser import InMemoryAccountEraser
 from packages.infrastructure.persistence.in_memory_account_exporter import InMemoryAccountExporter
-from packages.infrastructure.persistence.in_memory_account_pause_repository import (
-    InMemoryAccountPauseRepository,
-)
 from packages.infrastructure.persistence.in_memory_deletion_log import (
     InMemoryDeletionLogCopy,
     InMemoryDeletionLogRepository,
@@ -40,39 +39,43 @@ class AccountLifecycleWiring(ContainerState):
             self.account_consents_repository,
             self.pet_profile_repository,
             self.deletion_log_service,
+            self.notice_mailer(),
+            self.settings.email_notices_required,
         )
 
-    def account_pause_service(self) -> AccountPauseService:
-        return AccountPauseService(
-            self.account_pause_repository,
-            self.subscription_repository,
-            self.settings.pause_max_months,
-            self._build_account_eraser(),
-            self.deletion_log_service,
+    def notice_mailer(self) -> NoticeMailer:
+        """Writes the exit e-mails. Off unless EMAIL_SENDING_ENABLED is true; with the
+        legal wording (company, contact, links) taken only from the environment."""
+        settings = self.settings
+        return NoticeMailer(
+            self.email_sender,
+            self.owner_contact_lookup,
+            NoticeConfig(
+                legal_entity=settings.legal_entity_name,
+                contact=settings.support_contact_email,
+                login_url=settings.email_login_url,
+                privacy_url=settings.privacy_notice_url,
+                proof_years=settings.deletion_log_proof_years,
+            ),
+            settings.email_sending_enabled,
+            # The same guard as the real sender, asked before a notice is booked: reserved
+            # domains and the allow-list never get a booking, so they cost no writes.
+            recipient_check=lambda address: check_recipient(
+                address, parse_allowed_recipients(settings.email_allowed_recipients)
+            ),
+            logo=quokka_head_png(),
+        )
+
+    def exit_notice_service(self) -> ExitNoticeService:
+        return ExitNoticeService(
+            self.account_deletion_service(),
+            self.notice_mailer(),
+            self.settings.email_max_per_run,
         )
 
     def hidden_owner_ids(self) -> set[str]:
-        """Sellers whose ads are hidden: asked to delete, or paused."""
-        return self.account_deletion_repository.pending_owner_ids() | set(
-            self.account_pause_repository.paused_owner_ids()
-        )
-
-    def _build_account_pause_repository(self) -> AccountPauseRepository:
-        if self.settings.persistence_backend == "supabase":
-            try:
-                from packages.infrastructure.persistence.supabase.client import (
-                    build_supabase_client,
-                )
-                from packages.infrastructure.persistence.supabase.supabase_account_pause_repository import (  # noqa: E501
-                    SupabaseAccountPauseRepository,
-                )
-
-                return SupabaseAccountPauseRepository(build_supabase_client(self.settings))
-            except ModuleNotFoundError:
-                if self.settings.environment != "production":
-                    return InMemoryAccountPauseRepository()
-                raise
-        return InMemoryAccountPauseRepository()
+        """Sellers whose ads are hidden: asked to delete."""
+        return set(self.account_deletion_repository.pending_owner_ids())
 
     def _build_deletion_log_service(self) -> DeletionLogService:
         """The register of deletions: the table and a copy in a private bucket
@@ -156,7 +159,9 @@ class AccountLifecycleWiring(ContainerState):
         return InMemoryAccountAgeRepository()
 
     def delete_account_service(self) -> DeleteAccountService:
-        return DeleteAccountService(self._build_account_eraser(), self.deletion_log_service)
+        return DeleteAccountService(
+            self._build_account_eraser(), self.deletion_log_service, self.notice_mailer()
+        )
 
     def export_account_data_service(self) -> ExportAccountDataService:
         return ExportAccountDataService(self._build_account_exporter())

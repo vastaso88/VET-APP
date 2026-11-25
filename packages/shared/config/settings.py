@@ -92,13 +92,6 @@ class Settings(BaseSettings):
     # `consent_required`. OFF until the app that shows the acceptance screen is
     # distributed (the Orchestrator turns it on).
     consent_enforcement_enabled: bool = Field(default=False, alias="CONSENT_ENFORCEMENT_ENABLED")
-    # Pause (docs/compliance/18 §2): the most months an account may stay paused
-    # without a sign-in; then it is erased, after the warnings. NEVER empty: a
-    # missing limit is what art. 5(1)(e) GDPR forbids, so the range is enforced at
-    # start-up. The purge stays off until PAUSE_PURGE_ENABLED is true (the
-    # scheduler route only counts), and it also needs the e-mails to exist.
-    pause_max_months: int = Field(default=24, ge=12, le=36, alias="PAUSE_MAX_MONTHS")
-    pause_purge_enabled: bool = Field(default=False, alias="PAUSE_PURGE_ENABLED")
     # E-mail sending (docs/auth/02). OFF unless EMAIL_SENDING_ENABLED is true
     # (owner rule). The SMTP provider is the owner's choice: host and
     # credentials are only ever read from the environment.
@@ -109,6 +102,25 @@ class Settings(BaseSettings):
     smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
     smtp_use_ssl: bool = Field(default=False, alias="SMTP_USE_SSL")
     email_from: str = Field(default="", alias="EMAIL_FROM")
+    # The allow-list, kept as RAW TEXT because ABSENT and EMPTY mean different things:
+    #  - variable absent: no allow-list; EMAIL_SENDING_ENABLED alone decides;
+    #  - variable present (even empty, or with an entry that is not an address): an
+    #    allow-list is in force and, in case of doubt, allows NOBODY (nothing goes out).
+    # Parsed by packages.infrastructure.email.rules.parse_allowed_recipients. Reserved
+    # domains (example.com ...) are refused whatever this says.
+    email_allowed_recipients: str | None = Field(default=None, alias="EMAIL_ALLOWED_RECIPIENTS")
+    # What the exit e-mails (docs/compliance/18) say about who writes and where to sign in.
+    # None of it is written in the repository; all unset = no exit e-mail goes out.
+    legal_entity_name: str = Field(default="", alias="LEGAL_ENTITY_NAME")
+    email_login_url: str = Field(default="", alias="EMAIL_LOGIN_URL")
+    privacy_notice_url: str = Field(default="", alias="PRIVACY_NOTICE_URL")
+    # «Elimina» erases only once its final notice is registered (docs/compliance/18 §8).
+    # Turn it on TOGETHER with EMAIL_SENDING_ENABLED, never before: with it on and the
+    # sending off the erasing job refuses to run and raises the alarm. Off (the default),
+    # an account is erased when its period ends, as the app's texts say today.
+    email_notices_required: bool = Field(default=False, alias="EMAIL_NOTICES_REQUIRED")
+    # At most this many exit e-mails per scheduler run: the mailbox has a daily limit.
+    email_max_per_run: int = Field(default=20, ge=1, le=500, alias="EMAIL_MAX_PER_RUN")
     # Register of deletions (docs/security/03, 06). A row serves to apply an
     # erasure again while a backup that may hold the account exists: the
     # provider's backup days + 30 (7 + 30; check the plan). As proof the erasure

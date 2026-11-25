@@ -30,10 +30,16 @@ class SupabaseOwnerContactLookup(OwnerContactLookup):
         if user is None:
             return None
         email = getattr(user, "email", None)
+        metadata = getattr(user, "user_metadata", None)
+        metadata = metadata if isinstance(metadata, dict) else {}
+        name = metadata.get("display_name")
+        language = metadata.get("preferred_locale")
         return OwnerContact(
             email=email if isinstance(email, str) and email.strip() else None,
             email_confirmed=getattr(user, "email_confirmed_at", None) is not None,
             birth_date=self._declared_birth_date(owner_id),
+            display_name=name if isinstance(name, str) else None,
+            language=language if isinstance(language, str) else None,
         )
 
     def _declared_birth_date(self, owner_id: str) -> date | None:

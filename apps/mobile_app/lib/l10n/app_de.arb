@@ -4210,7 +4210,13 @@
   "remindersPreviousMonth": "Vorheriger Monat",
   "remindersNextMonth": "Nächster Monat",
   "remindersDayActivities": "{count, plural, =1{1 Erinnerung} other{{count} Erinnerungen}}",
-  "@remindersDayActivities": {"placeholders": {"count": {"type": "int"}}},
+  "@remindersDayActivities": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "remindersNotifOffBanner": "Benachrichtigungen sind deaktiviert: Erinnerungen geben keinen Ton aus",
   "remindersNotifOffAction": "Aktivieren",
   "authPhoneLabel": "Telefonnummer (optional)",
@@ -4421,39 +4427,8 @@
   "accountRestoreDeleteNow": "Jetzt löschen",
   "accountRestoreDeleteNowBody": "Wir löschen das Konto und Ihre Daten sofort und endgültig, ohne Wiederherstellungsmöglichkeit. Es bleiben einige Daten, zum Beispiel Rechnungen, die wir von Gesetzes wegen aufbewahren müssen, und ein Code ohne Ihren Namen und Ihre E-Mail-Adresse, der die Löschung belegt. Danach können Sie sich mit derselben E-Mail-Adresse neu registrieren.",
   "authRegisterEmailInUseRecoverHint": "Falls Sie es gerade erst gelöscht haben und die Wartezeit noch nicht abgelaufen ist, nutzen Sie „Konto wiederherstellen“: Sie können die Löschung abbrechen oder das Konto sofort löschen, um neu zu beginnen.",
-  "accountLeaveQuestion": "Was möchten Sie mit Ihrem Konto tun?",
-  "accountPauseOptionTitle": "Pausieren",
-  "accountPauseOptionBody": "Das Konto bleibt inaktiv, ohne Erinnerungen und Benachrichtigungen, und wir bewahren Ihre Daten auf, bis Sie zurückkehren, höchstens {months, plural, =1{1 Monat} other{{months} Monate}} ohne Anmeldung; danach löschen wir sie. Um zurückzukehren, melden Sie sich einfach mit derselben E-Mail-Adresse an.",
-  "@accountPauseOptionBody": {
-    "placeholders": {
-      "months": {
-        "type": "int"
-      }
-    }
-  },
   "accountDeleteOptionTitle": "Konto löschen",
   "accountDeleteOptionBody": "Wir deaktivieren es sofort. Eine Zeit lang können Sie es sich anders überlegen, indem Sie sich mit derselben E-Mail-Adresse anmelden; danach löschen wir Ihre Daten. Es bleiben einige Daten, zum Beispiel Rechnungen, die wir von Gesetzes wegen aufbewahren müssen, und ein Code ohne Ihren Namen und Ihre E-Mail-Adresse, der die Löschung belegt.",
-  "accountPauseSubmit": "Pausieren",
-  "accountPauseDone": "Ihr Konto ist pausiert. Wenn Sie sich nicht bis zum {date} anmelden, löschen wir es zusammen mit Ihren Daten. Um zurückzukehren, melden Sie sich einfach mit derselben E-Mail-Adresse an.",
-  "@accountPauseDone": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "accountPauseFailed": "Wir konnten das Konto nicht pausieren. Bitte versuchen Sie es gleich noch einmal.",
-  "accountPausedElsewhere": "Ihr Konto wurde auf einem anderen Gerät pausiert. Um es wieder zu aktivieren, melden Sie sich erneut mit derselben E-Mail-Adresse an.",
-  "accountPauseEndedTitle": "Die Pause ist beendet",
-  "accountPauseEndedBody": "Willkommen zurück: Ihr Konto ist wieder aktiv und Ihre Daten sind so, wie Sie sie verlassen haben.",
-  "accountPauseEndedNoPlan": "Sie haben keinen Tarif: Wir bewahren Ihre Daten bis zum {date} auf. Wählen Sie einen Tarif, um das Konto zu behalten, oder pausieren Sie es in den Einstellungen erneut.",
-  "@accountPauseEndedNoPlan": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
   "consentGateTitle": "Bevor Sie fortfahren",
   "consentGateBody": "Um Quokka zu nutzen, müssen Sie die Nutzungsbedingungen und die Datenschutzerklärung in der aktuellen Fassung akzeptieren. Sie können sie vor der Zustimmung lesen.",
   "consentGateContinue": "Akzeptieren und fortfahren",
@@ -4586,6 +4561,5 @@
   "authErrorLinkOtherDevice": "Dieser Link muss auf dem Gerät geöffnet werden, von dem Sie ihn angefordert haben. Wenn Sie Ihre Adresse bestätigen wollten, ist sie bereits bestätigt: Melden Sie sich mit E-Mail und Passwort an. Wenn Sie das Passwort zurücksetzen wollten, fordern Sie auf diesem Gerät einen neuen Link an.",
   "consentTextChanged": "Der Text hat sich geändert, während Sie ihn gelesen haben. Lesen Sie ihn noch einmal und stimmen Sie erneut zu.",
   "consentUpdateApp": "Zum Akzeptieren benötigen Sie die neueste Version der App: Aktualisieren Sie sie im Store.",
-  "consentGateOtherOptions": "Weitere Möglichkeiten",
-  "consentGatePauseOrDelete": "Konto pausieren oder löschen"
+  "consentGateOtherOptions": "Weitere Möglichkeiten"
 }

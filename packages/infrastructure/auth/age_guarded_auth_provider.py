@@ -19,7 +19,6 @@ from packages.core.application.ports.auth_provider import (
     AuthProvider,
     AuthSession,
 )
-from packages.core.application.services.account_pause import AccountPauseService
 from packages.core.domain.age.models import AgeBand, band_for
 from packages.core.domain.common.entity import utc_now
 from packages.core.domain.consent.account_consent_text import CURRENT_VERSIONS
@@ -96,7 +95,6 @@ class AgeGuardedAuthProvider(AuthProvider):
         inner: AuthProvider,
         repository: Callable[[], AccountAgeRepository],
         deletions: Callable[[], AccountDeletionRepository] | None = None,
-        pauses: Callable[[], AccountPauseService] | None = None,
         consents: Callable[[], AccountConsentsRepository] | None = None,
         enforce_consent: Callable[[], bool] | None = None,
         *,
@@ -106,7 +104,6 @@ class AgeGuardedAuthProvider(AuthProvider):
         self._inner = inner
         self._repository = repository
         self._deletions = deletions
-        self._pauses = pauses
         self._consents = consents
         self._enforce_consent = enforce_consent
         self._consent_missing: dict[str, tuple[frozenset[str], float]] = {}
@@ -118,12 +115,6 @@ class AgeGuardedAuthProvider(AuthProvider):
         user = self._inner.get_current_user()
         if not _allow_closed_account.get():
             code = self._block_for(user.id)
-            if code == "account_paused" and self._pauses is not None:
-                # A paused account is usable again from the first sign-in made after
-                # the pause began; the session that paused it is refused.
-                if self._pauses().resume_if_signed_in_again(user.id, self._inner.last_sign_in_at()):
-                    self.forget(user.id)
-                    code = None
             if code is not None:
                 raise AgeRestrictedError(code)
             if (
@@ -187,8 +178,6 @@ class AgeGuardedAuthProvider(AuthProvider):
                 code = "under_minimum_age"
             elif self._deletions is not None and self._deletions().get(owner_id) is not None:
                 code = "account_deactivated"
-            elif self._pauses is not None and self._pauses().is_paused(owner_id):
-                code = "account_paused"
         except Exception:  # noqa: BLE001 - fail open, see the class docstring
             logger.warning("could not read the account gate", exc_info=False)
             return None

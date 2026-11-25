@@ -89,7 +89,6 @@ class RetentionDryRunReport(BaseModel):
     # request is waiting) or paused the account: neither is written to, and
     # both are checked again when the real job sends and erases.
     deletion_pending: int = 0
-    paused: int = 0
     lookups_skipped: int = 0
     # Notices that would go out now, by day after D ("0", "30", ... "119").
     notices_due: dict[str, int] = Field(
@@ -134,7 +133,6 @@ class RetentionDryRunService:
         *,
         test_plan: str | None = None,
         pending_deletions: Callable[[], Iterable[str]] | None = None,
-        paused: Callable[[], Iterable[str]] | None = None,
     ) -> None:
         self._subscriptions = subscriptions
         self._contacts = contacts
@@ -142,12 +140,10 @@ class RetentionDryRunService:
         self._consents = consents
         self._data_counter = data_counter
         self._test_plan = test_plan
-        # Owners who asked to leave, and owners who paused, read in one go
-        # per run. A failure to read either list is NOT swallowed: with the
-        # real job a list that cannot be read must stop the run, never let it
-        # write to someone who asked to leave.
+        # Owners who asked to leave, read in one go per run. A failure to read the list is
+        # NOT swallowed: with the real job a list that cannot be read must stop the run,
+        # never let it write to someone who asked to leave.
         self._pending_deletions = pending_deletions
-        self._paused = paused
 
     def execute(self, *, now: datetime | None = None) -> RetentionDryRunReport:
         now = now or utc_now()
@@ -156,7 +152,6 @@ class RetentionDryRunService:
             return report
 
         asked_to_leave = frozenset(self._pending_deletions() if self._pending_deletions else ())
-        paused = frozenset(self._paused() if self._paused else ())
         lookups = 0
         for subscription in self._subscriptions.list_without_plan():
             report.accounts_without_plan += 1
@@ -164,13 +159,10 @@ class RetentionDryRunService:
                 report.trial_running += 1
                 continue
 
-            # Their own request comes first, then the pause: neither goes on to
-            # the sequence, so no e-mail, no clock and no erasure from this job.
+            # Their own request comes first: it does not go on to the sequence, so no
+            # e-mail, no clock and no erasure from this job.
             if subscription.owner_id in asked_to_leave:
                 report.deletion_pending += 1
-                continue
-            if subscription.owner_id in paused:
-                report.paused += 1
                 continue
 
             report.access_lost += 1

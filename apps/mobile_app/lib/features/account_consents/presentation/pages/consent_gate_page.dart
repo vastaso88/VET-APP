@@ -123,9 +123,9 @@ class _ConsentGatePageState extends State<ConsentGatePage> {
         .pushNamedAndRemoveUntil(AppRouter.auth, (route) => false);
   }
 
-  /// Whoever does not accept the new text can still leave with their data: download them,
-  /// put the account in pause or delete it (pages and routes that already exist; the server
-  /// keeps them open while a consent is missing).
+  /// Whoever does not accept the new text can still leave with their data: download them or
+  /// delete the account (pages and routes that already exist; the server keeps them open while
+  /// a consent is missing).
   Future<void> _otherOptions() async {
     final l10n = context.l10n;
     await showModalBottomSheet<void>(
@@ -144,8 +144,8 @@ class _ConsentGatePageState extends State<ConsentGatePage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.pause_circle_outline_rounded),
-              title: Text(l10n.consentGatePauseOrDelete),
+              leading: const Icon(Icons.delete_forever_outlined),
+              title: Text(l10n.settingsAccountDelete),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 _openPage(const DeleteAccountPage());

@@ -46,45 +46,20 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
   tearDown(AgeStore.restoreDefault);
 
-  testWidgets('neither road is chosen at first: no password, no button', (tester) async {
-    await tester.pumpWidget(_app());
-    await tester.pump();
-
-    expect(find.text('Cosa vuoi fare con il tuo account?'), findsOneWidget);
-    expect(find.text('Metti in pausa'), findsOneWidget); // only the card title
-    expect(find.text("Elimina l'account"), findsOneWidget);
-    expect(find.byType(TextFormField), findsNothing);
-    expect(find.byType(FilledButton), findsNothing);
-  });
-
-  testWidgets('choosing the pause shows its button and asks for no password', (tester) async {
-    await tester.pumpWidget(_app());
-    await tester.pump();
-
-    await tester.tap(find.text('Metti in pausa'));
-    await tester.pump();
-
-    // The card title and the button.
-    expect(find.text('Metti in pausa'), findsNWidgets(2));
-    expect(find.byType(FilledButton), findsOneWidget);
-    expect(find.byType(TextFormField), findsNothing);
-  });
-
-  testWidgets('choosing "Elimina" shows the password and the confirmation, not the pause', (
+  testWidgets('the page is the deletion, at once: password and confirmation, no pause', (
     tester,
   ) async {
     await tester.pumpWidget(_app());
     await tester.pump();
 
-    await tester.tap(find.text("Elimina l'account"));
-    await tester.pump();
-
     expect(find.byType(TextFormField), findsOneWidget);
     expect(find.byType(CheckboxListTile), findsOneWidget);
-    expect(find.text('Metti in pausa'), findsOneWidget); // the card only, no pause button
+    // The pause of the account does not exist any more (owner, 25 November 2026).
+    expect(find.textContaining('pausa'), findsNothing);
+    expect(find.text('Cosa vuoi fare con il tuo account?'), findsNothing);
   });
 
-  testWidgets('a closed account (under the minimum age) is not offered the pause', (
+  testWidgets('a closed account (under the minimum age) sees the same deletion page', (
     tester,
   ) async {
     AgeStore.useForTest(_AgeBackend(AgeBand.underMinimum));
@@ -94,7 +69,7 @@ void main() {
     await tester.pumpWidget(_app());
     await tester.pump();
 
-    expect(find.text('Metti in pausa'), findsNothing);
-    expect(find.text("Elimina l'account"), findsOneWidget);
+    expect(find.byType(TextFormField), findsOneWidget);
+    expect(find.textContaining('pausa'), findsNothing);
   });
 }

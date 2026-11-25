@@ -17,3 +17,7 @@ class AccountDeletionRequest(BaseModel):
     requested_at: datetime
     # The moment from which the account may be erased for good.
     purge_after: datetime
+    # The last e-mail notice of the sequence already sent (docs/compliance/18 §5), or None.
+    last_notice: str | None = None
+    # When that notice was booked (just before sending): the erasure waits 20 hours from it.
+    last_notice_at: datetime | None = None
