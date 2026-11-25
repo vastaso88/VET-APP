@@ -1,52 +1,101 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../design_system/responsive.dart';
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
-import '../../../../l10n/date_formats.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_user.dart';
-import '../../../local_events/presentation/pages/local_events_page.dart';
+import '../../../account_consents/application/chat_notice.dart';
+import '../../../chat/data/chat_demo_store.dart';
+import '../../../chat/presentation/start_chat.dart';
+import '../../../dog_walks/data/walk_home_widget.dart';
 import '../../../pet_news/data/pet_news_repository.dart';
 import '../../../pet_news/domain/pet_news_item.dart';
 import '../../../pet_news/presentation/pages/news_feed_page.dart';
-import '../../../pet_news/presentation/widgets/pet_news_card.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
-import '../../../pets/presentation/widgets/pet_avatar.dart';
+import '../../../pets/presentation/pages/pet_create_page.dart';
+import '../../../pets/presentation/pages/pet_detail_page.dart';
 import '../../../reminders/data/reminders_repository.dart';
-import '../../../reminders/domain/reminder_calendar.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
-import '../../../../shared/date/calendar_days.dart';
 import '../../../settings/data/layout_settings_store.dart';
-import '../../../../shared/widgets/pet_loader.dart';
-import '../widgets/home_dashboard_primitives.dart';
+import '../widgets/home_ask_quokka_band.dart';
+import '../widgets/home_calendar_section.dart';
+import '../widgets/home_news_section.dart';
+import '../widgets/home_pets_section.dart';
 
+export '../widgets/home_calendar_section.dart' show HomeDayChip, homeCalendarDays;
+
+/// Home: the owner's animals, the way into the chat, the calendar, the stories.
 class HomeDashboardPage extends StatefulWidget {
-  const HomeDashboardPage({super.key});
+  const HomeDashboardPage({
+    super.key,
+    this.petNewsRepository,
+    this.remindersRepository,
+    this.noticeGate = ChatNotice.ensure,
+    this.onOpenNews,
+    this.clock = DateTime.now,
+  });
+
+  /// Only for tests, like the rest: the page uses the app's own otherwise.
+  final PetNewsRepository? petNewsRepository;
+  final RemindersRepository? remindersRepository;
+
+  /// Asks, once, that Quokka does not handle emergencies (see [ChatNotice]).
+  final Future<bool> Function(BuildContext context) noticeGate;
+
+  /// Opens a story; by default in the browser.
+  final ValueChanged<PetNewsItem>? onOpenNews;
+
+  final DateTime Function() clock;
 
   @override
   State<HomeDashboardPage> createState() => _HomeDashboardPageState();
 }
 
 class _HomeDashboardPageState extends State<HomeDashboardPage> {
-  final _remindersRepository = RemindersRepository();
-  final _petNewsRepository = BackendPetNewsRepository();
+  late final RemindersRepository _remindersRepository =
+      widget.remindersRepository ?? RemindersRepository();
+  late final PetNewsRepository _petNewsRepository =
+      widget.petNewsRepository ?? BackendPetNewsRepository();
 
   late Future<List<PetNewsItem>> _petNewsFuture;
+
+  /// False until the first read of the animals has ended, well or badly: before
+  /// that an empty list does not mean "no animal".
+  bool _petsChecked = false;
+
+  bool _asking = false;
+  bool _openingChat = false;
+
+  /// The longest a tap on "Chiedi a Quokka" waits for the stored chats (they
+  /// count for the limit per animal).
+  static const _chatsWait = Duration(seconds: 4);
 
   @override
   void initState() {
     super.initState();
+    unawaited(_loadPets());
     _petNewsFuture = _loadPetNews();
     // Fire-and-forget: LayoutSettingsStore is a ChangeNotifier, so once the
-    // persisted preference finishes loading it notifies _AgendaSection's
+    // persisted preference finishes loading it notifies the calendar's
     // ListenableBuilder directly — no need to await it here.
     unawaited(LayoutSettingsStore.instance.ensureLoaded());
+  }
+
+  Future<void> _loadPets() async {
+    try {
+      await PetDemoStore.instance.ensureHydrated();
+    } catch (_) {}
+    if (mounted) setState(() => _petsChecked = true);
+  }
+
+  void _retryPets() {
+    setState(() => _petsChecked = false);
+    unawaited(_loadPets());
   }
 
   /// Always exactly 4 cards when the fetched data allows it: the 3rd slot
@@ -107,9 +156,67 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     );
   }
 
+  Future<void> _openPet(PetProfile pet) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => PetDetailPage(pet: pet)),
+    );
+    _syncHomeWidget();
+  }
+
+  Future<void> _addPet() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const PetCreatePage()),
+    );
+    _syncHomeWidget();
+  }
+
+  /// The phone's home-screen widget lists the animals too (as the Animali page
+  /// does after the same two pages).
+  void _syncHomeWidget() => unawaited(syncPetsToHomeWidget(PetDemoStore.instance.list()));
+
+  /// One animal: a new chat about it. More: which one, first.
+  Future<void> _askQuokka() async {
+    if (_asking) return;
+    _asking = true;
+    try {
+      final pets = PetDemoStore.instance.list();
+      if (pets.isEmpty) return;
+      final pet = pets.length == 1 ? pets.single : await showHomePetPicker(context, pets);
+      if (pet == null || !mounted) return;
+      setState(() => _openingChat = true);
+      try {
+        await ChatDemoStore.instance.ensureHydrated().timeout(_chatsWait);
+      } catch (_) {
+        // The chats could not be read: the server still holds the limit.
+      }
+      if (!mounted) return;
+      await startChatWithPet(
+        context,
+        petId: pet.id,
+        petName: pet.name,
+        noticeGate: widget.noticeGate,
+      );
+    } finally {
+      _asking = false;
+      if (mounted) setState(() => _openingChat = false);
+    }
+  }
+
+  void _openNews(PetNewsItem item) {
+    final open = widget.onOpenNews;
+    if (open != null) {
+      open(item);
+      return;
+    }
+    launchUrl(Uri.parse(item.sourceUrl), webOnlyWindowName: '_blank');
+  }
+
   @override
   Widget build(BuildContext context) {
     final ownerName = CurrentUser.firstName(fallback: context.l10n.sharedGuestName);
+    // A short phone gets a little less air, so the calendar is reached sooner.
+    final compact = MediaQuery.sizeOf(context).width <= 375;
+    final sectionGap = SizedBox(height: compact ? AppSpacing.lg + AppSpacing.xs : AppSpacing.xl);
 
     return SizedBox.expand(
       child: Container(
@@ -122,9 +229,9 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
+            padding: EdgeInsets.fromLTRB(
               AppSpacing.lg,
-              AppSpacing.xl,
+              compact ? AppSpacing.lg : AppSpacing.xl,
               AppSpacing.lg,
               AppSpacing.xxxl,
             ),
@@ -132,17 +239,32 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 720),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(context.l10n.homeGreeting, style: AppTextStyles.caption),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(ownerName, style: AppTextStyles.display),
-                    const SizedBox(height: AppSpacing.xxl),
-                    _AgendaSection(repository: _remindersRepository),
-                    const SizedBox(height: AppSpacing.xxl),
-                    _PetNewsSection(petNewsFuture: _petNewsFuture, onRetry: _retryPetNews),
-                    const SizedBox(height: AppSpacing.xxl),
-                    const _LocalEventsNotice(),
+                    Text(context.l10n.homeGreeting, style: AppTextStyles.bodySmall),
+                    Text(ownerName, style: AppTextStyles.display.copyWith(fontSize: 32)),
+                    const SizedBox(height: AppSpacing.lg),
+                    ValueListenableBuilder<int>(
+                      valueListenable: PetDemoStore.changes,
+                      builder: (context, _, __) => _petsAndChat(context),
+                    ),
+                    sectionGap,
+                    HomeCalendarSection(
+                      repository: _remindersRepository,
+                      clock: widget.clock,
+                      onOpenReminders: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(builder: (_) => const RemindersListPage()),
+                      ),
+                    ),
+                    sectionGap,
+                    HomeNewsSection(
+                      news: _petNewsFuture,
+                      onRetry: _retryPetNews,
+                      onOpen: _openNews,
+                      onMore: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(builder: (_) => const NewsFeedPage()),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -150,6 +272,37 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _petsAndChat(BuildContext context) {
+    final store = PetDemoStore.instance;
+    final pets = store.list();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        HomePetsSection(
+          pets: pets,
+          loading: !_petsChecked,
+          failed: store.lastHydrationFailed,
+          onlyMemories: store.memorialPets().isNotEmpty,
+          onOpenPet: (pet) => unawaited(_openPet(pet)),
+          onAdd: () => unawaited(_addPet()),
+          onRetry: _retryPets,
+        ),
+        // A chat is always about an animal: without one there is nothing to open.
+        if (pets.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.md),
+          HomeAskQuokkaBand(
+            // With one animal there is nothing to choose: the chat opens straight on it.
+            subtitle: pets.length == 1
+                ? context.l10n.chatComposerHint(pets.single.name)
+                : context.l10n.remindersChoosePet,
+            opening: _openingChat,
+            onTap: () => unawaited(_askQuokka()),
+          ),
+        ],
+      ],
     );
   }
 }
@@ -225,535 +378,4 @@ List<PetNewsItem> selectHomeNewsSlots({
     result.insert(result.length >= 2 ? 2 : result.length, generic);
   }
   return result;
-}
-
-/// The days of the home calendar strip: [weeksShown] full weeks starting from
-/// the week of [today]. Calendar arithmetic, so the clock change of 29/03 and
-/// 25/10 never repeats or skips a date.
-@visibleForTesting
-List<DateTime> homeCalendarDays(
-    DateTime today, int weeksShown, WeekStartDay weekStartDay) {
-  final weekStart = _startOfWeek(today, weekStartDay);
-  return List.generate(weeksShown * 7, (i) => addCalendarDays(weekStart, i));
-}
-
-DateTime _startOfWeek(DateTime day, WeekStartDay weekStartDay) {
-  final startOfDay = DateTime(day.year, day.month, day.day);
-  final offset = weekStartDay == WeekStartDay.monday
-      ? startOfDay.weekday - 1
-      : startOfDay.weekday % 7;
-  return addCalendarDays(startOfDay, -offset);
-}
-
-class _AgendaSection extends StatefulWidget {
-  const _AgendaSection({required this.repository});
-
-  final RemindersRepository repository;
-
-  @override
-  State<_AgendaSection> createState() => _AgendaSectionState();
-}
-
-class _AgendaSectionState extends State<_AgendaSection> {
-  int? _tick;
-  Future<List<ReminderEntry>>? _future;
-
-  /// One read per change of the reminders: a rebuild for any other reason
-  /// (layout, pets) keeps the same Future, so the calendar never goes back to
-  /// the loader on its own.
-  Future<List<ReminderEntry>> _futureFor(int tick) {
-    if (_future == null || _tick != tick) {
-      _tick = tick;
-      _future = widget.repository.loadActiveReminders();
-    }
-    return _future!;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: LayoutSettingsStore.instance,
-      builder: (context, _) {
-        final layout = LayoutSettingsStore.instance.settings;
-
-        // Home stays alive under the bottom-nav IndexedStack (never
-        // disposed/rebuilt on tab switch), so a one-shot Future loaded in
-        // initState never saw a reminder created elsewhere. Listening to
-        // RemindersRepository.changes and re-fetching on every tick keeps
-        // the calendar in sync no matter where the reminder was added.
-        return ValueListenableBuilder<int>(
-          valueListenable: RemindersRepository.changes,
-          builder: (context, tick, __) {
-            return FutureBuilder<List<ReminderEntry>>(
-              future: _futureFor(tick),
-              builder: (context, snapshot) {
-                // The loader only while there is nothing to show yet: a reload
-                // keeps the previous calendar on screen.
-                if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      DashboardSectionHeader(
-                        title: context.l10n.homeAgendaTitle,
-                        subtitle: context.l10n.homeAgendaLoadingSubtitle,
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      const _SectionLoader(),
-                    ],
-                  );
-                }
-
-                final reminders = (snapshot.data ?? const <ReminderEntry>[])
-                    .where((r) => !r.isDone)
-                    .toList(growable: false)
-                  ..sort((a, b) => a.dueAt.compareTo(b.dueAt));
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    DashboardSectionHeader(
-                      title: context.l10n.homeAgendaTitle,
-                      subtitle: _summaryLine(context, reminders),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    ValueListenableBuilder<int>(
-                      valueListenable: PetDemoStore.changes,
-                      builder: (context, _, __) {
-                        final pets = PetDemoStore.instance.list();
-                        final legendPets = _petsWithVisibleActivity(
-                          reminders,
-                          pets,
-                          layout.weeksShown,
-                          layout.weekStartDay,
-                        );
-                        return DashboardSurfaceCard(
-                          backgroundColor: AppColors.surfaceElevated,
-                          padding: const EdgeInsets.all(AppSpacing.lg),
-                          // The whole calendar is the entry point into the full
-                          // reminders view now — no separate "Vedi tutti" link.
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                                builder: (_) => const RemindersListPage()),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _WeekStrip(
-                                reminders: reminders,
-                                pets: pets,
-                                weeksShown: layout.weeksShown,
-                                weekStartDay: layout.weekStartDay,
-                              ),
-                              if (legendPets.isNotEmpty) ...[
-                                const SizedBox(height: AppSpacing.md),
-                                _PetLegend(pets: legendPets),
-                              ],
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        );
-      },
-    );
-  }
-
-  /// Fixed 10-day window, deliberately independent of the "weeks shown"
-  /// layout setting, which only governs the calendar strip above. Courses
-  /// aren't counted here — they're ongoing rather than "upcoming", and are
-  /// shown on the calendar as capsule markers instead.
-  String _summaryLine(BuildContext context, List<ReminderEntry> reminders) {
-    final today = DateTime.now();
-    final startOfToday = DateTime(today.year, today.month, today.day);
-    final endOfWindow = addCalendarDays(startOfToday, 10);
-
-    final count = reminders.where((r) {
-      if (r.kind == EventKind.course) return false;
-      final d = DateTime(r.dueAt.year, r.dueAt.month, r.dueAt.day);
-      return !d.isBefore(startOfToday) && !d.isAfter(endOfWindow);
-    }).length;
-
-    return context.l10n.homeAgendaSummary(count);
-  }
-}
-
-/// Distinct pets with at least one calendar marker somewhere in the
-/// currently visible weeks — used to build the calendar's color legend.
-List<PetProfile> _petsWithVisibleActivity(
-  List<ReminderEntry> reminders,
-  List<PetProfile> pets,
-  int weeksShown,
-  WeekStartDay weekStartDay,
-) {
-  final today = DateTime.now();
-  final weekStart =
-      _startOfWeek(DateTime(today.year, today.month, today.day), weekStartDay);
-  final activeIds = <String>{};
-  for (var i = 0; i < weeksShown * 7; i++) {
-    final day = addCalendarDays(weekStart, i);
-    for (final reminder in reminders) {
-      if (!reminderActiveOnDay(reminder, day)) continue;
-      final pet = petByName(pets, reminder.petName);
-      if (pet != null) activeIds.add(pet.id);
-    }
-  }
-  return pets
-      .where((pet) => activeIds.contains(pet.id))
-      .toList(growable: false);
-}
-
-class _WeekStrip extends StatelessWidget {
-  const _WeekStrip({
-    required this.reminders,
-    required this.pets,
-    required this.weeksShown,
-    required this.weekStartDay,
-  });
-
-  final List<ReminderEntry> reminders;
-  final List<PetProfile> pets;
-  final int weeksShown;
-  final WeekStartDay weekStartDay;
-
-  /// One-letter weekday headers in the app language ("L M M G V S D" in
-  /// Italian), Monday first.
-  static List<String> _mondayFirstLabels() => [
-        for (final name in appShortWeekdaysMondayFirst()) _initial(name),
-      ];
-
-  static List<String> _sundayFirstLabels() {
-    final monday = _mondayFirstLabels();
-    return [monday.last, ...monday.sublist(0, 6)];
-  }
-
-  static String _initial(String name) =>
-      name.isEmpty ? '' : String.fromCharCode(name.runes.first).toUpperCase();
-
-  @override
-  Widget build(BuildContext context) {
-    final today = DateTime.now();
-    final startOfToday = DateTime(today.year, today.month, today.day);
-    final labels = weekStartDay == WeekStartDay.monday
-        ? _mondayFirstLabels()
-        : _sundayFirstLabels();
-    final days = homeCalendarDays(startOfToday, weeksShown, weekStartDay);
-
-    return Column(
-      children: [
-        for (var week = 0; week < weeksShown; week++) ...[
-          if (week != 0) const SizedBox(height: AppSpacing.xs),
-          Row(
-            children: [
-              for (var i = 0; i < 7; i++) ...[
-                Builder(
-                  builder: (context) {
-                    final day = days[week * 7 + i];
-                    return Expanded(
-                      child: HomeDayChip(
-                        day: day,
-                        label: labels[i],
-                        isToday: isSameDay(day, startOfToday),
-                        markers: markersForDay(reminders, pets, day),
-                      ),
-                    );
-                  },
-                ),
-                if (i != 6) const SizedBox(width: 3),
-              ],
-            ],
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-/// One day of the home calendar strip. Public only so a test can pump it.
-@visibleForTesting
-class HomeDayChip extends StatelessWidget {
-  const HomeDayChip({
-    super.key,
-    required this.day,
-    required this.label,
-    required this.isToday,
-    required this.markers,
-  });
-
-  final DateTime day;
-  final String label;
-  final bool isToday;
-  final List<DayMarker> markers;
-
-  @override
-  Widget build(BuildContext context) {
-    final background = isToday ? AppColors.secondarySoft : Colors.transparent;
-    const foreground = AppColors.text;
-    final shown = markers.take(2).toList();
-    final extra = markers.length - shown.length;
-
-    // Scaled with the same appScaleOf() rule as MarkerGlyph and PetAvatar
-    // (see design_system/responsive.dart) — this chip packs a label, a day
-    // number and a row of markers into a tight column, so on a screen wider
-    // than the reference width the markers (which already scale up inside
-    // MarkerGlyph) were previously clipped by this chip's own fixed-size
-    // text and marker-row height staying pinned to the reference size.
-    final scale = appScaleOf(context);
-
-    // Spoken as "19, 2 promemoria", not as the letter, the number and the
-    // marker glyphs one by one.
-    return Semantics(
-      label: markers.isEmpty
-          ? '${day.day}'
-          : '${day.day}, ${context.l10n.remindersDayActivities(markers.length)}',
-      excludeSemantics: true,
-      child: Container(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: isToday
-            ? Border.all(color: AppColors.primary.withValues(alpha: 0.4))
-            : null,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: AppTextStyles.caption.copyWith(
-              color: foreground.withValues(alpha: 0.7),
-              fontSize: 12 * scale,
-            ),
-          ),
-          const SizedBox(height: 1),
-          Text(
-            '${day.day}',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: foreground,
-              fontWeight: FontWeight.w700,
-              fontSize: 17 * scale,
-            ),
-          ),
-          const SizedBox(height: 2),
-          SizedBox(
-            height: 11 * scale,
-            child: markers.isEmpty
-                ? null
-                : Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (final marker in shown)
-                        MarkerGlyph(marker: marker, size: 9),
-                      if (extra > 0)
-                        Text(
-                          '+$extra',
-                          style: TextStyle(
-                            fontSize: 8 * scale,
-                            fontWeight: FontWeight.w800,
-                            color: foreground,
-                          ),
-                        ),
-                    ],
-                  ),
-          ),
-        ],
-      ),
-      ),
-    );
-  }
-}
-
-class _PetLegend extends StatelessWidget {
-  const _PetLegend({required this.pets});
-
-  final List<PetProfile> pets;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: AppSpacing.md,
-      runSpacing: AppSpacing.sm,
-      children: [
-        for (final pet in pets)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              PetAvatar(
-                label: pet.avatarEmoji,
-                backgroundColor: pet.accentColor,
-                photoBytes: pet.photoBytes,
-                photoPath: pet.photoPath,
-                identityColor: pet.identityColor,
-                size: 30,
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 110),
-                child: Text(
-                  pet.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodySmall.copyWith(
-                      fontWeight: FontWeight.w600, color: AppColors.text),
-                ),
-              ),
-            ],
-          ),
-      ],
-    );
-  }
-}
-
-class _PetNewsSection extends StatelessWidget {
-  const _PetNewsSection({required this.petNewsFuture, required this.onRetry});
-
-  final Future<List<PetNewsItem>> petNewsFuture;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        DashboardSectionHeader(
-          title: context.l10n.homeNewsTitle,
-          subtitle: context.l10n.homeNewsSubtitle,
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        FutureBuilder<List<PetNewsItem>>(
-          future: petNewsFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const _SectionLoader();
-            }
-
-            final items = snapshot.data ?? const <PetNewsItem>[];
-            if (items.isEmpty) {
-              final served = petNewsEditionServed();
-              return DashboardSurfaceCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      // Edition without feeds yet: say so instead of "try later".
-                      served ? context.l10n.homeNewsUnavailable : context.l10n.petNewsEmptyLocal,
-                      style: AppTextStyles.bodySmall,
-                    ),
-                    if (served) ...[
-                      const SizedBox(height: AppSpacing.sm),
-                      TextButton.icon(
-                        key: const ValueKey('home-news-retry'),
-                        onPressed: onRetry,
-                        icon: const Icon(Icons.refresh_rounded, size: 18),
-                        label: Text(context.l10n.commonRetry),
-                      ),
-                    ],
-                  ],
-                ),
-              );
-            }
-
-            return Column(
-              children: [
-                for (final item in items) ...[
-                  PetNewsCard(item: item),
-                  const SizedBox(height: AppSpacing.md),
-                ],
-                _MoreNewsButton(
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                        builder: (_) => const NewsFeedPage()),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class _MoreNewsButton extends StatelessWidget {
-  const _MoreNewsButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: onTap,
-        icon: const Icon(Icons.newspaper_outlined, size: 18),
-        label: Text(context.l10n.homeNewsMore),
-      ),
-    );
-  }
-}
-
-class _LocalEventsNotice extends StatefulWidget {
-  const _LocalEventsNotice();
-
-  @override
-  State<_LocalEventsNotice> createState() => _LocalEventsNoticeState();
-}
-
-class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
-  @override
-  Widget build(BuildContext context) {
-    return DashboardSurfaceCard(
-      tone: DashboardTone.info,
-      padding: const EdgeInsets.all(AppSpacing.md),
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const LocalEventsPage()),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 34,
-            height: 34,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.info.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(AppRadii.medium),
-            ),
-            child:
-                const Icon(Icons.map_outlined, size: 18, color: AppColors.info),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Text(
-              context.l10n.homeNearbyTitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.bodySmall.copyWith(
-                  fontWeight: FontWeight.w600, color: AppColors.text),
-            ),
-          ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
-        ],
-      ),
-    );
-  }
-}
-
-/// While a section of Home loads: the spinning animal, never an empty grey box.
-class _SectionLoader extends StatelessWidget {
-  const _SectionLoader();
-
-  @override
-  Widget build(BuildContext context) {
-    return const DashboardSurfaceCard(
-      child: SizedBox(
-        height: 96,
-        child: Center(child: PetLoader()),
-      ),
-    );
-  }
 }

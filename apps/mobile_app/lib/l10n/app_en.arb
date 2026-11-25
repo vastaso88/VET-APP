@@ -954,6 +954,7 @@
   "medicalChecklistMetadata": "Metadata extracted",
   "medicalChecklistLinkedPet": "Linked to the active pet",
   "homeGreeting": "Good morning",
+  "homeAskQuokka": "Ask Quokka",
   "homeAgendaTitle": "Your calendar",
   "homeAgendaLoadingSubtitle": "One-off and recurring activities for all pets.",
   "homeAgendaSummary": "{count} activities in the next 10 days",

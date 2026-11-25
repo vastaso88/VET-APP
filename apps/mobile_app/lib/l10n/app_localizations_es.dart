@@ -1870,6 +1870,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeGreeting => 'Buenos días';
 
   @override
+  String get homeAskQuokka => 'Pregunta a Quokka';
+
+  @override
   String get homeAgendaTitle => 'Tu calendario';
 
   @override

@@ -3236,6 +3236,12 @@ abstract class AppLocalizations {
   /// **'Buongiorno'**
   String get homeGreeting;
 
+  /// No description provided for @homeAskQuokka.
+  ///
+  /// In it, this message translates to:
+  /// **'Chiedi a Quokka'**
+  String get homeAskQuokka;
+
   /// No description provided for @homeAgendaTitle.
   ///
   /// In it, this message translates to:

@@ -29,9 +29,47 @@ bool reminderActiveOnDay(ReminderEntry reminder, DateTime day) {
 enum MarkerShape { dot, pill }
 
 class DayMarker {
-  const DayMarker({required this.color, required this.shape});
+  const DayMarker({required this.color, required this.shape, this.initial = ''});
   final Color color;
   final MarkerShape shape;
+
+  /// First letter of the animal's name; empty when the marker has no letter.
+  final String initial;
+}
+
+/// The animal [reminder] is about: by id, or by name for one just created on
+/// this phone (it has no id yet).
+PetProfile? petOfReminder(List<PetProfile> pets, ReminderEntry reminder) {
+  final id = reminder.petId;
+  if (id != null) {
+    for (final pet in pets) {
+      if (pet.id == id) return pet;
+    }
+  }
+  return petByName(pets, reminder.petName);
+}
+
+/// One marker per activity of [day] (not per pet, as in [markersForDay]), with
+/// the animal's initial: what Home counts. An activity whose animal is not
+/// known here still counts.
+List<DayMarker> activityMarkersForDay(
+  List<ReminderEntry> reminders,
+  List<PetProfile> pets,
+  DateTime day,
+) {
+  return [
+    for (final reminder in reminders)
+      if (reminderActiveOnDay(reminder, day)) _activityMarker(reminder, petOfReminder(pets, reminder)),
+  ];
+}
+
+DayMarker _activityMarker(ReminderEntry reminder, PetProfile? pet) {
+  final name = (pet?.name ?? reminder.petName).trim();
+  return DayMarker(
+    color: pet?.identityColor ?? AppColors.secondary,
+    shape: reminder.kind == EventKind.course ? MarkerShape.pill : MarkerShape.dot,
+    initial: name.isEmpty ? '' : name.characters.first.toUpperCase(),
+  );
 }
 
 /// Distinct per-pet markers for [day]: a dot for spot/recurring reminders

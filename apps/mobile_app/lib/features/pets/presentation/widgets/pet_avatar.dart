@@ -5,6 +5,53 @@ import 'package:flutter/material.dart';
 import '../../../../design_system/responsive.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../data/pet_photo_repository.dart';
+import '../../domain/pet_models.dart';
+import 'species_figure.dart';
+
+/// Side on screen of a [PetRingAvatar] of [size].
+double petRingAvatarExtent(BuildContext context, double size) => size * appScaleOf(context);
+
+/// The pet's face in a ring of its own colour: its photo or, without one, the
+/// simple figure of its species.
+class PetRingAvatar extends StatelessWidget {
+  const PetRingAvatar({super.key, required this.pet, this.size = 48});
+
+  final PetProfile pet;
+  final double size;
+
+  static const _ring = 3.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final extent = petRingAvatarExtent(context, size);
+    final inner = extent - 2 * _ring;
+    final figure = SpeciesFigure(species: pet.species, breed: pet.breed, size: inner);
+
+    final photo = pet.photoBytes;
+    final path = pet.photoPath;
+    final Widget face;
+    if (photo != null) {
+      face = Image.memory(photo, width: inner, height: inner, fit: BoxFit.cover);
+    } else if (path != null) {
+      face = _StoredPetPhoto(path: path, size: inner, fallback: figure);
+    } else {
+      face = figure;
+    }
+
+    return ExcludeSemantics(
+      child: Container(
+        width: extent,
+        height: extent,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: pet.identityColor, width: _ring),
+        ),
+        child: ClipOval(child: face),
+      ),
+    );
+  }
+}
 
 /// A pet's avatar: a big circle holding either its photo or its initial
 /// letter, with a colored identity badge on its bottom-right edge so the

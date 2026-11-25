@@ -954,6 +954,7 @@
   "medicalChecklistMetadata": "Metadati estratti",
   "medicalChecklistLinkedPet": "Collegato al pet attivo",
   "homeGreeting": "Buongiorno",
+  "homeAskQuokka": "Chiedi a Quokka",
   "homeAgendaTitle": "Il tuo calendario",
   "homeAgendaLoadingSubtitle": "Spot e cicli, per tutti gli animali.",
   "homeAgendaSummary": "{count} attività nei prossimi 10 giorni",

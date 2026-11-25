@@ -21904,5 +21904,14 @@
       "de": "945f042c63dcc02b1f7789668947077e6d21f7f691ac2f75c9720d87f4088add",
       "fr": "2ac174c4ade7ec125dd13841ce92d890bf61dfa2b0b0795e0b30dc2b3ae4af6e"
     }
+  },
+  "ui:homeAskQuokka": {
+    "source": "3d8ed4661413eaff66079fdf35efe58359e262006674e1924021dd0cab5a6a65",
+    "targets": {
+      "en": "35adfdc853afc3b582599a80e1e6bd6c334e418cd8138c30522d9f28b63e6c91",
+      "es": "3b73b7c99f186e6ad50a7a39cfd4dd2932c0342b141e9e2cb032aeef5a1a2cdf",
+      "de": "95b52acdd29e455a0617fac6b44a8cd7f4f65f4234f242ed672d506b504e8a90",
+      "fr": "f13b6f35abf200c12a243e85c44b0c8103cb3fe384c42699fc35036446b55a28"
+    }
   }
 }

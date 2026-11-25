@@ -57,6 +57,32 @@ class QuokkaHeadTile extends StatelessWidget {
   }
 }
 
+/// The head in a petrol circle with a paper frame, for a coloured ground: the
+/// frame keeps the symbol apart from what is around it, and the two colours
+/// are the same on every ground and in every theme.
+class QuokkaHeadRound extends StatelessWidget {
+  const QuokkaHeadRound({super.key, this.size = 56});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.brandDeep,
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.brandPaper, width: 3),
+        ),
+        child: QuokkaLogo.headOnDark(size: size * 0.7),
+      ),
+    );
+  }
+}
+
 /// Only the name "Quokka" of the approved logo, in paper colour for the dark
 /// brand ground: the full logo image cropped to the band with the lettering,
 /// so it always matches the logo (no second drawing of the name).

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../../account_consents/application/chat_notice.dart';
 import '../../../settings/data/unit_settings_store.dart';
 import '../../../settings/domain/unit_conversion.dart';
 import '../../../../shared/widgets/pet_loader.dart';
@@ -15,6 +14,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../chat/data/chat_demo_store.dart';
 import '../../../chat/domain/chat_models.dart';
 import '../../../chat/presentation/pages/chat_conversation_detail_page.dart';
+import '../../../chat/presentation/start_chat.dart';
 import '../../../dog_walks/data/active_walk_controller.dart';
 import '../../../dog_walks/data/dog_walks_repository.dart';
 import '../../../dog_walks/data/walk_history_controller.dart';
@@ -826,51 +826,8 @@ class _ChatTabState extends State<_ChatTab> {
     );
   }
 
-  Future<void> _startConversation(BuildContext context) async {
-    if (!_store.canStartConversation(widget.pet.id)) {
-      _showLimitDialog(context);
-      return;
-    }
-    // Before the chat exists: declining must not leave an empty one in the list.
-    if (!await ChatNotice.ensure(context) || !context.mounted) return;
-
-    final conversation = _store.startConversation(
-      petId: widget.pet.id,
-      petName: widget.pet.name,
-    );
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => ChatConversationDetailPage(
-          conversationId: conversation.id,
-          initialConversation: conversation,
-        ),
-      ),
-    );
-  }
-
-  void _showLimitDialog(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadii.large)),
-        title: Text(context.l10n.petsDetailChatLimitTitle),
-        content: Text(
-          context.l10n.petsDetailChatLimitMessage(
-            ChatDemoStore.maxConversationsPerPet,
-            widget.pet.name,
-          ),
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(context.l10n.petsDetailChatLimitOk),
-          ),
-        ],
-      ),
-    );
-  }
+  Future<void> _startConversation(BuildContext context) =>
+      startChatWithPet(context, petId: widget.pet.id, petName: widget.pet.name);
 }
 
 class _ChatRow extends StatelessWidget {
