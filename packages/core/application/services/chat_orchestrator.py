@@ -187,6 +187,7 @@ from packages.core.domain.safety.first_aid import (
 from packages.core.domain.safety.harmful_requests import (
     ADULT_FIRST,
     CERTIFY_REPLACEMENT,
+    CHAT_LIMIT_TEXTS,
     CHILD_NEVER_ALONE,
     DOSE_CHANGE_TEXTS,
     EUTHANASIA_REFUSAL,
@@ -956,6 +957,8 @@ _MIN_SECONDS_FOR_A_SECOND_WRITING = 4.0
 # A reply closed at its last finished sentence shorter than this says nothing.
 _MIN_CLOSED_REPLY_CHARS = 40
 _turn_started: ContextVar[float | None] = ContextVar("turn_started", default=None)
+# Whether this turn was admitted as a question of the plan (see ChatOrchestratorResult).
+_question_counted: ContextVar[bool] = ContextVar("question_counted", default=False)
 
 
 def _seconds_left() -> float:
@@ -1151,6 +1154,13 @@ class ChatOrchestratorInput(BaseModel):
     # The owner's plan allowance of questions per day; None = the
     # deployment-wide default (llm_budget.py).
     user_daily_limit: int | None = None
+    # The plan's allowance of questions per day inside THIS chat (None = no cap per chat) and how
+    # many questions the chat already holds today, counted by the server from the stored
+    # conversation (SendChatMessageService): never a value that comes from the app.
+    chat_daily_limit: int | None = None
+    chat_questions_today: int = 0
+    # The plan's ceiling of messages that continue a topic (PlanLimits.daily_follow_ups).
+    follow_up_limit: int | None = None
     # The plan's allowance of answers per day written by Claude Sonnet,
     # for LlmBudget.admit_sonnet (None = no limit, a developer account;
     # 0 = none). The routing that picks Sonnet reads it.
@@ -1200,6 +1210,11 @@ class ChatOrchestratorResult(BaseModel):
     # (the app shows "Non mi ha aiutato"), and whether the strong model wrote it.
     health_answer: bool = False
     escalated: bool = False
+    # This turn was admitted as a QUESTION of the plan (it opened a topic: a continuation, a
+    # fixed reply before admission and a refused turn are not). The service saves it on the
+    # owner's message, so the chat's own count of the day can be made from the conversation.
+    # (Not dumped: it is bookkeeping for the service, not part of the answer's record.)
+    question_counted: bool = Field(default=False, exclude=True)
     # This reply is an anamnesis question (vague symptom, questions only):
     # the next message answers it (stage 4).
     awaiting_anamnesis: bool = False
@@ -1334,6 +1349,7 @@ class ChatOrchestrator:
         _turn_started.set(
             time.monotonic() if data.turn_started_at is None else data.turn_started_at
         )
+        _question_counted.set(False)
         if data.photo_reading_off and not data.user_message.strip():
             # Only a photo, and photos cannot be read: the honest sentence.
             return ChatOrchestratorResult(
@@ -1376,6 +1392,8 @@ class ChatOrchestrator:
             ):
                 result = result.model_copy(update={"answer": f"{line}\n\n{result.answer}"})
         result = self._with_weight_suggestion(data, result)
+        if _question_counted.get():
+            result = result.model_copy(update={"question_counted": True})
         self._log_outcome(data, result)
         return result
 
@@ -1760,6 +1778,7 @@ class ChatOrchestrator:
         # fixed replies above (emergencies, dosages, two pets) never reach
         # this point, so they are never refused (build 32).
         if self._usage_budget is not None:
+            opens_a_topic = not self._continues_a_topic(data)
             denial = self._usage_budget.admit(
                 owner_id=data.owner_id,
                 models=self._answer_models,
@@ -1767,11 +1786,16 @@ class ChatOrchestrator:
                 user_daily_limit=data.user_daily_limit,
                 # Plan "fratello maggiore": only the message that opens a
                 # topic is a question of the plan.
-                counts_as_question=not self._continues_a_topic(data),
+                counts_as_question=opens_a_topic,
+                chat_questions_today=data.chat_questions_today,
+                chat_daily_limit=data.chat_daily_limit,
+                follow_up_limit=data.follow_up_limit,
             )
             if denial is not None:
                 # The cap counts for every message (owner, 11/2026: no lane for urgencies).
                 return self._quota_result(data, denial)
+            if opens_a_topic:
+                _question_counted.set(True)
 
         situation = data.situation_model or SituationModel()
         turns_used = data.interview_turns_used
@@ -2952,7 +2976,14 @@ class ChatOrchestrator:
         count and when it starts again, in the owner's language."""
         language = normalize_language(data.language)
         wait = format_wait(denial.retry_after_seconds, language)
-        if denial.reason == "user_limit":
+        if denial.reason == "chat_limit":
+            # This chat's questions of the day: the count of the account is untouched.
+            answer = CHAT_LIMIT_TEXTS.get(language, CHAT_LIMIT_TEXTS["it"]).format(
+                limit=denial.daily_limit, wait=wait
+            )
+            mode = "user_limit_reached"
+            limitation = "Risposta non generata: limite giornaliero di domande della chat."
+        elif denial.reason == "user_limit":
             answer = LIMIT_TEXTS.get(language, LIMIT_TEXTS["it"]).format(
                 name=data.pet_name, limit=denial.daily_limit, wait=wait
             )
@@ -3168,6 +3199,7 @@ class ChatOrchestrator:
                 # An emergency is never a question of the plan (as before the
                 # model wrote part of it); the follow-up ceiling still applies.
                 counts_as_question=False,
+                follow_up_limit=data.follow_up_limit,
             )
             if denial is not None:
                 # The owner's cap or every model's daily budget is gone: the fixed steps, and

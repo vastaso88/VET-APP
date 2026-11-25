@@ -28,6 +28,7 @@ from packages.core.application.ports.marketplace_messaging_repository import (
     MarketplaceMessagingRepository,
 )
 from packages.core.domain.localization import translate
+from packages.core.domain.localized_errors import LocalizedValidationError
 from packages.core.domain.marketplace.messaging import (
     CONVERSATIONS_LIST_LIMIT,
     KEPT_AFTER_DECISION_DAYS,
@@ -280,9 +281,11 @@ class MarketplaceMessagingService:
     def _clean(text: str) -> str:
         body = text.strip()
         if not body:
-            raise ValidationError("message is empty")
+            raise LocalizedValidationError("marketplace_message_empty", detail="message is empty")
         if len(body) > MESSAGE_MAX_LENGTH:
-            raise ValidationError("message is too long")
+            raise LocalizedValidationError(
+                "marketplace_message_too_long", detail="message is too long"
+            )
         return body
 
     def _participant_conversation(

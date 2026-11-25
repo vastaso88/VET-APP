@@ -84,6 +84,7 @@ class QuotaExhausted(ProviderError):
 
 
 class QuotaDenial(BaseModel):
+    # "chat_limit": this chat's questions for today are used up (the account may have more);
     # "user_limit": this owner's messages for today are used up;
     # "models_exhausted": no model of the answer chain can answer today.
     reason: str
@@ -389,6 +390,9 @@ class LlmBudget:
         exempt: bool = False,
         user_daily_limit: int | None = None,
         counts_as_question: bool = True,
+        chat_questions_today: int = 0,
+        chat_daily_limit: int | None = None,
+        follow_up_limit: int | None = None,
     ) -> QuotaDenial | None:
         """Checked once per turn, before anything that may call a model and
         after the fixed emergency replies. Counts the owner's message only
@@ -404,8 +408,9 @@ class LlmBudget:
         question of the plan. The caller must derive it from the conversation's
         own state on the server, never from anything the app sends. A
         continuation is not stopped by the day's questions being used up (a
-        case under way is never cut off), but it has its own ceiling, three
-        times the plan's questions, and the models' quota still applies."""
+        case under way is never cut off), but it has its own ceiling
+        ([follow_up_limit], or three times the plan's questions), and the
+        models' quota still applies."""
         try:
             self.order(models)
         except QuotaExhausted as exc:
@@ -419,7 +424,16 @@ class LlmBudget:
         now = self._clock()
         offset = current_utc_offset_minutes()
         if not counts_as_question:
-            return self._admit_follow_up(owner_id, limit, now, offset)
+            return self._admit_follow_up(owner_id, limit, now, offset, follow_up_limit)
+        if chat_daily_limit is not None and chat_questions_today >= chat_daily_limit:
+            # The chat's own allowance (PlanLimits.daily_questions_per_chat): the server counted
+            # today's questions of this conversation from what it stores. Refused before the
+            # account's count is touched, so there is nothing to give back.
+            return QuotaDenial(
+                reason="chat_limit",
+                retry_after_seconds=self._seconds_until_owner_midnight(now, offset),
+                daily_limit=chat_daily_limit,
+            )
         day = owner_day(now, offset)
         try:
             count = self._repository.add_user_message(owner_id, day)
@@ -464,13 +478,20 @@ class LlmBudget:
         return None
 
     def _admit_follow_up(
-        self, owner_id: str, question_limit: int, now: datetime, offset: int
+        self,
+        owner_id: str,
+        question_limit: int,
+        now: datetime,
+        offset: int,
+        follow_up_limit: int | None = None,
     ) -> QuotaDenial | None:
         """A message that continues a topic: counted apart from the questions,
         refused only past its ceiling (FOLLOWUPS_PER_QUESTION times the
         plan's questions). Same fail-open as the questions: a ledger outage
         must not cut a case under way."""
-        ceiling = question_limit * FOLLOWUPS_PER_QUESTION
+        ceiling = (
+            question_limit * FOLLOWUPS_PER_QUESTION if follow_up_limit is None else follow_up_limit
+        )
         day = owner_day(now, offset)
         try:
             count = self._repository.add_user_usage(owner_id, day, FOLLOWUP_KIND)

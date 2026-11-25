@@ -226,7 +226,7 @@ def test_the_check_passes_on_a_healthy_twin(
         if url.endswith("/subscription/status"):
             return Risposta(
                 200,
-                {"limits": {"daily_questions": 16, "source": "pro"}, "test_period": False},
+                {"limits": {"daily_questions": 40, "source": "pro"}, "test_period": False},
                 1,
                 1,
             )
@@ -274,12 +274,13 @@ def test_the_check_stops_when_the_account_is_not_pro(
         if url.endswith("/auth/login"):
             return Risposta(200, {"access_token": "t"}, 1, 1)
         if url.endswith("/subscription/status"):
+            # 16 is the old Pro count: the twin check must now refuse it.
             return Risposta(200, {"limits": {"daily_questions": 16, "source": "trial"}}, 1, 1)
         return Risposta(200, [], 1, 1)
 
     monkeypatch.setattr(gemello, "chiama", fake)
     problems = gemello.controllo(config.Gemello(TWIN, "a", "s", TWIN_API, ""))
-    assert problems == ["l'account di prova non risulta Pro con 16 domande al giorno"]
+    assert problems == ["l'account di prova non risulta Pro con 40 domande al giorno"]
 
 
 def test_accounts_command_fails_when_a_plan_was_not_set(

@@ -71,8 +71,14 @@ def test_every_limit_grows_from_plus_to_ultra() -> None:
 
     assert plus.max_pets < pro.max_pets < ultra.max_pets
     assert plus.max_chats_per_pet < pro.max_chats_per_pet < ultra.max_chats_per_pet
+    # Questions a day (owner decisions 2026-11-25): account 9 / 40 / 80, per chat none / 15 / 20.
     assert plus.daily_questions < pro.daily_questions < ultra.daily_questions
-    assert plus.max_devices <= pro.max_devices <= ultra.max_devices
+    assert (plus.daily_questions, pro.daily_questions, ultra.daily_questions) == (9, 40, 80)
+    assert plus.daily_questions_per_chat is None
+    assert (pro.daily_questions_per_chat, ultra.daily_questions_per_chat) == (15, 20)
+    # Devices: 2 / 3 / 5.
+    assert (plus.max_devices, pro.max_devices, ultra.max_devices) == (2, 3, 5)
+    assert plus.max_devices < pro.max_devices < ultra.max_devices
 
 
 def test_there_is_no_free_plan() -> None:
@@ -122,7 +128,7 @@ def test_status_carries_the_limits_and_the_catalogue() -> None:
     assert result.limits == TRIAL_LIMITS
     assert result.plan_limits == LIMITS_BY_PLAN
     dumped = result.model_dump()
-    assert dumped["plan_limits"]["ultra"]["daily_questions"] == 30
+    assert dumped["plan_limits"]["ultra"]["daily_questions"] == 80
 
 
 # --- pets -------------------------------------------------------------------
@@ -417,3 +423,13 @@ def test_plan_limit_answers_403_with_kind_and_limit() -> None:
     assert b'"code":"plan_limit_reached"' in response.body
     assert b'"kind":"pets"' in response.body
     assert b'"limit":3' in response.body
+
+
+def test_the_messages_that_continue_a_topic_did_not_grow_with_the_questions() -> None:
+    # Three times the questions (120 and 240 a day) would have tripled what an account can cost.
+    follow_ups = {plan: LIMITS_BY_PLAN[plan].daily_follow_ups for plan in LIMITS_BY_PLAN}
+    assert follow_ups == {
+        SubscriptionPlan.PLUS: None,
+        SubscriptionPlan.PRO: 48,
+        SubscriptionPlan.ULTRA: 90,
+    }

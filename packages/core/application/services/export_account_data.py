@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from pydantic import BaseModel
 
 from packages.core.application.ports.account_exporter import AccountExport, AccountExporter
+from packages.core.domain.localization import translate
 
 
 class ExportAccountDataInput(BaseModel):
@@ -13,6 +14,8 @@ class ExportAccountDataInput(BaseModel):
     email: str = ""
     display_name: str | None = None
     preferred_locale: str | None = None
+    # The language of the request (Accept-Language), for the sentences the server writes.
+    language: str | None = None
     now: datetime | None = None
 
 
@@ -36,9 +39,20 @@ class ExportAccountDataService:
             account.setdefault("display_name", data.display_name)
         if data.preferred_locale:
             account.setdefault("preferred_locale", data.preferred_locale)
+        generated_at = data.now or export.generated_at or datetime.now(UTC)
+        deadlines = [f.url_expires_at for f in export.files if f.url and f.url_expires_at]
+        valid_until = max(deadlines) if deadlines else None
+        notice = None
+        if valid_until is not None:
+            minutes = max(1, round((valid_until - export.generated_at).total_seconds() / 60))
+            notice = translate(
+                "export_links_expired", data.language or data.preferred_locale, minutes=minutes
+            )
         return export.model_copy(
             update={
                 "account": account,
-                "generated_at": data.now or export.generated_at or datetime.now(UTC),
+                "generated_at": generated_at,
+                "links_valid_until": valid_until,
+                "links_expired_notice": notice,
             }
         )

@@ -1,12 +1,13 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
 from apps.api.dependencies.subscription import require_active_subscription
+from apps.api.request_language import request_language
 from packages.core.application.services.list_events import ListEventsInput
 from packages.core.application.services.submit_event import (
     SubmissionLimitReachedError,
@@ -51,7 +52,9 @@ class SubmitEventRequest(BaseModel):
     response_model=None,
     dependencies=[Depends(require_active_subscription)],
 )
-def submit_event(request: SubmitEventRequest) -> JSONResponse | dict[str, str]:
+def submit_event(
+    request: SubmitEventRequest, http_request: Request
+) -> JSONResponse | dict[str, str]:
     """ "Segnala un evento": the suggestion waits for the team's check and is
     not public until then. Needs a signed-in user (limits abuse); the author is
     never shown. Invalid input answers 400 with a message for the user."""
@@ -63,6 +66,11 @@ def submit_event(request: SubmitEventRequest) -> JSONResponse | dict[str, str]:
         )
     except SubmissionLimitReachedError as exc:
         return JSONResponse(
-            status_code=429, content={"detail": str(exc), "code": "submission_limit_reached"}
+            status_code=429,
+            content={
+                "detail": str(exc),
+                "code": "submission_limit_reached",
+                "message": exc.message(request_language(http_request)),
+            },
         )
     return {"submission_id": submission.id, "status": submission.status}

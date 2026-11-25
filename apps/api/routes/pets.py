@@ -18,9 +18,17 @@ from packages.core.domain.medical_record.consent_text import (
     CURRENT_VERSION,
     effective_decision,
 )
+from packages.core.domain.pet_profile.models import PetProfile
 from packages.shared.errors.base import ValidationError
 
 router = APIRouter(prefix="/pets", tags=["pets"])
+
+
+def _with_memorial_flag(dumped: dict[str, object], pet: PetProfile) -> dict[str, object]:
+    """The pet as the API hands it, plus `is_memorial` (read-only): a pet in Ricordi says so
+    (collaudo F41). The model never writes the field (`exclude`), so it is added here to the
+    answer only; a save can't bring a pet back through it."""
+    return {**dumped, "is_memorial": pet.is_memorial}
 
 
 @router.get("")
@@ -28,7 +36,15 @@ def list_pets() -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
     result = container.list_pet_profiles_service().execute(ListPetProfilesInput(owner_id=user.id))
-    return result.model_dump()
+    dumped = result.model_dump()
+    pets = dumped["pet_profiles"]
+    return {
+        **dumped,
+        "pet_profiles": [
+            _with_memorial_flag(shown, pet)
+            for shown, pet in zip(pets, result.pet_profiles, strict=True)
+        ],
+    }
 
 
 @router.get("/{pet_id}")
@@ -38,7 +54,10 @@ def get_pet(pet_id: str) -> dict[str, object]:
     result = container.get_pet_profile_service().execute(
         GetPetProfileInput(pet_id=pet_id, owner_id=user.id)
     )
-    return result.model_dump()
+    return {
+        **result.model_dump(),
+        "pet_profile": _with_memorial_flag(result.model_dump()["pet_profile"], result.pet_profile),
+    }
 
 
 @router.post("", dependencies=[Depends(require_active_subscription)])

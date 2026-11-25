@@ -55,6 +55,11 @@ class ChatMessage(BaseModel):
     record_shared: bool | None = None
     # On assistant messages: the conversation's state after this reply.
     state_after: ConversationSnapshot | None = None
+    # On the owner's messages, set by the server only: this message was admitted as a QUESTION of
+    # the plan (it opened a topic, and was answered). The chat's own count of the day (Pro: 15 per
+    # chat) is made from these, so it never depends on anything the app sends. A message from
+    # before the mark existed has None and is not counted.
+    counted_as_question: bool | None = None
 
 
 # Fields of Conversation that never leave the backend (see public_dump).
@@ -74,8 +79,14 @@ INTERNAL_CONVERSATION_FIELDS: frozenset[str] = frozenset(
 )
 
 
+# Fields of a message that never leave the backend (the app does not read them).
+_SERVER_ONLY_MESSAGE_FIELDS: frozenset[str] = frozenset(
+    {"state_after", "record_shared", "counted_as_question"}
+)
+
+
 def public_message(message: ChatMessage) -> dict[str, Any]:
-    return message.model_dump(exclude={"state_after", "record_shared"})
+    return message.model_dump(exclude=set(_SERVER_ONLY_MESSAGE_FIELDS))
 
 
 def history_without_record(
@@ -129,7 +140,7 @@ class Conversation(BaseModel):
         return self.model_dump(
             exclude={
                 **{name: True for name in INTERNAL_CONVERSATION_FIELDS},
-                "messages": {"__all__": {"state_after", "record_shared"}},
+                "messages": {"__all__": set(_SERVER_ONLY_MESSAGE_FIELDS)},
             }
         )
 

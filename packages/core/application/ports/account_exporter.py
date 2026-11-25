@@ -37,6 +37,13 @@ class AccountExport(BaseModel):
     data: dict[str, list[dict[str, Any]]] = Field(default_factory=dict)
     files: list[ExportedFile] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
+    # When the file links stop working (the latest `url_expires_at`; None when no file has a link)
+    # and what to tell the owner then, in the language of the request (collaudo F44: an expired
+    # link showed the storage's English error). A client that downloads the files compares the
+    # clock with `links_valid_until` before it starts, or shows `links_expired_notice` when a
+    # link is refused.
+    links_valid_until: datetime | None = None
+    links_expired_notice: str | None = None
 
 
 class AccountExporter(Protocol):

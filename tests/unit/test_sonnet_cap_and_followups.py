@@ -523,3 +523,26 @@ def test_the_chat_receives_the_sonnet_allowance_and_the_plan_above(
     sent = orchestrator.inputs[0]
     assert sent.sonnet_daily_limit == sonnet
     assert sent.upgrade_plan == upgrade
+
+
+def test_a_plans_own_ceiling_replaces_three_times_the_questions(offset: None) -> None:
+    budget = _budget()
+    inside = [
+        budget.admit(
+            owner_id="anna",
+            models=[HAIKU],
+            user_daily_limit=40,
+            counts_as_question=False,
+            follow_up_limit=2,
+        )
+        for _ in range(2)
+    ]
+    over = budget.admit(
+        owner_id="anna",
+        models=[HAIKU],
+        user_daily_limit=40,
+        counts_as_question=False,
+        follow_up_limit=2,
+    )
+    assert inside == [None, None]
+    assert over is not None

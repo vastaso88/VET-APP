@@ -270,19 +270,28 @@ def my_listings() -> dict[str, object]:
     return {"listings": rows}
 
 
+def _listing_not_found(accept_language: str | None) -> HTTPException:
+    """404 for an ad that is missing, hidden or not the caller's (all look the same), in the
+    language of the request (Italian when it names none): collaudo F24."""
+    language = language_from_accept_header(accept_language) or "it"
+    return HTTPException(status_code=404, detail=translate("listing_not_found", language))
+
+
 # One ad by id (the detail page): an active ad to anyone signed in, any state to
 # its author. Anything else looks exactly like a missing one.
 @router.get("/listings/{listing_id}")
-def get_listing(listing_id: str) -> dict[str, object]:
+def get_listing(
+    listing_id: str, accept_language: Annotated[str | None, Header()] = None
+) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
     listing = container.marketplace_listing_repository.get(listing_id)
     if listing is None or (listing.status != "active" and listing.owner_id != user.id):
-        raise HTTPException(status_code=404, detail="Annuncio non trovato.")
+        raise _listing_not_found(accept_language)
     if listing.owner_id != user.id and listing.owner_id in container.hidden_owner_ids():
         # The seller is deleting or has paused their account: the ad is hidden like
         # a missing one.
-        raise HTTPException(status_code=404, detail="Annuncio non trovato.")
+        raise _listing_not_found(accept_language)
     row = _public_row(listing, user.id)
     if not owner_has_access():
         # The same fields as in the list (the distance is only in the list).
@@ -293,11 +302,13 @@ def get_listing(listing_id: str) -> dict[str, object]:
 # The seller deletes their own ad, in any state, with or without a plan: the row and its
 # photos, at once. Someone else's ad looks exactly like a missing one.
 @router.delete("/listings/{listing_id}")
-def delete_listing(listing_id: str) -> dict[str, object]:
+def delete_listing(
+    listing_id: str, accept_language: Annotated[str | None, Header()] = None
+) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
     if not container.delete_listing_service().execute(listing_id, user.id):
-        raise HTTPException(status_code=404, detail="Annuncio non trovato.")
+        raise _listing_not_found(accept_language)
     return {"ok": True}
 
 
@@ -312,12 +323,16 @@ class ReportListingRequest(BaseModel):
 # active) answers 404 exactly like GET /listings/{id}; the answer never carries
 # the ad's report count or state, which are the team's business.
 @router.post("/listings/{listing_id}/report")
-def report_listing(listing_id: str, request: ReportListingRequest) -> dict[str, object]:
+def report_listing(
+    listing_id: str,
+    request: ReportListingRequest,
+    accept_language: Annotated[str | None, Header()] = None,
+) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
     listing = container.marketplace_listing_repository.get(listing_id)
     if listing is None or (listing.status != "active" and listing.owner_id != user.id):
-        raise HTTPException(status_code=404, detail="Annuncio non trovato.")
+        raise _listing_not_found(accept_language)
     container.report_listing_service().execute(
         ReportListingInput(listing_id=listing_id, reporter_owner_id=user.id, reason=request.reason)
     )

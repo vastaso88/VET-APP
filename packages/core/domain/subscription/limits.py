@@ -13,7 +13,16 @@ class PlanLimits(BaseModel):
 
     max_pets: int
     max_chats_per_pet: int
+    # Questions per day for the whole account (the owner's day).
     daily_questions: int
+    # Questions per day inside ONE chat (conversation); None = no cap per chat, only the
+    # account's. Pro 15, Ultra 20 (owner decision 2026-11-25); Plus has none. The
+    # count is made by the server from the conversation it stores, never from what the app sends.
+    daily_questions_per_chat: int | None = None
+    # Messages per day that continue a topic already open (replies to the chat's own questions,
+    # "this did not help me"). Kept as they were when the questions grew on 2026-11-25 (48 for Pro,
+    # 90 for Ultra): three times the questions would have tripled what an account can cost.
+    daily_follow_ups: int | None = None
     max_devices: int
     # Answers per day written by Claude Sonnet, the "older brother" that takes
     # over from Haiku when the owner is not satisfied with its answer (owner
@@ -50,7 +59,10 @@ LIMITS_BY_PLAN: dict[str, PlanLimits] = {
     SubscriptionPlan.PRO: PlanLimits(
         max_pets=8,
         max_chats_per_pet=4,
-        daily_questions=16,
+        # 15 per chat, 40 for the account (owner decision 2026-11-25; it was 16 for the account).
+        daily_questions=40,
+        daily_questions_per_chat=15,
+        daily_follow_ups=48,
         max_devices=3,
         daily_sonnet_answers=2,
         source=SubscriptionPlan.PRO,
@@ -58,8 +70,11 @@ LIMITS_BY_PLAN: dict[str, PlanLimits] = {
     SubscriptionPlan.ULTRA: PlanLimits(
         max_pets=15,
         max_chats_per_pet=6,
-        daily_questions=30,
-        max_devices=3,
+        # 20 per chat, 80 for the account, 5 devices (owner decisions 2026-11-25; it was 30 and 3).
+        daily_questions=80,
+        daily_questions_per_chat=20,
+        daily_follow_ups=90,
+        max_devices=5,
         daily_sonnet_answers=3,
         source=SubscriptionPlan.ULTRA,
     ),

@@ -1,7 +1,8 @@
-from fastapi import APIRouter, BackgroundTasks, Query
+from fastapi import APIRouter, BackgroundTasks, Query, Request
 from fastapi.responses import JSONResponse
 
 from apps.api.dependencies.container import get_container
+from apps.api.request_language import request_language
 from packages.core.application.services.delete_account import DeleteAccountInput
 from packages.core.application.services.export_account_data import ExportAccountDataInput
 from packages.core.domain.account_deletion.log import DeletionReason
@@ -16,7 +17,7 @@ router = APIRouter(prefix="/account", tags=["account"])
 
 
 @router.get("/export")
-def export_account_data() -> dict[str, object]:
+def export_account_data(request: Request) -> dict[str, object]:
     """Right of access and portability (GDPR art. 15 and 20): every row and
     a short-lived link to every file of the signed-in owner, as JSON. Only
     the caller's own id, taken from the token. Throttled to one export per
@@ -32,6 +33,7 @@ def export_account_data() -> dict[str, object]:
             email=user.email,
             display_name=user.display_name,
             preferred_locale=user.preferred_locale,
+            language=request_language(request),
         )
     )
     return export.model_dump(mode="json")

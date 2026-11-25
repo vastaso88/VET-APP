@@ -59,6 +59,7 @@ from packages.core.domain.marketplace.models import (
 from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.pet_profile.weight_measurement import (
+    EARLIEST_WEIGHT_DATE,
     WeightMeasurement,
     latest_allowed_date,
 )
@@ -861,6 +862,7 @@ class SupabaseWeightMeasurementRepository(WeightMeasurementRepository):
                 .eq("pet_id", pet_id)
                 # Never a weighing dated in the future (a row written around the app's checks).
                 .lte("measured_at", latest_allowed_date().isoformat())
+                .gte("measured_at", EARLIEST_WEIGHT_DATE.isoformat())
                 .order("measured_at", desc=True)
                 .order("created_at", desc=True)
                 .limit(limit)
@@ -883,6 +885,7 @@ class SupabaseWeightMeasurementRepository(WeightMeasurementRepository):
                 .eq("pet_id", pet_id)
                 # Never a weighing dated in the future (a row written around the app's checks).
                 .lte("measured_at", latest_allowed_date().isoformat())
+                .gte("measured_at", EARLIEST_WEIGHT_DATE.isoformat())
             )
             if with_body_condition:
                 # The column holds 1..5 or null: "> 0" keeps only the filled ones.

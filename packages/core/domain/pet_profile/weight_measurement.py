@@ -35,6 +35,12 @@ def latest_allowed_date(now: datetime | None = None) -> date:
     return ((now or datetime.now(UTC)).date()) + timedelta(days=FUTURE_TOLERANCE_DAYS)
 
 
+# The earliest date a weighing may carry (collaudo F33: 1900 was accepted). Far below any real
+# record of a pet, far above anything that is an error. Refused when written (the database trigger
+# in scripts/setup/weight_one_per_day.sql) and ignored when read.
+EARLIEST_WEIGHT_DATE = date(1970, 1, 1)
+
+
 class WeightMeasurement(BaseModel):
     pet_id: str
     measured_at: date

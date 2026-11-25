@@ -65,7 +65,9 @@ UI/UX; questo documento descrive cosa riceve.
       "note": null
     }
   ],
-  "notes": [ "file links expire 15 minutes after generated_at" ]
+  "notes": [ "file links expire 15 minutes after generated_at" ],
+  "links_valid_until": "2026-10-28T10:30:00+00:00",
+  "links_expired_notice": "I collegamenti ai file valgono 15 minuti: se sono scaduti, genera di nuovo l'esportazione."
 }
 ```
 
@@ -89,6 +91,11 @@ Regole:
   `pet_media`, `profile_photo`. `url` è un **link firmato valido 15 minuti**
   (chi ha il link scarica senza login: per questo scade); dopo, rifare
   l'export. Se il link non è stato generato, `url` è `null` e `note` spiega.
+  **`links_valid_until`** (il più tardi tra i `url_expires_at`; `null` senza link) e
+  **`links_expired_notice`** (la frase da mostrare quando un download è rifiutato perché il
+  link è scaduto, nella lingua di `Accept-Language`; `null` senza link): un client che scarica i
+  file confronta l'orologio con `links_valid_until` prima di cominciare, o mostra la frase
+  invece dell'errore del contenitore (collaudo F44).
   Le foto degli annunci del Mercatino sono già negli URL pubblici dentro
   `data.marketplace_listings[].photo_urls`.
 - **`account`**: dall'identity provider (e-mail, date, `profile` = metadati

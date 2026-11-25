@@ -17,7 +17,7 @@ from pydantic import BaseModel
 
 from packages.core.domain.common.entity import new_id, utc_now
 from packages.core.domain.events.rules import EVENT_TYPES, REGIONS, contains_personal_data
-from packages.shared.errors.base import ValidationError
+from packages.core.domain.localized_errors import LocalizedValidationError, TextKey
 
 SubmissionStatus = Literal["pending", "approved", "rejected"]
 
@@ -51,17 +51,17 @@ class EventSubmission(BaseModel):
 
 
 def _clean(value: str | None, *, label: str, max_length: int, required: bool = False) -> str | None:
+    """[label] is the key of the field's name in the text catalogue (event_label_*): the refusals
+    are written in the language of whoever asked (LocalizedValidationError)."""
     text = " ".join((value or "").split())
     if not text:
         if required:
-            raise ValidationError(f"{label}: campo obbligatorio")
+            raise LocalizedValidationError("event_field_required", label=TextKey(label))
         return None
     if len(text) > max_length:
-        raise ValidationError(f"{label}: massimo {max_length} caratteri")
+        raise LocalizedValidationError("event_field_too_long", label=TextKey(label), max=max_length)
     if contains_personal_data(text):
-        raise ValidationError(
-            f"{label}: non inserire email o numeri di telefono, solo informazioni sull'evento"
-        )
+        raise LocalizedValidationError("event_field_personal", label=TextKey(label))
     return text
 
 
@@ -83,30 +83,32 @@ def build_submission(
     `ValidationError` with a message that can be shown to the user."""
     reference_day = today or utc_now().date()
 
-    clean_title = _clean(title, label="Titolo", max_length=MAX_TITLE_LENGTH, required=True)
-    clean_city = _clean(city, label="Città", max_length=MAX_PLACE_LENGTH, required=True)
-    clean_venue = _clean(venue_name, label="Luogo", max_length=MAX_PLACE_LENGTH)
+    clean_title = _clean(
+        title, label="event_label_title", max_length=MAX_TITLE_LENGTH, required=True
+    )
+    clean_city = _clean(city, label="event_label_city", max_length=MAX_PLACE_LENGTH, required=True)
+    clean_venue = _clean(venue_name, label="event_label_venue", max_length=MAX_PLACE_LENGTH)
     assert clean_title is not None and clean_city is not None
     if len(clean_title) < MIN_TITLE_LENGTH:
-        raise ValidationError("Titolo: troppo corto")
+        raise LocalizedValidationError("event_title_short")
     if event_type not in EVENT_TYPES:
-        raise ValidationError("Tipo di evento non valido")
+        raise LocalizedValidationError("event_type_invalid")
 
     if ends_on < starts_on:
-        raise ValidationError("La data di fine precede quella di inizio")
+        raise LocalizedValidationError("event_end_before_start")
     if ends_on < reference_day:
-        raise ValidationError("L'evento è già concluso")
+        raise LocalizedValidationError("event_already_over")
     if starts_on > reference_day + timedelta(days=MAX_DAYS_AHEAD):
-        raise ValidationError("La data di inizio è troppo lontana")
+        raise LocalizedValidationError("event_start_too_far")
     if (ends_on - starts_on).days > MAX_DURATION_DAYS:
-        raise ValidationError("Un evento dura al massimo 31 giorni")
+        raise LocalizedValidationError("event_duration_too_long")
 
     province = (province_code or "").strip().upper() or None
     if province is not None and not (len(province) == 2 and province.isalpha()):
-        raise ValidationError("Provincia: usa la sigla di due lettere (es. MO)")
+        raise LocalizedValidationError("event_province_invalid")
     clean_region = (region or "").strip() or None
     if clean_region is not None and clean_region not in REGIONS:
-        raise ValidationError("Regione non riconosciuta")
+        raise LocalizedValidationError("event_region_invalid")
 
     link = (source_url or "").strip()
     parsed = urlparse(link)
@@ -117,7 +119,7 @@ def build_submission(
         or not parsed.hostname
         or "." not in parsed.hostname
     ):
-        raise ValidationError("Link: serve l'indirizzo (http/https) della pagina dell'evento")
+        raise LocalizedValidationError("event_link_invalid")
 
     return EventSubmission(
         id=new_id(),

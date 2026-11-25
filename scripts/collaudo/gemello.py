@@ -326,7 +326,7 @@ def accedi(gemello: Gemello, email: str, password: str) -> Risposta:
     )
 
 
-LIMITE_PRO = 16
+LIMITE_PRO = 40  # domande al giorno per account (Pro, dal 25/11/2026; 15 per chat)
 DOMANDA_DI_PROVA = "Quanta acqua dovrebbe bere al giorno un labrador adulto?"
 
 

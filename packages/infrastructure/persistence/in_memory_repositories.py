@@ -58,6 +58,7 @@ from packages.core.domain.marketplace.models import (
 from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.pet_profile.weight_measurement import (
+    EARLIEST_WEIGHT_DATE,
     WeightMeasurement,
     latest_allowed_date,
 )
@@ -179,7 +180,7 @@ class InMemoryWeightMeasurementRepository(WeightMeasurementRepository):
             for owner, measurement in self._items
             if owner == owner_id
             and measurement.pet_id == pet_id
-            and measurement.measured_at <= latest_allowed_date()
+            and EARLIEST_WEIGHT_DATE <= measurement.measured_at <= latest_allowed_date()
         ]
         # a stable sort keeps the order of the same day
         return sorted(own, key=lambda measurement: measurement.measured_at)[-limit:]
@@ -192,7 +193,7 @@ class InMemoryWeightMeasurementRepository(WeightMeasurementRepository):
             for owner, measurement in self._items
             if owner == owner_id
             and measurement.pet_id == pet_id
-            and measurement.measured_at <= latest_allowed_date()
+            and EARLIEST_WEIGHT_DATE <= measurement.measured_at <= latest_allowed_date()
             and (not with_body_condition or measurement.body_condition is not None)
         ]
         if not own:

@@ -1526,6 +1526,32 @@ LIMIT_TEXTS: dict[str, str] = {
     ),
 }
 
+# The limit of ONE chat (Pro: 15 questions a day per chat, owner decision 2026-11-25): calm, and
+# it says what to do: another chat, or this one when the count starts again ({wait},
+# format_wait). {limit} is the chat's number. No plan upgrade is suggested here.
+CHAT_LIMIT_TEXTS: dict[str, str] = {
+    "it": (
+        "In questa chat hai usato tutte le {limit} domande di oggi: puoi continuare in "
+        "un'altra chat, oppure qui tra circa {wait}."
+    ),
+    "en": (
+        "In this chat you have used all {limit} questions for today: you can continue in "
+        "another chat, or here in about {wait}."
+    ),
+    "es": (
+        "En este chat has usado las {limit} preguntas de hoy: puedes seguir en otro chat, "
+        "o aquí dentro de unos {wait}."
+    ),
+    "de": (
+        "In diesem Chat haben Sie alle {limit} Fragen für heute verbraucht: Sie können in "
+        "einem anderen Chat weitermachen oder hier in {wait} wieder."
+    ),
+    "fr": (
+        "Dans cette conversation, vous avez utilisé les {limit} questions d'aujourd'hui : "
+        "vous pouvez continuer dans une autre conversation, ou ici dans {wait}."
+    ),
+}
+
 # When the owner has used the day's questions and a higher plan exists, the
 # message also says which (owner decision 2026-11-10: no paid credits, the
 # chat says when the count starts again and points to the plan above). The

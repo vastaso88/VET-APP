@@ -45,6 +45,7 @@ from apps.api.routes.travel import router as travel_router
 from packages.bootstrap.container import get_container
 from packages.core.domain.common.language import language_from_accept_header
 from packages.core.domain.localization import translate
+from packages.core.domain.localized_errors import LocalizedValidationError
 from packages.core.domain.pet_profile.validation import PetInputError
 from packages.infrastructure.logging.logger import configure_logging
 from packages.infrastructure.telemetry.noop import setup_telemetry
@@ -211,6 +212,16 @@ _NOT_FOUND = re.compile(r"^[a-z_]+ not found( in this conversation)?$")
 
 @app.exception_handler(ValidationError)
 async def handle_validation_error(request: Request, exc: ValidationError) -> JSONResponse:
+    if isinstance(exc, LocalizedValidationError):
+        # `detail` is what it always was; `message` is the sentence in the caller's language.
+        return JSONResponse(
+            status_code=400,
+            content={
+                "detail": str(exc),
+                "code": exc.key,
+                "message": exc.message(request_language(request)),
+            },
+        )
     if _NOT_FOUND.match(str(exc)):
         return JSONResponse(
             status_code=404,

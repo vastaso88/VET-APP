@@ -39,6 +39,7 @@ from packages.core.domain.conversation.title import (
     title_from_message,
 )
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.core.domain.llm_usage.models import owner_day
 from packages.core.domain.localization import translate
 from packages.core.domain.medical_record.consent_text import (
     CURRENT_VERSION,
@@ -58,6 +59,7 @@ from packages.core.domain.pet_profile.weight_measurement import (
 )
 from packages.core.domain.subscription.limits import PlanLimits
 from packages.shared.errors.base import ConversationLimitError, ValidationError
+from packages.shared.user_clock import current_utc_offset_minutes
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +86,27 @@ def not_answered(result: ChatOrchestratorResult) -> bool:
     if result.mode in _UNANSWERED_MODES:
         return True
     return result.model in _UNANSWERED_MODELS and result.state not in _ANSWERED_STATES
+
+
+def questions_today_in(conversation: Conversation, now: datetime | None = None) -> int:
+    """How many questions of the plan this chat holds on the owner's current day: the owner's
+    messages the server itself marked `counted_as_question` (a continuation, a refused turn,
+    an apology and a message from before the mark are not). Read from the stored conversation
+    only, so it cannot be raised or lowered by the app; the day is the owner's own, from the
+    phone's offset, like every other daily counter."""
+    offset = current_utc_offset_minutes()
+    today = owner_day(now or datetime.now(UTC), offset)
+    return sum(
+        1
+        for message in conversation.messages
+        if message.role == "user"
+        and message.counted_as_question
+        and owner_day(_aware(message.created_at), offset) == today
+    )
+
+
+def _aware(moment: datetime) -> datetime:
+    return moment if moment.tzinfo is not None else moment.replace(tzinfo=UTC)
 
 
 def owner_names_for_anonymization(display_name: str | None, *, pet_name: str) -> list[str]:
@@ -516,6 +539,10 @@ class SendChatMessageService:
         ensure_not_in_memories(pet_profile)
         attachment = self._resolve_attachment(data, pet_profile)
         photo_context = attachment.analysis if attachment is not None else None
+        # The questions this chat already holds today, from what the server stored (before this
+        # message is added): the chat's own allowance (Pro: 15 a day per chat) never relies on
+        # a number the app sends.
+        chat_questions_today = questions_today_in(conversation)
         user_message = ChatMessage(
             role="user",
             content=data.user_message.strip(),
@@ -590,6 +617,9 @@ class SendChatMessageService:
                 quota_exempt=(getattr(data, "owner_email", None) or "").strip().lower()
                 in self._quota_exempt_emails,
                 user_daily_limit=plan_limits.daily_questions if plan_limits else None,
+                chat_daily_limit=plan_limits.daily_questions_per_chat if plan_limits else None,
+                follow_up_limit=plan_limits.daily_follow_ups if plan_limits else None,
+                chat_questions_today=chat_questions_today,
                 sonnet_daily_limit=(plan_limits.daily_sonnet_answers if plan_limits else None),
                 upgrade_plan=plan_limits.upgrade_to if plan_limits else None,
                 escalate_health=conversation.escalate_next_health,
@@ -623,10 +653,15 @@ class SendChatMessageService:
                 safety_clarification_category=conversation.safety_clarification_category,
             )
         )
-        if self._quota_refund is not None and not_answered(orchestrator_result):
-            # An apology instead of an answer (provider down, models out of quota): the
-            # owner received nothing, so the question is not counted against them.
-            self._quota_refund()
+        # The question the turn counted is written on the owner's message, for the chat's own
+        # count. Not for an apology instead of an answer: the owner received nothing, so the
+        # question is given back (the account's count and the chat's alike).
+        if not_answered(orchestrator_result):
+            if self._quota_refund is not None:
+                # Provider down, models out of quota: not counted against the owner.
+                self._quota_refund()
+        elif orchestrator_result.question_counted:
+            user_message.counted_as_question = True
         reply = ChatMessage(
             role="assistant",
             content=orchestrator_result.answer,
