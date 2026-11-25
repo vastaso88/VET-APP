@@ -511,7 +511,7 @@ void main() {
       expect(find.byType(SimpleDialog), findsOneWidget);
       expect(find.byType(ChatConversationDetailPage), findsNothing);
 
-      await _tap(tester, find.byKey(const ValueKey('home-pick-lilla-2')));
+      await _tap(tester, find.byKey(const ValueKey('pick-pet-lilla-2')));
       final page = tester.widget<ChatConversationDetailPage>(
         find.byType(ChatConversationDetailPage),
       );
@@ -744,17 +744,6 @@ void main() {
       await _tap(tester, find.byKey(const ValueKey('home-news-more')));
       expect(find.byType(NewsFeedPage), findsOneWidget);
     });
-  });
-
-  test('the figure of a species is one the app already has; unknown animals get the paw', () {
-    expect(SpeciesFigure.emojiFor('Cane'), '🐶');
-    expect(SpeciesFigure.emojiFor('Gatto'), '🐱');
-    expect(SpeciesFigure.emojiFor('Piccoli mammiferi'), '🐹');
-    expect(SpeciesFigure.emojiFor('Piccoli mammiferi', 'Coniglio nano'), '🐰');
-    expect(SpeciesFigure.emojiFor('Altro', 'Gallina'), '🦜');
-    expect(SpeciesFigure.emojiFor('Altro', 'Cavallo'), isNull);
-    expect(SpeciesFigure.emojiFor('Generale'), isNull);
-    expect(SpeciesFigure.tintFor('Generale'), AppColors.secondarySoft);
   });
 
   group('no overflow', () {

@@ -20,6 +20,7 @@ import '../../../pets/data/pet_photo_repository.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../../pets/domain/pet_video_rules.dart';
 import '../../../pets/presentation/pages/pet_gallery_page.dart' show PetPhotoViewerPage;
+import '../../../pets/presentation/widgets/pet_avatar.dart';
 import '../../data/active_walk_controller.dart';
 import '../../domain/gps_fix.dart';
 import '../../domain/photo_walk_match.dart';
@@ -336,7 +337,10 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
   Widget _buildPage(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: PageHeader(title: context.l10n.walksPageTitle(widget.pet.name)),
+      appBar: PageHeader(
+        title: context.l10n.walksPageTitle(widget.pet.name),
+        badge: PetRingAvatar(pet: widget.pet, size: PetRingAvatar.headerSize),
+      ),
       body: SafeArea(
         child: AnimatedBuilder(
           animation: _controller,

@@ -3,24 +3,16 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/app_card.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../../pets/presentation/widgets/pet_avatar.dart';
+import '../../../pets/presentation/widgets/pet_picker.dart';
+import '../../../pets/presentation/widgets/species_figure.dart';
 import 'home_dashboard_primitives.dart';
 import 'home_surface.dart';
-
-/// Breed (or species of a small animal) when the owner gave one, else the kind
-/// of animal. The scientific name in brackets stays out of a card this small.
-String homePetLine(PetProfile pet) {
-  final breed = pet.breed.split(' (').first.trim();
-  if (pet.isAquarium || breed.isEmpty || breed == 'Altro') {
-    return pet.speciesDisplayLabel;
-  }
-  return breed;
-}
 
 /// "I tuoi animali": the first thing on Home. One small card per animal (those
 /// in Ricordi are not here) and the dashed "Aggiungi"; sideways when they do
@@ -147,7 +139,7 @@ class _PetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final line = homePetLine(pet);
+    final line = petShortLine(pet);
     return Semantics(
       button: true,
       label: '${pet.name}, $line',
@@ -193,78 +185,41 @@ class _AddCard extends StatelessWidget {
       label: context.l10n.petsListEmptyOnlyMemoriesAction,
       excludeSemantics: true,
       onTap: onTap,
-      child: CustomPaint(
-        foregroundPainter: const _DashedBorderPainter(),
-        child: Material(
-          color: AppColors.surfaceElevated,
-          borderRadius: BorderRadius.circular(AppRadii.large),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            key: const ValueKey('home-add-pet'),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xs,
-                vertical: AppSpacing.md,
+      child: AppCard(
+        key: const ValueKey('home-add-pet'),
+        dashed: true,
+        onTap: onTap,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xs,
+          vertical: AppSpacing.md,
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: petRingAvatarExtent(context, _faceSize),
+              height: petRingAvatarExtent(context, _faceSize),
+              decoration: const BoxDecoration(
+                color: AppColors.secondarySoft,
+                shape: BoxShape.circle,
               ),
-              child: Column(
-                children: [
-                  Container(
-                    width: petRingAvatarExtent(context, _faceSize),
-                    height: petRingAvatarExtent(context, _faceSize),
-                    decoration: const BoxDecoration(
-                      color: AppColors.secondarySoft,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.add_rounded, color: AppColors.primary),
-                  ),
-                  const SizedBox(height: 6),
-                  // One word in a narrow card ("Hinzufügen"): it shrinks a little
-                  // rather than breaking in the middle.
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      context.l10n.commonAdd,
-                      maxLines: 1,
-                      style: AppTextStyles.bodySmall.copyWith(fontSize: 13, height: 1.3),
-                    ),
-                  ),
-                ],
+              child: const Icon(Icons.add_rounded, color: AppColors.primary),
+            ),
+            const SizedBox(height: 6),
+            // One word in a narrow card ("Hinzufügen"): it shrinks a little
+            // rather than breaking in the middle.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                context.l10n.commonAdd,
+                maxLines: 1,
+                style: AppTextStyles.bodySmall.copyWith(fontSize: 13, height: 1.3),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
-}
-
-class _DashedBorderPainter extends CustomPainter {
-  const _DashedBorderPainter();
-
-  static const _dash = 4.0;
-  static const _space = 3.0;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final outline = Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(AppRadii.large))
-            .deflate(0.5),
-      );
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..color = AppColors.secondary;
-    for (final metric in outline.computeMetrics()) {
-      for (var at = 0.0; at < metric.length; at += _dash + _space) {
-        canvas.drawPath(metric.extractPath(at, math.min(at + _dash, metric.length)), paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DashedBorderPainter oldDelegate) => false;
 }
 
 /// No animal here. For an owner whose animals are all in Ricordi the wording is
@@ -283,15 +238,7 @@ class _NoPets extends StatelessWidget {
       child: Column(
         children: [
           if (!onlyMemories) ...[
-            Container(
-              width: petRingAvatarExtent(context, _faceSize),
-              height: petRingAvatarExtent(context, _faceSize),
-              decoration: const BoxDecoration(
-                color: AppColors.secondarySoft,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.pets_rounded, color: AppColors.secondaryStrong),
-            ),
+            SpeciesFigure(species: 'Altro', size: petRingAvatarExtent(context, _faceSize)),
             const SizedBox(height: AppSpacing.md),
           ],
           Text(
@@ -325,47 +272,4 @@ class _NoPets extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Asks which animal the question is about; null when the owner goes back.
-Future<PetProfile?> showHomePetPicker(BuildContext context, List<PetProfile> pets) {
-  return showDialog<PetProfile>(
-    context: context,
-    builder: (dialogContext) => SimpleDialog(
-      title: Text(dialogContext.l10n.remindersChoosePet),
-      children: [
-        for (final pet in pets)
-          SimpleDialogOption(
-            key: ValueKey('home-pick-${pet.id}'),
-            onPressed: () => Navigator.of(dialogContext).pop(pet),
-            child: Row(
-              children: [
-                PetRingAvatar(pet: pet, size: 36),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        pet.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.title.copyWith(fontSize: 15),
-                      ),
-                      // Two animals may have the same name.
-                      Text(
-                        homePetLine(pet),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.bodySmall.copyWith(fontSize: 13),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
-    ),
-  );
 }

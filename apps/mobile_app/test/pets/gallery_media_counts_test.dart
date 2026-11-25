@@ -7,6 +7,7 @@ import 'package:vet_app_mobile/features/pets/data/pet_photo_repository.dart';
 import 'package:vet_app_mobile/features/pets/domain/pet_models.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/gallery_folders_page.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/pet_gallery_page.dart';
+import 'package:vet_app_mobile/features/pets/presentation/widgets/pet_avatar.dart';
 import 'package:vet_app_mobile/l10n/app_localizations.dart';
 
 /// QK-09: the gallery folders read the media counts of ALL the pets in one
@@ -160,12 +161,12 @@ void main() {
 
     tearDown(store.reset);
 
-    Future<void> pumpPage(WidgetTester tester) async {
+    Future<void> pumpPage(WidgetTester tester, {String language = 'it'}) async {
       await tester.pumpWidget(
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('it'),
+          locale: Locale(language),
           home: const GalleryFoldersPage(),
         ),
       );
@@ -173,17 +174,50 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
 
-    testWidgets('a folder shows its caption and opens its gallery', (tester) async {
+    testWidgets('a folder shows its photo and its caption, and opens its gallery', (tester) async {
+      await store.upsert(samplePets.first.copyWith(photoPath: 'owner/pet/face.jpg'));
       await pumpPage(tester);
 
       expect(find.text(samplePets.first.name), findsOneWidget);
-      expect(find.text('0 foto'), findsOneWidget); // no backend here: nothing to count
+      // No backend here: nothing to count but the face.
+      expect(find.text('1 foto'), findsOneWidget);
+      expect(find.byType(StoredPetPhoto), findsNWidgets(2), reason: 'the cover and the face');
 
       await tester.tap(find.text(samplePets.first.name));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.byType(PetGalleryPage), findsOneWidget);
+      expect(tester.widget<PetGalleryPage>(find.byType(PetGalleryPage)).startAdding, isFalse);
     });
+
+    testWidgets('a pet without photos is an invitation, which opens the ways to add one',
+        (tester) async {
+      await pumpPage(tester);
+      expect(find.text('0 foto'), findsNothing);
+
+      await tester.tap(find.text('Aggiungi foto'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.byType(PetGalleryPage), findsOneWidget);
+      expect(find.text('Scatta foto'), findsOneWidget);
+    });
+
+    for (final (language, width, textScale) in [('it', 320.0, 1.3), ('de', 320.0, 2.0)]) {
+      testWidgets('no overflow: $language, $width, text $textScale', (tester) async {
+        tester.view.physicalSize = Size(width, 640);
+        tester.view.devicePixelRatio = 1;
+        tester.platformDispatcher.textScaleFactorTestValue = textScale;
+        addTearDown(() {
+          tester.view.reset();
+          tester.platformDispatcher.clearTextScaleFactorTestValue();
+        });
+        await store.upsert(samplePets[1].copyWith(photoPath: 'owner/pet/face.jpg'));
+        await store.upsert(samplePets[2].copyWith(name: 'Principessa Serafina della Valle'));
+        await pumpPage(tester, language: language);
+        expect(tester.takeException(), isNull);
+      });
+    }
   });
 }

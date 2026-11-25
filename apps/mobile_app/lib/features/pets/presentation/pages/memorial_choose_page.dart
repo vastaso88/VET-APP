@@ -112,14 +112,7 @@ class _PetRow extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Row(
             children: [
-              PetAvatar(
-                label: pet.avatarEmoji,
-                backgroundColor: pet.accentColor,
-                photoBytes: pet.photoBytes,
-                photoPath: pet.photoPath,
-                identityColor: pet.identityColor,
-                size: 44,
-              ),
+              PetRingAvatar(pet: pet, size: 44),
               const SizedBox(width: AppSpacing.md),
               Expanded(child: Text(pet.name, style: AppTextStyles.body)),
               const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),

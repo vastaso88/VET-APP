@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../design_system/atoms/animal_figure.dart';
 import '../../design_system/responsive.dart';
 import '../../design_system/tokens/app_colors.dart';
 import '../../design_system/tokens/app_spacing.dart';
@@ -11,7 +12,7 @@ import '../../l10n/l10n.dart';
 /// The app's loading indicator: an animal spinning on its vertical axis.
 ///
 /// The animal changes once per full turn, at the edge-on moment (a quarter
-/// turn away from facing the viewer), so the swap happens while the glyph is
+/// turn away from facing the viewer), so the swap happens while the figure is
 /// too thin to read and never mid-face. The animals come in a random order, a
 /// new one for each loader. With reduced motion the static first animal is
 /// shown instead.
@@ -33,19 +34,29 @@ class PetLoader extends StatefulWidget {
   final double size;
   final String? label;
 
-  /// Tint of the disc behind the animal. Defaults to a soft neutral.
+  /// Of the animal and, much paler, of the disc behind it: light on a dark
+  /// ground. The accent by default.
   final Color? color;
 
   final bool _compactButton;
 
-  static const animals = <String>['🐶', '🐱', '🐰', '🐦', '🐠', '🐹', '🐢'];
+  static const animals = <AnimalFigure>[
+    AnimalFigure.dog,
+    AnimalFigure.cat,
+    AnimalFigure.rabbit,
+    AnimalFigure.bird,
+    AnimalFigure.fish,
+    AnimalFigure.smallMammal,
+    AnimalFigure.reptile,
+  ];
 
   /// The order the animals turn up in, chosen once for each loader: shuffled,
   /// so it does not always start with the dog and the cat. Tests replace it
   /// with one that keeps the order.
-  static List<String> Function(List<String> animals) orderOf = _shuffled;
+  static List<AnimalFigure> Function(List<AnimalFigure> animals) orderOf = _shuffled;
 
-  static List<String> _shuffled(List<String> animals) => List<String>.of(animals)..shuffle(math.Random());
+  static List<AnimalFigure> _shuffled(List<AnimalFigure> animals) =>
+      List<AnimalFigure>.of(animals)..shuffle(math.Random());
 
   /// Length of one full turn.
   static const turnDuration = Duration(milliseconds: 1800);
@@ -60,7 +71,7 @@ class _PetLoaderState extends State<PetLoader> with SingleTickerProviderStateMix
     duration: PetLoader.turnDuration,
   );
 
-  late final List<String> _order = PetLoader.orderOf(PetLoader.animals);
+  late final List<AnimalFigure> _order = PetLoader.orderOf(PetLoader.animals);
 
   bool? _reduceMotion;
   int _turns = 0;
@@ -124,17 +135,14 @@ class _PetLoaderState extends State<PetLoader> with SingleTickerProviderStateMix
               color: disc.withValues(alpha: 0.14),
             ),
             alignment: Alignment.center,
-            child: Text(
-              _order[index],
-              style: TextStyle(fontSize: size * 0.62, height: 1),
-            ),
+            child: AnimalFigureIcon(_order[index], size: size * 0.72, color: disc),
           ),
         );
       },
     );
 
     final label = widget.label;
-    // One spoken name: the turning animal emoji and the text under it are not
+    // One spoken name: the turning animal and the text under it are not
     // read out on top of it.
     return Semantics(
       label: label ?? context.l10n.sharedLoadingLabel,

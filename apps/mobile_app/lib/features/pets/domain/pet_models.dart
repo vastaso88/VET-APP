@@ -281,8 +281,9 @@ class PetProfile {
       avatarEmoji: avatarEmoji ?? this.avatarEmoji,
       accentColor: accentColor ?? this.accentColor,
       identityColor: identityColor ?? this.identityColor,
-      photoBytes: clearPhoto ? null : (photoBytes ?? this.photoBytes),
-      photoPath: clearPhoto ? null : (photoPath ?? this.photoPath),
+      // A photo given here is kept: [clearPhoto] only forgets the old one.
+      photoBytes: photoBytes ?? (clearPhoto ? null : this.photoBytes),
+      photoPath: photoPath ?? (clearPhoto ? null : this.photoPath),
       medicalRecordConsentGranted: medicalRecordConsentGranted ?? this.medicalRecordConsentGranted,
       aquariumStock: aquariumStock ?? this.aquariumStock,
       isMemorial: isMemorial ?? this.isMemorial,

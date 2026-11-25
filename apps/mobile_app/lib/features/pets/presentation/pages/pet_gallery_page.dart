@@ -18,6 +18,7 @@ import '../../../../shared/auth/current_owner.dart';
 import '../../../dog_walks/data/dog_walks_repository.dart';
 import '../../../dog_walks/domain/photo_walk_match.dart';
 import '../../../dog_walks/domain/walk_session.dart';
+import '../../application/pet_face.dart';
 import '../../data/pet_demo_store.dart';
 import '../../data/pet_media_capture.dart';
 import '../../data/pet_media_importer.dart';
@@ -31,9 +32,12 @@ import '../widgets/pet_avatar.dart';
 /// Every photo and short video of one pet, newest first: profile pictures
 /// saved over time plus anything imported from the gallery or recorded here.
 class PetGalleryPage extends StatefulWidget {
-  const PetGalleryPage({required this.pet, super.key});
+  const PetGalleryPage({required this.pet, this.startAdding = false, super.key});
 
   final PetProfile pet;
+
+  /// Opens with the ways to add a photo.
+  final bool startAdding;
 
   @override
   State<PetGalleryPage> createState() => _PetGalleryPageState();
@@ -53,6 +57,11 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
     super.initState();
     _loadWalks();
     PetPhotoRepository.changes.addListener(_onPhotosChanged);
+    if (widget.startAdding && !_readOnly) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showAddSheet();
+      });
+    }
   }
 
   @override
@@ -121,6 +130,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
         ...photos,
       ];
     }
+    unawaited(adoptFace(widget.pet.id, photos: photos));
     return photos;
   }
 
@@ -161,6 +171,9 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
     });
   }
 
+  /// By its path: earlier faces keep their mark of having been one.
+  bool _isFace(PetPhotoEntry photo) => photo.storagePath == _pet.photoPath;
+
   Future<void> _delete(PetPhotoEntry photo) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -187,8 +200,9 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
     );
     if (confirmed != true) return;
     await _run(() async {
+      final wasFace = _isFace(photo);
       await _repository.delete(photo);
-      if (photo.isProfile) {
+      if (wasFace) {
         await PetDemoStore.instance.upsert(_pet.copyWith(clearPhoto: true));
       }
     });
@@ -230,7 +244,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (!photo.isProfile && !photo.isVideo)
+            if (!_isFace(photo) && !photo.isVideo)
               ListTile(
                 leading: const Icon(Icons.account_circle_outlined),
                 title: Text(context.l10n.petsMediaSetAsProfile),
@@ -323,30 +337,43 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
                 return CenteredPageState(
                   child: EmptyState.figure(
                     figure: PetRingAvatar(pet: pet, size: 64),
-                    text: context.l10n.petsMediaGalleryEmpty,
+                    text: _readOnly
+                        ? context.l10n.memorialPageNoPhotos
+                        : context.l10n.petsMediaGalleryEmpty,
                     padding: EmptyState.insidePage,
+                    action: _readOnly
+                        ? null
+                        : FilledButton.icon(
+                            onPressed: _busy || _capture.busy ? null : _showAddSheet,
+                            icon: const Icon(Icons.add_a_photo_outlined),
+                            label: Text(context.l10n.commonAdd),
+                          ),
                   ),
                 );
               }
-              return PhotoTimelineView(
-                photos: photos,
-                onOpen: _openViewer,
-                onLongPress: _readOnly ? null : _showActions,
-                captionFor: _walkCaption,
+              return Stack(
+                children: [
+                  PhotoTimelineView(
+                    photos: photos,
+                    onOpen: _openViewer,
+                    onLongPress: _readOnly ? null : _showActions,
+                    captionFor: _walkCaption,
+                  ),
+                  if (!_readOnly)
+                    Positioned(
+                      right: AppSpacing.md,
+                      bottom: AppSpacing.md,
+                      child: FloatingActionButton.extended(
+                        heroTag: 'pet-gallery-add',
+                        onPressed: _busy || _capture.busy ? null : _showAddSheet,
+                        icon: const Icon(Icons.add_a_photo_outlined),
+                        label: Text(context.l10n.commonAdd),
+                      ),
+                    ),
+                ],
               );
             },
           ),
-          if (!_readOnly)
-            Positioned(
-              right: AppSpacing.md,
-              bottom: AppSpacing.md,
-              child: FloatingActionButton.extended(
-                heroTag: 'pet-gallery-add',
-                onPressed: _busy || _capture.busy ? null : _showAddSheet,
-                icon: const Icon(Icons.add_a_photo_outlined),
-                label: Text(context.l10n.commonAdd),
-              ),
-            ),
           if (_busy || _capture.busy)
             Positioned.fill(
               child: ColoredBox(
@@ -433,7 +460,9 @@ class _PetPhotoViewerPageState extends State<PetPhotoViewerPage> {
       body: FutureBuilder<Uint8List?>(
         future: _bytes,
         builder: (context, snapshot) {
-          final bytes = snapshot.data;
+          // The thumbnail (already here) until the whole photo is: no black page.
+          final bytes =
+              snapshot.data ?? PetPhotoRepository.thumbnailInMemory(widget.storagePath);
           if (bytes == null) {
             return const Center(
               child: PetLoader(color: AppColors.onMedia),
@@ -446,7 +475,9 @@ class _PetPhotoViewerPageState extends State<PetPhotoViewerPage> {
                 child: InteractiveViewer(
                   minScale: 1,
                   maxScale: 4,
-                  child: Center(child: Image.memory(bytes, fit: BoxFit.contain)),
+                  child: SizedBox.expand(
+                    child: Image.memory(bytes, fit: BoxFit.contain, gaplessPlayback: true),
+                  ),
                 ),
               ),
               if (caption != null) _ViewerCaption(caption),

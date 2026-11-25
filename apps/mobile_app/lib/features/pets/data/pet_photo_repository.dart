@@ -680,6 +680,10 @@ class PetPhotoRepository {
     return bytes;
   }
 
+  /// The thumbnail of [storagePath] when this session already has it: no disk, no
+  /// network, no wait.
+  static Uint8List? thumbnailInMemory(String storagePath) => _thumbMemory.get(storagePath);
+
   /// The small picture of [storagePath] for grids, avatars and covers (about
   /// 20 KB against 300-500 KB for the photo itself).
   ///

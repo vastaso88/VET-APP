@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/responsive.dart';
-import '../../../../design_system/tokens/app_colors.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_models.dart';
 import 'species_figure.dart';
@@ -11,12 +10,42 @@ import 'species_figure.dart';
 /// Side on screen of a [PetRingAvatar] of [size].
 double petRingAvatarExtent(BuildContext context, double size) => size * appScaleOf(context);
 
-/// The pet's face in a ring of its own colour: its photo or, without one, the
-/// simple figure of its species.
+/// The pet's face in a ring of its own colour, the same on every page: its
+/// photo or, without one, the flat figure of its species.
 class PetRingAvatar extends StatelessWidget {
-  const PetRingAvatar({super.key, required this.pet, this.size = 48});
+  PetRingAvatar({super.key, required PetProfile pet, this.size = 48})
+      : species = pet.species,
+        breed = pet.breed,
+        photoBytes = pet.photoBytes,
+        photoPath = pet.photoPath,
+        color = pet.identityColor;
 
-  final PetProfile pet;
+  /// An animal still being written (the form).
+  const PetRingAvatar.draft({
+    super.key,
+    required this.species,
+    this.breed,
+    this.photoBytes,
+    this.photoPath,
+    required this.color,
+    this.size = 48,
+  });
+
+  /// In the header of a page about one animal.
+  static const headerSize = 40.0;
+
+  final String species;
+  final String? breed;
+
+  /// A photo picked in this session.
+  final Uint8List? photoBytes;
+
+  /// Storage path of the saved photo, loaded when [photoBytes] isn't in memory
+  /// (e.g. a pet fetched from Supabase on a fresh session).
+  final String? photoPath;
+
+  /// The pet's identity colour.
+  final Color color;
   final double size;
 
   static const _ring = 3.0;
@@ -25,15 +54,15 @@ class PetRingAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final extent = petRingAvatarExtent(context, size);
     final inner = extent - 2 * _ring;
-    final figure = SpeciesFigure(species: pet.species, breed: pet.breed, size: inner);
+    final figure = SpeciesFigure(species: species, breed: breed, size: inner);
 
-    final photo = pet.photoBytes;
-    final path = pet.photoPath;
+    final photo = photoBytes;
+    final path = photoPath;
     final Widget face;
     if (photo != null) {
-      face = Image.memory(photo, width: inner, height: inner, fit: BoxFit.cover);
+      face = PetPhoto(key: ObjectKey(photo), bytes: photo, side: inner, fallback: figure);
     } else if (path != null) {
-      face = _StoredPetPhoto(path: path, size: inner, fallback: figure);
+      face = StoredPetPhoto(key: ValueKey(path), path: path, side: inner, fallback: figure);
     } else {
       face = figure;
     }
@@ -45,162 +74,78 @@ class PetRingAvatar extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: pet.identityColor, width: _ring),
+          border: Border.all(color: color, width: _ring),
         ),
-        child: ClipOval(child: face),
+        child: ClipOval(child: SizedBox.square(dimension: inner, child: face)),
       ),
     );
   }
 }
 
-/// A pet's avatar: a big circle holding either its photo or its initial
-/// letter, with a colored identity badge on its bottom-right edge so the
-/// same pet reads as the same color everywhere (calendar, legend, lists) —
-/// whether or not it has a photo.
-class PetAvatar extends StatelessWidget {
-  const PetAvatar({
-    required this.label,
-    required this.backgroundColor,
-    required this.identityColor,
-    super.key,
-    this.size = 72,
-    this.photoBytes,
-    this.photoPath,
-  });
+/// A photo of the animal filling its box, decoded for a box [side] wide and not
+/// at its own size (a picked photo can be 12 megapixels). Give it the bytes as key.
+class PetPhoto extends StatelessWidget {
+  const PetPhoto({super.key, required this.bytes, required this.side, required this.fallback});
 
-  final String label;
-  final Color backgroundColor;
-  final Color identityColor;
-  final double size;
-  final Uint8List? photoBytes;
+  final Uint8List bytes;
+  final double side;
 
-  /// Storage path of a persisted photo, loaded when [photoBytes] isn't in
-  /// memory (e.g. a pet fetched from Supabase on a fresh session).
-  final String? photoPath;
-
-  @override
-  Widget build(BuildContext context) {
-    final photo = photoBytes;
-    // Scaled to the real screen width so the avatar keeps its proportions
-    // on narrower/wider phones (see design_system/responsive.dart) instead
-    // of staying pinned to its reference-width pixel size.
-    final scaledSize = size * appScaleOf(context);
-    final badgeSize = scaledSize * 0.44;
-
-    final letter = Container(
-      width: scaledSize,
-      height: scaledSize,
-      color: backgroundColor,
-      alignment: Alignment.center,
-      child: _NoTextScaling(
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: scaledSize * 0.42,
-            fontWeight: FontWeight.w800,
-            color: AppColors.text,
-          ),
-        ),
-      ),
-    );
-
-    final Widget content;
-    if (photo != null) {
-      content = Image.memory(photo, width: scaledSize, height: scaledSize, fit: BoxFit.cover);
-    } else if (photoPath != null) {
-      content = _StoredPetPhoto(path: photoPath!, size: scaledSize, fallback: letter);
-    } else {
-      content = letter;
-    }
-
-    return SizedBox(
-      width: scaledSize,
-      height: scaledSize,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          ClipOval(child: content),
-          Positioned(
-            right: -badgeSize * 0.05,
-            bottom: -badgeSize * 0.05,
-            child: Container(
-              width: badgeSize,
-              height: badgeSize,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: identityColor,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.surfaceElevated, width: 2.5),
-                boxShadow: const [
-                  BoxShadow(color: AppColors.shadow, blurRadius: 4, offset: Offset(0, 1)),
-                ],
-              ),
-              child: _NoTextScaling(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: badgeSize * 0.46,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.onMedia,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StoredPetPhoto extends StatefulWidget {
-  const _StoredPetPhoto({required this.path, required this.size, required this.fallback});
-
-  final String path;
-  final double size;
+  /// Shown when the bytes are not a picture.
   final Widget fallback;
 
   @override
-  State<_StoredPetPhoto> createState() => _StoredPetPhotoState();
+  Widget build(BuildContext context) {
+    // Twice the side: a photo up to twice as long as wide still fills the box sharp.
+    final pixels = (side * 2 * MediaQuery.devicePixelRatioOf(context)).ceil();
+    return Image(
+      image: ResizeImage(
+        MemoryImage(bytes),
+        width: pixels,
+        height: pixels,
+        policy: ResizeImagePolicy.fit,
+      ),
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      gaplessPlayback: true,
+      excludeFromSemantics: true,
+      errorBuilder: (_, __, ___) => fallback,
+    );
+  }
 }
 
-class _StoredPetPhotoState extends State<_StoredPetPhoto> {
-  late Future<Uint8List?> _bytes = PetPhotoRepository().loadThumbnail(widget.path);
+/// The thumbnail of a saved photo, [fallback] until it is there. Give it the
+/// path as key: a list that changes must not show one animal with another's photo.
+class StoredPetPhoto extends StatefulWidget {
+  const StoredPetPhoto({
+    required this.path,
+    required this.side,
+    required this.fallback,
+    super.key,
+  });
+
+  final String path;
+  final double side;
+  final Widget fallback;
 
   @override
-  void didUpdateWidget(covariant _StoredPetPhoto oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.path != widget.path) {
-      _bytes = PetPhotoRepository().loadThumbnail(widget.path);
-    }
-  }
+  State<StoredPetPhoto> createState() => _StoredPetPhotoState();
+}
+
+class _StoredPetPhotoState extends State<StoredPetPhoto> {
+  late final Future<Uint8List?> _bytes = PetPhotoRepository().loadThumbnail(widget.path);
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Uint8List?>(
       future: _bytes,
+      // Already seen in this session: there at once, no flash of the figure.
+      initialData: PetPhotoRepository.thumbnailInMemory(widget.path),
       builder: (context, snapshot) {
         final bytes = snapshot.data;
         if (bytes == null) return widget.fallback;
-        return Image.memory(bytes, width: widget.size, height: widget.size, fit: BoxFit.cover);
+        return PetPhoto(bytes: bytes, side: widget.side, fallback: widget.fallback);
       },
-    );
-  }
-}
-
-/// The avatar letter's size is already derived from [appScaleOf] above via
-/// `scaledSize`, so it shouldn't also be multiplied by the ambient
-/// [TextScaler] the app sets globally — that would double-scale it.
-class _NoTextScaling extends StatelessWidget {
-  const _NoTextScaling({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return MediaQuery(
-      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
-      child: child,
     );
   }
 }

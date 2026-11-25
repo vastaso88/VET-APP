@@ -22,8 +22,7 @@ class PetsScaffold extends StatelessWidget {
   final VoidCallback? onBack;
   final Widget body;
 
-  /// Beside the back arrow: pass a [PetAvatar] on pages tied to one real pet
-  /// (detail/edit) so the header shows its actual photo or initial.
+  /// Beside the back arrow: the [PetRingAvatar] of the pet the page is about.
   final Widget? badge;
 
   @override

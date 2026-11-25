@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vet_app_mobile/design_system/atoms/animal_figure.dart';
+import 'package:vet_app_mobile/design_system/tokens/app_colors.dart';
 import 'package:vet_app_mobile/shared/widgets/pet_loader.dart';
 
 Widget _harness(Widget child, {bool disableAnimations = false}) {
@@ -11,12 +13,8 @@ Widget _harness(Widget child, {bool disableAnimations = false}) {
   );
 }
 
-String _currentAnimal(WidgetTester tester) {
-  return PetLoader.animals.firstWhere(
-    (emoji) => find.text(emoji).evaluate().isNotEmpty,
-    orElse: () => '',
-  );
-}
+AnimalFigure _currentAnimal(WidgetTester tester) =>
+    tester.widget<AnimalFigureIcon>(find.byType(AnimalFigureIcon)).figure;
 
 void main() {
   final shuffledOrder = PetLoader.orderOf;
@@ -26,12 +24,12 @@ void main() {
 
   test('the real order is a shuffle of the same animals', () {
     final orders = {
-      for (var i = 0; i < 30; i++) shuffledOrder(PetLoader.animals).join(),
+      for (var i = 0; i < 30; i++) shuffledOrder(PetLoader.animals),
     };
     for (final order in orders) {
-      expect(order.runes.length, PetLoader.animals.join().runes.length);
+      expect(order, unorderedEquals(PetLoader.animals));
     }
-    expect(orders.length, greaterThan(1));
+    expect({for (final order in orders) order.join()}.length, greaterThan(1));
   });
 
   testWidgets('the animal changes after one full turn', (tester) async {
@@ -61,7 +59,7 @@ void main() {
   testWidgets('no label text when none is given', (tester) async {
     await tester.pumpWidget(_harness(const PetLoader()));
 
-    expect(find.byType(Text), findsOneWidget);
+    expect(find.byType(Text), findsNothing);
   });
 
   testWidgets('reduced motion shows the static first animal and runs no animation', (tester) async {
@@ -85,6 +83,15 @@ void main() {
   testWidgets('the small variant renders without a label', (tester) async {
     await tester.pumpWidget(_harness(const PetLoader.small()));
 
-    expect(find.text(PetLoader.animals.first), findsOneWidget);
+    expect(_currentAnimal(tester), PetLoader.animals.first);
+  });
+
+  testWidgets('the animal takes the colour asked for, light on a dark ground', (tester) async {
+    await tester.pumpWidget(_harness(const PetLoader(color: AppColors.onMedia)));
+
+    expect(
+      tester.widget<AnimalFigureIcon>(find.byType(AnimalFigureIcon)).color,
+      AppColors.onMedia,
+    );
   });
 }

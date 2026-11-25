@@ -61,14 +61,7 @@ class ReminderPageShell extends StatelessWidget {
                 showBack: true,
                 badge: pet == null
                     ? null
-                    : PetAvatar(
-                        label: pet.avatarEmoji,
-                        backgroundColor: pet.accentColor,
-                        identityColor: pet.identityColor,
-                        photoBytes: pet.photoBytes,
-                        photoPath: pet.photoPath,
-                        size: 36,
-                      ),
+                    : PetRingAvatar(pet: pet, size: PetRingAvatar.headerSize),
               ),
               const SizedBox(height: AppSpacing.lg),
               // Only on the reminders screens that list or edit them, where a

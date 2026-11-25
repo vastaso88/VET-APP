@@ -136,14 +136,7 @@ class _MemorialMovePageState extends State<MemorialMovePage> {
         onBack: () => _onRemindersStep
             ? setState(() => _onRemindersStep = false)
             : Navigator.of(context).maybePop(),
-        badge: PetAvatar(
-          label: pet.avatarEmoji,
-          backgroundColor: pet.accentColor,
-          photoBytes: pet.photoBytes,
-          photoPath: pet.photoPath,
-          identityColor: pet.identityColor,
-          size: 40,
-        ),
+        badge: PetRingAvatar(pet: pet, size: PetRingAvatar.headerSize),
         body: SingleChildScrollView(
           child: _onRemindersStep ? _remindersStep(context) : _dateStep(context),
         ),
@@ -157,14 +150,7 @@ class _MemorialMovePageState extends State<MemorialMovePage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Center(
-          child: PetAvatar(
-            label: pet.avatarEmoji,
-            backgroundColor: pet.accentColor,
-            photoBytes: pet.photoBytes,
-            photoPath: pet.photoPath,
-            identityColor: pet.identityColor,
-            size: 96,
-          ),
+          child: PetRingAvatar(pet: pet, size: 96),
         ),
         const SizedBox(height: AppSpacing.lg),
         Text(

@@ -93,6 +93,12 @@ PAIRS: list[tuple[str, str, float, str]] = [
     ("primary", "surfaceElevated", 3.0, "edge of the field being written"),
     ("danger", "surfaceElevated", 4.5, "edge and text of a field with an error"),
     ("text", "secondarySoft", 4.5, "initial in a calendar mark"),
+    # The flat figures of the species, on their ground and in a pill (the paw, the reptile
+    # and the fish are pairs already above).
+    ("warningStrong", "warningSoft", 3.0, "figure of a mammal"),
+    ("infoStrong", "infoSoft", 3.0, "figure of a bird"),
+    ("warningStrong", "infoSoft", 3.0, "beak of a bird"),
+    ("secondaryStrong", "surface", 3.0, "figure in a pill that is not chosen"),
 ]
 
 

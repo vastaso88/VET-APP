@@ -360,14 +360,6 @@ class _PetProfileFormState extends State<PetProfileForm> {
     });
   }
 
-  Color _speciesAccentColor() {
-    final species = _species;
-    if (species == null || species.trim().isEmpty) {
-      return widget.initialPet?.accentColor ?? AppColors.secondarySoft;
-    }
-    return PetDemoStore.optionForSpecies(species).accentColor;
-  }
-
   @override
   void dispose() {
     _nameController.dispose();
@@ -431,26 +423,16 @@ class _PetProfileFormState extends State<PetProfileForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ValueListenableBuilder<TextEditingValue>(
-          valueListenable: _nameController,
-          builder: (context, value, _) {
-            final trimmed = value.text.trim();
-            final label = trimmed.isNotEmpty
-                ? trimmed[0].toUpperCase()
-                : (widget.initialPet?.avatarEmoji ?? '?');
-            return _PhotoPicker(
-              photoBytes: _photoBytes,
-              photoPath: _photoTouched ? null : widget.initialPet?.photoPath,
-              identityColor: _identityColor,
-              backgroundColor: _speciesAccentColor(),
-              label: label,
-              onPick: _pickPhoto,
-              onRemove: _photoBytes == null &&
-                      (_photoTouched || widget.initialPet?.photoPath == null)
-                  ? null
-                  : _removePhoto,
-            );
-          },
+        _PhotoPicker(
+          species: _species ?? '',
+          breed: _breed,
+          photoBytes: _photoBytes,
+          photoPath: _photoTouched ? null : widget.initialPet?.photoPath,
+          identityColor: _identityColor,
+          onPick: _pickPhoto,
+          onRemove: _photoBytes == null && (_photoTouched || widget.initialPet?.photoPath == null)
+              ? null
+              : _removePhoto,
         ),
         const SizedBox(height: AppSpacing.md),
         FieldLabel(context.l10n.petsFormIdentityColor),
@@ -1373,20 +1355,20 @@ class _PetProfileFormState extends State<PetProfileForm> {
 
 class _PhotoPicker extends StatelessWidget {
   const _PhotoPicker({
+    required this.species,
+    required this.breed,
     required this.photoBytes,
     required this.identityColor,
-    required this.backgroundColor,
-    required this.label,
     required this.onPick,
     this.photoPath,
     this.onRemove,
   });
 
+  final String species;
+  final String? breed;
   final Uint8List? photoBytes;
   final String? photoPath;
   final Color identityColor;
-  final Color backgroundColor;
-  final String label;
   final VoidCallback onPick;
   final VoidCallback? onRemove;
 
@@ -1395,12 +1377,12 @@ class _PhotoPicker extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        PetAvatar(
-          label: label,
-          backgroundColor: backgroundColor,
+        PetRingAvatar.draft(
+          species: species,
+          breed: breed,
           photoBytes: photoBytes,
           photoPath: photoPath,
-          identityColor: identityColor,
+          color: identityColor,
           size: 64,
         ),
         const SizedBox(width: AppSpacing.md),

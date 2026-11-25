@@ -75,7 +75,7 @@ class _RemindersListPageState extends State<RemindersListPage> {
       if (!mounted) return;
       await openReminderCreate(
         context,
-        petNames: [for (final pet in PetDemoStore.instance.list()) pet.name],
+        pets: PetDemoStore.instance.list(),
       );
       if (mounted) await _reload();
     }());

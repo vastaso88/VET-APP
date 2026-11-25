@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 
+import '../../../../design_system/atoms/animal_figure.dart';
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../data/pet_demo_store.dart';
 import '../../domain/pet_details.dart';
 
-/// The simple figure of a kind of animal on its own pale tint: it stands in for
-/// a missing photo and goes next to a story. Only figures the app already shows
-/// (those of the species choice and of the loader); an animal the app cannot
-/// place gets the flat paw.
+/// The flat figure of a kind of animal: the only one the app shows for it, on
+/// every page. It stands in for a missing photo and goes next to a story or the
+/// name of a species. An animal without a drawing gets the neutral paw.
 class SpeciesFigure extends StatelessWidget {
-  const SpeciesFigure({super.key, required this.species, this.breed, required this.size});
+  /// On its own pale round ground, [size] wide.
+  const SpeciesFigure({super.key, required this.species, this.breed, required this.size})
+      : color = null;
+
+  /// Only the figure, in one colour: inside a pill, next to its text.
+  const SpeciesFigure.glyph({
+    super.key,
+    required this.species,
+    required this.size,
+    required Color this.color,
+  }) : breed = null;
 
   /// The stored species ("Cane", "Piccoli mammiferi"...), or a news category.
   final String species;
@@ -18,48 +27,53 @@ class SpeciesFigure extends StatelessWidget {
   /// Side of the (already scaled) square the figure fills.
   final double size;
 
-  /// The figure, or null when only the paw is right.
-  static String? emojiFor(String species, [String? breed]) {
-    String of(String category) => PetDemoStore.optionForSpecies(category).avatarEmoji;
-    return switch (petKindOf(species, breed)) {
-      PetKind.rabbit => '🐰',
-      // A hen is stored under "Altro": still a bird.
-      PetKind.bird => of('Uccello'),
-      PetKind.dog || PetKind.cat || PetKind.smallMammal || PetKind.reptile || PetKind.fish =>
-        of(species),
-      PetKind.amphibian || PetKind.largeMammal || PetKind.invertebrate || PetKind.unknown => null,
-    };
-  }
+  final Color? color;
 
-  /// The pale ground: the species' own tint, sage when it is not a species.
-  static Color tintFor(String species) {
-    final normalized = species.trim().toLowerCase();
-    for (final option in PetDemoStore.speciesOptions) {
-      if (option.label.toLowerCase() == normalized) return option.accentColor;
-    }
-    return AppColors.secondarySoft;
-  }
+  static AnimalFigure figureFor(String species, [String? breed]) =>
+      switch (petKindOf(species, breed)) {
+        PetKind.dog => AnimalFigure.dog,
+        PetKind.cat => AnimalFigure.cat,
+        PetKind.rabbit => AnimalFigure.rabbit,
+        PetKind.smallMammal => AnimalFigure.smallMammal,
+        PetKind.bird => AnimalFigure.bird,
+        PetKind.reptile => AnimalFigure.reptile,
+        PetKind.fish => AnimalFigure.fish,
+        PetKind.amphibian ||
+        PetKind.largeMammal ||
+        PetKind.invertebrate ||
+        PetKind.unknown =>
+          AnimalFigure.paw,
+      };
+
+  /// The two colours of a figure (contrast: scripts/design/contrast_check.py).
+  static ({Color ground, Color ink}) colorsOf(AnimalFigure figure) => switch (figure) {
+        AnimalFigure.dog ||
+        AnimalFigure.cat ||
+        AnimalFigure.rabbit ||
+        AnimalFigure.smallMammal =>
+          (ground: AppColors.warningSoft, ink: AppColors.warningStrong),
+        AnimalFigure.bird => (ground: AppColors.infoSoft, ink: AppColors.infoStrong),
+        AnimalFigure.fish => (ground: AppColors.primarySoft, ink: AppColors.primary),
+        AnimalFigure.reptile ||
+        AnimalFigure.paw =>
+          (ground: AppColors.secondarySoft, ink: AppColors.secondaryStrong),
+      };
 
   @override
   Widget build(BuildContext context) {
-    final emoji = emojiFor(species, breed);
-    return ExcludeSemantics(
-      child: ColoredBox(
-        color: tintFor(species),
-        child: SizedBox.square(
-          dimension: size,
-          child: Center(
-            child: emoji == null
-                ? Icon(Icons.pets_rounded, size: size * 0.54, color: AppColors.secondaryStrong)
-                : Text(
-                    emoji,
-                    // The square is already scaled to the screen: the phone's
-                    // text size must not push the figure out of it.
-                    textScaler: TextScaler.noScaling,
-                    style: TextStyle(fontSize: size * 0.56, height: 1.2),
-                  ),
-          ),
-        ),
+    final figure = figureFor(species, breed);
+    if (color case final color?) return AnimalFigureIcon(figure, size: size, color: color);
+    final (:ground, :ink) = colorsOf(figure);
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(color: ground, shape: BoxShape.circle),
+      child: AnimalFigureIcon(
+        figure,
+        size: size * 0.7,
+        color: ink,
+        accent: AppColors.warningStrong,
       ),
     );
   }

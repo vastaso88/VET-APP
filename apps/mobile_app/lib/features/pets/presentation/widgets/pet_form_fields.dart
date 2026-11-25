@@ -9,6 +9,7 @@ import '../../data/pet_demo_store.dart';
 import '../../domain/pet_details.dart';
 import '../../domain/pet_value_labels.dart';
 import '../../../../shared/widgets/app_field.dart';
+import 'species_figure.dart';
 
 /// Shared by the single-page profile form and the step-by-step creation flow:
 /// the fields that exist in both.
@@ -66,8 +67,8 @@ class PetSexField extends FormField<String> {
         );
 }
 
-/// One chip per species, each with its emoji (the same one the pet's avatar
-/// falls back to).
+/// One chip per species, each with its figure (the one the pet's avatar falls
+/// back to).
 class PetSpeciesChips extends FormField<String> {
   PetSpeciesChips({
     required String? value,
@@ -87,7 +88,7 @@ class PetSpeciesChips extends FormField<String> {
                   children: [
                     for (final option in PetDemoStore.speciesOptions)
                       _SpeciesChoiceChip(
-                        emoji: option.avatarEmoji,
+                        species: option.label,
                         label: localizedSpeciesLabel(option.label),
                         selected: state.value == option.label,
                         onTap: () {
@@ -118,13 +119,13 @@ class PetSpeciesChips extends FormField<String> {
 
 class _SpeciesChoiceChip extends StatelessWidget {
   const _SpeciesChoiceChip({
-    required this.emoji,
+    required this.species,
     required this.label,
     required this.selected,
     required this.onTap,
   });
 
-  final String emoji;
+  final String species;
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -156,7 +157,11 @@ class _SpeciesChoiceChip extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(emoji, style: const TextStyle(fontSize: 16)),
+                SpeciesFigure.glyph(
+                  species: species,
+                  size: 20,
+                  color: selected ? AppColors.onPrimary : AppColors.secondaryStrong,
+                ),
                 const SizedBox(width: AppSpacing.xs),
                 Flexible(
                   child: Text(

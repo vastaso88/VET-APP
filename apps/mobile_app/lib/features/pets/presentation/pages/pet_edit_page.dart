@@ -30,14 +30,7 @@ class PetEditPage extends StatelessWidget {
     return PetsScaffold(
       title: context.l10n.petsEditTitle(pet.name),
       onBack: () => Navigator.of(context).maybePop(),
-      badge: PetAvatar(
-        label: pet.avatarEmoji,
-        backgroundColor: pet.accentColor,
-        photoBytes: pet.photoBytes,
-        photoPath: pet.photoPath,
-        identityColor: pet.identityColor,
-        size: 36,
-      ),
+      badge: PetRingAvatar(pet: pet, size: PetRingAvatar.headerSize),
       body: _EditForm(pet: pet),
     );
   }

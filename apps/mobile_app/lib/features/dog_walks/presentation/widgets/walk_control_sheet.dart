@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../../../pets/domain/pet_models.dart';
@@ -115,7 +116,7 @@ Future<void> _finishWithProgress(BuildContext context, PetProfile pet) async {
       duration: const Duration(minutes: 1),
       content: Row(
         children: [
-          const PetLoader.small(),
+          const PetLoader.small(color: AppColors.onMedia),
           const SizedBox(width: 12),
           Text(context.l10n.walksSavingSnackbar),
         ],

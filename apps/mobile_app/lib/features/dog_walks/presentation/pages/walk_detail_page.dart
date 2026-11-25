@@ -8,8 +8,10 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/data/pet_photo_repository.dart';
 import '../../../pets/presentation/pages/pet_gallery_page.dart';
+import '../../../pets/presentation/widgets/pet_avatar.dart';
 import '../../domain/photo_walk_match.dart';
 import '../../domain/walk_photo_pins.dart';
 import '../../domain/walk_route_markers.dart';
@@ -100,10 +102,14 @@ class _WalkDetailPageState extends State<WalkDetailPage> {
     final segments = splitRouteIntoSegments(walk.route);
     final pauseCount = segments.isEmpty ? 0 : segments.length - 1;
     final markers = computeWalkRouteMarkers(walk.route, isFinished: true);
+    final pet = PetDemoStore.instance.byId(walk.petId);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: PageHeader(title: context.l10n.walksPageTitle(widget.petName)),
+      appBar: PageHeader(
+        title: context.l10n.walksPageTitle(widget.petName),
+        badge: pet == null ? null : PetRingAvatar(pet: pet, size: PetRingAvatar.headerSize),
+      ),
       body: SafeArea(
         child: Column(
           children: [

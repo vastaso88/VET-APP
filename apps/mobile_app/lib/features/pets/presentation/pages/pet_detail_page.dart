@@ -123,14 +123,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
       onBack: () => Navigator.of(context).maybePop(),
       badge: pet == null
           ? null
-          : PetAvatar(
-              label: pet.avatarEmoji,
-              backgroundColor: pet.accentColor,
-              photoBytes: pet.photoBytes,
-              photoPath: pet.photoPath,
-              identityColor: pet.identityColor,
-              size: 36,
-            ),
+          : PetRingAvatar(pet: pet, size: PetRingAvatar.headerSize),
       actions: [
         OutlineIconButton(
           tooltip: context.l10n.petsDetailGalleryTooltip,

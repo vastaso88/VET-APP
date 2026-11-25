@@ -146,14 +146,7 @@ class _PetDataPageState extends State<PetDataPage> {
       title: t.petsDataTitle,
       subtitle: pet.name,
       onBack: () => Navigator.of(context).maybePop(),
-      badge: PetAvatar(
-        label: pet.avatarEmoji,
-        backgroundColor: pet.accentColor,
-        photoBytes: pet.photoBytes,
-        photoPath: pet.photoPath,
-        identityColor: pet.identityColor,
-        size: 36,
-      ),
+      badge: PetRingAvatar(pet: pet, size: PetRingAvatar.headerSize),
       // A pet in Ricordi: the profile is shown as it was, never edited
       // (docs/product/17_ricordi_animali.md).
       actions: [

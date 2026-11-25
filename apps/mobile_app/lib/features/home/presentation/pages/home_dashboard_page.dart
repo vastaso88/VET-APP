@@ -19,6 +19,7 @@ import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../../pets/presentation/pages/pet_create_page.dart';
 import '../../../pets/presentation/pages/pet_detail_page.dart';
+import '../../../pets/presentation/widgets/pet_picker.dart';
 import '../../../reminders/data/reminders_repository.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
 import '../../../settings/data/layout_settings_store.dart';
@@ -181,7 +182,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     try {
       final pets = PetDemoStore.instance.list();
       if (pets.isEmpty) return;
-      final pet = pets.length == 1 ? pets.single : await showHomePetPicker(context, pets);
+      final pet = pets.length == 1 ? pets.single : await showPetPicker(context, pets);
       if (pet == null || !mounted) return;
       setState(() => _openingChat = true);
       try {

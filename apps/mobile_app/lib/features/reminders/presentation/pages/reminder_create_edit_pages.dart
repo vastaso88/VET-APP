@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../../l10n/l10n.dart';
 import '../../../notifications/presentation/exact_alarm_permission.dart';
+import '../../../pets/domain/pet_models.dart';
+import '../../../pets/presentation/widgets/pet_picker.dart';
 import '../../data/reminders_repository.dart';
 import '../widgets/reminder_form.dart';
 import '../widgets/reminder_page_parts.dart';
@@ -13,36 +15,19 @@ import '../widgets/reminder_page_parts.dart';
 /// it is used; several: the owner picks; none: they are told to add one first.
 Future<void> openReminderCreate(
   BuildContext context, {
-  required List<String> petNames,
+  required List<PetProfile> pets,
   RemindersRepository? repository,
 }) async {
-  final String name;
-  if (petNames.isEmpty) {
+  if (pets.isEmpty) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(context.l10n.remindersNeedPetFirst)));
     return;
-  } else if (petNames.length == 1) {
-    name = petNames.single;
-  } else {
-    final picked = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => SimpleDialog(
-        title: Text(dialogContext.l10n.remindersChoosePet),
-        children: [
-          for (final petName in petNames)
-            SimpleDialogOption(
-              onPressed: () => Navigator.of(dialogContext).pop(petName),
-              child: Text(petName),
-            ),
-        ],
-      ),
-    );
-    if (picked == null || !context.mounted) return;
-    name = picked;
   }
+  final pet = pets.length == 1 ? pets.single : await showPetPicker(context, pets);
+  if (pet == null || !context.mounted) return;
   await Navigator.of(context).push<void>(
     MaterialPageRoute<void>(
-      builder: (_) => ReminderCreatePage(petName: name, repository: repository),
+      builder: (_) => ReminderCreatePage(petName: pet.name, repository: repository),
     ),
   );
 }

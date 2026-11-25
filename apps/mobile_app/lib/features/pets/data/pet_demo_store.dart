@@ -26,13 +26,11 @@ enum _SaveOutcome { saved, failed, refusedByPlan }
 class PetSpeciesOption {
   const PetSpeciesOption({
     required this.label,
-    required this.avatarEmoji,
     required this.accentColor,
     required this.breeds,
   });
 
   final String label;
-  final String avatarEmoji;
   final Color accentColor;
   final List<String> breeds;
 }
@@ -51,7 +49,6 @@ class PetDemoStore {
   static final List<PetSpeciesOption> speciesOptions = [
     const PetSpeciesOption(
       label: 'Cane',
-      avatarEmoji: '🐶',
       accentColor: AppIdentityColors.tintGreen,
       breeds: [
         'Akita',
@@ -95,7 +92,6 @@ class PetDemoStore {
     ),
     const PetSpeciesOption(
       label: 'Gatto',
-      avatarEmoji: '🐱',
       accentColor: AppIdentityColors.tintAmber,
       breeds: [
         'Abissino',
@@ -127,31 +123,26 @@ class PetDemoStore {
     ),
     PetSpeciesOption(
       label: 'Piccoli mammiferi',
-      avatarEmoji: '🐹',
       accentColor: AppIdentityColors.tintYellow,
       breeds: smallMammalBreeds,
     ),
     PetSpeciesOption(
       label: 'Uccello',
-      avatarEmoji: '🦜',
       accentColor: AppIdentityColors.tintBlue,
       breeds: birdBreeds,
     ),
     PetSpeciesOption(
       label: 'Rettili e anfibi',
-      avatarEmoji: '🦎',
       accentColor: AppIdentityColors.tintOlive,
       breeds: reptileAmphibianBreeds,
     ),
     PetSpeciesOption(
       label: 'Pesce',
-      avatarEmoji: '🐠',
       accentColor: AppIdentityColors.tintTeal,
       breeds: aquariumFishSpecies,
     ),
     PetSpeciesOption(
       label: 'Altro',
-      avatarEmoji: '🐾',
       accentColor: AppIdentityColors.tintViolet,
       breeds: otherAnimalBreeds,
     ),
@@ -700,6 +691,16 @@ class PetDemoStore {
     }
   }
 
+  /// The pet's photo as the server already has it (see
+  /// [PetPhotoRepository.setProfile]): every page shows it at once.
+  void setPhotoLocal(String petId, String storagePath) {
+    final pet = byId(petId);
+    if (pet == null) return;
+    _putLocal(pet.copyWith(photoPath: storagePath, clearPhoto: true));
+    changes.value++;
+    _saveToCache();
+  }
+
   /// Applies a consent decision to the in-memory pet and notifies listeners,
   /// so the records tab and anything else showing the pet update at once.
   void setMedicalRecordConsentLocal(String petId, bool granted) {
@@ -802,7 +803,7 @@ class PetDemoStore {
       medicalNote: medicalNote.trim().isEmpty ? appL10n.petsDemoNewProfileNote : medicalNote.trim(),
       healthBadge: '',
       nextVisitLabel: appL10n.petsDemoNextVisitToPlan,
-      avatarEmoji: name.trim().isEmpty ? option.avatarEmoji : name.trim()[0].toUpperCase(),
+      avatarEmoji: name.trim().isEmpty ? '' : name.trim()[0].toUpperCase(),
       accentColor: option.accentColor,
       identityColor: identityColor,
       photoBytes: photoBytes,

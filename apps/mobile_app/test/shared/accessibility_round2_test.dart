@@ -118,12 +118,12 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('the loader has one spoken name, not the emoji', (tester) async {
+  testWidgets('the loader has one spoken name, not the animal', (tester) async {
     final handle = tester.ensureSemantics();
     PetLoader.orderOf = (animals) => animals;
     await tester.pumpWidget(_app(const Center(child: PetLoader(label: 'Carico i dati'))));
     expect(find.bySemanticsLabel('Carico i dati'), findsOneWidget);
-    expect(find.bySemanticsLabel(RegExp('🐶')), findsNothing);
+    expect(find.bySemanticsLabel(RegExp('.')), findsOneWidget);
     handle.dispose();
   });
 

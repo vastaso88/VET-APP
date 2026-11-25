@@ -12,7 +12,7 @@ import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
-import '../../../pets/data/pet_demo_store.dart';
+import '../../../pets/presentation/widgets/species_figure.dart';
 import '../../../../shared/widgets/min_tap_target.dart';
 import '../../data/pet_news_repository.dart';
 import '../../domain/pet_news_item.dart';
@@ -290,9 +290,10 @@ class _CategoryChip extends StatelessWidget {
               else if (isGenerale)
                 Icon(Icons.campaign_outlined, size: 15, color: selected ? AppColors.onPrimary : AppColors.text)
               else
-                Text(
-                  PetDemoStore.optionForSpecies(species ?? label).avatarEmoji,
-                  style: const TextStyle(fontSize: 14),
+                SpeciesFigure.glyph(
+                  species: species ?? label,
+                  size: 20,
+                  color: selected ? AppColors.onPrimary : AppColors.text,
                 ),
               const SizedBox(width: 6),
               Text(

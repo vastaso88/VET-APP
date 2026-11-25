@@ -199,9 +199,7 @@ class _PetsListContent extends StatelessWidget {
     final l10n = context.l10n;
     if (selectedSpecies != 'Tutti') {
       return EmptyState.figure(
-        figure: ClipOval(
-          child: SpeciesFigure(species: selectedSpecies, size: EmptyState.figureSize),
-        ),
+        figure: SpeciesFigure(species: selectedSpecies, size: EmptyState.figureSize),
         title: l10n.petsListFilterEmpty,
         padding: EmptyState.insidePage,
         action: FilledButton(
@@ -302,14 +300,7 @@ class _PetRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           child: Row(
             children: [
-              PetAvatar(
-                label: pet.avatarEmoji,
-                backgroundColor: pet.accentColor,
-                photoBytes: pet.photoBytes,
-                photoPath: pet.photoPath,
-                identityColor: pet.identityColor,
-                size: 52,
-              ),
+              PetRingAvatar(pet: pet, size: 52),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(

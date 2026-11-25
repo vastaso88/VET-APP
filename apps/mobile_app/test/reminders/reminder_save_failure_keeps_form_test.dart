@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vet_app_mobile/features/pets/domain/pet_models.dart';
 import 'package:vet_app_mobile/features/reminders/data/reminders_repository.dart';
 import 'package:vet_app_mobile/features/reminders/presentation/pages/reminders_pages.dart';
 import 'package:vet_app_mobile/l10n/app_localizations.dart';
@@ -100,7 +101,9 @@ void main() {
             body: ElevatedButton(
               onPressed: () => openReminderCreate(
                 context,
-                petNames: pets,
+                pets: [
+                  for (final name in pets) samplePets.first.copyWith(id: name, name: name),
+                ],
                 repository: _OfflineRepository()..offline = false,
               ),
               child: const Text('crea'),

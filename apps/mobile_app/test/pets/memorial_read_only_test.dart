@@ -171,11 +171,11 @@ void main() {
       _phone(tester);
       await tester.pumpWidget(_app(PetGalleryPage(pet: _moka(memorial: true))));
       await tester.pumpAndSettle();
-      expect(find.byType(FloatingActionButton), findsNothing);
+      expect(find.byIcon(Icons.add_a_photo_outlined), findsNothing);
 
       await tester.pumpWidget(_app(PetGalleryPage(pet: _moka(memorial: false))));
       await tester.pumpAndSettle();
-      expect(find.byType(FloatingActionButton), findsOneWidget);
+      expect(find.byIcon(Icons.add_a_photo_outlined), findsOneWidget);
     });
 
     testWidgets('profile: no edit button, no "add the microchip" nudge', (tester) async {

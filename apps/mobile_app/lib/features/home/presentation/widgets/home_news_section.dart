@@ -116,7 +116,7 @@ class HomeNewsRow extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipOval(child: SpeciesFigure(species: item.species, size: _figureSize)),
+                SpeciesFigure(species: item.species, size: _figureSize),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(

@@ -105,14 +105,7 @@ class _MemoryRow extends StatelessWidget {
       child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              PetAvatar(
-                label: pet.avatarEmoji,
-                backgroundColor: pet.accentColor,
-                photoBytes: pet.photoBytes,
-                photoPath: pet.photoPath,
-                identityColor: pet.identityColor,
-                size: 48,
-              ),
+              PetRingAvatar(pet: pet, size: 48),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(

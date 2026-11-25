@@ -417,14 +417,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        PetAvatar(
-          label: pet.avatarEmoji,
-          backgroundColor: pet.accentColor,
-          photoBytes: pet.photoBytes,
-          photoPath: pet.photoPath,
-          identityColor: pet.identityColor,
-          size: 112,
-        ),
+        PetRingAvatar(pet: pet, size: 112),
         const SizedBox(height: AppSpacing.md),
         Text(
           '${pet.speciesDisplayLabel} · ${pet.breedLabel}',
