@@ -7,11 +7,16 @@
          lib/features/first_run/presentation/pages/notification_permission_page.dart. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Lets flutter_local_notifications put the scheduled reminder/medicine/
-         birthday notifications back after a reboot (lib/features/notifications/).
-         Deliberately NO SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM: inexact alarms
-         may arrive a few minutes late in Doze, which is fine for these, and
-         exact ones need a Google Play declaration reserved to alarm/calendar apps. -->
+         birthday notifications back after a reboot (lib/features/notifications/). -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Reminders and medicine doses ring exactly at the hour the owner chose
+         (owner, 2026-11-25); inexact alarms were measured up to an hour late.
+         From Android 14 the owner gives the access in a system screen
+         (lib/features/notifications/presentation/exact_alarm_permission.dart);
+         without it the alarms stay inexact. Deliberately NOT USE_EXACT_ALARM:
+         Google Play reserves it to alarm-clock and calendar apps.
+         See docs/compliance/05_permessi_dispositivo_os.md. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <!-- Foreground-only location — Località in Impostazioni, passeggiate, attività locali.
          See docs/compliance/05_permessi_dispositivo_os.md. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />

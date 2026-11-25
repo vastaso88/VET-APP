@@ -9,6 +9,7 @@ import '../../dog_walks/domain/walk_session.dart';
 import '../../pets/data/pet_demo_store.dart';
 import '../../pets/data/pet_photo_repository.dart';
 import '../../pets/domain/pet_models.dart';
+import '../../reminders/data/reminder_postponement_store.dart';
 import '../../reminders/data/reminders_repository.dart';
 import '../data/local_notifications_gateway.dart';
 import '../data/notification_preferences_store.dart';
@@ -29,6 +30,7 @@ class NotificationScheduler {
     required Future<NotificationPreferences> Function() loadPreferences,
     Future<Map<String, List<MemoryWalk>>> Function(List<PetProfile> pets)? loadFavouriteWalks,
     Future<Map<String, List<DateTime>>> Function(List<PetProfile> pets)? loadPhotoDates,
+    Future<Map<String, DateTime>> Function(List<ReminderEntry> reminders)? loadPostponements,
     DateTime Function()? now,
     this.debounce = const Duration(milliseconds: 400),
   })  : _gateway = gateway,
@@ -38,10 +40,12 @@ class NotificationScheduler {
         _loadPreferences = loadPreferences,
         _loadFavouriteWalks = loadFavouriteWalks ?? _noWalks,
         _loadPhotoDates = loadPhotoDates ?? _noPhotos,
+        _loadPostponements = loadPostponements ?? _noPostponements,
         _now = now ?? notificationNow;
 
   static Future<Map<String, List<MemoryWalk>>> _noWalks(List<PetProfile> _) async => const {};
   static Future<Map<String, List<DateTime>>> _noPhotos(List<PetProfile> _) async => const {};
+  static Future<Map<String, DateTime>> _noPostponements(List<ReminderEntry> _) async => const {};
 
   static NotificationScheduler? _instance;
 
@@ -56,6 +60,7 @@ class NotificationScheduler {
         },
         loadFavouriteWalks: _favouriteWalksOfMemories,
         loadPhotoDates: _photoDatesOfMemories,
+        loadPostponements: ReminderPostponementStore.instance.forReminders,
         isSignedIn: () => CurrentUser.get() != null,
         loadPreferences: () async {
           await NotificationPreferencesStore.instance.ensureLoaded();
@@ -70,6 +75,7 @@ class NotificationScheduler {
   final Future<NotificationPreferences> Function() _loadPreferences;
   final Future<Map<String, List<MemoryWalk>>> Function(List<PetProfile> pets) _loadFavouriteWalks;
   final Future<Map<String, List<DateTime>>> Function(List<PetProfile> pets) _loadPhotoDates;
+  final Future<Map<String, DateTime>> Function(List<ReminderEntry> reminders) _loadPostponements;
 
   /// Favourite walks of the pets in Ricordi whose walk memories are on. Read
   /// only when at least one is: nothing is fetched otherwise.
@@ -124,6 +130,7 @@ class NotificationScheduler {
     if (_gateway is NoopNotificationsGateway || _stopListening.isNotEmpty) return;
     listenTo(Listenable.merge([
       RemindersRepository.changes,
+      ReminderPostponementStore.instance,
       PetDemoStore.changes,
       DogWalksRepository.changes,
       NotificationPreferencesStore.instance,
@@ -136,8 +143,9 @@ class NotificationScheduler {
         requestResync();
       }
     });
-    // Back from the phone's settings the permission may have changed, and
-    // the 60-day window moves forward.
+    // Back from the phone's settings the permissions may have changed (the
+    // notifications', or the exact alarms': what was scheduled inexact is
+    // scheduled again exact), and the 60-day window moves forward.
     final lifecycle = AppLifecycleListener(onResume: requestResync);
     _stopListening
       ..add(() => unawaited(authSubscription.cancel()))
@@ -210,13 +218,15 @@ class NotificationScheduler {
       }
     }
 
+    final reminders = await _loadReminders();
     final plan = planNotifications(
-      reminders: await _loadReminders(),
+      reminders: reminders,
       pets: pets,
       now: _now(),
       preferences: await _loadPreferences(),
       favouriteWalksByPet: await orEmpty(() => _loadFavouriteWalks(pets)),
       photoDatesByPet: await orEmpty(() => _loadPhotoDates(pets)),
+      postponedUntilByReminder: await orEmpty(() => _loadPostponements(reminders)),
     );
     await _gateway.cancelPending();
     lastScheduleFailures = 0;

@@ -2803,10 +2803,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'other':
-          'If $name\'s microchip was registered with a pet registry, the death usually has to be reported: your vet or the body that keeps the registry in your country (in Italy, the ASL or the municipality) can tell you how and by when.',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'other':
+            'If $name\'s microchip was registered with a pet registry, the death usually has to be reported: your vet or the body that keeps the registry in your country (in Italy, the ASL or the municipality) can tell you how and by when.',
+      },
+    );
     return '$_temp0';
   }
 
@@ -2832,9 +2835,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'other': 'Moved by mistake? Bring back to Pets',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'other': 'Moved by mistake? Bring back to Pets',
+      },
+    );
     return '$_temp0';
   }
 
@@ -5103,6 +5109,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String notificationsReminderPostponedBody(String petName) {
+    return '$petName · you asked to be reminded now';
+  }
+
+  @override
   String notificationsMedicineTitle(String petName) {
     return 'Medication for $petName';
   }
@@ -7187,7 +7198,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get remindersDoneDismissed => 'Marked as not done.';
 
   @override
-  String get remindersDonePostponed => 'I\'ll remind you again tomorrow.';
+  String get remindersPostponeTitle => 'When would you like to be reminded?';
+
+  @override
+  String get remindersPostponeOneHour => 'In 1 hour';
+
+  @override
+  String get remindersPostponeEvening => 'This evening';
+
+  @override
+  String get remindersPostponeTomorrow => 'Tomorrow morning';
+
+  @override
+  String get remindersPostponePick => 'Choose day and time';
+
+  @override
+  String get remindersPostponeNoAlerts =>
+      'Alerts are off here: nothing will ring, but I\'ll ask you again in the app.';
+
+  @override
+  String remindersPostponedTo(String when) {
+    return 'I\'ll remind you: $when.';
+  }
 
   @override
   String get remindersDoneTooltip => 'Mark as done';
@@ -7258,6 +7290,17 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get permNotificationsRefuse =>
       'If you decline, your reminders stay saved but won\'t ring. You can change your mind at any time in Settings.';
+
+  @override
+  String get permExactAlarmsTitle => 'Would you like alerts at the exact time?';
+
+  @override
+  String get permExactAlarmsWhy =>
+      'To make reminders ring at exactly the time you choose, Quokka needs a permission: turn it on in the phone screen that opens next.';
+
+  @override
+  String get permExactAlarmsRefuse =>
+      'If you decline, your reminders still arrive, but they can be up to an hour late. You can change your mind at any time in your phone\'s settings.';
 
   @override
   String get permWalkNotificationsTitle => 'See your walk in notifications';

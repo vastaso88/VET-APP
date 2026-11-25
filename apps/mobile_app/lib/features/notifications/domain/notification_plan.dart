@@ -10,7 +10,17 @@ import 'memory_notifications.dart';
 /// The kinds of phone notification. The first three have their own switch in
 /// Impostazioni; [memories] (Ricordi, docs/product/17_ricordi_animali.md) is
 /// switched on and off per pet, on that pet's memorial page.
-enum NotificationCategory { reminders, medicines, birthdays, memories }
+enum NotificationCategory {
+  reminders,
+  medicines,
+  birthdays,
+  memories;
+
+  /// The hour was chosen by the owner, so the phone must ring exactly then.
+  /// Birthdays and memories come at an hour of the app's own, where a few
+  /// minutes more or less change nothing.
+  bool get ringsAtChosenTime => this == reminders || this == medicines;
+}
 
 class NotificationPreferences {
   const NotificationPreferences({
@@ -64,7 +74,8 @@ class PlannedNotification {
   final String? petId;
 
   /// What tapping the notification opens: `reminder:<id>` on the one that
-  /// arrives when a reminder is due (it asks "Fatto?"), nothing otherwise.
+  /// arrives when a reminder is due, or at the moment it was postponed to (it
+  /// asks "Fatto?"), nothing otherwise.
   final String? payload;
 
   @override
@@ -111,22 +122,31 @@ List<PlannedNotification> planNotifications({
   int maxCount = kMaxPlannedNotifications,
   Map<String, List<MemoryWalk>> favouriteWalksByPet = const {},
   Map<String, List<DateTime>> photoDatesByPet = const {},
+  Map<String, DateTime> postponedUntilByReminder = const {},
 }) {
   // A calendar horizon: `now.add(Duration)` would count 24-hour days and slip an
   // hour across the summer-time change.
   final until = addCalendarDays(now, horizon.inDays);
   final planned = <PlannedNotification>[];
+  final postponed = <PlannedNotification>[];
 
   // Everything about a pet in Ricordi stops: its reminders, courses and
   // ordinary birthday (doc 17 §4). Only the memories chosen for it remain.
   for (final reminder in remindersOfActivePets(reminders, pets)) {
     if (reminder.isDone) continue;
     final petId = reminder.petId ?? _petIdByName(pets, reminder.petName);
-    if (reminder.kind == EventKind.course) {
-      planned.addAll(_courseNotifications(reminder, now, until, petId));
-    } else {
-      planned.addAll(_eventNotifications(reminder, now, until, petId));
+    final own = reminder.kind == EventKind.course
+        ? _courseNotifications(reminder, now, until, petId).toList()
+        : _eventNotifications(reminder, now, until, petId).toList();
+    final postponedUntil = postponedUntilByReminder[reminder.id];
+    if (postponedUntil != null) {
+      final again = _postponedNotification(reminder, postponedUntil, petId);
+      // Not twice in the same minute: a daily reminder postponed to tomorrow at
+      // its own hour would ring there anyway.
+      own.removeWhere((n) => n.payload == again.payload && n.at == again.at);
+      postponed.add(again);
     }
+    planned.addAll(own);
   }
   for (final pet in pets) {
     if (pet.isMemorial) {
@@ -142,11 +162,19 @@ List<PlannedNotification> planNotifications({
     }
   }
 
-  final allowed = planned
-      .where((n) => preferences.allows(n.category) && n.at.isAfter(now))
-      .toList()
+  List<PlannedNotification> earliest(List<PlannedNotification> all, int count) {
+    final allowed = all
+        .where((n) => preferences.allows(n.category) && n.at.isAfter(now))
+        .toList()
+      ..sort((a, b) => a.at.compareTo(b.at));
+    return allowed.length > count ? allowed.sublist(0, count) : allowed;
+  }
+
+  // A moment the owner picked ("Rimanda") is never the one left out, however far
+  // ahead: the horizon does not apply to it and the others make room under the cap.
+  final kept = earliest(postponed, maxCount);
+  return [...earliest(planned, maxCount - kept.length), ...kept]
     ..sort((a, b) => a.at.compareTo(b.at));
-  return allowed.length > maxCount ? allowed.sublist(0, maxCount) : allowed;
 }
 
 /// The reminder's own time, or [kDefaultNotificationHour] when it was saved
@@ -229,6 +257,25 @@ Iterable<PlannedNotification> _eventNotifications(
       petId: petId,
     );
   }
+}
+
+/// The switch in Impostazioni [reminder]'s notifications answer to.
+NotificationCategory reminderNotificationCategory(ReminderEntry reminder) =>
+    reminder.kind == EventKind.course
+        ? NotificationCategory.medicines
+        : NotificationCategory.reminders;
+
+/// "Rimanda": the reminder once more, at the moment the owner chose. Tapping it
+/// asks "Fatto?" like the one that came when it was due.
+PlannedNotification _postponedNotification(ReminderEntry reminder, DateTime at, String? petId) {
+  return PlannedNotification(
+    at: at,
+    title: reminder.title,
+    body: appL10n.notificationsReminderPostponedBody(reminder.petName),
+    category: reminderNotificationCategory(reminder),
+    payload: '$kReminderPayloadPrefix${reminder.id}',
+    petId: petId,
+  );
 }
 
 /// One notification per dose time on every day of the course, or one a day

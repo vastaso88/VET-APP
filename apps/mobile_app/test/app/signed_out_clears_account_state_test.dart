@@ -38,6 +38,8 @@ void main() {
       'BillingDemoStore.instance.reset()',
       'OwnerJsonCache.clearAll()',
       'RouteRestoration.instance.forget()',
+      'ReminderPostponementStore.instance.clear()',
+      'forgetExactAlarmAsk()',
     ]) {
       expect(handler, contains(reset), reason: reset);
     }

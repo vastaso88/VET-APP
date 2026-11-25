@@ -2975,6 +2975,14 @@
       }
     }
   },
+  "notificationsReminderPostponedBody": "{petName} · vous avez demandé ce rappel pour maintenant",
+  "@notificationsReminderPostponedBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
   "notificationsMedicineTitle": "Médicament pour {petName}",
   "@notificationsMedicineTitle": {
     "placeholders": {
@@ -4205,7 +4213,20 @@
   },
   "remindersDoneMarked": "Marqué comme fait.",
   "remindersDoneDismissed": "Marqué comme non fait.",
-  "remindersDonePostponed": "Je vous le redemanderai demain.",
+  "remindersPostponeTitle": "Quand souhaitez-vous que je vous le rappelle ?",
+  "remindersPostponeOneHour": "Dans 1 heure",
+  "remindersPostponeEvening": "Ce soir",
+  "remindersPostponeTomorrow": "Demain matin",
+  "remindersPostponePick": "Choisir le jour et l'heure",
+  "remindersPostponeNoAlerts": "Ici, les alertes sont désactivées : rien ne sonnera, mais je vous reposerai la question dans l'application.",
+  "remindersPostponedTo": "Je vous le rappellerai : {when}.",
+  "@remindersPostponedTo": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
   "remindersDoneTooltip": "Marquer comme fait",
   "remindersPreviousMonth": "Mois précédent",
   "remindersNextMonth": "Mois suivant",
@@ -4241,6 +4262,9 @@
   "permNotificationsTitle": "Souhaitez-vous recevoir les alertes ?",
   "permNotificationsWhy": "Pour vous prévenir lorsqu'un rappel arrive à échéance, Quokka a besoin de l'autorisation d'envoyer des notifications.",
   "permNotificationsRefuse": "Si vous refusez, vos rappels restent enregistrés mais ne sonneront pas. Vous pouvez changer d'avis à tout moment dans les Paramètres.",
+  "permExactAlarmsTitle": "Souhaitez-vous des alertes à l'heure exacte ?",
+  "permExactAlarmsWhy": "Pour que les rappels sonnent exactement à l'heure choisie, Quokka a besoin d'une autorisation : activez-la dans l'écran du téléphone qui va s'ouvrir.",
+  "permExactAlarmsRefuse": "Si vous refusez, vos rappels arriveront quand même, mais ils peuvent avoir jusqu'à une heure de retard. Vous pouvez changer d'avis à tout moment dans les paramètres du téléphone.",
   "permWalkNotificationsTitle": "Voir la promenade dans les notifications",
   "permWalkNotificationsWhy": "Pendant la promenade, Quokka affiche une notification fixe avec la durée et la distance : de là, vous pouvez la mettre en pause ou la terminer, même avec le téléphone dans la poche.",
   "permWalkNotificationsRefuse": "Si vous refusez, la promenade est enregistrée dans tous les cas, mais vous ne verrez pas la notification.",

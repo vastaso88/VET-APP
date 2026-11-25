@@ -185,11 +185,11 @@ void main() {
       expect(stored.dueAt, DateTime(2026, 11, 20, 9));
     });
 
-    test('"Rimanda" changes nothing now and asks again tomorrow morning', () async {
+    test('"Rimanda" changes nothing now and asks again at the chosen moment', () async {
       final reminder = _reminder('snooze');
       await reminders.saveReminder(reminder);
 
-      await service.postpone(reminder);
+      await service.postpone(reminder, DateTime(2026, 10, 22, 9));
 
       expect(_recordsOf('snooze'), isEmpty);
       final stored = await _stored(reminders, 'snooze');
@@ -454,9 +454,9 @@ void main() {
       expect(asked, isEmpty);
     });
 
-    test('a postponed one is left alone until tomorrow morning', () async {
+    test('a postponed one is left alone until the chosen moment', () async {
       final reminder = _reminder('p-postponed', due: DateTime(2026, 10, 21, 8));
-      await service.postpone(reminder);
+      await service.postpone(reminder, DateTime(2026, 10, 22, 9));
 
       expect(await run([reminder]), isEmpty);
       expect(await run([reminder], at: DateTime(2026, 10, 22, 9, 30)), ['p-postponed']);

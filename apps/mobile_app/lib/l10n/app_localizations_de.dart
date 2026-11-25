@@ -2841,10 +2841,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'other':
-          'Wenn der Mikrochip von $name in einem Heimtierregister eingetragen war, muss der Tod in der Regel gemeldet werden: Ihre Tierärztin bzw. Ihr Tierarzt oder die Stelle, die in Ihrem Land das Register führt (in Italien die ASL oder die Gemeinde), sagt Ihnen, wie und bis wann.',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'other':
+            'Wenn der Mikrochip von $name in einem Heimtierregister eingetragen war, muss der Tod in der Regel gemeldet werden: Ihre Tierärztin bzw. Ihr Tierarzt oder die Stelle, die in Ihrem Land das Register führt (in Italien die ASL oder die Gemeinde), sagt Ihnen, wie und bis wann.',
+      },
+    );
     return '$_temp0';
   }
 
@@ -2870,9 +2873,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'other': 'Versehentlich verschoben? Zurück zu den Tieren',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'other': 'Versehentlich verschoben? Zurück zu den Tieren',
+      },
+    );
     return '$_temp0';
   }
 
@@ -5159,6 +5165,11 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String notificationsReminderPostponedBody(String petName) {
+    return '$petName · Sie wollten jetzt erinnert werden';
+  }
+
+  @override
   String notificationsMedicineTitle(String petName) {
     return 'Medikament für $petName';
   }
@@ -7260,7 +7271,28 @@ class AppLocalizationsDe extends AppLocalizations {
   String get remindersDoneDismissed => 'Als nicht erledigt markiert.';
 
   @override
-  String get remindersDonePostponed => 'Ich frage morgen noch einmal nach.';
+  String get remindersPostponeTitle => 'Wann möchten Sie erinnert werden?';
+
+  @override
+  String get remindersPostponeOneHour => 'In 1 Stunde';
+
+  @override
+  String get remindersPostponeEvening => 'Heute Abend';
+
+  @override
+  String get remindersPostponeTomorrow => 'Morgen früh';
+
+  @override
+  String get remindersPostponePick => 'Tag und Uhrzeit wählen';
+
+  @override
+  String get remindersPostponeNoAlerts =>
+      'Benachrichtigungen sind hier deaktiviert: Es klingelt nichts, aber ich frage in der App noch einmal nach.';
+
+  @override
+  String remindersPostponedTo(String when) {
+    return 'Ich erinnere Sie: $when.';
+  }
 
   @override
   String get remindersDoneTooltip => 'Als erledigt markieren';
@@ -7332,6 +7364,18 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get permNotificationsRefuse =>
       'Wenn Sie ablehnen, bleiben Ihre Erinnerungen gespeichert, klingeln aber nicht. Sie können Ihre Meinung jederzeit in den Einstellungen ändern.';
+
+  @override
+  String get permExactAlarmsTitle =>
+      'Möchten Sie Benachrichtigungen zur genauen Uhrzeit?';
+
+  @override
+  String get permExactAlarmsWhy =>
+      'Damit Erinnerungen genau zur gewählten Uhrzeit klingeln, benötigt Quokka eine Berechtigung: Aktivieren Sie sie auf der Seite des Telefons, die sich jetzt öffnet.';
+
+  @override
+  String get permExactAlarmsRefuse =>
+      'Wenn Sie ablehnen, kommen Ihre Erinnerungen trotzdem an, können sich aber um bis zu eine Stunde verspäten. Sie können Ihre Meinung jederzeit in den Einstellungen des Telefons ändern.';
 
   @override
   String get permWalkNotificationsTitle =>

@@ -2975,6 +2975,14 @@
       }
     }
   },
+  "notificationsReminderPostponedBody": "{petName} · you asked to be reminded now",
+  "@notificationsReminderPostponedBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
   "notificationsMedicineTitle": "Medication for {petName}",
   "@notificationsMedicineTitle": {
     "placeholders": {
@@ -4205,7 +4213,20 @@
   },
   "remindersDoneMarked": "Marked as done.",
   "remindersDoneDismissed": "Marked as not done.",
-  "remindersDonePostponed": "I'll remind you again tomorrow.",
+  "remindersPostponeTitle": "When would you like to be reminded?",
+  "remindersPostponeOneHour": "In 1 hour",
+  "remindersPostponeEvening": "This evening",
+  "remindersPostponeTomorrow": "Tomorrow morning",
+  "remindersPostponePick": "Choose day and time",
+  "remindersPostponeNoAlerts": "Alerts are off here: nothing will ring, but I'll ask you again in the app.",
+  "remindersPostponedTo": "I'll remind you: {when}.",
+  "@remindersPostponedTo": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
   "remindersDoneTooltip": "Mark as done",
   "remindersPreviousMonth": "Previous month",
   "remindersNextMonth": "Next month",
@@ -4241,6 +4262,9 @@
   "permNotificationsTitle": "Would you like reminders to alert you?",
   "permNotificationsWhy": "To alert you when a reminder is due, Quokka needs permission to send notifications.",
   "permNotificationsRefuse": "If you decline, your reminders stay saved but won't ring. You can change your mind at any time in Settings.",
+  "permExactAlarmsTitle": "Would you like alerts at the exact time?",
+  "permExactAlarmsWhy": "To make reminders ring at exactly the time you choose, Quokka needs a permission: turn it on in the phone screen that opens next.",
+  "permExactAlarmsRefuse": "If you decline, your reminders still arrive, but they can be up to an hour late. You can change your mind at any time in your phone's settings.",
   "permWalkNotificationsTitle": "See your walk in notifications",
   "permWalkNotificationsWhy": "During a walk, Quokka shows an ongoing notification with time and distance: from there you can pause or finish the walk even with your phone in your pocket.",
   "permWalkNotificationsRefuse": "If you decline, the walk is still recorded, but you won't see the notification.",

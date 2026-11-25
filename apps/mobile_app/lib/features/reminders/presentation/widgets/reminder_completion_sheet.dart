@@ -11,12 +11,14 @@ import '../../../../l10n/l10n.dart';
 import '../../../../shared/formatters/date_input_formatter.dart';
 import '../../../../shared/widgets/typed_date_field.dart';
 import '../../../medical_records/data/medical_records_repository.dart';
+import '../../../notifications/presentation/exact_alarm_permission.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../application/reminder_completion_service.dart';
 import '../../data/reminders_repository.dart';
 import '../../domain/reminder_category.dart';
 import '../../domain/reminder_completion.dart';
 import 'reminder_category_picker.dart';
+import 'reminder_postpone_sheet.dart';
 
 /// What the owner answered to "Fatto?".
 sealed class ReminderAnswer {
@@ -40,7 +42,10 @@ class ReminderDone extends ReminderAnswer {
 }
 
 class ReminderPostponed extends ReminderAnswer {
-  const ReminderPostponed();
+  const ReminderPostponed(this.until);
+
+  /// The moment chosen in "Quando vuoi che te lo ricordi?".
+  final DateTime until;
 }
 
 class ReminderNotDone extends ReminderAnswer {
@@ -49,7 +54,8 @@ class ReminderNotDone extends ReminderAnswer {
 
 /// Asks "Fatto? Registralo nello storico" for [reminder] and carries out the
 /// answer (see [ReminderCompletionService]). Returns true when the reminder was
-/// dealt with (done or "non fatto"), false when postponed or dismissed.
+/// dealt with (done or "non fatto"), false when postponed (to the moment asked
+/// for by [askPostponeMoment]) or dismissed.
 ///
 /// Used by the reminders list and detail, the pet's Promemoria tab, the app's
 /// own question when a reminder falls due and the notification tap, so all of
@@ -58,6 +64,8 @@ Future<bool> askToCompleteReminder(
   BuildContext context,
   ReminderEntry reminder, {
   ReminderCompletionService? service,
+  DateTime Function() now = DateTime.now,
+  Future<bool> Function(ReminderEntry reminder)? alertsCanRing,
 }) async {
   final answer = await showModalBottomSheet<ReminderAnswer>(
     context: context,
@@ -67,7 +75,15 @@ Future<bool> askToCompleteReminder(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.large)),
     ),
-    builder: (_) => _CompletionSheet(reminder: reminder),
+    builder: (_) => _CompletionSheet(
+      reminder: reminder,
+      askPostpone: (sheetContext) => askPostponeMoment(
+        sheetContext,
+        reminder,
+        now: now,
+        alertsCanRing: alertsCanRing,
+      ),
+    ),
   );
   if (answer == null) return false;
 
@@ -92,9 +108,9 @@ Future<bool> askToCompleteReminder(
       case ReminderNotDone():
         await completion.dismiss(reminder);
         message = l10n.remindersDoneDismissed;
-      case ReminderPostponed():
-        await completion.postpone(reminder);
-        message = l10n.remindersDonePostponed;
+      case ReminderPostponed(:final until):
+        await completion.postpone(reminder, until);
+        message = l10n.remindersPostponedTo(postponeMomentLabel(until, now()));
         handled = false;
     }
   } on MedicalRecordSaveException catch (error) {
@@ -105,13 +121,19 @@ Future<bool> askToCompleteReminder(
     handled = false;
   }
   AppRouter.scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(content: Text(message)));
+  if (answer is ReminderPostponed) {
+    // An hour was just chosen. Waited for, so that the next question of
+    // ReminderCompletionPrompter does not open over this window.
+    await maybeAskExactAlarmPermission(AppRouter.navigatorKey.currentContext);
+  }
   return handled;
 }
 
 class _CompletionSheet extends StatefulWidget {
-  const _CompletionSheet({required this.reminder});
+  const _CompletionSheet({required this.reminder, required this.askPostpone});
 
   final ReminderEntry reminder;
+  final Future<DateTime?> Function(BuildContext context) askPostpone;
 
   @override
   State<_CompletionSheet> createState() => _CompletionSheetState();
@@ -181,6 +203,13 @@ class _CompletionSheetState extends State<_CompletionSheet> {
         notes: _notes.text.trim(),
       ),
     );
+  }
+
+  /// "Rimanda": closing the choice without choosing leaves this sheet as it was.
+  Future<void> _postpone() async {
+    final until = await widget.askPostpone(context);
+    if (until == null || !mounted) return;
+    Navigator.of(context).pop(ReminderPostponed(until));
   }
 
   @override
@@ -265,7 +294,7 @@ class _CompletionSheetState extends State<_CompletionSheet> {
                 children: [
                   Expanded(
                     child: TextButton(
-                      onPressed: () => Navigator.of(context).pop(const ReminderPostponed()),
+                      onPressed: _postpone,
                       child: Text(l10n.remindersDonePostpone),
                     ),
                   ),

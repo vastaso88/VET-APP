@@ -14,6 +14,10 @@ enum PermissionPurpose {
   /// Reminders that ring.
   notifications,
 
+  /// Reminders that ring at the exact hour (Android's "Alarms & reminders"): the
+  /// system opens a screen of its own, with one switch.
+  exactAlarms,
+
   /// The ongoing notification of a walk in progress.
   walkNotifications,
 
@@ -37,6 +41,7 @@ enum PermissionPurpose {
   String title(AppLocalizations l10n) => switch (this) {
         location => l10n.permLocationTitle,
         notifications => l10n.permNotificationsTitle,
+        exactAlarms => l10n.permExactAlarmsTitle,
         walkNotifications => l10n.permWalkNotificationsTitle,
         microphone => l10n.permMicrophoneTitle,
         camera => l10n.permCameraTitle,
@@ -46,6 +51,7 @@ enum PermissionPurpose {
   String why(AppLocalizations l10n) => switch (this) {
         location => l10n.permLocationWhy,
         notifications => l10n.permNotificationsWhy,
+        exactAlarms => l10n.permExactAlarmsWhy,
         walkNotifications => l10n.permWalkNotificationsWhy,
         microphone => l10n.permMicrophoneWhy,
         camera => l10n.permCameraWhy,
@@ -55,6 +61,7 @@ enum PermissionPurpose {
   String ifRefused(AppLocalizations l10n) => switch (this) {
         location => l10n.permLocationRefuse,
         notifications => l10n.permNotificationsRefuse,
+        exactAlarms => l10n.permExactAlarmsRefuse,
         walkNotifications => l10n.permWalkNotificationsRefuse,
         microphone => l10n.permMicrophoneRefuse,
         camera => l10n.permCameraRefuse,

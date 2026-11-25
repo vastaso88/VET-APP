@@ -1,6 +1,6 @@
 # Permessi del dispositivo (OS)
 
-Aggiornato (2026-10-06): audit del manifest della build 0.1.0+24 (sezione in fondo); corrette le righe Fotocamera, Libreria foto e Storage. Aggiornato (2026-09-26): l'app nativa Android è ora in costruzione (sessione "APK e App nativa" — `flutter create --platforms=android`, application ID `com.vetapp.vetapp`). A differenza della versione web, l'app nativa gira dentro il modello di permessi runtime di Android/iOS: questo documento passa da "principi per quando servirà" a un catalogo concreto di cosa dichiarare, quando chiederlo e cosa dire all'utente.
+Aggiornato (2026-11-25): allarmi esatti (`SCHEDULE_EXACT_ALARM`) per i promemoria e gli orari dei farmaci, sezione in fondo. Aggiornato (2026-10-06): audit del manifest della build 0.1.0+24 (sezione in fondo); corrette le righe Fotocamera, Libreria foto e Storage. Aggiornato (2026-09-26): l'app nativa Android è ora in costruzione (sessione "APK e App nativa" — `flutter create --platforms=android`, application ID `com.vetapp.vetapp`). A differenza della versione web, l'app nativa gira dentro il modello di permessi runtime di Android/iOS: questo documento passa da "principi per quando servirà" a un catalogo concreto di cosa dichiarare, quando chiederlo e cosa dire all'utente.
 
 ## Due principi, imposti dalle policy Apple/Play Store (non dal GDPR)
 
@@ -22,11 +22,12 @@ Conseguenza pratica: per i permessi legati a funzioni **plausibili a breve termi
 | Permesso | Android | iOS | Funzione collegata | Stato | Note |
 |---|---|---|---|---|---|
 | Fatturazione Google Play | `com.android.vending.BILLING` (aggiunto dal plugin `in_app_purchase_android`) | — (StoreKit, nessun permesso) | Abbonamenti Plus/Pro/Ultra acquistati nello store (`lib/features/billing/data/store_billing_controller.dart`); obbligatorio per Google Play Billing | **Necessario dal 2026-11-21** | Nessun dato personale letto dal dispositivo; il pagamento resta a Google/Apple. Vedi `docs/billing/01_architettura_abbonamenti.md` |
-| Microfono | `RECORD_AUDIO` | `NSMicrophoneUsageDescription` | Messaggi vocali nella chat (`record` package) | **Da togliere** (25 novembre 2026: i messaggi vocali sono tolti con Groq): il permesso esce dal manifest quando la funzione esce dal codice, e questa riga con lui | Finché la funzione c'è nel codice il permesso resta dichiarato, altrimenti la funzione non va al primo uso |
+| Microfono | `RECORD_AUDIO` | `NSMicrophoneUsageDescription` e `NSSpeechRecognitionUsageDescription` (nuovo: serve il riconoscimento vocale di Apple) | Dettare i messaggi nella chat: la voce la trascrive il riconoscimento vocale del telefono e a Quokka arriva solo il testo (decisione del 25 novembre 2026; prima la trascriveva Groq sul nostro server) | **Necessario subito** — la funzione esiste già nel codice Dart | Non è proattivo: se manca nel manifest generato, l'app crasha o la funzione non funziona al primo uso reale, non è un'opzione rimandabile |
 | Posizione precisa (foreground) | `ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION` | `NSLocationWhenInUseUsageDescription` | Località (Impostazioni), passeggiate cane, attività/eventi locali (`geolocator`, già in uso) | **Necessario subito** | Solo "while in use" — non "always". Durante una passeggiata attiva il tracciamento prosegue con l'app in secondo piano grazie a un servizio in primo piano con notifica persistente (`FOREGROUND_SERVICE` e `FOREGROUND_SERVICE_LOCATION`), non a `ACCESS_BACKGROUND_LOCATION` |
 | Fotocamera | `CAMERA` | `NSCameraUsageDescription` | Foto e video dei propri animali ([pet_gallery_page.dart](../../apps/mobile_app/lib/features/pets/presentation/pages/pet_gallery_page.dart): `image_picker` con `ImageSource.camera`); in prospettiva, la foto di un referto (oggi la cartella clinica usa solo `file_picker`) | **Non necessario oggi: consigliato toglierlo** (audit 2026-10-06) | `image_picker` apre la fotocamera di sistema: senza `CAMERA` nel manifest funziona, e l'app non accede mai alla fotocamera, riceve solo il file scattato. Se `CAMERA` è dichiarato, il plugin lo chiede a runtime prima di aprire la fotocamera. Serve solo per una fotocamera integrata (anteprima propria, scanner di documenti), che richiederebbe comunque un nuovo plugin nativo e quindi un nuovo APK |
 | Libreria foto e video | `READ_MEDIA_IMAGES` / `READ_MEDIA_VIDEO` (Android 13+) | `NSPhotoLibraryUsageDescription` (solo se si va oltre il selettore di sistema) | Allegare foto o video già in galleria (`pickMultipleMedia` in pet_gallery_page.dart; `file_picker` per allegati e cartella clinica) | **Non dichiarare** (audit 2026-10-06; prima era "da confermare") | Il codice usa il selettore di sistema, che non richiede permessi. Google Play ammette questi due permessi solo per l'accesso ampio e frequente alla galleria, con dichiarazione e revisione (dettagli nell'audit) |
 | Notifiche push | `POST_NOTIFICATIONS` (obbligatorio da Android 13+, prima era implicito) | Autorizzazione via `UNUserNotificationCenter` | Promemoria (vaccinazioni, cure) — oggi solo UI decorativa in Reminders, nessuna notifica reale pianificata | **Dichiarare proattivamente** | I promemoria sono già una feature centrale del prodotto: è il candidato più forte per "dichiara ora, attiva dopo via OTA" |
+| Allarmi esatti («Sveglie e promemoria») | `SCHEDULE_EXACT_ALARM` (da Android 12; da Android 14 di solito spento finché il proprietario non lo accende) | — (nessun cambiamento) | Far suonare i promemoria e gli orari dei farmaci all'ora scelta dal proprietario, e il nuovo avviso di «Rimanda» | **Necessario dal 2026-11-25** (decisione del proprietario) | Nessun dato letto o inviato. Se manca, l'avviso arriva lo stesso ma può tardare. Mai `USE_EXACT_ALARM` (Google Play lo riserva a sveglie e calendari). Motivazione e regole nella sezione «Allarmi esatti» in fondo |
 | Posizione in background | `ACCESS_BACKGROUND_LOCATION` | Autorizzazione "Always" | Ipotetica: tracciare l'intera passeggiata a schermo spento/app in background (oggi `active_walk_page.dart` traccia solo in foreground) | **Non dichiarare ora** | Permesso ad alto scrutinio su entrambi gli store (richiede giustificazione dedicata in review); da valutare solo se/quando la funzione verrà davvero decisa |
 | Contatti | — | — | Nessuna funzione attuale o pianificata | **Non dichiarare** | Un permesso dichiarato ma inutilizzato è comunque una domanda in più nella review dello store e un motivo di diffidenza per l'utente |
 | Calendario | `READ_CALENDAR` / `WRITE_CALENDAR` | `NSCalendarsUsageDescription` | Idea riaperta dall'utente (2026-09-26): esportare i promemoria (vaccini, cure) sul calendario nativo del telefono | **Non dichiarare** — ma vedi nota | Distinguere due casi ben diversi: (a) **scrivere un singolo promemoria** nel calendario dell'utente — realizzabile con un bottone "Aggiungi al calendario" che passa la mano all'app calendario via intent/file `.ics`, **senza alcun permesso runtime**; (b) **leggere/scrivere l'intero calendario** (il permesso vero e proprio) — ad alto scrutinio in review quanto la posizione in background, e richiede di risolvere prima la sincronizzazione bidirezionale (data spostata o evento cancellato lato calendario vs lato Quokka). Per il bisogno reale di Quokka (scrivere un promemoria, non leggere gli impegni esistenti dell'utente) l'opzione (a) copre quasi tutto il valore a costo/permesso zero — partire da lì. Il permesso pieno (b) si giustifica solo se in futuro serve leggere gli impegni dell'utente (es. proporre orari liberi per una visita) |
@@ -40,8 +41,9 @@ Aggiornato (2026-10-28). Prima di ogni richiesta di sistema l'app mostra una fin
 |---|---|---|---|---|
 | **Posizione** (`location`) | Prima richiesta della posizione (passeggiata, «Vicino a me», Località in Impostazioni): `GeolocatorLocationSampler`, solo se Android deve ancora chiedere | Usare la tua posizione? | Quokka usa la posizione del telefono per tracciare le passeggiate sulla mappa e per mostrarti servizi ed eventi vicino a te. La usa solo mentre l'app è aperta o durante una passeggiata. | Se rifiuti, niente di grave: puoi scegliere la tua zona a mano in Impostazioni, ma la passeggiata non verrà tracciata sulla mappa. |
 | **Notifiche dei promemoria** (`notifications`) | Al salvataggio di un promemoria, all'apertura dell'app con promemoria non fatti, e quando si accende l'interruttore in Impostazioni → Notifiche (al massimo 2 volte per i primi due casi) | Vuoi ricevere gli avvisi? | Per avvisarti quando un promemoria scade, Quokka ha bisogno del permesso per le notifiche. | Se rifiuti, i promemoria restano salvati ma non suoneranno. Puoi cambiare idea in ogni momento da Impostazioni. |
+| **Ora esatta** (`exactAlarms`) | La prima volta che il proprietario sceglie un'ora (promemoria salvato, oppure «Rimanda»), se gli avvisi sono permessi e gli allarmi esatti no; **una volta sola** (la memoria si cancella al logout) | Vuoi gli avvisi all'ora esatta? | Per far suonare i promemoria esattamente all'ora che scegli, Quokka ha bisogno di un permesso: accendilo nella schermata del telefono che si apre ora. | Se rifiuti, i promemoria arrivano lo stesso, ma possono tardare anche di un'ora. Puoi cambiare idea in ogni momento dalle impostazioni del telefono. |
 | **Notifica della passeggiata** (`walkNotifications`) | Alla prima passeggiata (una volta sola) | Vedi la passeggiata nelle notifiche | Durante la passeggiata Quokka mostra una notifica fissa con tempo e distanza: da lì puoi metterla in pausa o terminarla anche con il telefono in tasca. | Se rifiuti, la passeggiata viene registrata comunque, ma non vedrai la notifica. |
-| **Microfono** (`microphone`) | Tolto il 25 novembre 2026: i messaggi vocali non ci sono più | — | — | — |
+| **Microfono** (`microphone`) | Al primo tocco sul microfono della chat, se il permesso manca | Usare il microfono? | Il microfono serve per dettare i messaggi nella chat: parli e il riconoscimento vocale del tuo telefono li trasforma in testo. A Quokka arriva solo il testo, mai l'audio. Il riconoscimento vocale lo fa il sistema del telefono (Google o Apple), che può usare i suoi server secondo le sue regole. | Se rifiuti, puoi sempre scrivere i messaggi con la tastiera. |
 | **Fotocamera** (`camera`) | Prima di aprire la fotocamera per una foto o un video (galleria dell'animale, passeggiata); **una volta sola per telefono** | Scattare una foto o un video | Si apre la fotocamera del telefono per scattare. Quokka non ha bisogno di un permesso speciale: la foto o il video vengono aggiunti alla galleria del tuo animale e, se vuoi, copiati nell'album Quokka del telefono. | Se scegli «Non ora» non succede nulla: puoi aggiungere le foto anche dalla galleria. |
 | **Foto e galleria** (`gallery`) | Prima di aprire la galleria del telefono (importa foto e video); **una volta sola per telefono** | Scegliere foto e video | Si apre la galleria del telefono: Quokka vede solo le foto e i video che scegli tu, non tutta la galleria. | Se scegli «Non ora» non viene aggiunto nulla; puoi riprovare quando vuoi. |
 
@@ -50,11 +52,14 @@ Note:
 - **Fotocamera e galleria non hanno un dialog di sistema**: usano il selettore di Android (vedi l'audit), che non richiede permessi. Per questo la finestra è solo informativa e compare una volta per telefono (si ricorda dopo «Continua», non dopo «Non ora»; la memoria si cancella al logout). Gli altri selettori di file (foto del profilo, allegati della chat, documenti della cartella clinica, foto del Mercatino) usano lo stesso selettore di sistema e non hanno finestra: l'utente sceglie il file nel momento in cui lo apre.
 - **Notifiche, altri punti d'ingresso**: la schermata del primo avvio (`NotificationPermissionPage`) è già una pagina intera con titolo, spiegazione e «Più tardi»; il bottone «Attiva» del banner «Le notifiche sono disattivate» in Promemoria è esso stesso la spiegazione (il banner dice cosa non funziona). Entrambi restano com'erano.
 - **Posizione in background**: non è usata né dichiarata (vedi tabella sopra): nessuna finestra.
-- **Microfono**: tolto il 25 novembre 2026 con i messaggi vocali.
-- **Nessun permesso nuovo**: il manifest non cambia. Restano vietati `CAMERA`, `READ_MEDIA_*`, `READ_EXTERNAL_STORAGE` e gli allarmi esatti.
+- **Microfono**: la chiamata a Android parte solo dopo «Continua». Se il permesso è già dato non compare nessuna finestra.
+- **Ora esatta**: «Continua» non apre un dialog ma la schermata di sistema «Sveglie e promemoria» di Quokka, con un solo interruttore. Viene dopo la richiesta delle notifiche, mai insieme.
+- **Permessi vietati**: restano vietati `CAMERA`, `READ_MEDIA_*`, `READ_EXTERNAL_STORAGE` e `USE_EXACT_ALARM`. Il divieto degli allarmi esatti è superato dalla decisione del 2026-11-25 (solo `SCHEDULE_EXACT_ALARM`, sezione «Allarmi esatti»).
 - **Aggiungere una funzione con un permesso**: usare `explainPermission` con un nuovo `PermissionPurpose` e le tre chiavi `permXxxTitle/Why/Refuse` in tutte le lingue (procedura in [docs/i18n/NUOVE_FUNZIONI.md](../i18n/NUOVE_FUNZIONI.md)); mai una finestra scritta a mano.
 
-Ogni testo si applica al momento dell'azione specifica (es. l'utente tocca la fotocamera), mai in una schermata di onboarding generica — coerente con il principio just-in-time sopra.
+Ogni testo si applica al momento dell'azione specifica (es. l'utente tocca il microfono), mai in una schermata di onboarding generica — coerente con il principio just-in-time sopra.
+
+**iPhone (quando c'è l'app per iPhone), testi di sistema** (aggiunti il 25 novembre 2026, in attesa di una rilettura): `NSMicrophoneUsageDescription`: «Quokka usa il microfono per dettare i messaggi nella chat.» `NSSpeechRecognitionUsageDescription`: «Quokka usa il riconoscimento vocale di Apple per trasformare in testo ciò che detti. L'audio può essere inviato ad Apple per essere trascritto; a Quokka arriva solo il testo.» Le traduzioni sono pronte come bozze non riviste.
 
 ## Aggiornamento obbligatorio quando un permesso non era già dichiarato
 
@@ -82,7 +87,7 @@ Richiesto dall'Orchestratore: la build 24 mostra `READ_MEDIA_VIDEO` e `READ_MEDI
 | `POST_NOTIFICATIONS` | App | Sì: promemoria (richiesta in `notification_permission_page.dart`) | Tenere |
 | `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` | App | Sì: Località, passeggiate, attività locali | Tenere |
 | `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION` | App | Sì: tracciamento di una passeggiata attiva, con notifica persistente | Tenere. Da dichiarare nell'informativa e, per Play, nella dichiarazione dei servizi in primo piano (punto 26 del registro) |
-| `RECORD_AUDIO` | Plugin `record_android` | No dal 25 novembre 2026: i messaggi vocali sono tolti | **Togliere** (con il plugin) |
+| `RECORD_AUDIO` | Plugin `record_android` (o il plugin del riconoscimento vocale che lo sostituisce) | Sì: dettatura nella chat | Tenere |
 | `CAMERA` | App (dichiarazione proattiva) | No: `image_picker` usa la fotocamera di sistema | Consigliato toglierlo. Nessun obbligo di policy |
 | `READ_MEDIA_IMAGES` | App e `open_filex` | No: selettore di sistema | **Rimuovere** |
 | `READ_MEDIA_VIDEO`, `READ_MEDIA_AUDIO`, `READ_EXTERNAL_STORAGE` (≤ API 32) | `open_filex` | No | **Rimuovere** |
@@ -93,7 +98,7 @@ Richiesto dall'Orchestratore: la build 24 mostra `READ_MEDIA_VIDEO` e `READ_MEDI
 
 - **Foto e video.** `image_picker` usa il selettore di foto di Android da Android 13 in poi (lo scrive il README del plugin) e la fotocamera di sistema. `file_picker` 8.3.7 usa solo gli intent del selettore di documenti (`ACTION_OPEN_DOCUMENT`, `ACTION_GET_CONTENT`) e non contiene codice di richiesta permessi.
 - **PDF.** `native_pdf_opener.dart` scrive il PDF nella cartella temporanea dell'app. `open_filex` chiede un permesso solo per i file fuori dalle cartelle dell'app (`pathRequiresPermission()`), quindi qui non lo chiede mai.
-- **Audio.** Nessuna funzione legge file audio dalla libreria: i messaggi vocali sono registrati con `record` (`RECORD_AUDIO`).
+- **Audio.** Nessuna funzione legge file audio dalla libreria: la dettatura usa il microfono (`RECORD_AUDIO`) e il riconoscimento vocale del telefono; a Quokka arriva solo il testo, nessun audio resta sui nostri server (25 novembre 2026).
 
 ### Regole di Google Play
 
@@ -140,5 +145,34 @@ Togliere permessi con un aggiornamento è silenzioso: nessun nuovo popup e nessu
 ### Effetti sull'informativa e sul modulo «Sicurezza dei dati» di Play
 
 - **Informativa** ([09](09_informativa_privacy_bozza.md)): aggiunta la sezione «Permessi del dispositivo». Le frasi su galleria e fotocamera valgono solo dopo la correzione del manifest. Aggiunti anche i percorsi GPS delle passeggiate, che il backend conserva (`WalkSession.route`: punti con data, ora e precisione), e il fatto che durante una passeggiata attiva la posizione continua a essere rilevata con l'app in secondo piano.
-- **Modulo «Sicurezza dei dati» in Play Console** (registro [08](08_punti_aperti_prima_del_lancio.md), punto 26): deve essere coerente con l'informativa. I dati da dichiarare, da confrontare con i campi correnti del modulo: foto e video, registrazioni audio (messaggi vocali), posizione (compresi i percorsi), file e documenti, indirizzo email e identificativi utente.
+- **Modulo «Sicurezza dei dati» in Play Console** (registro [08](08_punti_aperti_prima_del_lancio.md), punto 26): deve essere coerente con l'informativa. I dati da dichiarare, da confrontare con i campi correnti del modulo: foto e video, registrazioni audio (no: la dettatura la trascrive il telefono e a noi arriva solo il testo; da verificare nel modulo), posizione (compresi i percorsi), file e documenti, indirizzo email e identificativi utente.
 - **Testo di richiesta della fotocamera**: se `CAMERA` viene tolto, non serve più.
+
+## Allarmi esatti: perché `SCHEDULE_EXACT_ALARM` (2026-11-25)
+
+Decisione del proprietario (25/11/2026): «deve essere sempre esatto l'allarme all'orario richiesto dal cliente». Con gli allarmi non esatti Android può consegnare un avviso con un ritardo misurato fino a un'ora.
+
+**Motivazione.** Un promemoria o l'orario di un farmaco è un'ora che il proprietario ha scelto: se l'avviso arriva un'ora dopo, la funzione non fa quello che dice. L'ora è chiesta dall'utente, l'effetto è visibile (una notifica) e non c'è lavoro nascosto in background.
+
+**Minimizzazione.**
+
+- Esatte solo le categorie con un'ora scelta dal proprietario: promemoria (compreso l'avviso della sera prima e quello di «Rimanda») e farmaci. Compleanni e Ricordi, che hanno un'ora decisa dall'app, restano non esatti.
+- Il permesso non legge e non invia nessun dato: dice solo al telefono quando mostrare una notifica che resta sul telefono.
+- `SCHEDULE_EXACT_ALARM`, non `USE_EXACT_ALARM`: il secondo si concede da solo e Google Play lo riserva alle app la cui funzione principale è una sveglia o un calendario. Quokka non lo è.
+
+**Come si chiede.**
+
+- Android 11 e precedenti: nessuna richiesta, gli allarmi esatti sono ammessi. Android 12 e 13: di solito è già acceso. Da Android 14: di solito è spento.
+- Alla prima ora scelta, finestra breve con il perché in una frase (`explainPermission`, `PermissionPurpose.exactAlarms`), poi la schermata di sistema. Prima serve il permesso delle notifiche: senza, non si chiede.
+- «Non ora», la finestra chiusa o il no nella schermata di sistema valgono come risposta: gli avvisi restano non esatti, niente si blocca, nessun errore e nessuna nuova richiesta a ogni promemoria.
+- Quando il permesso arriva (anche acceso a mano dalle impostazioni) gli avvisi già programmati si riprogrammano esatti, al ritorno nell'app. Lo stesso, al contrario, se viene tolto.
+
+**Limiti da conoscere.**
+
+- Se il proprietario toglie il permesso dalle impostazioni, Android chiude l'app e cancella gli allarmi esatti: tornano (non esatti) alla prima apertura dell'app.
+- Con il risparmio energetico forte del telefono (app «con restrizioni», alcuni produttori) Android può ritardare anche un allarme esatto.
+- A telefono fermo da tempo Android limita quanti allarmi ravvicinati un'app può far partire: se due avvisi sono a pochi minuti l'uno dall'altro, il secondo può tardare.
+
+**Google Play.** Riverificare in Play Console, prima di pubblicare, la pagina sugli allarmi esatti e l'eventuale dichiarazione: la regola può cambiare. Testo proposto, se viene chiesta una motivazione: «Reminders and medication times chosen by the user for their pet must ring at the chosen time. The permission is optional: without it the app uses inexact alarms.»
+
+**Altri documenti da allineare (proposta).** [09_informativa_privacy_bozza.md](09_informativa_privacy_bozza.md), «Permessi del dispositivo», riga nuova: «Sveglie e promemoria (Android) | Far suonare gli avvisi all'ora che hai scelto | Nessun dato». `docs/security/audit/flutter.md` descrive il manifest di prima (nessun allarme esatto): è la fotografia di quella data.

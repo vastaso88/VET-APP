@@ -2975,6 +2975,14 @@
       }
     }
   },
+  "notificationsReminderPostponedBody": "{petName} · mi avevi chiesto di ricordartelo ora",
+  "@notificationsReminderPostponedBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
   "notificationsMedicineTitle": "Farmaco per {petName}",
   "@notificationsMedicineTitle": {
     "placeholders": {
@@ -4205,7 +4213,20 @@
   },
   "remindersDoneMarked": "Segnato come fatto.",
   "remindersDoneDismissed": "Segnato come non fatto.",
-  "remindersDonePostponed": "Te lo richiedo domani.",
+  "remindersPostponeTitle": "Quando vuoi che te lo ricordi?",
+  "remindersPostponeOneHour": "Tra 1 ora",
+  "remindersPostponeEvening": "Stasera",
+  "remindersPostponeTomorrow": "Domani mattina",
+  "remindersPostponePick": "Scegli giorno e ora",
+  "remindersPostponeNoAlerts": "Qui gli avvisi sono spenti: non suonerà nulla, ma ti rifarò la domanda nell'app.",
+  "remindersPostponedTo": "Te lo ricordo: {when}.",
+  "@remindersPostponedTo": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
   "remindersDoneTooltip": "Segna come fatto",
   "remindersPreviousMonth": "Mese precedente",
   "remindersNextMonth": "Mese successivo",
@@ -4241,6 +4262,9 @@
   "permNotificationsTitle": "Vuoi ricevere gli avvisi?",
   "permNotificationsWhy": "Per avvisarti quando un promemoria scade, Quokka ha bisogno del permesso per le notifiche.",
   "permNotificationsRefuse": "Se rifiuti, i promemoria restano salvati ma non suoneranno. Puoi cambiare idea in ogni momento da Impostazioni.",
+  "permExactAlarmsTitle": "Vuoi gli avvisi all'ora esatta?",
+  "permExactAlarmsWhy": "Per far suonare i promemoria esattamente all'ora che scegli, Quokka ha bisogno di un permesso: accendilo nella schermata del telefono che si apre ora.",
+  "permExactAlarmsRefuse": "Se rifiuti, i promemoria arrivano lo stesso, ma possono tardare anche di un'ora. Puoi cambiare idea in ogni momento dalle impostazioni del telefono.",
   "permWalkNotificationsTitle": "Vedi la passeggiata nelle notifiche",
   "permWalkNotificationsWhy": "Durante la passeggiata Quokka mostra una notifica fissa con tempo e distanza: da lì puoi metterla in pausa o terminarla anche con il telefono in tasca.",
   "permWalkNotificationsRefuse": "Se rifiuti, la passeggiata viene registrata comunque, ma non vedrai la notifica.",

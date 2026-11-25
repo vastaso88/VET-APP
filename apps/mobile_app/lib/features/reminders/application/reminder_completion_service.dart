@@ -1,10 +1,11 @@
-import '../../../app/launch/warm_start_store.dart';
 import '../../../l10n/date_formats.dart';
 import '../../../l10n/l10n.dart';
 import '../../medical_records/data/medical_records_repository.dart';
+import '../data/reminder_postponement_store.dart';
 import '../data/reminders_repository.dart';
 import '../domain/reminder_category.dart';
 import '../domain/reminder_completion.dart';
+import '../domain/reminder_postponement.dart';
 
 /// "Fatto? Registralo nello storico": what each answer does to the reminder and
 /// to the pet's cartella clinica.
@@ -13,7 +14,8 @@ import '../domain/reminder_completion.dart';
 ///   real date, the owner's notes); then the reminder moves on (next due date
 ///   of a repeating one, finished otherwise). A non-clinical one is only ticked.
 /// * [dismiss] - "Non fatto": same moving on, no record.
-/// * [postpone] - "Rimanda": nothing changes, the question comes back tomorrow.
+/// * [postpone] - "Rimanda": the reminder does not change; a notification rings at
+///   the moment the owner chose and the question comes back from then on.
 ///
 /// Nothing here ever completes a reminder by itself: deleting a record later
 /// leaves the reminder as it is (it already moved on), so it never "completes
@@ -22,16 +24,16 @@ class ReminderCompletionService {
   ReminderCompletionService({
     RemindersRepository? reminders,
     MedicalRecordsRepository? records,
-    WarmStartStore store = const WarmStartStore(),
+    ReminderPostponementStore? postponements,
     DateTime Function()? now,
   })  : _reminders = reminders ?? RemindersRepository(),
         _records = records ?? MedicalRecordsRepository(),
-        _store = store,
+        _postponements = postponements ?? ReminderPostponementStore.instance,
         _now = now ?? DateTime.now;
 
   final RemindersRepository _reminders;
   final MedicalRecordsRepository _records;
-  final WarmStartStore _store;
+  final ReminderPostponementStore _postponements;
   final DateTime Function() _now;
 
   /// The record written for [reminder]'s current occurrence, or null when its
@@ -89,22 +91,16 @@ class ReminderCompletionService {
     await _forgetPostponement(reminder);
   }
 
-  /// "Rimanda": asked again tomorrow morning.
-  Future<void> postpone(ReminderEntry reminder) =>
-      _store.saveDraft(_snoozeKey(reminder), snoozeUntil(_now()).toIso8601String());
+  /// "Rimanda": the owner is reminded at [until]. Neither the reminder's date nor
+  /// its state changes; NotificationScheduler follows the store and schedules the
+  /// notification.
+  Future<void> postpone(ReminderEntry reminder, DateTime until) =>
+      _postponements.save(reminder, toMinute(until), now: _now());
 
   /// Until when the question about [reminder]'s current occurrence is on hold.
-  Future<DateTime?> postponedUntil(ReminderEntry reminder) async {
-    final stored = await _store.loadDraft(_snoozeKey(reminder));
-    return stored == null ? null : DateTime.tryParse(stored);
-  }
+  Future<DateTime?> postponedUntil(ReminderEntry reminder) => _postponements.load(reminder);
 
-  Future<void> _forgetPostponement(ReminderEntry reminder) =>
-      _store.saveDraft(_snoozeKey(reminder), '');
-
-  // Per occurrence: the answer to one due date does not silence the next.
-  // Kept with the other small per-user leftovers WarmStartStore clears at sign-out.
-  static String _snoozeKey(ReminderEntry reminder) => 'reminder_snooze.${completedRecordId(reminder)}';
+  Future<void> _forgetPostponement(ReminderEntry reminder) => _postponements.forget(reminder);
 
   static String _formatCreatedAt(DateTime date) {
     final months = appShortMonths();

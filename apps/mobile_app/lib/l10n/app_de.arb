@@ -2975,6 +2975,14 @@
       }
     }
   },
+  "notificationsReminderPostponedBody": "{petName} · Sie wollten jetzt erinnert werden",
+  "@notificationsReminderPostponedBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
   "notificationsMedicineTitle": "Medikament für {petName}",
   "@notificationsMedicineTitle": {
     "placeholders": {
@@ -4205,7 +4213,20 @@
   },
   "remindersDoneMarked": "Als erledigt markiert.",
   "remindersDoneDismissed": "Als nicht erledigt markiert.",
-  "remindersDonePostponed": "Ich frage morgen noch einmal nach.",
+  "remindersPostponeTitle": "Wann möchten Sie erinnert werden?",
+  "remindersPostponeOneHour": "In 1 Stunde",
+  "remindersPostponeEvening": "Heute Abend",
+  "remindersPostponeTomorrow": "Morgen früh",
+  "remindersPostponePick": "Tag und Uhrzeit wählen",
+  "remindersPostponeNoAlerts": "Benachrichtigungen sind hier deaktiviert: Es klingelt nichts, aber ich frage in der App noch einmal nach.",
+  "remindersPostponedTo": "Ich erinnere Sie: {when}.",
+  "@remindersPostponedTo": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
   "remindersDoneTooltip": "Als erledigt markieren",
   "remindersPreviousMonth": "Vorheriger Monat",
   "remindersNextMonth": "Nächster Monat",
@@ -4241,6 +4262,9 @@
   "permNotificationsTitle": "Möchten Sie Benachrichtigungen erhalten?",
   "permNotificationsWhy": "Damit wir Sie benachrichtigen können, wenn eine Erinnerung fällig ist, benötigt Quokka die Berechtigung für Benachrichtigungen.",
   "permNotificationsRefuse": "Wenn Sie ablehnen, bleiben Ihre Erinnerungen gespeichert, klingeln aber nicht. Sie können Ihre Meinung jederzeit in den Einstellungen ändern.",
+  "permExactAlarmsTitle": "Möchten Sie Benachrichtigungen zur genauen Uhrzeit?",
+  "permExactAlarmsWhy": "Damit Erinnerungen genau zur gewählten Uhrzeit klingeln, benötigt Quokka eine Berechtigung: Aktivieren Sie sie auf der Seite des Telefons, die sich jetzt öffnet.",
+  "permExactAlarmsRefuse": "Wenn Sie ablehnen, kommen Ihre Erinnerungen trotzdem an, können sich aber um bis zu eine Stunde verspäten. Sie können Ihre Meinung jederzeit in den Einstellungen des Telefons ändern.",
   "permWalkNotificationsTitle": "Spaziergang in den Benachrichtigungen sehen",
   "permWalkNotificationsWhy": "Während des Spaziergangs zeigt Quokka eine dauerhafte Benachrichtigung mit Zeit und Strecke an. Dort können Sie ihn pausieren oder beenden, auch wenn das Telefon in der Tasche steckt.",
   "permWalkNotificationsRefuse": "Wenn Sie ablehnen, wird der Spaziergang trotzdem aufgezeichnet, aber Sie sehen die Benachrichtigung nicht.",

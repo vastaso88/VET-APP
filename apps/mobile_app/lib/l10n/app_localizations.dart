@@ -66,7 +66,7 @@ import 'app_localizations_it.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -89,11 +89,11 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -101,7 +101,7 @@ abstract class AppLocalizations {
     Locale('en'),
     Locale('es'),
     Locale('fr'),
-    Locale('it'),
+    Locale('it')
   ];
 
   /// No description provided for @petsConsentFullText.
@@ -8570,6 +8570,12 @@ abstract class AppLocalizations {
   /// **'{petName} · alle {time}'**
   String notificationsReminderTomorrowBody(String petName, String time);
 
+  /// No description provided for @notificationsReminderPostponedBody.
+  ///
+  /// In it, this message translates to:
+  /// **'{petName} · mi avevi chiesto di ricordartelo ora'**
+  String notificationsReminderPostponedBody(String petName);
+
   /// No description provided for @notificationsMedicineTitle.
   ///
   /// In it, this message translates to:
@@ -12044,11 +12050,47 @@ abstract class AppLocalizations {
   /// **'Segnato come non fatto.'**
   String get remindersDoneDismissed;
 
-  /// No description provided for @remindersDonePostponed.
+  /// No description provided for @remindersPostponeTitle.
   ///
   /// In it, this message translates to:
-  /// **'Te lo richiedo domani.'**
-  String get remindersDonePostponed;
+  /// **'Quando vuoi che te lo ricordi?'**
+  String get remindersPostponeTitle;
+
+  /// No description provided for @remindersPostponeOneHour.
+  ///
+  /// In it, this message translates to:
+  /// **'Tra 1 ora'**
+  String get remindersPostponeOneHour;
+
+  /// No description provided for @remindersPostponeEvening.
+  ///
+  /// In it, this message translates to:
+  /// **'Stasera'**
+  String get remindersPostponeEvening;
+
+  /// No description provided for @remindersPostponeTomorrow.
+  ///
+  /// In it, this message translates to:
+  /// **'Domani mattina'**
+  String get remindersPostponeTomorrow;
+
+  /// No description provided for @remindersPostponePick.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli giorno e ora'**
+  String get remindersPostponePick;
+
+  /// No description provided for @remindersPostponeNoAlerts.
+  ///
+  /// In it, this message translates to:
+  /// **'Qui gli avvisi sono spenti: non suonerà nulla, ma ti rifarò la domanda nell\'app.'**
+  String get remindersPostponeNoAlerts;
+
+  /// No description provided for @remindersPostponedTo.
+  ///
+  /// In it, this message translates to:
+  /// **'Te lo ricordo: {when}.'**
+  String remindersPostponedTo(String when);
 
   /// No description provided for @remindersDoneTooltip.
   ///
@@ -12157,6 +12199,24 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Se rifiuti, i promemoria restano salvati ma non suoneranno. Puoi cambiare idea in ogni momento da Impostazioni.'**
   String get permNotificationsRefuse;
+
+  /// No description provided for @permExactAlarmsTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Vuoi gli avvisi all\'ora esatta?'**
+  String get permExactAlarmsTitle;
+
+  /// No description provided for @permExactAlarmsWhy.
+  ///
+  /// In it, this message translates to:
+  /// **'Per far suonare i promemoria esattamente all\'ora che scegli, Quokka ha bisogno di un permesso: accendilo nella schermata del telefono che si apre ora.'**
+  String get permExactAlarmsWhy;
+
+  /// No description provided for @permExactAlarmsRefuse.
+  ///
+  /// In it, this message translates to:
+  /// **'Se rifiuti, i promemoria arrivano lo stesso, ma possono tardare anche di un\'ora. Puoi cambiare idea in ogni momento dalle impostazioni del telefono.'**
+  String get permExactAlarmsRefuse;
 
   /// No description provided for @permWalkNotificationsTitle.
   ///
@@ -13686,9 +13746,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

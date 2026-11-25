@@ -37,12 +37,20 @@ bool isAwaitingConfirmation(ReminderEntry reminder, DateTime now) =>
     !reminder.isDone && !completionDueAt(reminder).isAfter(now);
 
 /// Whether the app should ask about [reminder] by itself right now: clinical,
-/// reached, recently (see [kAutoPromptWindowDays]) and not postponed.
+/// reached and recently (see [kAutoPromptWindowDays]).
+///
+/// A postponed one ("Rimanda") is never asked about before [snoozedUntil]; from
+/// then on it is, whatever it is about and whatever its due date: the owner chose
+/// that moment, so the window of days counts from it.
 bool shouldAutoPrompt(ReminderEntry reminder, DateTime now, {DateTime? snoozedUntil}) {
+  if (reminder.isDone) return false;
+  bool isRecent(DateTime since) => calendarDaysBetween(since, now) <= kAutoPromptWindowDays;
+  if (snoozedUntil != null) {
+    if (snoozedUntil.isAfter(now)) return false;
+    if (isRecent(snoozedUntil)) return true;
+  }
   if (!reminder.effectiveCategory.isClinical) return false;
-  if (!isAwaitingConfirmation(reminder, now)) return false;
-  if (calendarDaysBetween(completionDueAt(reminder), now) > kAutoPromptWindowDays) return false;
-  return snoozedUntil == null || !snoozedUntil.isAfter(now);
+  return isAwaitingConfirmation(reminder, now) && isRecent(completionDueAt(reminder));
 }
 
 /// The id of the record a completed occurrence writes. Built from the
@@ -63,9 +71,6 @@ DateTime defaultEventDay(ReminderEntry reminder, DateTime now) {
   final day = occurrenceDay(reminder);
   return day.isAfter(today) ? today : day;
 }
-
-/// When "Rimanda" asks again: tomorrow morning.
-DateTime snoozeUntil(DateTime now) => DateTime(now.year, now.month, now.day + 1, kDefaultNotificationHour);
 
 /// The due date after the current occurrence of a repeating reminder, or null
 /// when the series ends there (and for anything that does not repeat).

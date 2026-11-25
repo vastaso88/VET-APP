@@ -2828,14 +2828,17 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'male':
-          'Se $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-      'female':
-          'Se $name era iscritta all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-      'other':
-          'Se il microchip di $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'male':
+            'Se $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+        'female':
+            'Se $name era iscritta all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+        'other':
+            'Se il microchip di $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+      },
+    );
     return '$_temp0';
   }
 
@@ -2861,10 +2864,13 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'female': 'Spostata per errore? Riporta tra gli animali',
-      'other': 'Spostato per errore? Riporta tra gli animali',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'female': 'Spostata per errore? Riporta tra gli animali',
+        'other': 'Spostato per errore? Riporta tra gli animali',
+      },
+    );
     return '$_temp0';
   }
 
@@ -5146,6 +5152,11 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
+  String notificationsReminderPostponedBody(String petName) {
+    return '$petName · mi avevi chiesto di ricordartelo ora';
+  }
+
+  @override
   String notificationsMedicineTitle(String petName) {
     return 'Farmaco per $petName';
   }
@@ -7241,7 +7252,28 @@ class AppLocalizationsIt extends AppLocalizations {
   String get remindersDoneDismissed => 'Segnato come non fatto.';
 
   @override
-  String get remindersDonePostponed => 'Te lo richiedo domani.';
+  String get remindersPostponeTitle => 'Quando vuoi che te lo ricordi?';
+
+  @override
+  String get remindersPostponeOneHour => 'Tra 1 ora';
+
+  @override
+  String get remindersPostponeEvening => 'Stasera';
+
+  @override
+  String get remindersPostponeTomorrow => 'Domani mattina';
+
+  @override
+  String get remindersPostponePick => 'Scegli giorno e ora';
+
+  @override
+  String get remindersPostponeNoAlerts =>
+      'Qui gli avvisi sono spenti: non suonerà nulla, ma ti rifarò la domanda nell\'app.';
+
+  @override
+  String remindersPostponedTo(String when) {
+    return 'Te lo ricordo: $when.';
+  }
 
   @override
   String get remindersDoneTooltip => 'Segna come fatto';
@@ -7312,6 +7344,17 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get permNotificationsRefuse =>
       'Se rifiuti, i promemoria restano salvati ma non suoneranno. Puoi cambiare idea in ogni momento da Impostazioni.';
+
+  @override
+  String get permExactAlarmsTitle => 'Vuoi gli avvisi all\'ora esatta?';
+
+  @override
+  String get permExactAlarmsWhy =>
+      'Per far suonare i promemoria esattamente all\'ora che scegli, Quokka ha bisogno di un permesso: accendilo nella schermata del telefono che si apre ora.';
+
+  @override
+  String get permExactAlarmsRefuse =>
+      'Se rifiuti, i promemoria arrivano lo stesso, ma possono tardare anche di un\'ora. Puoi cambiare idea in ogni momento dalle impostazioni del telefono.';
 
   @override
   String get permWalkNotificationsTitle =>

@@ -129,6 +129,7 @@ void main() {
       for (final purpose in [
         PermissionPurpose.location,
         PermissionPurpose.notifications,
+        PermissionPurpose.exactAlarms,
         PermissionPurpose.walkNotifications,
         PermissionPurpose.microphone,
       ]) {

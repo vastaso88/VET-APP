@@ -57,6 +57,8 @@ Future<bool?> _open(WidgetTester tester, ReminderEntry reminder) async {
                 context,
                 reminder,
                 service: ReminderCompletionService(now: () => _now),
+                now: () => _now,
+                alertsCanRing: (_) async => true,
               ),
               child: const Text('apri'),
             ),
@@ -135,18 +137,49 @@ void main() {
     expect(find.text('Segnato come non fatto.'), findsOneWidget);
   });
 
-  testWidgets('"Rimanda" creates no entry and leaves the reminder open', (tester) async {
+  testWidgets('"Rimanda" asks when, says when, creates no entry and leaves the reminder open',
+      (tester) async {
     final reminder = _reminder('sheet-later', category: ReminderCategory.vaccine);
     await RemindersRepository().saveReminder(reminder);
     await _open(tester, reminder);
 
     await tester.tap(find.text('Rimanda'));
     await tester.pumpAndSettle();
+    expect(find.text('Quando vuoi che te lo ricordi?'), findsOneWidget);
+    expect(await ReminderCompletionService().postponedUntil(reminder), isNull);
+
+    await tester.tap(find.text('Domani mattina'));
+    await tester.pumpAndSettle();
+
+    // Both the choice and "Fatto?" are closed.
+    expect(find.text('Quando vuoi che te lo ricordi?'), findsNothing);
+    expect(find.text('Fatto?'), findsNothing);
+    expect(find.text('Te lo ricordo: gio 22 ott, 09:00.'), findsOneWidget);
+    expect(await ReminderCompletionService().postponedUntil(reminder), DateTime(2026, 10, 22, 9));
 
     expect(_recordsOf('sheet-later'), isEmpty);
-    expect(find.text('Te lo richiedo domani.'), findsOneWidget);
     final stored = (await RemindersRepository().loadReminders()).firstWhere((r) => r.id == 'sheet-later');
     expect(stored.isDone, isFalse);
+    expect(stored.dueAt, reminder.dueAt);
+  });
+
+  testWidgets('"Rimanda" closed without choosing goes back to "Fatto?", nothing postponed',
+      (tester) async {
+    final reminder = _reminder('sheet-second-thoughts', category: ReminderCategory.vaccine);
+    await RemindersRepository().saveReminder(reminder);
+    await _open(tester, reminder);
+    await tester.enterText(find.widgetWithText(TextField, 'Richiamo vaccinale'), 'Trivalente');
+
+    await tester.tap(find.text('Rimanda'));
+    await tester.pumpAndSettle();
+    await tester.tapAt(const Offset(10, 10));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Quando vuoi che te lo ricordi?'), findsNothing);
+    expect(find.text('Fatto?'), findsOneWidget);
+    // What was typed is still there.
+    expect(find.widgetWithText(TextField, 'Trivalente'), findsOneWidget);
+    expect(await ReminderCompletionService().postponedUntil(reminder), isNull);
   });
 
   testWidgets('a non-clinical reminder only asks to tick it, no record fields', (tester) async {

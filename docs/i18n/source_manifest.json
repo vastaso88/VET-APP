@@ -21625,5 +21625,104 @@
       "de": "6e38a3fe04eb5362b8ee4abb1cf7d93b1173bf748ea00f97550d5ddc9a380f13",
       "fr": "03b4a9ac68270a78d95a68caa1709d8aa42675d859b7a1bf5f1b691da9273ff5"
     }
+  },
+  "ui:notificationsReminderPostponedBody": {
+    "source": "7da4e01a731e26fd838c1d5697ad3c0ebd7db945d586f1c4b6959167459bdce8",
+    "targets": {
+      "en": "9094a9a021d19f1240c2b81e0147cba144b82e892828fd98140c71651ea2824e",
+      "es": "585ca7cb997c2e870132065a584b7e9ee63aef89d5fb0a17e6edc95987e88287",
+      "de": "75e7894c5516dcfd0557bd444fe1f8bddf67b1997160f17439bda8c35a34d023",
+      "fr": "04382dae123ed4563258568dc9ac65248a0766c652c81d2714cf563a1b8301ce"
+    }
+  },
+  "ui:remindersPostponeTitle": {
+    "source": "da0bf348e22baea6a8e5d8a1db1b80c3fd2eb3ab432532e1a8109e6f9db16505",
+    "targets": {
+      "en": "a0e6e6682f3a12cfcbae71967c642e1cf44f0ac57b735836989210f6ef88cb07",
+      "es": "9672a6d868e6476c0c560e804b854811b6baf702fc22ab58b157d9151b772292",
+      "de": "54a0ed3908afd2020764c6bfeb83438397d833b058e8e64222499baab06bd800",
+      "fr": "09b57b80e4cc7a73f601e68153d0d32aaf2e3a93f6bd3b08594b5372259fee48"
+    }
+  },
+  "ui:remindersPostponeOneHour": {
+    "source": "7127848f1fb8e5cacd0ba56a920c8ca23e1d4ce2e853e8c0711dbd2c8f0bfb54",
+    "targets": {
+      "en": "5467be3995c4ce3779644aab667997d538d61829c6a91f7fed9ea75e0f130b38",
+      "es": "d92eef130c1e2632b9ca786d6f2b59c42e75504d203dcc17236ae57cee4b6693",
+      "de": "a1f4318ed1cde7002f81d4e7c5b4e2086fead55596bdc78b066fb249c77521c3",
+      "fr": "39035355cbed1a0d87ca5d80751fb7d79a42adacda2f21f2bf25a5e87b4e85c4"
+    }
+  },
+  "ui:remindersPostponeEvening": {
+    "source": "d5f052e67cea77feeff63dcfa7527477b4d14eb58aae699c6bbfbbf4c1a6e22b",
+    "targets": {
+      "en": "a73c06da65d26e70f400089701d4e23f9571efcce73aa30ae250b6c49df9cdbe",
+      "es": "ef62e3cb5bad8a7d3218588bee8189b6c3a9b78d1f0a263dc42ed076262efeba",
+      "de": "c241c613b59e9081def264e686d9bfc660a0c3e148dac33d22045f98551076f6",
+      "fr": "12373966d95d2c39ad18ccbf1efe6076d10b3a81b53e7bc78aee59d5394284e3"
+    }
+  },
+  "ui:remindersPostponeTomorrow": {
+    "source": "75c5b8d32e7181c454dac0a004d4ae74427f261de5457991932918d5fe3d3057",
+    "targets": {
+      "en": "ea0aba554f6a1956265eaa2dfe52ef72c0dc7674e937297e3423ba690e7de0f2",
+      "es": "a09b70e0b48cc9ad2fdb06b43b05859f7bf2d372a2e3d7d66c988a00b9e96321",
+      "de": "dacca3f511fd732cad293932c44406e4d7e1f1df21bf46241469d883f8e61fc7",
+      "fr": "53f49830e15d8b7f1bb0ab189c6dedb77855b81a9bc8e0e4d85041b015d1dd3c"
+    }
+  },
+  "ui:remindersPostponePick": {
+    "source": "28b507503546ae253342f61b0c19c6df7d56bf7a9879914a9082744340a3934a",
+    "targets": {
+      "en": "184761477e6f7e5593d9e2891a9bd1884798970ccc8aba7f67d9cd12cc3e2a97",
+      "es": "142b9673e27594ee00c955c2ea2cd532173d9b94cc52080bf125699ffa239f1a",
+      "de": "7ea55f05e4c99809fa09562c5e5f942d7719aab9557f774882bfcda6a51b6b59",
+      "fr": "e0cfdd8b203d3f620f7590b4d3a0c48d344ef2f0e7434f58cf5c6ddb21b9c9ba"
+    }
+  },
+  "ui:remindersPostponeNoAlerts": {
+    "source": "af6b538fda99bfec232a04ee3985d6fc201f8e85d8a152c7bcdb1e800db7db4c",
+    "targets": {
+      "en": "14246387be05d4783d6095a26c30a30229f6cdef455a47ced8420664353783ed",
+      "es": "a6cc4f6a282c55f9c9e7b20ec4bf209e97a7ef7aea214f03c1e9f090d9b4a048",
+      "de": "c3bb2f9bef0fd59dc6e94a14db3da0bcea2ebe8cae45ca9c080a7bb594a01ba3",
+      "fr": "0fc3172a91c537de972af6f2c4daea3f345cea0c92a525a22c7881a3ff61c06e"
+    }
+  },
+  "ui:remindersPostponedTo": {
+    "source": "0e46e30abba31c2ed5d6fe5d2e0d764e6461bab89a2355276b4f60ffedff06d3",
+    "targets": {
+      "en": "473b291c4cc3477aeb69bf95de9a2d8120da1086a5883eb810296e62079244a3",
+      "es": "022e43346f707910a38d48b5d2bd53d64399e13cc5ca26eb328c366375bbba51",
+      "de": "30df5df4857d09be391aac69777ef1b65ecd52f0e7a2a6b1c04b26b6fe388308",
+      "fr": "22bfc93cdc19379bccdb5d8d50040f0cbb1f80a805649a171d77fe069b1a8f98"
+    }
+  },
+  "ui:permExactAlarmsTitle": {
+    "source": "8fe7e1e2bc211019ead938cef41c65eab0431f45aca9c3c1f72307e4f48f0ec9",
+    "targets": {
+      "en": "41c59540e2113cfa1a36d300b5c937765d3c8acec5927875fd0c7d5842d02bd7",
+      "es": "6b7ff084e16cf089ca0f518f4e7d9c6077db40a44ee2075c155f04831b1fbc0f",
+      "de": "36a9eaf5e90f48bc3e8512c3cad1c99c79b3e8f3b03d5bb4397893b5c2dc22ee",
+      "fr": "9fff4bb22f5256e6c6f5327650afe6f6af32130d25bfe3bb65dffc8b78763fb9"
+    }
+  },
+  "ui:permExactAlarmsWhy": {
+    "source": "2922b7b19ff7e6842650bc8ff39eb35f1b2a68ba53296515679b191ca83a49da",
+    "targets": {
+      "en": "17bde4391d2d756fc40bd6d14654cce778e7271fdb38ca1569549c9b12068dbb",
+      "es": "d868a504c6e433aa56bc886bc98a1f65890f7365fb0f74e77dafe5a4030cec03",
+      "de": "ba9c8f5c25545e9885bb1fb6f4ef3e437f883861ebe788ad1e7e08efce9fe472",
+      "fr": "bcf7f27137b95f90c1df92c52831fb9aaf6d53003172181b583425d60bf7ce3e"
+    }
+  },
+  "ui:permExactAlarmsRefuse": {
+    "source": "4ffbb81669a1ce1d48ea6b5af54ec12e9712cb502079e2e08847d5776b60b7a4",
+    "targets": {
+      "en": "489327cca092d1ce5fcec7a746d44faa70f36e2bca650127ad3699b4d21bfac8",
+      "es": "0cdc1e7bdd2d2a8cd94033027ab033317c8112d5520330e71f67be26a9fc3f0d",
+      "de": "0847f603a302a094ea9990937ab223e5b9df6349940903aee32128a894a6dfcb",
+      "fr": "dd292d077312027551da38b02c679253819c97e28c5a09a4a8f3b41731532e2c"
+    }
   }
 }

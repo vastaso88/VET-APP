@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../../../l10n/l10n.dart';
-import '../../../../app/router/app_router.dart';
-import '../../../notifications/presentation/reminder_notification_permission.dart';
+import '../../../notifications/presentation/exact_alarm_permission.dart';
 import '../../data/reminders_repository.dart';
 import '../widgets/reminder_form.dart';
 import '../widgets/reminder_page_parts.dart';
@@ -76,8 +75,9 @@ class _ReminderCreatePageState extends State<ReminderCreatePage> {
     if (!mounted) return;
     Navigator.of(context).pop();
     // A reminder that can never ring is worse than none: ask for the
-    // notification permission now if the phone has not allowed it yet.
-    unawaited(maybeAskReminderNotificationPermission(AppRouter.navigatorKey.currentContext));
+    // notification permission now if the phone has not allowed it yet, then
+    // (the first time) for the access that makes it ring at the exact hour.
+    unawaited(askReminderPermissions(reminder));
   }
 
   @override
@@ -123,7 +123,7 @@ class _ReminderEditPageState extends State<ReminderEditPage> {
     }
     if (!mounted) return;
     Navigator.of(context).pop(reminder);
-    unawaited(maybeAskReminderNotificationPermission(AppRouter.navigatorKey.currentContext));
+    unawaited(askReminderPermissions(reminder));
   }
 
   @override

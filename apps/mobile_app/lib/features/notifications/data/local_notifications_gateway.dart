@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -6,6 +7,7 @@ import '../../../l10n/l10n.dart';
 import '../application/notification_taps.dart';
 import '../domain/notification_plan.dart';
 import '../domain/notification_time_zone.dart';
+import 'exact_alarms.dart';
 
 /// What the scheduler needs from the phone's notification system — a seam
 /// so tests can use a fake and the web build a no-op.
@@ -60,14 +62,20 @@ LocalNotificationsGateway createPlatformNotificationsGateway() {
   return FlutterLocalNotificationsGateway()..ensureInitialized();
 }
 
-/// Android, through flutter_local_notifications. Inexact alarms on purpose
-/// (no SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM, see AndroidManifest.xml):
-/// Android may deliver a few minutes late while the phone sleeps.
+/// Android, through flutter_local_notifications. What the owner gave an hour to
+/// (see [NotificationCategory.ringsAtChosenTime]) rings exactly then, with the
+/// phone asleep too, when the access to exact alarms is there (SCHEDULE_EXACT_ALARM,
+/// see [ExactAlarms] and AndroidManifest.xml). Without it, and for birthdays and
+/// memories, the alarm is inexact: Android may deliver it up to an hour late.
 class FlutterLocalNotificationsGateway implements LocalNotificationsGateway {
-  FlutterLocalNotificationsGateway({FlutterLocalNotificationsPlugin? plugin})
-      : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsGateway({
+    FlutterLocalNotificationsPlugin? plugin,
+    ExactAlarms exactAlarms = const ExactAlarms(),
+  })  : _plugin = plugin ?? FlutterLocalNotificationsPlugin(),
+        _exactAlarms = exactAlarms;
 
   final FlutterLocalNotificationsPlugin _plugin;
+  final ExactAlarms _exactAlarms;
   Future<void>? _initializing;
 
   Future<void> ensureInitialized() => _ensureInitialized();
@@ -138,6 +146,23 @@ class FlutterLocalNotificationsGateway implements LocalNotificationsGateway {
   @override
   Future<void> schedule(int id, PlannedNotification notification) async {
     await _ensureInitialized();
+    if (notification.category.ringsAtChosenTime && await _exactAlarms.allowed()) {
+      try {
+        await _schedule(id, notification, AndroidScheduleMode.exactAllowWhileIdle);
+        return;
+      } on PlatformException catch (error) {
+        // Taken back between the check and the call: late is better than never.
+        if (error.code != 'exact_alarms_not_permitted') rethrow;
+      }
+    }
+    await _schedule(id, notification, AndroidScheduleMode.inexactAllowWhileIdle);
+  }
+
+  Future<void> _schedule(
+    int id,
+    PlannedNotification notification,
+    AndroidScheduleMode mode,
+  ) async {
     final channel = _channels[notification.category]!;
     // A memory is a quiet thought, not an alert: no pop-up over the screen.
     final gentle = notification.category == NotificationCategory.memories;
@@ -148,7 +173,7 @@ class FlutterLocalNotificationsGateway implements LocalNotificationsGateway {
       title: notification.title,
       body: notification.body,
       payload: notification.payload,
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      androidScheduleMode: mode,
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           channel.id,

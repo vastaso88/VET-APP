@@ -14,7 +14,8 @@ import 'widgets/reminder_completion_sheet.dart';
 /// Asks "Fatto? Registralo nello storico" on its own: for clinical reminders
 /// that have just fallen due (when the app opens or comes back) and for the
 /// reminder whose notification the owner tapped. One question at a time; each
-/// reminder at most once per run unless the owner postponed it.
+/// reminder at most once per run, and once more from the moment the owner
+/// postponed it to ("Rimanda").
 class ReminderCompletionPrompter {
   ReminderCompletionPrompter({
     RemindersRepository? repository,
@@ -66,6 +67,11 @@ class ReminderCompletionPrompter {
   bool _busy = false;
   final Set<String> _askedThisRun = {};
 
+  /// One question: this occurrence, postponed this far. Postponing it (again) is a
+  /// new question, so it comes back even in the same run.
+  static String _questionKey(ReminderEntry reminder, DateTime? postponedUntil) =>
+      '${completedRecordId(reminder)}@${postponedUntil?.toIso8601String() ?? ''}';
+
   /// Asks about the clinical reminders that fell due and were not answered.
   Future<void> checkDue() async {
     if (_busy) return;
@@ -76,9 +82,9 @@ class ReminderCompletionPrompter {
       for (final reminder in reminders) {
         if (asked >= maxAutoPrompts) break;
         final now = _now();
-        final key = completedRecordId(reminder);
-        if (_askedThisRun.contains(key)) continue;
         final postponedUntil = await _service.postponedUntil(reminder);
+        final key = _questionKey(reminder, postponedUntil);
+        if (_askedThisRun.contains(key)) continue;
         if (!shouldAutoPrompt(reminder, now, snoozedUntil: postponedUntil)) continue;
         if (!_canAsk) return;
         _askedThisRun.add(key);
@@ -101,9 +107,10 @@ class ReminderCompletionPrompter {
       final reminders = await _remindersToAsk();
       final matches = reminders.where((r) => r.id == reminderId && !r.isDone);
       if (matches.isEmpty) return;
-      if (!_canAsk) return;
       final reminder = matches.first;
-      _askedThisRun.add(completedRecordId(reminder));
+      final key = _questionKey(reminder, await _service.postponedUntil(reminder));
+      if (!_canAsk) return;
+      _askedThisRun.add(key);
       await _askAbout(reminder);
     } catch (_) {
       // The reminder is still in the list.

@@ -26,6 +26,8 @@ import '../features/notifications/application/notification_scheduler.dart';
 import '../features/notifications/domain/notification_time_zone.dart';
 import '../features/pets/data/pet_demo_store.dart';
 import '../features/pets/data/pet_photo_repository.dart';
+import '../features/notifications/presentation/exact_alarm_permission.dart';
+import '../features/reminders/data/reminder_postponement_store.dart';
 import '../features/reminders/data/reminders_repository.dart';
 import '../features/account_consents/application/chat_notice.dart';
 import '../features/account_consents/data/signup_consents.dart';
@@ -128,6 +130,10 @@ Future<void> bootstrap({Future<void> Function()? afterSupabaseReady}) async {
           PetDemoStore.instance.reset();
           // The chats held in memory (and any read still in flight) go too.
           ChatDemoStore.instance.reset();
+          // What was postponed ("Rimanda"); its notifications go with all the others
+          // (NotificationScheduler clears them when the account signs out).
+          unawaited(ReminderPostponementStore.instance.clear());
+          unawaited(forgetExactAlarmAsk());
           unawaited(const ActiveWalkRecoveryStore().clear());
           unawaited(syncPetsToHomeWidget(const []));
           ProfilePhotoRepository.clearLocalCache();

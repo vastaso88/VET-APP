@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../data/notification_preferences_store.dart';
+import '../domain/notification_plan.dart';
 import 'notification_scheduler.dart';
 
 /// Whether the phone lets the app's reminders ring, for the "Le notifiche sono
@@ -14,12 +16,14 @@ class NotificationAvailability {
     Future<PermissionStatus> Function()? requestPermission,
     Future<bool> Function()? openNotificationSettings,
     Future<bool> Function()? openAppSettingsScreen,
+    Future<NotificationPreferences> Function()? loadPreferences,
     VoidCallback? onEnabled,
     bool? isAndroid,
   })  : _readStatus = readStatus ?? (() => Permission.notification.status),
         _request = requestPermission ?? (() => Permission.notification.request()),
         _openNotificationSettings = openNotificationSettings ?? _openNativeNotificationSettings,
         _openAppSettings = openAppSettingsScreen ?? openAppSettings,
+        _loadPreferences = loadPreferences ?? _storedPreferences,
         _onEnabled = onEnabled,
         _isAndroid = isAndroid;
 
@@ -31,6 +35,7 @@ class NotificationAvailability {
   final Future<PermissionStatus> Function() _request;
   final Future<bool> Function() _openNotificationSettings;
   final Future<bool> Function() _openAppSettings;
+  final Future<NotificationPreferences> Function() _loadPreferences;
   final VoidCallback? _onEnabled;
   final bool? _isAndroid;
 
@@ -40,6 +45,25 @@ class NotificationAvailability {
 
   bool get _android =>
       _isAndroid ?? (!kIsWeb && defaultTargetPlatform == TargetPlatform.android);
+
+  static Future<NotificationPreferences> _storedPreferences() async {
+    await NotificationPreferencesStore.instance.ensureLoaded();
+    return NotificationPreferencesStore.instance.preferences;
+  }
+
+  /// Whether a notification of [category] would ring on this phone: allowed by
+  /// Android and not switched off in Impostazioni. Never on web and iOS, where
+  /// the app schedules nothing.
+  Future<bool> canRing(NotificationCategory category) async {
+    if (!_android) return false;
+    try {
+      if (!(await _loadPreferences()).allows(category)) return false;
+      return (await _readStatus()).isGranted;
+    } catch (_) {
+      // Cannot tell: no false alarm.
+      return true;
+    }
+  }
 
   /// Looks at the phone's state again (screen shown, app back from settings).
   Future<void> refresh() async {
