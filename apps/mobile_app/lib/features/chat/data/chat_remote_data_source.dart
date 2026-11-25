@@ -701,7 +701,8 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
             createdAt: DateTime.tryParse(raw['created_at'] as String? ?? ''),
             healthAnswer: raw['health_answer'] as bool? ?? false,
             notHelpful: raw['not_helpful'] as bool? ?? false,
-            aiGenerated: raw['ai_generated'] as bool? ?? false,
+            // Messages saved before the field: written by the AI, like the others.
+            aiGenerated: raw['ai_generated'] as bool? ?? raw['role'] != 'user',
             clientMessageId: raw['client_message_id'] as String?,
           ),
       ],

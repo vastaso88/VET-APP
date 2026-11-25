@@ -734,7 +734,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get firstRunTutorialAssistantBody =>
-      'Pregunta por qué hace lo que hace, cómo manejarlo cada día y cuándo hace falta el veterinario: respuestas basadas en fuentes científicas, pensadas para su especie.';
+      'Pregunta por qué hace lo que hace, cómo manejarlo cada día y cuándo hace falta el veterinario: respuestas en palabras sencillas, pensadas para su especie.';
 
   @override
   String get firstRunTutorialRemindersTitle => 'No olvides ninguna fecha';

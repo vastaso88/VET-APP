@@ -730,7 +730,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get firstRunTutorialAssistantBody =>
-      'Ask why it does what it does, how to manage it every day and when a veterinarian is needed: answers based on scientific sources, tailored to its species.';
+      'Ask why it does what it does, how to manage it every day and when a veterinarian is needed: answers in simple words, tailored to its species.';
 
   @override
   String get firstRunTutorialRemindersTitle => 'Never miss another deadline';

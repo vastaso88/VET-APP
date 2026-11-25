@@ -90,34 +90,32 @@ class ChatMessageBubble extends StatelessWidget {
                             color: foregroundColor,
                           ),
                         ),
+                  // A reply says only that an AI wrote it: no date, no time (owner decision
+                  // of 25 November 2026).
                   if (showAiDisclosure) ...[
                     const SizedBox(height: AppSpacing.xs),
                     const AiDisclosureBadge(),
                   ],
-                  const SizedBox(height: AppSpacing.sm),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        message.timeLabel,
-                        style: AppTextStyles.caption.copyWith(
-                          color: isUser
-                              ? AppColors.onPrimary.withValues(alpha: 0.72)
-                              : AppColors.mutedText,
+                  if (isUser) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          message.timeLabel,
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.onPrimary.withValues(alpha: 0.72),
+                          ),
                         ),
-                      ),
-                      if (isUser) ...[
                         const SizedBox(width: AppSpacing.xs),
                         Icon(
-                          message.isRead
-                              ? Icons.done_all_rounded
-                              : Icons.done_rounded,
+                          message.isRead ? Icons.done_all_rounded : Icons.done_rounded,
                           size: 14,
                           color: AppColors.onPrimary.withValues(alpha: 0.8),
                         ),
                       ],
-                    ],
-                  ),
+                    ),
+                  ],
                 ],
               ),
             ),

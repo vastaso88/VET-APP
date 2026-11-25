@@ -784,11 +784,11 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
     # The strict evidence path (husbandry): its failure names the sources
     # it could not synthesise, as in build 35.
     "provider_failure_evidence": {
-        "it": "In questo momento non riesco a elaborare una risposta basata sulle fonti scientifiche (il servizio è temporaneamente non disponibile). Riprova tra poco, oppure consulta il veterinario se la situazione richiede attenzione ora.",
-        "en": "I cannot prepare an answer based on the scientific sources right now because the service is temporarily unavailable. Try again shortly, or contact a veterinarian if the situation needs attention now.",
-        "es": "Ahora mismo no puedo preparar una respuesta basada en las fuentes científicas porque el servicio no está disponible temporalmente. Inténtalo de nuevo en breve o contacta con un veterinario si la situación requiere atención inmediata.",
-        "de": "Ich kann gerade keine Antwort auf Grundlage der wissenschaftlichen Quellen erstellen, weil der Dienst vorübergehend nicht verfügbar ist. Versuchen Sie es gleich noch einmal oder wenden Sie sich an die Tierärztin bzw. den Tierarzt, wenn die Situation jetzt Aufmerksamkeit braucht.",
-        "fr": "Pour le moment, je n'arrive pas à élaborer une réponse fondée sur les sources scientifiques car le service est temporairement indisponible. Réessayez dans un instant, ou consultez le vétérinaire si la situation demande de l'attention dès maintenant.",
+        "it": "In questo momento non riesco a elaborare la risposta (il servizio è temporaneamente non disponibile). Riprova tra poco, oppure consulta il veterinario se la situazione richiede attenzione ora.",
+        "en": "I cannot prepare the answer right now because the service is temporarily unavailable. Try again shortly, or contact a veterinarian if the situation needs attention now.",
+        "es": "Ahora mismo no puedo preparar la respuesta porque el servicio no está disponible temporalmente. Inténtalo de nuevo en breve o contacta con un veterinario si la situación requiere atención inmediata.",
+        "de": "Ich kann die Antwort gerade nicht erstellen, weil der Dienst vorübergehend nicht verfügbar ist. Versuchen Sie es gleich noch einmal oder wenden Sie sich an die Tierärztin bzw. den Tierarzt, wenn die Situation jetzt Aufmerksamkeit braucht.",
+        "fr": "Pour le moment, je n'arrive pas à élaborer la réponse car le service est temporairement indisponible. Réessayez dans un instant, ou consultez le vétérinaire si la situation demande de l'attention dès maintenant.",
     },
     "provider_failure_evidence_limitation": {
         "it": "Sintesi delle evidenze non disponibile: provider LLM non raggiungibile.",

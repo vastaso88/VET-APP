@@ -1656,12 +1656,12 @@
     }
   },
   "ui:firstRunTutorialAssistantBody": {
-    "source": "c579859b828bd638cd00710b1ff9cef00bae78e66d9628f121d0415333e9c688",
+    "source": "ec0642686585ce4d9883e1902d6a2ec1da5acd747de1de63dabbb6cc5a728d33",
     "targets": {
-      "en": "138520c83c0e839177f40aa14be57836b0cd6005012f2d3446fde58664be2ebe",
-      "es": "f426e8de5a6f662e7120dcdb85e1a001cc38e87c762d3eb88b8a7c77e55d0e4e",
-      "de": "b4cc74417b47795eaaa72ef942a869bdfcfaa7463abfe95818b6024f90807fbf",
-      "fr": "33411dcbfd20b3edd15d03a45459ce7d0e23b0f388d04eec7d3c20d2fea25483"
+      "en": "bcc7bd103ccb4d9d2dbc3354834f756fdde9b5af1fe4d5e73a13aec925061e2a",
+      "es": "43cde85c730665cfe1695d6438963d212451e84512e1422ed793f4c26bbd7678",
+      "de": "7bff3a6a0dfe07ab6f4f7d06fbf1a7f25ff342ec208fd2d75aa803686c0b5937",
+      "fr": "12ab6e41ab59a7e76cfaeb3c755d996b30443f45c49424de06b3636f1ba903be"
     }
   },
   "ui:firstRunTutorialRemindersTitle": {
@@ -17028,12 +17028,12 @@
     }
   },
   "backend:provider_failure_evidence": {
-    "source": "688abb9cd7ba4323def0b688567497076bedb69d0e46d89bbbfb26c127cfef22",
+    "source": "c59f140f08009c8301519bf72911416f28d5e4fb5edc4a398675d2ae23517707",
     "targets": {
-      "en": "5932b1558427f3ed43dcb08741bd4af40c87ab0a28db2009dfcca6a6484f7ef7",
-      "es": "b94e60651866e2df6be33679401559a74d783456f64f641fbcf51c9d96403697",
-      "de": "33c65f054c932fa55326c625ed4d40800fb8504b534cc6ecdabd4d2aca92b490",
-      "fr": "d15e50a41d8012ccf1ff7dd98cc39ce2ffc97a5bbaf8eadcd54d8e8986b8084f"
+      "en": "b748728b9e33ff61505fa6925ff6fd6051381acceabf423b8a208c73304dafa5",
+      "es": "83def4cbe7353779f0d8c15f21ae8e3370d15a1bcee4a66c4f33b858ae7d9e94",
+      "de": "f78ce705ae74d46ac8ce496e1b1e1d81a0fd9407b8b1c7ecbc96db38c95337db",
+      "fr": "63f6618001124325647a24b581aa5ed916a9cd8e85377edab978ba10ead64c79"
     }
   },
   "backend:provider_failure_evidence_limitation": {

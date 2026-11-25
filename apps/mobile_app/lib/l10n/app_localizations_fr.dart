@@ -736,7 +736,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get firstRunTutorialAssistantBody =>
-      'Demandez pourquoi il fait ce qu\'il fait, comment le gérer au quotidien et quand un vétérinaire est nécessaire : des réponses fondées sur des sources scientifiques, pensées pour son espèce.';
+      'Demandez pourquoi il fait ce qu\'il fait, comment le gérer au quotidien et quand un vétérinaire est nécessaire : des réponses en mots simples, pensées pour son espèce.';
 
   @override
   String get firstRunTutorialRemindersTitle => 'Plus d\'échéances oubliées';

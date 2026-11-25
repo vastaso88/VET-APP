@@ -737,7 +737,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get firstRunTutorialAssistantBody =>
-      'Fragen Sie, warum es tut, was es tut, wie Sie den Alltag gestalten und wann ein Tierarzt nötig ist: Antworten auf Grundlage wissenschaftlicher Quellen, passend zur Tierart.';
+      'Fragen Sie, warum es tut, was es tut, wie Sie den Alltag gestalten und wann ein Tierarzt nötig ist: Antworten in einfachen Worten, passend zur Tierart.';
 
   @override
   String get firstRunTutorialRemindersTitle => 'Keine vergessenen Termine mehr';

@@ -1313,7 +1313,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunTutorialAssistantBody.
   ///
   /// In it, this message translates to:
-  /// **'Chiedi perché fa quello che fa, come gestirlo ogni giorno e quando serve il veterinario: risposte basate su fonti scientifiche, pensate per la sua specie.'**
+  /// **'Chiedi perché fa quello che fa, come gestirlo ogni giorno e quando serve il veterinario: risposte in parole semplici, pensate per la sua specie.'**
   String get firstRunTutorialAssistantBody;
 
   /// No description provided for @firstRunTutorialRemindersTitle.

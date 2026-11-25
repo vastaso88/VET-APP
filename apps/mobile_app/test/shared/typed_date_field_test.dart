@@ -22,26 +22,26 @@ Widget _harness(TextEditingController controller, {Future<void> Function()? onPi
 }
 
 void main() {
-  testWidgets('the first tap empties the proposed date and typing starts from zero', (tester) async {
+  testWidgets('the first tap keeps the proposed date, selected: typing replaces it',
+      (tester) async {
     final controller = TextEditingController(text: '07/10/2026');
     await tester.pumpWidget(_harness(controller));
 
     await tester.tap(find.byKey(const Key('date')));
-    await tester.pump();
-    expect(controller.text, '');
+    await tester.pumpAndSettle();
+    expect(controller.text, '07/10/2026');
+    expect(controller.selection, const TextSelection(baseOffset: 0, extentOffset: 10));
 
     await tester.enterText(find.byKey(const Key('date')), '12112026');
     expect(controller.text, '12/11/2026');
   });
 
-  testWidgets('leaving the field without typing puts the proposed date back', (tester) async {
+  testWidgets('leaving the field without typing keeps the proposed date', (tester) async {
     final controller = TextEditingController(text: '07/10/2026');
     await tester.pumpWidget(_harness(controller));
 
     await tester.tap(find.byKey(const Key('date')));
     await tester.pump();
-    expect(controller.text, '');
-
     await tester.tap(find.byKey(const Key('other')));
     await tester.pump();
     expect(controller.text, '07/10/2026');
@@ -88,16 +88,12 @@ void main() {
     expect(controller.text, '25/12/2026', reason: 'the owner picked it; it is not a proposal any more');
   });
 
-  testWidgets('cancelling the calendar leaves the proposed date, still replaceable', (tester) async {
+  testWidgets('cancelling the calendar leaves the proposed date', (tester) async {
     final controller = TextEditingController(text: '07/10/2026');
     await tester.pumpWidget(_harness(controller));
 
     await tester.tap(find.byIcon(Icons.calendar_today_outlined));
     await tester.pump();
     expect(controller.text, '07/10/2026');
-
-    await tester.tap(find.byKey(const Key('date')));
-    await tester.pump();
-    expect(controller.text, '');
   });
 }
