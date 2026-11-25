@@ -400,11 +400,11 @@ class _PhotoCarouselState extends State<_PhotoCarousel> {
             children: List.generate(
               widget.urls.length,
               (index) => Container(
-                width: 7,
-                height: 7,
+                width: index == _page ? 20 : 8,
+                height: 8,
                 margin: const EdgeInsets.symmetric(horizontal: 3),
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(AppRadii.pill),
                   color: index == _page ? AppColors.primary : AppColors.borderStrong,
                 ),
               ),

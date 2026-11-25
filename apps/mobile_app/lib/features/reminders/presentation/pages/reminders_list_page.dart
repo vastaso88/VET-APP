@@ -19,6 +19,7 @@ import '../../domain/reminder_calendar.dart';
 import '../../domain/reminder_presentation.dart';
 import '../widgets/reminder_completion_sheet.dart';
 import '../../../../shared/widgets/min_tap_target.dart';
+import '../../../../shared/widgets/pill_row.dart';
 import '../widgets/reminder_page_parts.dart';
 import 'reminder_create_edit_pages.dart';
 import 'reminder_detail_page.dart';
@@ -221,32 +222,28 @@ class _KindFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 48,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          ReminderKindChip(
-            label: context.l10n.remindersFilterAll,
-            selected: selected == _KindFilterOption.all,
-            onTap: () => onSelect(_KindFilterOption.all),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          ReminderKindChip(
-            label: context.l10n.remindersFilterEvents,
-            icon: Icons.event_outlined,
-            selected: selected == _KindFilterOption.events,
-            onTap: () => onSelect(_KindFilterOption.events),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          ReminderKindChip(
-            label: context.l10n.remindersFilterCourses,
-            icon: Icons.medication_outlined,
-            selected: selected == _KindFilterOption.courses,
-            onTap: () => onSelect(_KindFilterOption.courses),
-          ),
-        ],
-      ),
+    return PillRow(
+      children: [
+        ReminderKindChip(
+          label: context.l10n.remindersFilterAll,
+          selected: selected == _KindFilterOption.all,
+          onTap: () => onSelect(_KindFilterOption.all),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        ReminderKindChip(
+          label: context.l10n.remindersFilterEvents,
+          icon: Icons.event_outlined,
+          selected: selected == _KindFilterOption.events,
+          onTap: () => onSelect(_KindFilterOption.events),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        ReminderKindChip(
+          label: context.l10n.remindersFilterCourses,
+          icon: Icons.medication_outlined,
+          selected: selected == _KindFilterOption.courses,
+          onTap: () => onSelect(_KindFilterOption.courses),
+        ),
+      ],
     );
   }
 }
@@ -261,24 +258,20 @@ class _PetFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 48,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          ReminderKindChip(
-              label: context.l10n.remindersFilterAll,
-              selected: selected == null,
-              onTap: () => onSelect(null)),
-          for (final pet in pets) ...[
-            const SizedBox(width: AppSpacing.sm),
-            _PetChip(
-                pet: pet,
-                selected: selected == pet.name,
-                onTap: () => onSelect(pet.name)),
-          ],
+    return PillRow(
+      children: [
+        ReminderKindChip(
+            label: context.l10n.remindersFilterAll,
+            selected: selected == null,
+            onTap: () => onSelect(null)),
+        for (final pet in pets) ...[
+          const SizedBox(width: AppSpacing.sm),
+          _PetChip(
+              pet: pet,
+              selected: selected == pet.name,
+              onTap: () => onSelect(pet.name)),
         ],
-      ),
+      ],
     );
   }
 }
@@ -307,17 +300,12 @@ class _PetChip extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.pill),
             border: Border.all(
-                color: selected ? AppColors.primary : AppColors.border),
+                color: selected ? AppColors.primary : AppColors.borderStrong),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                    shape: BoxShape.circle, color: pet.identityColor),
-              ),
+              PetInitialMark(pet: pet),
               const SizedBox(width: 6),
               Text(
                 pet.name,
@@ -511,7 +499,7 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
                           isToday: isSameDay(day, startOfToday),
                           isSelected: selectedDay != null &&
                               isSameDay(day, selectedDay),
-                          markers: markersForDay(widget.reminders, pets, day),
+                          markers: activityMarkersForDay(widget.reminders, pets, day),
                           onTap: () => _selectDay(day),
                         ),
                       );
@@ -588,9 +576,6 @@ class _MonthDayCell extends StatelessWidget {
         : (inMonth
             ? AppColors.text
             : AppColors.mutedText.withValues(alpha: 0.5));
-    final shown = markers.take(3).toList();
-    final extra = markers.length - shown.length;
-
     return Semantics(
       button: true,
       selected: isSelected,
@@ -616,34 +601,22 @@ class _MonthDayCell extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  '${day.day}',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: foreground,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    '${day.day}',
+                    maxLines: 1,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 3),
                 SizedBox(
-                  height: 12,
-                  child: markers.isEmpty
-                      ? null
-                      : Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            for (final marker in shown)
-                              MarkerGlyph(marker: marker, size: 9),
-                            if (extra > 0)
-                              Text(
-                                '+$extra',
-                                style: TextStyle(
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.w800,
-                                    color: foreground),
-                              ),
-                          ],
-                        ),
+                  height: DayMark.sizeOf(context),
+                  child: markers.isEmpty ? null : DayMark(markers: markers),
                 ),
               ],
             ),
@@ -684,7 +657,7 @@ class _ReminderTile extends StatelessWidget {
           padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: AppColors.borderStrong),
           ),
           child: Row(
             children: [
@@ -718,45 +691,27 @@ class _ReminderTile extends StatelessWidget {
                           if (reminder.petName.isNotEmpty) reminder.petName,
                           if (presentation.listKindLabel != null) presentation.listKindLabel!,
                         ].join(' · '),
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.bodySmall,
                       ),
                     ],
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Flexible(child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  // Scales down instead of pushing the row past the card edge
-                  // when the date label is long or the text size is large.
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: DashboardBadge(
+                    const SizedBox(height: AppSpacing.sm),
+                    // Under the title, so that neither is cut or made smaller.
+                    DashboardBadge(
                         label: presentation.dateLabel,
                         tone: presentation.tone,
                         compact: true),
-                  ),
-                  if (onMarkDone != null) ...[
-                    const SizedBox(height: AppSpacing.xs),
-                    Tooltip(
-                      message: context.l10n.remindersDoneTooltip,
-                      child: InkWell(
-                        onTap: onMarkDone,
-                        borderRadius: BorderRadius.circular(AppRadii.pill),
-                        child: const Padding(
-                          padding: EdgeInsets.all(4),
-                          child: Icon(Icons.check_circle_outline,
-                              size: 18, color: AppColors.success),
-                        ),
-                      ),
-                    ),
                   ],
-                ],
-              )),
+                ),
+              ),
+              if (onMarkDone != null)
+                IconButton(
+                  tooltip: context.l10n.remindersDoneTooltip,
+                  onPressed: onMarkDone,
+                  icon: const Icon(Icons.check_circle_outline, size: 22),
+                  color: AppColors.successStrong,
+                ),
             ],
           ),
         ),

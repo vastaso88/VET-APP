@@ -39,7 +39,7 @@ class WeightChartView extends StatelessWidget {
   Widget build(BuildContext context) {
     final byAge = data.mode == WeightChartMode.byAge;
     final digits = axisDigits(data.yInterval);
-    final labelStyle = AppTextStyles.caption.copyWith(fontSize: 11);
+    final labelStyle = AppTextStyles.caption.copyWith(fontSize: 12);
     final reference = data.reference;
 
     final pointsBar = LineChartBarData(
@@ -95,115 +95,120 @@ class WeightChartView extends StatelessWidget {
       height: 220,
       child: Padding(
         padding: const EdgeInsets.only(right: 12, top: 8),
-        child: LineChart(
-          LineChartData(
-            minX: data.minX,
-            maxX: data.maxX,
-            minY: data.minY,
-            maxY: data.maxY,
-            clipData: const FlClipData.all(),
-            borderData: FlBorderData(show: false),
-            gridData: FlGridData(
-              drawVerticalLine: false,
-              horizontalInterval: data.yInterval,
-              getDrawingHorizontalLine: (_) =>
-                  const FlLine(color: AppColors.border, strokeWidth: 1),
-            ),
-            titlesData: FlTitlesData(
-              topTitles: const AxisTitles(),
-              rightTitles: const AxisTitles(),
-              leftTitles: AxisTitles(
-                axisNameSize: 18,
-                axisNameWidget: Text(
-                  context.l10n.monitoringAxisWeight(data.unit.label),
-                  style: labelStyle,
+        // The axes cannot grow with the text; the same values are written in full
+        // in the history under the chart.
+        child: MediaQuery.withClampedTextScaling(
+          maxScaleFactor: 1.3,
+          child: LineChart(
+            LineChartData(
+              minX: data.minX,
+              maxX: data.maxX,
+              minY: data.minY,
+              maxY: data.maxY,
+              clipData: const FlClipData.all(),
+              borderData: FlBorderData(show: false),
+              gridData: FlGridData(
+                drawVerticalLine: false,
+                horizontalInterval: data.yInterval,
+                getDrawingHorizontalLine: (_) =>
+                    const FlLine(color: AppColors.border, strokeWidth: 1),
+              ),
+              titlesData: FlTitlesData(
+                topTitles: const AxisTitles(),
+                rightTitles: const AxisTitles(),
+                leftTitles: AxisTitles(
+                  axisNameSize: 18,
+                  axisNameWidget: Text(
+                    context.l10n.monitoringAxisWeight(data.unit.label),
+                    style: labelStyle,
+                  ),
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 40,
+                    interval: data.yInterval,
+                    getTitlesWidget: (value, meta) => SideTitleWidget(
+                      meta: meta,
+                      child: Text(formatDecimal(value, digits: digits),
+                          style: labelStyle),
+                    ),
+                  ),
                 ),
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 40,
-                  interval: data.yInterval,
-                  getTitlesWidget: (value, meta) => SideTitleWidget(
-                    meta: meta,
-                    child: Text(formatDecimal(value, digits: digits),
-                        style: labelStyle),
+                bottomTitles: AxisTitles(
+                  axisNameSize: byAge ? 18 : 0,
+                  axisNameWidget: byAge
+                      ? Text(context.l10n.monitoringAxisAgeMonths,
+                          style: labelStyle)
+                      : null,
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 28,
+                    interval: data.xInterval,
+                    getTitlesWidget: (value, meta) {
+                      if (value > data.maxX ||
+                          value < data.minX ||
+                          !axisLabelFits(value,
+                              minX: data.minX, maxX: data.maxX, interval: data.xInterval)) {
+                        return const SizedBox.shrink();
+                      }
+                      final text = byAge
+                          ? value.round().toString()
+                          : formatAppDate(data.dateAt(value), 'd MMM');
+                      return SideTitleWidget(
+                          meta: meta, child: Text(text, style: labelStyle));
+                    },
                   ),
                 ),
               ),
-              bottomTitles: AxisTitles(
-                axisNameSize: byAge ? 18 : 0,
-                axisNameWidget: byAge
-                    ? Text(context.l10n.monitoringAxisAgeMonths,
-                        style: labelStyle)
-                    : null,
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 28,
-                  interval: data.xInterval,
-                  getTitlesWidget: (value, meta) {
-                    if (value > data.maxX ||
-                        value < data.minX ||
-                        !axisLabelFits(value,
-                            minX: data.minX, maxX: data.maxX, interval: data.xInterval)) {
-                      return const SizedBox.shrink();
-                    }
-                    final text = byAge
-                        ? value.round().toString()
-                        : formatAppDate(data.dateAt(value), 'd MMM');
-                    return SideTitleWidget(
-                        meta: meta, child: Text(text, style: labelStyle));
-                  },
-                ),
-              ),
-            ),
-            lineTouchData: LineTouchData(
-              getTouchedSpotIndicator: (bar, indexes) => [
-                for (final _ in indexes)
-                  if (identical(bar, pointsBar))
-                    TouchedSpotIndicatorData(
-                      const FlLine(color: AppColors.primary, strokeWidth: 1),
-                      FlDotData(
-                        getDotPainter: (_, __, ___, ____) =>
-                            FlDotCirclePainter(
-                          radius: 6,
-                          color: AppColors.primary,
-                          strokeWidth: 2,
-                          strokeColor: AppColors.surface,
+              lineTouchData: LineTouchData(
+                getTouchedSpotIndicator: (bar, indexes) => [
+                  for (final _ in indexes)
+                    if (identical(bar, pointsBar))
+                      TouchedSpotIndicatorData(
+                        const FlLine(color: AppColors.primary, strokeWidth: 1),
+                        FlDotData(
+                          getDotPainter: (_, __, ___, ____) =>
+                              FlDotCirclePainter(
+                            radius: 6,
+                            color: AppColors.primary,
+                            strokeWidth: 2,
+                            strokeColor: AppColors.surface,
+                          ),
                         ),
+                      )
+                    else
+                      const TouchedSpotIndicatorData(
+                        FlLine(color: Colors.transparent),
+                        FlDotData(show: false),
                       ),
-                    )
-                  else
-                    const TouchedSpotIndicatorData(
-                      FlLine(color: Colors.transparent),
-                      FlDotData(show: false),
-                    ),
-              ],
-              touchTooltipData: LineTouchTooltipData(
-                fitInsideHorizontally: true,
-                fitInsideVertically: true,
-                getTooltipColor: (_) => AppColors.primary,
-                getTooltipItems: (spots) => [
-                  for (final spot in spots)
-                    spot.barIndex == bars.length - 1
-                        ? _tooltipFor(context, spot)
-                        : null,
                 ],
+                touchTooltipData: LineTouchTooltipData(
+                  fitInsideHorizontally: true,
+                  fitInsideVertically: true,
+                  getTooltipColor: (_) => AppColors.primary,
+                  getTooltipItems: (spots) => [
+                    for (final spot in spots)
+                      spot.barIndex == bars.length - 1
+                          ? _tooltipFor(context, spot)
+                          : null,
+                  ],
+                ),
               ),
-            ),
-            betweenBarsData: [
-              if (reference != null) ...[
-                BetweenBarsData(
-                  fromIndex: 0,
-                  toIndex: 1,
-                  color: AppColors.primary.withValues(alpha: 0.09),
-                ),
-                BetweenBarsData(
-                  fromIndex: 2,
-                  toIndex: 3,
-                  color: AppColors.primary.withValues(alpha: 0.17),
-                ),
+              betweenBarsData: [
+                if (reference != null) ...[
+                  BetweenBarsData(
+                    fromIndex: 0,
+                    toIndex: 1,
+                    color: AppColors.primary.withValues(alpha: 0.09),
+                  ),
+                  BetweenBarsData(
+                    fromIndex: 2,
+                    toIndex: 3,
+                    color: AppColors.primary.withValues(alpha: 0.17),
+                  ),
+                ],
               ],
-            ],
-            lineBarsData: bars,
+              lineBarsData: bars,
+            ),
           ),
         ),
       ),
@@ -217,8 +222,10 @@ class WeightChartView extends StatelessWidget {
         ? '${formatAppDate(measurement.measuredOn, 'd MMM y')} · '
             '${context.l10n.monitoringTooltipAge(point.x.round())}'
         : formatAppDate(measurement.measuredOn, 'd MMM y');
+    final condition = measurement.bodyCondition;
+    final level = condition == null ? '' : '\n${condition.score}/5 · ${condition.label}';
     return LineTooltipItem(
-      '${formatMeasuredWeight(measurement.weightKg, system, alwaysKg: data.alwaysKg)}\n$when',
+      '${formatMeasuredWeight(measurement.weightKg, system, alwaysKg: data.alwaysKg)}\n$when$level',
       AppTextStyles.caption
           .copyWith(color: AppColors.onMedia, fontWeight: FontWeight.w700),
     );

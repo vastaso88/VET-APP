@@ -135,9 +135,18 @@ class DashboardBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = DashboardPrimitivePalette.colorsFor(tone, filled: filled);
+    final ink = filled
+        ? palette.foreground
+        : switch (tone) {
+            DashboardTone.success => AppColors.successStrong,
+            DashboardTone.warning => AppColors.warningStrong,
+            DashboardTone.danger => AppColors.dangerStrong,
+            DashboardTone.info => AppColors.infoStrong,
+            _ => palette.foreground,
+          };
     final textStyle =
         (compact ? AppTextStyles.caption : AppTextStyles.bodySmall).copyWith(
-      color: palette.foreground,
+      color: ink,
       fontWeight: FontWeight.w600,
     );
 
@@ -156,10 +165,10 @@ class DashboardBadge extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: compact ? 14 : 16, color: palette.foreground),
+              Icon(icon, size: compact ? 14 : 16, color: ink),
               const SizedBox(width: AppSpacing.xs),
             ],
-            Text(label, style: textStyle),
+            Flexible(child: Text(label, style: textStyle)),
           ],
         ),
       ),

@@ -480,7 +480,7 @@ class _CurrentWeightCard extends StatelessWidget {
                             key: const ValueKey('current-bcs'),
                             textAlign: TextAlign.end,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: withCondition.bodyCondition!.color,
+                              color: AppColors.text,
                               fontWeight: FontWeight.w800,
                             ),
                           ),

@@ -253,7 +253,7 @@ class _EntryRow extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.large),
             border: Border.all(
-              color: selected ? AppColors.primary : AppColors.border,
+              color: selected ? AppColors.primary : AppColors.borderStrong,
               width: selected ? 2 : 1,
             ),
           ),

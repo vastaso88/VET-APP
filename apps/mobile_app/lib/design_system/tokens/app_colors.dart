@@ -26,8 +26,14 @@ class AppColors {
   static const backgroundDeep = Color(0xFFEDE6DC);
   static const surface = Color(0xFFFCFAF7);
   static const surfaceElevated = Color(0xFFFFFFFF);
+  /// Hairlines and panels nobody has to find (a separator, a card that is
+  /// only read). Never the edge of a field or of something to tap.
   static const border = Color(0xFFE6DDD2);
-  static const borderStrong = Color(0xFFD8CCBF);
+
+  /// The edge of what is written in or tapped: fields, pills that are not
+  /// chosen, cards that open, outlined buttons. At least 3 to 1 (WCAG 1.4.11)
+  /// on every ground of the app, soft panels included.
+  static const borderStrong = Color(0xFF648A78);
   static const text = Color(0xFF213134);
   static const secondaryText = Color(0xFF52645F);
   static const mutedText = Color(0xFF5E6E6B);

@@ -220,8 +220,11 @@ class ChatConversationMenuButton extends StatelessWidget {
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      useSafeArea: true,
       builder: (_) => SafeArea(
-        child: Padding(
+        // The whole text of the consent scrolls, whatever the text size.
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: MedicalRecordConsentCard(pet: pet),
         ),

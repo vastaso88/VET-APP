@@ -177,7 +177,7 @@ class _PetHistorySectionState extends State<PetHistorySection> {
 String _capitalized(String text) =>
     text.isEmpty ? text : '${text[0].toUpperCase()}${text.substring(1)}';
 
-const _cellHeight = 48.0;
+const _cellHeight = 52.0;
 
 class _DayCell extends StatelessWidget {
   const _DayCell({
@@ -197,12 +197,13 @@ class _DayCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    // At most three symbols fit: the distinct kinds of the day, the rest as "+n".
+    // At most two symbols fit at a readable size: the distinct kinds of the day,
+    // the rest as "+n".
     final symbols = <IconData>[];
     for (final event in events) {
       if (!symbols.contains(event.icon)) symbols.add(event.icon);
     }
-    final shown = symbols.length > 3 ? symbols.take(2).toList() : symbols;
+    final shown = symbols.length > 2 ? symbols.take(1).toList() : symbols;
     final extra = symbols.length - shown.length;
 
     return Semantics(
@@ -228,32 +229,33 @@ class _DayCell extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  '${day.day}',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.text,
-                    fontWeight: isToday || events.isNotEmpty
-                        ? FontWeight.w700
-                        : FontWeight.w400,
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    '${day.day}',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.text,
+                      fontWeight: isToday || events.isNotEmpty
+                          ? FontWeight.w700
+                          : FontWeight.w400,
+                    ),
                   ),
                 ),
               ),
               SizedBox(
-                height: 13,
+                height: 18,
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       for (final icon in shown)
-                        Icon(icon, size: 11, color: AppColors.secondaryStrong),
+                        Icon(icon, size: 15, color: AppColors.secondaryStrong),
                       if (extra > 0)
                         Text(
                           '+$extra',
                           style: AppTextStyles.caption.copyWith(
-                            fontSize: 9,
                             color: AppColors.primary,
                             fontWeight: FontWeight.w700,
                           ),

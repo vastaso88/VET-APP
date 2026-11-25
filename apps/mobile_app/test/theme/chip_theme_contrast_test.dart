@@ -79,9 +79,10 @@ void main() {
     );
 
     final style = DefaultTextStyle.of(tester.element(find.text('Acquario'))).style;
-    expect(
-      _contrast(style.color!, theme.colorScheme.secondaryContainer),
-      greaterThanOrEqualTo(4.5),
-    );
+    expect(_contrast(style.color!, AppColors.primary), greaterThanOrEqualTo(4.5));
+    // Told apart from the other segment without the hue: 3 to 1 between the fills.
+    expect(_contrast(AppColors.primary, AppColors.surfaceElevated), greaterThanOrEqualTo(3));
+    final selected = theme.segmentedButtonTheme.style!.backgroundColor!;
+    expect(selected.resolve({WidgetState.selected}), AppColors.primary);
   });
 }

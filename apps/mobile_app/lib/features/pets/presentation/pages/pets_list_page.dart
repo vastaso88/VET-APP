@@ -8,6 +8,7 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/min_tap_target.dart';
+import '../../../../shared/widgets/pill_row.dart';
 import '../../../dog_walks/data/walk_home_widget.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/pet_format.dart';
@@ -169,28 +170,25 @@ class _PetsListContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _SpeciesChip(
-                label: localizedSpeciesLabel('Tutti'),
-                selected: selectedSpecies == 'Tutti',
-                onTap: () => onSpeciesChanged('Tutti'),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              ...PetDemoStore.speciesOptions.map(
-                (option) => Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.sm),
-                  child: _SpeciesChip(
-                    label: localizedSpeciesLabel(option.label),
-                    selected: selectedSpecies == option.label,
-                    onTap: () => onSpeciesChanged(option.label),
-                  ),
+        PillRow(
+          children: [
+            _SpeciesChip(
+              label: localizedSpeciesLabel('Tutti'),
+              selected: selectedSpecies == 'Tutti',
+              onTap: () => onSpeciesChanged('Tutti'),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            ...PetDemoStore.speciesOptions.map(
+              (option) => Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.sm),
+                child: _SpeciesChip(
+                  label: localizedSpeciesLabel(option.label),
+                  selected: selectedSpecies == option.label,
+                  onTap: () => onSpeciesChanged(option.label),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
         const SizedBox(height: AppSpacing.sm),
         Expanded(
@@ -400,7 +398,7 @@ class _SpeciesChip extends StatelessWidget {
             decoration: BoxDecoration(
               color: selected ? AppColors.primary : AppColors.surface,
               borderRadius: BorderRadius.circular(AppRadii.pill),
-              border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+              border: Border.all(color: selected ? AppColors.primary : AppColors.borderStrong),
             ),
             child: Text(
               label,

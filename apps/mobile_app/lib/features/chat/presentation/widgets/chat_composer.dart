@@ -231,7 +231,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderStrong),
         boxShadow: const [
           BoxShadow(
             color: AppColors.shadowSoft,
@@ -288,8 +288,13 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
                       : _voiceState == _VoiceState.transcribing
                           ? context.l10n.chatTranscribingHint
                           : widget.hintText,
+                  // The frame around is the edge of this field: no second one inside.
                   border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  filled: false,
                   isCollapsed: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                   hintStyle: const TextStyle(color: AppColors.mutedText),
                 ),
               ),
@@ -299,7 +304,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
             const SizedBox(height: AppSpacing.xs),
             Text(
               context.l10n.chatInputLimitReached(chatMaxMessageLength),
-              style: const TextStyle(color: AppColors.danger, fontSize: 12),
+              style: const TextStyle(color: AppColors.danger, fontSize: 14),
             ),
           ],
           const SizedBox(height: AppSpacing.sm),
@@ -568,7 +573,7 @@ class _PendingAttachmentChip extends StatelessWidget {
         Expanded(
           child: Text(
             isUploading ? context.l10n.chatPhotoAnalyzing : context.l10n.chatPhotoReady,
-            style: const TextStyle(color: AppColors.secondaryText, fontSize: 12),
+            style: const TextStyle(color: AppColors.secondaryText, fontSize: 14),
           ),
         ),
         IconButton(
@@ -635,7 +640,7 @@ class _ListeningBanner extends StatelessWidget {
                   context.l10n.chatListeningText,
                   style: const TextStyle(
                     color: AppColors.text,
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -644,7 +649,7 @@ class _ListeningBanner extends StatelessWidget {
                 '$minutes:$seconds',
                 style: const TextStyle(
                   color: AppColors.danger,
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   fontFeatures: [FontFeature.tabularFigures()],
                 ),
@@ -672,10 +677,12 @@ class _TranscribingBanner extends StatelessWidget {
         children: [
           const PetLoader.small(),
           const SizedBox(width: AppSpacing.sm),
-          Text(
-            context.l10n.chatTranscribingText,
-            style: const TextStyle(
-                color: AppColors.text, fontSize: 13, fontWeight: FontWeight.w600),
+          Flexible(
+            child: Text(
+              context.l10n.chatTranscribingText,
+              style: const TextStyle(
+                  color: AppColors.text, fontSize: 14, fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
@@ -697,7 +704,7 @@ class _EditingBanner extends StatelessWidget {
         Expanded(
           child: Text(
             context.l10n.chatEditingLabel,
-            style: const TextStyle(color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w700),
+            style: const TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: FontWeight.w700),
           ),
         ),
         IconButton(

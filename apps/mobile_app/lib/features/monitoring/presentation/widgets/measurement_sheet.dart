@@ -206,20 +206,6 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
         labelText: label,
         hintText: hint,
         suffixIcon: suffix,
-        filled: true,
-        fillColor: AppColors.surfaceElevated,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
-        ),
       );
 
   @override

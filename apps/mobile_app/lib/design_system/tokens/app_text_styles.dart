@@ -42,11 +42,13 @@ class AppTextStyles {
         color: AppColors.secondaryText,
       );
 
+  /// Service text: sources, dates, hints, labels, pills. 14 like [bodySmall]:
+  /// nothing that informs is smaller (test/design_system/text_sizes_test.dart).
   static TextStyle get caption => GoogleFonts.figtree(
-        fontSize: 12,
+        fontSize: 14,
         height: 1.35,
         fontWeight: FontWeight.w600,
-        letterSpacing: 0.2,
+        letterSpacing: 0.1,
         color: AppColors.mutedText,
       );
 

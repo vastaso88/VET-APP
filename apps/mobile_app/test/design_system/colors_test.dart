@@ -63,7 +63,16 @@ void main() {
       'primary on secondarySoft': (AppColors.primary, AppColors.secondarySoft, 4.5),
       'primary on primarySoft': (AppColors.primary, AppColors.primarySoft, 4.5),
       'primary on white': (AppColors.primary, AppColors.surfaceElevated, 4.5),
-      'outline of a control on white': (AppColors.secondary, AppColors.surfaceElevated, 3.0),
+      for (final (name, ground) in [
+        ('the page', AppColors.background),
+        ('the deep page', AppColors.backgroundDeep),
+        ('a card', AppColors.surface),
+        ('its own fill', AppColors.surfaceElevated),
+        ('a soft panel', AppColors.secondarySoft),
+        ('a chosen panel', AppColors.primarySoft),
+        ('a warning panel', AppColors.warningSoft),
+      ])
+        'edge of a field or a pill on $name': (AppColors.borderStrong, ground, 3.0),
       'secondaryStrong on secondarySoft': (AppColors.secondaryStrong, AppColors.secondarySoft, 4.5),
       'secondaryStrong on background': (AppColors.secondaryStrong, AppColors.background, 4.5),
       'danger on background': (AppColors.danger, AppColors.background, 4.5),

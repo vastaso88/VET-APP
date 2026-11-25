@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
+import '../../../../shared/widgets/pill_row.dart';
 
 
 import '../../../../design_system/atoms/outline_icon_button.dart';
@@ -238,29 +239,25 @@ class _CategoryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 48,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-        children: [
+    return PillRow(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+      children: [
+        _CategoryChip(
+          label: context.l10n.petNewsCategoryAll,
+          isAll: true,
+          selected: selected == null,
+          onTap: () => onSelect(null),
+        ),
+        for (final category in categories) ...[
+          const SizedBox(width: AppSpacing.sm),
           _CategoryChip(
-            label: context.l10n.petNewsCategoryAll,
-            isAll: true,
-            selected: selected == null,
-            onTap: () => onSelect(null),
+            label: petNewsCategoryLabel(context, category),
+            species: category,
+            selected: selected == category,
+            onTap: () => onSelect(category),
           ),
-          for (final category in categories) ...[
-            const SizedBox(width: AppSpacing.sm),
-            _CategoryChip(
-              label: petNewsCategoryLabel(context, category),
-              species: category,
-              selected: selected == category,
-              onTap: () => onSelect(category),
-            ),
-          ],
         ],
-      ),
+      ],
     );
   }
 }
@@ -316,7 +313,7 @@ class _CategoryChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.pill),
-            border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+            border: Border.all(color: selected ? AppColors.primary : AppColors.borderStrong),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

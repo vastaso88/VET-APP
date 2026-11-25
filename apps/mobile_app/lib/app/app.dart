@@ -71,8 +71,8 @@ class _VetAppState extends State<VetApp> {
         // App text is sized via AppTextStyles' fixed fontSizes, tuned against
         // `referenceScreenWidth`, so it follows the screen width (see
         // design_system/responsive.dart). The text size the owner chose in the
-        // phone's settings is kept, not replaced: the two multiply, up to
-        // maxTextScaleFactor.
+        // phone's settings is kept, not replaced: the two multiply, the phone's
+        // part up to maxSystemTextScale.
         final mediaQuery = MediaQuery.of(context);
         final widthFactor = (mediaQuery.size.width / referenceScreenWidth).clamp(0.85, 1.35);
         final body = MediaQuery(

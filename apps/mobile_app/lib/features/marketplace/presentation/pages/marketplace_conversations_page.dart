@@ -179,7 +179,10 @@ class _ConversationRow extends StatelessWidget {
               key: ValueKey('marketplace-conversation-unread-${conversation.id}'),
               backgroundColor: AppColors.primary,
               textColor: AppColors.onPrimary,
-              label: Text('${conversation.unreadCount}'),
+              label: Text(
+                '${conversation.unreadCount}',
+                textScaler: TextScaler.noScaling,
+              ),
             )
           : null,
     );

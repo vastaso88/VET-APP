@@ -174,7 +174,7 @@ class _BrandPill extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                   color: AppColors.onPrimary,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800),
             ),
           ),
@@ -319,7 +319,7 @@ class _AccentPill extends StatelessWidget {
         label,
         style: const TextStyle(
           color: AppColors.secondaryStrong,
-          fontSize: 12,
+          fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -355,7 +355,7 @@ class ReminderKindChip extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.pill),
             border: Border.all(
-                color: selected ? AppColors.primary : AppColors.border),
+                color: selected ? AppColors.primary : AppColors.borderStrong),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

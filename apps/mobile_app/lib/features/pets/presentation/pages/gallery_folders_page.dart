@@ -161,7 +161,7 @@ class _FolderCardState extends State<_FolderCard> {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppRadii.large),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: AppColors.borderStrong),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(

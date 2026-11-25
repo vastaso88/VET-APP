@@ -434,23 +434,7 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
   }
 }
 
-InputDecoration _decoration({String? hint}) {
-  OutlineInputBorder border() => OutlineInputBorder(
-    borderRadius: BorderRadius.circular(AppRadii.medium),
-    borderSide: const BorderSide(color: AppColors.border),
-  );
-  return InputDecoration(
-    hintText: hint,
-    filled: true,
-    fillColor: AppColors.surface,
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: AppSpacing.lg,
-      vertical: AppSpacing.md,
-    ),
-    border: border(),
-    enabledBorder: border(),
-  );
-}
+InputDecoration _decoration({String? hint}) => InputDecoration(hintText: hint);
 
 class _Label extends StatelessWidget {
   const _Label(this.text);
@@ -518,7 +502,7 @@ class _StatusChip extends StatelessWidget {
       ),
       selectedColor: AppColors.primary,
       backgroundColor: AppColors.surface,
-      side: const BorderSide(color: AppColors.border),
+      side: const BorderSide(color: AppColors.borderStrong),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),

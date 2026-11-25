@@ -291,8 +291,7 @@ class HomeDayChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The mark grows with the text it holds, within what a column can take.
-    final markSize = MediaQuery.textScalerOf(context).scale(12) * 1.9;
+    final markSize = DayMark.sizeOf(context);
 
     // Spoken as "19, 2 promemoria", not as the letter, the number and the
     // mark one by one.
@@ -329,45 +328,11 @@ class HomeDayChip extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 3),
-            SizedBox.square(
-              dimension: markSize,
-              child: markers.isEmpty ? null : _DayMark(markers: markers),
+            SizedBox(
+              height: markSize,
+              child: markers.isEmpty ? null : DayMark(markers: markers),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DayMark extends StatelessWidget {
-  const _DayMark({required this.markers});
-
-  final List<DayMarker> markers;
-
-  @override
-  Widget build(BuildContext context) {
-    final single = markers.length == 1 ? markers.single : null;
-    final initial = single?.initial ?? '';
-    final counted = initial.isEmpty;
-    return Container(
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: AppColors.secondarySoft,
-        border: Border.all(
-          color: counted ? AppColors.secondary : single!.color,
-          width: counted ? 1 : 2,
-        ),
-      ),
-      child: Text(
-        counted ? '${markers.length}' : initial,
-        maxLines: 1,
-        style: AppTextStyles.bodySmall.copyWith(
-          fontSize: 12,
-          height: 1,
-          fontWeight: FontWeight.w700,
-          color: counted ? AppColors.secondaryStrong : AppColors.text,
         ),
       ),
     );

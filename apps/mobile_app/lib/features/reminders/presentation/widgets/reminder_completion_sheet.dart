@@ -316,18 +316,6 @@ class _CompletionSheetState extends State<_CompletionSheet> {
   InputDecoration _decoration({String? hint, String? error}) => InputDecoration(
         hintText: hint,
         errorText: error,
-        filled: true,
-        fillColor: AppColors.background,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
       );
 }
 

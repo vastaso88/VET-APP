@@ -479,7 +479,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                               ),
                               selectedColor: AppColors.primary,
                               backgroundColor: AppColors.surface,
-                              side: const BorderSide(color: AppColors.border),
+                              side: const BorderSide(color: AppColors.borderStrong),
                               showCheckmark: false,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(
@@ -602,23 +602,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
   }
 }
 
-InputDecoration _decoration({String? hint}) {
-  OutlineInputBorder border() => OutlineInputBorder(
-    borderRadius: BorderRadius.circular(AppRadii.medium),
-    borderSide: const BorderSide(color: AppColors.border),
-  );
-  return InputDecoration(
-    hintText: hint,
-    filled: true,
-    fillColor: AppColors.surface,
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: AppSpacing.lg,
-      vertical: AppSpacing.md,
-    ),
-    border: border(),
-    enabledBorder: border(),
-  );
-}
+InputDecoration _decoration({String? hint}) => InputDecoration(hintText: hint);
 
 class _FieldLabel extends StatelessWidget {
   const _FieldLabel(this.text);
@@ -703,7 +687,7 @@ class _PickArea extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: AppColors.borderStrong),
           ),
           child: Row(
             children: [

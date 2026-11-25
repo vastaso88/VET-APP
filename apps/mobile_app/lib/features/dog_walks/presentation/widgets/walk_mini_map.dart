@@ -105,7 +105,7 @@ class WalkMiniMap extends StatelessWidget {
               decoration: BoxDecoration(color: AppColors.onMediaMuted),
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                child: Text('© OpenStreetMap', style: TextStyle(fontSize: 9, color: AppColors.text)),
+                child: Text('© OpenStreetMap', style: TextStyle(fontSize: 12, color: AppColors.text)),
               ),
             ),
           ),

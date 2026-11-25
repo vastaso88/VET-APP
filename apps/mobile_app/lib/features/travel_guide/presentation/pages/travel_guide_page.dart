@@ -322,7 +322,7 @@ class _CountryField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.surface,
+      color: AppColors.surfaceElevated,
       borderRadius: BorderRadius.circular(AppRadii.medium),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadii.medium),
@@ -331,7 +331,7 @@ class _CountryField extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.medium),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: AppColors.borderStrong, width: 1.5),
           ),
           child: Row(
             children: [

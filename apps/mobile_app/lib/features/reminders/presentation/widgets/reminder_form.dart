@@ -18,6 +18,9 @@ import '../../domain/reminder_category.dart';
 import '../widgets/reminder_category_picker.dart';
 import 'reminder_page_parts.dart';
 
+/// Width, before the text size, of a date and a time side by side.
+const _dateAndTimeRow = 272.0;
+
 /// Shared create/edit form: a required kind selector (spot/recurring/
 /// course) drives which fields show below it, since each kind needs
 /// different data (a single date; a next date + interval; a start date +
@@ -310,37 +313,43 @@ class _ReminderFormState extends State<ReminderForm> {
               onSubtype: (subtype) => setState(() => _subtype = subtype),
             ),
             const SizedBox(height: AppSpacing.lg),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: _DatePickerField(
-                    label: switch (_kind) {
-                      EventKind.spot => context.l10n.remindersFieldDate,
-                      EventKind.recurring => context.l10n.remindersFieldNextDue,
-                      EventKind.course => context.l10n.remindersFieldStartDate,
-                    },
-                    controller: _dateController,
-                    onPick: _pickDate,
-                    validator: _validateStartDate,
-                  ),
-                ),
+            LayoutBuilder(
+              builder: (context, box) {
+                final date = _DatePickerField(
+                  label: switch (_kind) {
+                    EventKind.spot => context.l10n.remindersFieldDate,
+                    EventKind.recurring => context.l10n.remindersFieldNextDue,
+                    EventKind.course => context.l10n.remindersFieldStartDate,
+                  },
+                  controller: _dateController,
+                  onPick: _pickDate,
+                  validator: _validateStartDate,
+                );
                 // A course is notified at its dose times instead.
-                if (_kind != EventKind.course) ...[
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    flex: 2,
-                    child: _PickerField(
-                      label: context.l10n.remindersFieldTime,
-                      icon: Icons.schedule_rounded,
-                      text: formatClockTime(_time.hour, _time.minute),
-                      onTap: _pickTime,
-                      showChevron: false,
-                    ),
-                  ),
-                ],
-              ],
+                if (_kind == EventKind.course) return date;
+                final time = _PickerField(
+                  label: context.l10n.remindersFieldTime,
+                  icon: Icons.schedule_rounded,
+                  text: formatClockTime(_time.hour, _time.minute),
+                  onTap: _pickTime,
+                  showChevron: false,
+                );
+                // Side by side only where the whole date and the whole time fit.
+                if (box.maxWidth < MediaQuery.textScalerOf(context).scale(_dateAndTimeRow)) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [date, const SizedBox(height: AppSpacing.md), time],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 3, child: date),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(flex: 2, child: time),
+                  ],
+                );
+              },
             ),
             if (_kind == EventKind.recurring) ...[
               const SizedBox(height: AppSpacing.lg),
@@ -557,7 +566,7 @@ class _KindOption extends StatelessWidget {
           color: selected ? AppColors.primary : AppColors.background,
           borderRadius: BorderRadius.circular(AppRadii.medium),
           border: Border.all(
-              color: selected ? AppColors.primary : AppColors.border),
+              color: selected ? AppColors.primary : AppColors.borderStrong),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -567,13 +576,19 @@ class _KindOption extends StatelessWidget {
                 color:
                     selected ? AppColors.onPrimary : AppColors.secondaryText),
             const SizedBox(height: 4),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.caption.copyWith(
-                color: selected ? AppColors.onPrimary : AppColors.secondaryText,
-                fontWeight: FontWeight.w700,
+            // The same height for the three, whatever each name takes.
+            SizedBox(
+              height: MediaQuery.textScalerOf(context).scale(14) * 1.4,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: AppTextStyles.caption.copyWith(
+                    color: selected ? AppColors.onPrimary : AppColors.secondaryText,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
           ],
@@ -615,18 +630,6 @@ class _DatePickerField extends StatelessWidget {
           style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
           decoration: InputDecoration(
             hintText: appDateInputText(context.l10n.remindersDatePlaceholder),
-            filled: true,
-            fillColor: AppColors.background,
-            contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadii.medium),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadii.medium),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
           ),
         ),
       ],
@@ -662,7 +665,7 @@ class _PickerField extends StatelessWidget {
         Text(label, style: AppTextStyles.caption),
         const SizedBox(height: AppSpacing.xs),
         Material(
-          color: AppColors.background,
+          color: AppColors.surfaceElevated,
           borderRadius: BorderRadius.circular(AppRadii.medium),
           child: InkWell(
             borderRadius: BorderRadius.circular(AppRadii.medium),
@@ -672,7 +675,7 @@ class _PickerField extends StatelessWidget {
                   horizontal: AppSpacing.lg, vertical: AppSpacing.md),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppRadii.medium),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: AppColors.borderStrong, width: 1.5),
               ),
               child: Row(
                 children: [
@@ -876,20 +879,6 @@ class _DurationStepperState extends State<_DurationStepper> {
             },
             decoration: InputDecoration(
               suffixText: context.l10n.remindersDurationUnit(days),
-              filled: true,
-              fillColor: AppColors.background,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.md,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadii.medium),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadii.medium),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
             ),
           ),
         ),
@@ -933,20 +922,6 @@ class _TextField extends StatelessWidget {
       style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
       decoration: InputDecoration(
         hintText: hintText,
-        filled: true,
-        fillColor: AppColors.background,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
       ),
     );
   }

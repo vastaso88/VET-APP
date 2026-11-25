@@ -1373,7 +1373,7 @@ class _ChoicePill extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 6),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppRadii.pill),
-                border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+                border: Border.all(color: selected ? AppColors.primary : AppColors.borderStrong),
               ),
               child: Text(
                 label,

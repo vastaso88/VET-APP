@@ -17,20 +17,6 @@ InputDecoration petFieldDecoration(String label, String hint) {
   return InputDecoration(
     labelText: label,
     hintText: hint,
-    filled: true,
-    fillColor: AppColors.surfaceElevated,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(18),
-      borderSide: const BorderSide(color: AppColors.border),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(18),
-      borderSide: const BorderSide(color: AppColors.border),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(18),
-      borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
-    ),
   );
 }
 
@@ -83,13 +69,6 @@ class PetSexField extends FormField<String> {
                       state.didChange(selection.first);
                       onChanged(selection.first);
                     },
-                    style: ButtonStyle(
-                      textStyle: WidgetStatePropertyAll(
-                        AppTextStyles.bodySmall.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
                   ),
                 ),
               ],
@@ -182,7 +161,7 @@ class _SpeciesChoiceChip extends StatelessWidget {
               color: selected ? AppColors.primary : AppColors.surface,
               borderRadius: BorderRadius.circular(AppRadii.pill),
               border: Border.all(
-                color: selected ? AppColors.primary : AppColors.border,
+                color: selected ? AppColors.primary : AppColors.borderStrong,
               ),
             ),
             child: Row(
@@ -239,12 +218,6 @@ class PetTwoWayToggle extends StatelessWidget {
         ],
         selected: {secondSelected},
         onSelectionChanged: (selection) => onChanged(selection.first),
-        // Chosen looks the same as in the chips.
-        style: SegmentedButton.styleFrom(
-          selectedBackgroundColor: AppColors.primary,
-          selectedForegroundColor: AppColors.onPrimary,
-          textStyle: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
-        ),
       ),
     );
   }
@@ -270,8 +243,8 @@ class PetSwitchTile extends StatelessWidget {
     return Material(
       color: AppColors.onMedia,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        side: const BorderSide(color: AppColors.borderStrong, width: 1.5),
       ),
       child: SwitchListTile(
         value: value,
@@ -281,7 +254,9 @@ class PetSwitchTile extends StatelessWidget {
           style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.medium),
+        ),
       ),
     );
   }

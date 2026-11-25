@@ -11,7 +11,12 @@ void main() {
       (tester) async {
     final pet = samplePets.first;
     await tester.pumpWidget(
-      MaterialApp(home: Scaffold(body: MedicalRecordConsentCard(pet: pet))),
+      MaterialApp(
+        home: Scaffold(
+          // As where it lives: in a list that scrolls.
+          body: SingleChildScrollView(child: MedicalRecordConsentCard(pet: pet)),
+        ),
+      ),
     );
 
     expect(find.text('Leggi come viene usata'), findsOneWidget);

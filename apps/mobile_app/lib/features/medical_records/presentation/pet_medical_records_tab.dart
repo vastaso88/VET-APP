@@ -407,7 +407,7 @@ class _CategoryTile extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: AppColors.borderStrong),
           ),
           child: Row(
             children: [
@@ -429,7 +429,7 @@ class _CategoryTile extends StatelessWidget {
                   children: [
                     Text(
                       label,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.text,
@@ -438,7 +438,7 @@ class _CategoryTile extends StatelessWidget {
                     ),
                     Text(
                       countText,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.caption,
                     ),

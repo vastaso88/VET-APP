@@ -356,17 +356,19 @@ class _FilterChip extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppRadii.pill),
-              border: Border.all(color: active ? AppColors.primary : AppColors.border),
+              border: Border.all(color: active ? AppColors.primary : AppColors.borderStrong),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(icon, size: 16, color: foreground),
                 const SizedBox(width: 6),
-                Text(
-                  label,
-                  style:
-                      AppTextStyles.bodySmall.copyWith(color: foreground, fontWeight: FontWeight.w600),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: AppTextStyles.bodySmall
+                        .copyWith(color: foreground, fontWeight: FontWeight.w600),
+                  ),
                 ),
                 const SizedBox(width: 2),
                 Icon(Icons.arrow_drop_down_rounded, size: 18, color: foreground),
@@ -408,7 +410,7 @@ class _EventCard extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: url == null ? AppColors.border : AppColors.borderStrong),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

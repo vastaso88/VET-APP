@@ -293,7 +293,7 @@ class _PetDetailContentState extends State<_PetDetailContent>
   @override
   Widget build(BuildContext context) {
     final habitat = widget.pet.habitat;
-    return Column(
+    final header = Column(
       children: [
         ValueListenableBuilder<int>(
           valueListenable: PetDemoStore.changes,
@@ -326,25 +326,43 @@ class _PetDetailContentState extends State<_PetDetailContent>
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _RemindersTab(
-                  pet: widget.pet, repository: widget.remindersRepository),
-              _ChatTab(pet: widget.pet),
-              PetMedicalRecordsTab(
-                  pet: widget.pet, repository: widget.recordsRepository),
-              if (_showsMonitoring) MonitoringTab(pet: widget.pet),
-              if (_showsWalks)
-                _WalksTab(pet: widget.pet, repository: widget.walksRepository),
-            ],
-          ),
+      ],
+    );
+    final tabs = TabBarView(
+      controller: _tabController,
+      children: [
+        _RemindersTab(pet: widget.pet, repository: widget.remindersRepository),
+        _ChatTab(pet: widget.pet),
+        PetMedicalRecordsTab(pet: widget.pet, repository: widget.recordsRepository),
+        if (_showsMonitoring) MonitoringTab(pet: widget.pet),
+        if (_showsWalks) _WalksTab(pet: widget.pet, repository: widget.walksRepository),
+      ],
+    );
+    // The card fills what the header leaves. Only when that is too little to be
+    // used (large text on a small phone) it takes a screen of its own and the
+    // header scrolls away above it.
+    return CustomScrollView(
+      primary: false,
+      slivers: [
+        SliverToBoxAdapter(child: header),
+        SliverLayoutBuilder(
+          builder: (context, constraints) {
+            final screen = constraints.viewportMainAxisExtent;
+            final left = screen - constraints.precedingScrollExtent;
+            final smallest = MediaQuery.textScalerOf(context).scale(_smallestCard);
+            return SliverToBoxAdapter(
+              child: SizedBox(height: left >= smallest ? left : screen, child: tabs),
+            );
+          },
         ),
       ],
     );
   }
 }
+
+/// Under this height (it grows with the text) a card of the animal's page is not
+/// worth showing.
+const _smallestCard = 200.0;
 
 /// Shared "sure you want to delete this?" prompt — reused by the
 /// Promemoria, Chat and Referti tabs so the confirmation reads the same
@@ -450,7 +468,7 @@ class _HabitatSummaryRow extends StatelessWidget {
               horizontal: AppSpacing.md, vertical: AppSpacing.sm),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: AppColors.borderStrong),
           ),
           child: Row(
             children: [
@@ -1378,7 +1396,9 @@ class _CompactRow extends StatelessWidget {
               horizontal: AppSpacing.md, vertical: AppSpacing.sm),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(
+              color: onTap == null ? AppColors.border : AppColors.borderStrong,
+            ),
           ),
           child: Row(
             children: [
@@ -1391,7 +1411,7 @@ class _CompactRow extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.text,
@@ -1405,6 +1425,9 @@ class _CompactRow extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.caption,
                       ),
+                    // Under the title: beside it, it took the place of its words.
+                    if (trailingText != null && trailingText!.isNotEmpty)
+                      Text(trailingText!, style: AppTextStyles.caption),
                   ],
                 ),
               ),
@@ -1421,20 +1444,15 @@ class _CompactRow extends StatelessWidget {
                     '$badgeCount',
                     style: const TextStyle(
                       color: AppColors.onPrimary,
-                      fontSize: 10,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ],
-              if (trailingText != null) ...[
-                const SizedBox(width: AppSpacing.sm),
-                Text(trailingText!, style: AppTextStyles.caption),
-              ],
               if (trailingAction != null) ...[
                 const SizedBox(width: 2),
                 trailingAction!,
-              ] else ...[
               ],
               if (onTap != null && trailingAction == null) ...[
                 const SizedBox(width: AppSpacing.xs),

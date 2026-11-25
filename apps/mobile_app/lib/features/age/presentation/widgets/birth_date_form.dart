@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
@@ -60,10 +59,6 @@ class _BirthDateFormState extends State<BirthDateForm> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    OutlineInputBorder border(Color color, [double width = 1]) => OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          borderSide: BorderSide(color: color, width: width),
-        );
 
     return Form(
       key: _formKey,
@@ -78,16 +73,6 @@ class _BirthDateFormState extends State<BirthDateForm> {
               labelText: l10n.petsFormBirthDateLabel,
               hintText: appDateInputText(l10n.petsFormBirthDateHint),
               errorText: widget.errorText,
-              errorMaxLines: 3,
-              filled: true,
-              fillColor: AppColors.background,
-              border: border(AppColors.border),
-              enabledBorder: border(AppColors.border),
-              focusedBorder: border(AppColors.primary, 1.5),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.md,
-              ),
             ),
             validator: (value) {
               final raw = (value ?? '').trim();

@@ -77,11 +77,6 @@ class PhoneNumberField extends StatelessWidget {
   final String? helperText;
   final bool enabled;
 
-  OutlineInputBorder _border(Color color, {double width = 1}) => OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        borderSide: BorderSide(color: color, width: width),
-      );
-
   Future<void> _pickCountry(BuildContext context) async {
     final chosen = await showModalBottomSheet<String>(
       context: context,
@@ -117,9 +112,9 @@ class PhoneNumberField extends StatelessWidget {
                   constraints: const BoxConstraints(minHeight: 56),
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: AppColors.background,
+                    color: AppColors.surfaceElevated,
                     borderRadius: BorderRadius.circular(AppRadii.medium),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: AppColors.borderStrong, width: 1.5),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -148,16 +143,6 @@ class PhoneNumberField extends StatelessWidget {
                   labelText: label,
                   hintText: hint,
                   helperText: helperText,
-                  helperMaxLines: 4,
-                  filled: true,
-                  fillColor: AppColors.background,
-                  border: _border(AppColors.border),
-                  enabledBorder: _border(AppColors.border),
-                  focusedBorder: _border(AppColors.primary, width: 1.5),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                    vertical: AppSpacing.md,
-                  ),
                 ),
               ),
             ),

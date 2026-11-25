@@ -67,7 +67,6 @@ PAIRS: list[tuple[str, str, float, str]] = [
     ("primary", "surface", 4.5, "links and active text on a card"),
     ("primary", "secondarySoft", 4.5, "accent text on a soft panel"),
     ("primary", "surfaceElevated", 4.5, "label of an outlined button"),
-    ("secondary", "surfaceElevated", 3.0, "outline of a button"),
     ("secondaryStrong", "secondarySoft", 4.5, "text on a soft panel"),
     ("secondaryStrong", "background", 4.5, "section titles on the page"),
     ("secondary", "background", 3.0, "decorative icons and bars"),
@@ -82,7 +81,18 @@ PAIRS: list[tuple[str, str, float, str]] = [
     ("successStrong", "background", 4.5, "success text"),
     ("info", "background", 3.0, "info icon"),
     ("infoStrong", "background", 4.5, "info text"),
-    ("borderStrong", "background", 1.3, "separator (decorative, not required by AA)"),
+    # The edge of a field, a pill or a card that opens (WCAG 1.4.11), on every ground
+    # it sits on. "border" is decorative (hairlines, read-only cards) and not here.
+    ("borderStrong", "background", 3.0, "edge of a field or of a pill on the page"),
+    ("borderStrong", "backgroundDeep", 3.0, "edge of a field or of a pill, deep page"),
+    ("borderStrong", "surface", 3.0, "edge of a field on a card"),
+    ("borderStrong", "surfaceElevated", 3.0, "edge of a field against its own fill"),
+    ("borderStrong", "secondarySoft", 3.0, "edge of a field or of a pill on a soft panel"),
+    ("borderStrong", "primarySoft", 3.0, "edge of a field or of a pill on a chosen panel"),
+    ("borderStrong", "warningSoft", 3.0, "edge of a field on a warning panel"),
+    ("primary", "surfaceElevated", 3.0, "edge of the field being written"),
+    ("danger", "surfaceElevated", 4.5, "edge and text of a field with an error"),
+    ("text", "secondarySoft", 4.5, "initial in a calendar mark"),
 ]
 
 

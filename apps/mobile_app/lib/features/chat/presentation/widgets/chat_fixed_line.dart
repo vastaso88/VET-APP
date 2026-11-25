@@ -19,7 +19,7 @@ class ChatFixedLine extends StatelessWidget {
         context.l10n.chatFixedLine,
         key: const ValueKey('chat-fixed-line'),
         textAlign: TextAlign.center,
-        style: const TextStyle(color: AppColors.secondaryText, fontSize: 12, height: 1.25),
+        style: const TextStyle(color: AppColors.secondaryText, fontSize: 14, height: 1.25),
       ),
     );
   }

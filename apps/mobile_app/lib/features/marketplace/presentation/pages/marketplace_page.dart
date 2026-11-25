@@ -12,6 +12,7 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/pet_loader.dart';
+import '../../../../shared/widgets/pill_row.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../location/data/location_preference_store.dart';
 import '../../../location/domain/coordinates.dart';
@@ -437,33 +438,29 @@ class _CategoryFilterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 48,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          Padding(
+    return PillRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(right: AppSpacing.sm),
+          child: ChoiceChip(
+            materialTapTargetSize: MaterialTapTargetSize.padded,
+            label: Text(context.l10n.marketplaceFilterAllCategories),
+            selected: selected == null,
+            onSelected: (_) => onSelected(null),
+          ),
+        ),
+        ...ListingCategory.values.map(
+          (category) => Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: ChoiceChip(
               materialTapTargetSize: MaterialTapTargetSize.padded,
-              label: Text(context.l10n.marketplaceFilterAllCategories),
-              selected: selected == null,
-              onSelected: (_) => onSelected(null),
+              label: Text(listingCategoryLabel(category)),
+              selected: selected == category,
+              onSelected: (_) => onSelected(category),
             ),
           ),
-          ...ListingCategory.values.map(
-            (category) => Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.sm),
-              child: ChoiceChip(
-                materialTapTargetSize: MaterialTapTargetSize.padded,
-                label: Text(listingCategoryLabel(category)),
-                selected: selected == category,
-                onSelected: (_) => onSelected(category),
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -478,33 +475,29 @@ class _SpeciesFilterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 48,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: ChoiceChip(
-              materialTapTargetSize: MaterialTapTargetSize.padded,
-              label: Text(context.l10n.marketplaceFilterAllSpecies),
-              selected: selected == null,
-              onSelected: (_) => onSelected(null),
-            ),
+    return PillRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(right: AppSpacing.sm),
+          child: ChoiceChip(
+            materialTapTargetSize: MaterialTapTargetSize.padded,
+            label: Text(context.l10n.marketplaceFilterAllSpecies),
+            selected: selected == null,
+            onSelected: (_) => onSelected(null),
           ),
-          ...ListingSpecies.values.where((species) => species != ListingSpecies.allSpecies).map(
-                (species) => Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.sm),
-                  child: ChoiceChip(
-                    materialTapTargetSize: MaterialTapTargetSize.padded,
-                    label: Text(listingSpeciesLabel(species)),
-                    selected: selected == species,
-                    onSelected: (_) => onSelected(species),
-                  ),
+        ),
+        ...ListingSpecies.values.where((species) => species != ListingSpecies.allSpecies).map(
+              (species) => Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.sm),
+                child: ChoiceChip(
+                  materialTapTargetSize: MaterialTapTargetSize.padded,
+                  label: Text(listingSpeciesLabel(species)),
+                  selected: selected == species,
+                  onSelected: (_) => onSelected(species),
                 ),
               ),
-        ],
-      ),
+            ),
+      ],
     );
   }
 }
@@ -522,44 +515,40 @@ class _DistanceFilterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 48,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(right: AppSpacing.sm),
-            child: Icon(Icons.near_me_outlined, size: 18, color: AppColors.secondaryText),
-          ),
-          ...marketplaceRadiusOptionsKm.map(
-            (km) => Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.sm),
-              child: ChoiceChip(
-                materialTapTargetSize: MaterialTapTargetSize.padded,
-                key: ValueKey('marketplace-radius-${km.round()}'),
-                label: Text(listingDistanceFilterLabel(km)),
-                selected: selected == km,
-                onSelected: (_) => onSelected(km),
-              ),
+    return PillRow(
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(right: AppSpacing.sm),
+          child: Icon(Icons.near_me_outlined, size: 18, color: AppColors.secondaryText),
+        ),
+        ...marketplaceRadiusOptionsKm.map(
+          (km) => Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            child: ChoiceChip(
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              key: ValueKey('marketplace-radius-${km.round()}'),
+              label: Text(listingDistanceFilterLabel(km)),
+              selected: selected == km,
+              onSelected: (_) => onSelected(km),
             ),
           ),
-          // "Altro" is selected whenever the radius is not one of the quick
-          // choices, and then shows the value.
-          ChoiceChip(
-            materialTapTargetSize: MaterialTapTargetSize.padded,
-            key: const ValueKey('marketplace-radius-other'),
-            label: Text(
-              marketplaceRadiusOptionsKm.contains(selected)
-                  ? context.l10n.marketplaceDistanceOther
-                  : context.l10n.marketplaceDistanceOtherValue(
-                      listingDistanceFilterLabel(selected),
-                    ),
-            ),
-            selected: !marketplaceRadiusOptionsKm.contains(selected),
-            onSelected: (_) => onOther(),
+        ),
+        // "Altro" is selected whenever the radius is not one of the quick
+        // choices, and then shows the value.
+        ChoiceChip(
+          materialTapTargetSize: MaterialTapTargetSize.padded,
+          key: const ValueKey('marketplace-radius-other'),
+          label: Text(
+            marketplaceRadiusOptionsKm.contains(selected)
+                ? context.l10n.marketplaceDistanceOther
+                : context.l10n.marketplaceDistanceOtherValue(
+                    listingDistanceFilterLabel(selected),
+                  ),
           ),
-        ],
-      ),
+          selected: !marketplaceRadiusOptionsKm.contains(selected),
+          onSelected: (_) => onOther(),
+        ),
+      ],
     );
   }
 }

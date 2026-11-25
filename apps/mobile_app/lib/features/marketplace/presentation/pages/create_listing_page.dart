@@ -434,180 +434,184 @@ class _CreateListingPageState extends State<CreateListingPage> {
       body: SafeArea(
         child: Form(
           key: _formKey,
-          child: ListView(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.xl,
               AppSpacing.md,
               AppSpacing.xl,
               AppSpacing.xxxl,
             ),
-            children: [
-              _PhotosSection(
-                photos: _photos,
-                processing: _processingPhotos,
-                onAddFromCamera: () => _pickPhotos(ImageSource.camera),
-                onAddFromGallery: () => _pickPhotos(ImageSource.gallery),
-                onRemove: (index) => setState(() => _photos.removeAt(index)),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              TextFormField(
-                controller: _titleController,
-                decoration: InputDecoration(labelText: context.l10n.marketplaceFieldTitle),
-                maxLength: 80,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return context.l10n.marketplaceTitleRequired;
-                  }
-                  return _contactDetailsError(value) ??
-                      _animalOfferError(value, _descriptionController.text, onTitle: true);
-                },
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: InputDecoration(labelText: context.l10n.marketplaceFieldDescription),
-                maxLines: 3,
-                maxLength: 1000,
-                validator: (value) =>
-                    _contactDetailsError(value) ??
-                    _animalOfferError(_titleController.text, value, onTitle: false),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              DropdownButtonFormField<ListingCategory>(
-                initialValue: _category,
-                isExpanded: true,
-                decoration: InputDecoration(labelText: context.l10n.marketplaceFieldCategory),
-                items: ListingCategory.values
-                    .map(
-                      (category) => DropdownMenuItem(
-                        value: category,
-                        child: Text(listingCategoryLabel(category)),
-                      ),
-                    )
-                    .toList(),
-                validator: (value) => value == null ? context.l10n.marketplaceCategoryRequired : null,
-                onChanged: (value) => setState(() => _category = value),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              Text(context.l10n.marketplaceConditionLabel, style: AppTextStyles.bodySmall),
-              const SizedBox(height: AppSpacing.sm),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: ListingCondition.values
-                    .map(
-                      (condition) => ChoiceChip(
-                        label: Text(listingConditionLabel(condition)),
-                        selected: _condition == condition,
-                        onSelected: (_) => setState(() => _condition = condition),
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              Text(context.l10n.marketplaceSpeciesLabel, style: AppTextStyles.bodySmall),
-              const SizedBox(height: AppSpacing.sm),
-              FormField<Set<ListingSpecies>>(
-                validator: (_) =>
-                    _species.isEmpty ? context.l10n.marketplaceSpeciesRequired : null,
-                builder: (field) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: ListingSpecies.values
-                          .map(
-                            (species) => FilterChip(
-                              label: Text(listingSpeciesLabel(species)),
-                              selected: _species.contains(species),
-                              onSelected: (selected) {
-                                setState(() => _toggleSpecies(species, selected));
-                                field.didChange(_species);
-                              },
-                            ),
-                          )
-                          .toList(),
-                    ),
-                    if (field.hasError) ...[
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        field.errorText!,
-                        style: AppTextStyles.caption.copyWith(color: AppColors.danger),
-                      ),
-                    ],
-                  ],
+            // Not a lazy list: the fields out of view must be validated too.
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _PhotosSection(
+                  photos: _photos,
+                  processing: _processingPhotos,
+                  onAddFromCamera: () => _pickPhotos(ImageSource.camera),
+                  onAddFromGallery: () => _pickPhotos(ImageSource.gallery),
+                  onRemove: (index) => setState(() => _photos.removeAt(index)),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(context.l10n.marketplacePriceGift),
-                subtitle: Text(context.l10n.marketplaceGiftSubtitle),
-                value: _isGift,
-                onChanged: (value) => setState(() => _isGift = value),
-              ),
-              if (!_isGift)
+                const SizedBox(height: AppSpacing.xl),
                 TextFormField(
-                  controller: _priceController,
-                  decoration: InputDecoration(labelText: listingPriceFieldLabel()),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  validator: _validatePrice,
+                  controller: _titleController,
+                  decoration: InputDecoration(labelText: context.l10n.marketplaceFieldTitle),
+                  maxLength: 80,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return context.l10n.marketplaceTitleRequired;
+                    }
+                    return _contactDetailsError(value) ??
+                        _animalOfferError(value, _descriptionController.text, onTitle: true);
+                  },
                 ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                context.l10n.marketplaceRules,
-                key: const ValueKey('marketplace-rules'),
-                style: AppTextStyles.caption,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              _LocationSection(
-                choice: _locationChoice,
-                isEditing: _isEditing,
-                hasHome: _homeLocation != null,
-                resolving: _resolvingLocation,
-                hasLocation: _approxLocation != null,
-                error: _locationError,
-                zoneController: _zoneController,
-                onZoneEdited: () => _zoneEditedByUser = true,
-                onChoice: _selectLocation,
-              ),
-              if (_submitError != null) ...[
+                const SizedBox(height: AppSpacing.sm),
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: InputDecoration(labelText: context.l10n.marketplaceFieldDescription),
+                  maxLines: 3,
+                  maxLength: 1000,
+                  validator: (value) =>
+                      _contactDetailsError(value) ??
+                      _animalOfferError(_titleController.text, value, onTitle: false),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                DropdownButtonFormField<ListingCategory>(
+                  initialValue: _category,
+                  isExpanded: true,
+                  decoration: InputDecoration(labelText: context.l10n.marketplaceFieldCategory),
+                  items: ListingCategory.values
+                      .map(
+                        (category) => DropdownMenuItem(
+                          value: category,
+                          child: Text(listingCategoryLabel(category)),
+                        ),
+                      )
+                      .toList(),
+                  validator: (value) => value == null ? context.l10n.marketplaceCategoryRequired : null,
+                  onChanged: (value) => setState(() => _category = value),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                Text(context.l10n.marketplaceConditionLabel, style: AppTextStyles.bodySmall),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: ListingCondition.values
+                      .map(
+                        (condition) => ChoiceChip(
+                          label: Text(listingConditionLabel(condition)),
+                          selected: _condition == condition,
+                          onSelected: (_) => setState(() => _condition = condition),
+                        ),
+                      )
+                      .toList(),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                Text(context.l10n.marketplaceSpeciesLabel, style: AppTextStyles.bodySmall),
+                const SizedBox(height: AppSpacing.sm),
+                FormField<Set<ListingSpecies>>(
+                  validator: (_) =>
+                      _species.isEmpty ? context.l10n.marketplaceSpeciesRequired : null,
+                  builder: (field) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.sm,
+                        children: ListingSpecies.values
+                            .map(
+                              (species) => FilterChip(
+                                label: Text(listingSpeciesLabel(species)),
+                                selected: _species.contains(species),
+                                onSelected: (selected) {
+                                  setState(() => _toggleSpecies(species, selected));
+                                  field.didChange(_species);
+                                },
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      if (field.hasError) ...[
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          field.errorText!,
+                          style: AppTextStyles.caption.copyWith(color: AppColors.danger),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.lg),
-                Text(_submitError!,
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.danger)),
-              ],
-              const SizedBox(height: AppSpacing.xl),
-              CheckboxListTile(
-                key: const ValueKey('marketplace-private-seller'),
-                value: _privateSeller,
-                onChanged: (value) => setState(() => _privateSeller = value ?? false),
-                controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  context.l10n.marketplacePrivateSellerDeclaration,
-                  style: AppTextStyles.bodySmall,
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(context.l10n.marketplacePriceGift),
+                  subtitle: Text(context.l10n.marketplaceGiftSubtitle),
+                  value: _isGift,
+                  onChanged: (value) => setState(() => _isGift = value),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              if (!_isEditing) ...[
+                if (!_isGift)
+                  TextFormField(
+                    controller: _priceController,
+                    decoration: InputDecoration(labelText: listingPriceFieldLabel()),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    validator: _validatePrice,
+                  ),
+                const SizedBox(height: AppSpacing.md),
                 Text(
-                  context.l10n.marketplacePublishDisclaimer,
-                  key: const ValueKey('marketplace-publish-disclaimer'),
+                  context.l10n.marketplaceRules,
+                  key: const ValueKey('marketplace-rules'),
                   style: AppTextStyles.caption,
                 ),
+                const SizedBox(height: AppSpacing.xl),
+                _LocationSection(
+                  choice: _locationChoice,
+                  isEditing: _isEditing,
+                  hasHome: _homeLocation != null,
+                  resolving: _resolvingLocation,
+                  hasLocation: _approxLocation != null,
+                  error: _locationError,
+                  zoneController: _zoneController,
+                  onZoneEdited: () => _zoneEditedByUser = true,
+                  onChoice: _selectLocation,
+                ),
+                if (_submitError != null) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(_submitError!,
+                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.danger)),
+                ],
+                const SizedBox(height: AppSpacing.xl),
+                CheckboxListTile(
+                  key: const ValueKey('marketplace-private-seller'),
+                  value: _privateSeller,
+                  onChanged: (value) => setState(() => _privateSeller = value ?? false),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    context.l10n.marketplacePrivateSellerDeclaration,
+                    style: AppTextStyles.bodySmall,
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.md),
+                if (!_isEditing) ...[
+                  Text(
+                    context.l10n.marketplacePublishDisclaimer,
+                    key: const ValueKey('marketplace-publish-disclaimer'),
+                    style: AppTextStyles.caption,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                ],
+                DashboardActionButton(
+                  label: _submitting
+                      ? context.l10n.marketplaceSaving
+                      : _isEditing
+                          ? context.l10n.marketplaceSaveChanges
+                          : context.l10n.marketplacePublish,
+                  icon: _isEditing ? Icons.check_rounded : Icons.storefront_outlined,
+                  onPressed: _submitting || _processingPhotos ? null : _submit,
+                ),
               ],
-              DashboardActionButton(
-                label: _submitting
-                    ? context.l10n.marketplaceSaving
-                    : _isEditing
-                        ? context.l10n.marketplaceSaveChanges
-                        : context.l10n.marketplacePublish,
-                icon: _isEditing ? Icons.check_rounded : Icons.storefront_outlined,
-                onPressed: _submitting || _processingPhotos ? null : _submit,
-              ),
-            ],
+            ),
           ),
         ),
       ),

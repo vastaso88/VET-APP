@@ -11,12 +11,16 @@ I contrasti sono controllati da `scripts/design/contrast_check.py` (WCAG AA, anc
 |---|---|---|---|
 | **60%** | Neutro | sfondo, schede, bordi, testo | carta calda: `background` `#F6F1EA`, `surface` `#FCFAF7`, bianco `#FFFFFF`, testi `#213134` / `#52645F` / `#5E6E6B` |
 | **30%** | Secondario | struttura: pannelli morbidi, chip non selezionati, indicatore della barra, icone decorative, titoli di sezione | salvia: `secondary` `#6E9482`, `secondarySoft` `#E4EDE7`, `secondaryMid` `#CADBD0`, `secondaryStrong` `#35604F` |
-| **10%** | Accento | solo dove si agisce o si guarda: pulsanti principali, tab/chip selezionati, link, focus, passo corrente, grafici | verde-petrolio, uno solo: `primary` `#2E686A` (pieno = si agisce qui; gli altri comandi sono di contorno, bordo `secondary`), `primarySoft` `#DCEBEA` |
+| **10%** | Accento | solo dove si agisce o si guarda: pulsanti principali, tab/chip selezionati, link, focus, passo corrente, grafici | verde-petrolio, uno solo: `primary` `#2E686A` (pieno = si agisce qui; gli altri comandi sono di contorno, bordo `borderStrong`), `primarySoft` `#DCEBEA` |
 
 Fuori dalla regola, perché portano significato: stato (verde/ambra/rosso/azzurro con varianti
 `Strong` per il testo e `Soft` per gli sfondi), colori delle categorie del radar
 (`AppCategoryColors`) e colore d'identità dell'animale (`AppIdentityColors`).
 Su foto, mappe e video: famiglia `onMedia` / `scrim` (niente più bianco e nero scritti a mano).
+
+Due bordi, con due compiti: `border` `#E6DDD2` per i filetti e le schede che si leggono soltanto;
+`borderStrong` `#648A78` per ciò in cui si scrive o che si tocca (campi, pillole non scelte, schede che
+si aprono, pulsanti di contorno), almeno 3 a 1 su ogni fondo dell'app (WCAG 1.4.11).
 
 ## Com'era prima (inventario)
 

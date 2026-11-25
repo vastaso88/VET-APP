@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../l10n/l10n.dart';
 import '../../data/language_store.dart';
 import '../../domain/app_language.dart';
@@ -76,7 +77,7 @@ class LanguageSelector extends StatelessWidget {
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
             border:
-                Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                Border.all(color: AppColors.borderStrong),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

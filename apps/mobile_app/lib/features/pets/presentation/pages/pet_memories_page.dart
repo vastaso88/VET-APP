@@ -98,7 +98,7 @@ class _MemoryRow extends StatelessWidget {
       color: AppColors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.large),
-        side: const BorderSide(color: AppColors.border),
+        side: const BorderSide(color: AppColors.borderStrong),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(

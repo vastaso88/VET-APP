@@ -94,7 +94,7 @@ class _TutorialPageState extends State<TutorialPage> {
                     width: i == _index ? 20 : 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: i == _index ? AppColors.primary : AppColors.border,
+                      color: i == _index ? AppColors.primary : AppColors.borderStrong,
                       borderRadius: BorderRadius.circular(AppRadii.pill),
                     ),
                   ),

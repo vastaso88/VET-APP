@@ -63,7 +63,7 @@ class PetDataSummaryRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: AppColors.borderStrong),
           ),
           child: Row(
             children: [
@@ -74,7 +74,7 @@ class PetDataSummaryRow extends StatelessWidget {
                   summary.isEmpty
                       ? context.l10n.petsDataTitle
                       : '${context.l10n.petsDataTitle} · $summary',
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.text,
@@ -320,7 +320,7 @@ class _MissingMicrochipRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                width: 106,
+                width: 120,
                 child: Text(
                   t.petsFormMicrochipLabel,
                   style: AppTextStyles.caption.copyWith(

@@ -160,137 +160,141 @@ class _SubmitEventPageState extends State<SubmitEventPage> {
       body: SafeArea(
         child: Form(
           key: _formKey,
-          child: ListView(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.lg,
               AppSpacing.sm,
               AppSpacing.lg,
               AppSpacing.xxxl,
             ),
-            children: [
-              Text(l10n.eventsSuggestIntro, style: AppTextStyles.body),
-              const SizedBox(height: AppSpacing.sm),
-              Text(l10n.eventsSuggestPrivacy, style: AppTextStyles.caption),
-              const SizedBox(height: AppSpacing.lg),
-              TextFormField(
-                controller: _title,
-                maxLength: 120,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(labelText: l10n.eventsSuggestFieldTitle),
-                validator: required,
-              ),
-              DropdownButtonFormField<String>(
-                initialValue: _eventType,
-                isExpanded: true,
-                decoration: InputDecoration(labelText: l10n.eventsSuggestFieldType),
-                items: [
-                  for (final code in eventTypeCodes)
-                    DropdownMenuItem(value: code, child: Text(eventTypeLabel(code))),
-                ],
-                onChanged: (value) => setState(() => _eventType = value ?? _eventType),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              OutlinedButton.icon(
-                onPressed: _pickDates,
-                icon: const Icon(Icons.event_outlined),
-                label: Text(
-                  _dates == null
-                      ? l10n.eventsSuggestFieldDates
-                      : eventDateRangeLabel(_dates!.start, _dates!.end),
+            // Not a lazy list: the fields out of view must be validated too.
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(l10n.eventsSuggestIntro, style: AppTextStyles.body),
+                const SizedBox(height: AppSpacing.sm),
+                Text(l10n.eventsSuggestPrivacy, style: AppTextStyles.caption),
+                const SizedBox(height: AppSpacing.lg),
+                TextFormField(
+                  controller: _title,
+                  maxLength: 120,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldTitle),
+                  validator: required,
                 ),
-              ),
-              if (_datesMissing)
-                Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.xs),
-                  child: Text(
-                    l10n.eventsSuggestRequired,
-                    style: AppTextStyles.caption.copyWith(color: AppColors.danger),
+                DropdownButtonFormField<String>(
+                  initialValue: _eventType,
+                  isExpanded: true,
+                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldType),
+                  items: [
+                    for (final code in eventTypeCodes)
+                      DropdownMenuItem(value: code, child: Text(eventTypeLabel(code))),
+                  ],
+                  onChanged: (value) => setState(() => _eventType = value ?? _eventType),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                OutlinedButton.icon(
+                  onPressed: _pickDates,
+                  icon: const Icon(Icons.event_outlined),
+                  label: Text(
+                    _dates == null
+                        ? l10n.eventsSuggestFieldDates
+                        : eventDateRangeLabel(_dates!.start, _dates!.end),
                   ),
                 ),
-              const SizedBox(height: AppSpacing.md),
-              DropdownButtonFormField<String>(
-                key: const ValueKey('event-country'),
-                initialValue: _country,
-                isExpanded: true,
-                decoration: InputDecoration(labelText: l10n.eventsSuggestFieldCountry),
-                items: [
-                  for (final country in countries)
-                    DropdownMenuItem(value: country.code, child: Text(country.name)),
-                ],
-                onChanged: _chooseCountry,
-              ),
-              if (regions.isNotEmpty) ...[
+                if (_datesMissing)
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xs),
+                    child: Text(
+                      l10n.eventsSuggestRequired,
+                      style: AppTextStyles.caption.copyWith(color: AppColors.danger),
+                    ),
+                  ),
                 const SizedBox(height: AppSpacing.md),
-                DropdownButtonFormField<String?>(
-                  key: ValueKey('event-region-$_country'),
-                  initialValue: _region,
+                DropdownButtonFormField<String>(
+                  key: const ValueKey('event-country'),
+                  initialValue: _country,
                   isExpanded: true,
-                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldRegion),
+                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldCountry),
                   items: [
-                    DropdownMenuItem<String?>(child: Text(l10n.eventsSuggestRegionNone)),
-                    for (final region in regions)
-                      DropdownMenuItem<String?>(value: region, child: Text(region)),
+                    for (final country in countries)
+                      DropdownMenuItem(value: country.code, child: Text(country.name)),
                   ],
-                  onChanged: (value) => setState(() => _region = value),
+                  onChanged: _chooseCountry,
                 ),
-              ],
-              const SizedBox(height: AppSpacing.md),
-              TextFormField(
-                // Keys: the fields below keep their own state when the region or the
-                // province comes and goes with the country.
-                key: const ValueKey('event-city'),
-                controller: _city,
-                maxLength: 80,
-                textCapitalization: TextCapitalization.words,
-                decoration: InputDecoration(labelText: l10n.eventsSuggestFieldCity),
-                validator: required,
-              ),
-              if (_asksProvince)
+                if (regions.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  DropdownButtonFormField<String?>(
+                    key: ValueKey('event-region-$_country'),
+                    initialValue: _region,
+                    isExpanded: true,
+                    decoration: InputDecoration(labelText: l10n.eventsSuggestFieldRegion),
+                    items: [
+                      DropdownMenuItem<String?>(child: Text(l10n.eventsSuggestRegionNone)),
+                      for (final region in regions)
+                        DropdownMenuItem<String?>(value: region, child: Text(region)),
+                    ],
+                    onChanged: (value) => setState(() => _region = value),
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.md),
                 TextFormField(
-                  key: const ValueKey('event-province'),
-                  controller: _province,
-                  maxLength: 2,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldProvince),
+                  // Keys: the fields below keep their own state when the region or the
+                  // province comes and goes with the country.
+                  key: const ValueKey('event-city'),
+                  controller: _city,
+                  maxLength: 80,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldCity),
+                  validator: required,
+                ),
+                if (_asksProvince)
+                  TextFormField(
+                    key: const ValueKey('event-province'),
+                    controller: _province,
+                    maxLength: 2,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: InputDecoration(labelText: l10n.eventsSuggestFieldProvince),
+                    validator: (value) {
+                      final text = value?.trim() ?? '';
+                      return text.isNotEmpty && text.length != 2
+                          ? l10n.eventsSuggestInvalidProvince
+                          : null;
+                    },
+                  ),
+                TextFormField(
+                  key: const ValueKey('event-venue'),
+                  controller: _venue,
+                  maxLength: 80,
+                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldVenue),
+                ),
+                TextFormField(
+                  key: const ValueKey('event-link'),
+                  controller: _link,
+                  keyboardType: TextInputType.url,
+                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldLink),
                   validator: (value) {
-                    final text = value?.trim() ?? '';
-                    return text.isNotEmpty && text.length != 2
-                        ? l10n.eventsSuggestInvalidProvince
-                        : null;
+                    if (value == null || value.trim().isEmpty) return l10n.eventsSuggestRequired;
+                    return isValidEventLink(value) ? null : l10n.eventsSuggestInvalidLink;
                   },
                 ),
-              TextFormField(
-                key: const ValueKey('event-venue'),
-                controller: _venue,
-                maxLength: 80,
-                decoration: InputDecoration(labelText: l10n.eventsSuggestFieldVenue),
-              ),
-              TextFormField(
-                key: const ValueKey('event-link'),
-                controller: _link,
-                keyboardType: TextInputType.url,
-                decoration: InputDecoration(labelText: l10n.eventsSuggestFieldLink),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) return l10n.eventsSuggestRequired;
-                  return isValidEventLink(value) ? null : l10n.eventsSuggestInvalidLink;
-                },
-              ),
-              if (_error != null) ...[
-                const SizedBox(height: AppSpacing.md),
-                Text(_error!, style: AppTextStyles.body.copyWith(color: AppColors.danger)),
+                if (_error != null) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  Text(_error!, style: AppTextStyles.body.copyWith(color: AppColors.danger)),
+                ],
+                const SizedBox(height: AppSpacing.lg),
+                FilledButton(
+                  onPressed: _sending ? null : _send,
+                  child: _sending
+                      ? const SizedBox(
+                          height: 18,
+                          width: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l10n.eventsSuggestSend),
+                ),
               ],
-              const SizedBox(height: AppSpacing.lg),
-              FilledButton(
-                onPressed: _sending ? null : _send,
-                child: _sending
-                    ? const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(l10n.eventsSuggestSend),
-              ),
-            ],
+            ),
           ),
         ),
       ),

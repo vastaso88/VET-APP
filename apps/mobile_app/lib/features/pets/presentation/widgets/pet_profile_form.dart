@@ -967,14 +967,19 @@ class _PetProfileFormState extends State<PetProfileForm> {
                       : ElevatedButton.styleFrom(
                           backgroundColor: AppColors.surfaceElevated,
                           foregroundColor: AppColors.primary,
-                          side: const BorderSide(color: AppColors.secondary),
+                          side: const BorderSide(color: AppColors.borderStrong),
                         ),
                   child: _submitting
                       ? const PetLoader.small(color: AppColors.onPrimary)
                       : Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(isLast ? t.petsWizardConfirm : t.petsWizardNext),
+                            Flexible(
+                              child: Text(
+                                isLast ? t.petsWizardConfirm : t.petsWizardNext,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
                             if (!isLast) ...[
                               const SizedBox(width: AppSpacing.xs),
                               const Icon(Icons.arrow_forward_rounded, size: 18),
@@ -1481,7 +1486,7 @@ class _FishKindCard extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.medium),
           side: BorderSide(
-            color: selected ? AppColors.primary : AppColors.border,
+            color: selected ? AppColors.primary : AppColors.borderStrong,
             width: selected ? 1.6 : 1,
           ),
         ),
@@ -1671,12 +1676,18 @@ class _SexCounter extends StatelessWidget {
           color: AppColors.secondaryStrong,
           tooltip: context.l10n.commonDecrease,
         ),
-        SizedBox(
-          width: 20,
-          child: Text(
-            '$count',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700, color: AppColors.text),
+        Flexible(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 20),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                '$count',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodySmall
+                    .copyWith(fontWeight: FontWeight.w700, color: AppColors.text),
+              ),
+            ),
           ),
         ),
         _CompactIconButton(
@@ -1926,7 +1937,6 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
                       ? context.l10n.petsFormBreedSearchHint
                       : context.l10n.petsFormBreedSearchHintScientific,
                   prefixIcon: const Icon(Icons.search_rounded),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
                 ),
               ),
             ),

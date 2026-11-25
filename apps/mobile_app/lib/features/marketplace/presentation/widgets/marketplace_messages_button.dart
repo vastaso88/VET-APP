@@ -61,7 +61,7 @@ class _MarketplaceMessagesButtonState extends State<MarketplaceMessagesButton> {
         icon: Badge(
           key: const ValueKey('marketplace-messages-badge'),
           isLabelVisible: count > 0,
-          label: Text('$count'),
+          label: Text('$count', textScaler: TextScaler.noScaling),
           child: const Icon(Icons.mail_outline_rounded),
         ),
       ),

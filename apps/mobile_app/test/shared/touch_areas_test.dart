@@ -32,7 +32,7 @@ void main() {
   });
   tearDown(() => ChatDemoStore.instance.reset());
 
-  testWidgets('a filter of Animali answers 6 px under its drawn edge', (tester) async {
+  testWidgets('a filter of Animali answers 5 px under its drawn edge', (tester) async {
     await tester.pumpWidget(_app(const PetsListPage()));
     await tester.pump();
 
@@ -50,7 +50,7 @@ void main() {
 
     final before = ground();
     final rect = tester.getRect(pill);
-    await tester.tapAt(Offset(rect.center.dx, rect.bottom + 6));
+    await tester.tapAt(Offset(rect.center.dx, rect.bottom + 5));
     await tester.pump();
     expect(ground(), isNot(before), reason: 'now it is the chosen one');
   });

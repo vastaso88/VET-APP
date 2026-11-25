@@ -102,7 +102,7 @@ class _Choice extends StatelessWidget {
       ),
       selectedColor: AppColors.primary,
       backgroundColor: AppColors.surface,
-      side: const BorderSide(color: AppColors.border),
+      side: const BorderSide(color: AppColors.borderStrong),
       showCheckmark: false,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
     );

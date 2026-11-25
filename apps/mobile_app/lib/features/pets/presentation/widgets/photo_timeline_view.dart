@@ -344,7 +344,7 @@ class PhotoCaptionStrip extends StatelessWidget {
               Text(
                 text,
                 maxLines: 1,
-                style: AppTextStyles.caption.copyWith(color: AppColors.onMedia, fontSize: 11),
+                style: AppTextStyles.caption.copyWith(color: AppColors.onMedia),
               ),
             ],
           ),
@@ -384,7 +384,7 @@ class _VideoTile extends StatelessWidget {
                   ),
                   child: Text(
                     petVideoDurationLabel(durationSeconds!),
-                    style: AppTextStyles.caption.copyWith(color: AppColors.onMedia, fontSize: 11),
+                    style: AppTextStyles.caption.copyWith(color: AppColors.onMedia),
                   ),
                 ),
               ),

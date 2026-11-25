@@ -7,6 +7,12 @@ import '../../design_system/tokens/app_spacing.dart';
 import '../../design_system/tokens/app_text_styles.dart';
 import 'slide_page_transitions_builder.dart';
 
+/// The edge of every field, whatever its state.
+OutlineInputBorder _fieldBorder(Color color, double width) => OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppRadii.medium),
+      borderSide: BorderSide(color: color, width: width),
+    );
+
 class AppTheme {
   static ThemeData light() {
     final base = ThemeData(
@@ -135,7 +141,7 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(52),
           foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.secondary),
+          side: const BorderSide(color: AppColors.borderStrong),
           backgroundColor: AppColors.surfaceElevated,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadii.large),
@@ -157,28 +163,22 @@ class AppTheme {
         hintStyle: AppTextStyles.body.copyWith(color: AppColors.mutedText),
         labelStyle:
             AppTextStyles.bodySmall.copyWith(color: AppColors.secondaryText),
-        floatingLabelStyle:
-            AppTextStyles.caption.copyWith(color: AppColors.primary),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          borderSide: const BorderSide(color: AppColors.border),
+        // Material paints a floated label at 3/4 of its size: 14 on the screen.
+        floatingLabelStyle: AppTextStyles.caption
+            .copyWith(fontSize: 14 / 0.75, color: AppColors.primary),
+        helperStyle: AppTextStyles.bodySmall,
+        helperMaxLines: 6,
+        errorStyle: AppTextStyles.bodySmall.copyWith(
+          color: AppColors.danger,
+          fontWeight: FontWeight.w600,
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          borderSide: const BorderSide(color: AppColors.danger),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          borderSide: const BorderSide(color: AppColors.danger, width: 1.4),
-        ),
+        errorMaxLines: 4,
+        border: _fieldBorder(AppColors.borderStrong, 1.5),
+        enabledBorder: _fieldBorder(AppColors.borderStrong, 1.5),
+        disabledBorder: _fieldBorder(AppColors.border, 1),
+        focusedBorder: _fieldBorder(AppColors.primary, 2),
+        errorBorder: _fieldBorder(AppColors.danger, 2),
+        focusedErrorBorder: _fieldBorder(AppColors.danger, 2),
       ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
@@ -191,6 +191,21 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppRadii.xl),
           side: const BorderSide(color: AppColors.border),
         ),
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: SegmentedButton.styleFrom(
+          backgroundColor: AppColors.surfaceElevated,
+          foregroundColor: AppColors.text,
+          selectedBackgroundColor: AppColors.primary,
+          selectedForegroundColor: AppColors.onPrimary,
+          side: const BorderSide(color: AppColors.borderStrong),
+          textStyle: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
+        ),
+      ),
+      badgeTheme: BadgeThemeData(
+        largeSize: 20,
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        textStyle: AppTextStyles.caption.copyWith(height: 1, letterSpacing: 0),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.secondarySoft,
@@ -211,7 +226,7 @@ class AppTheme {
           fontWeight: FontWeight.w700,
         ),
         checkmarkColor: AppColors.onPrimary,
-        side: const BorderSide(color: AppColors.border),
+        side: const BorderSide(color: AppColors.borderStrong),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.pill),
         ),

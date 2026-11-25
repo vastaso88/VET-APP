@@ -260,11 +260,16 @@ void main() {
   // German is the longest language: the same pages at an ordinary phone size
   // with the system text enlarged (accessibility setting) must not overflow.
   // New pages and new long texts are covered by adding them to `_pages`.
-  for (final scale in [1.5, 2.0]) {
-    group('de @ 360x640, system text x$scale', () {
+  for (final (size, scale) in const [
+    (Size(360, 640), 1.5),
+    (Size(360, 640), 2.0),
+    // The smallest phone with more than the app lets through (the ceiling).
+    (_narrow, 2.4),
+  ]) {
+    group('de @ ${size.width.round()}x${size.height.round()}, system text x$scale', () {
       for (final page in _pages.entries) {
         testWidgets('${page.key}: no overflow', (tester) async {
-          tester.view.physicalSize = const Size(360, 640);
+          tester.view.physicalSize = size;
           tester.view.devicePixelRatio = 1;
           tester.platformDispatcher.textScaleFactorTestValue = scale;
           addTearDown(tester.view.resetPhysicalSize);

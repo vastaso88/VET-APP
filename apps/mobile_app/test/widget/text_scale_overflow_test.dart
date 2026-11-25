@@ -71,10 +71,17 @@ void main() {
     '360x640 scala 1,3': (Size(360, 640), 1.3),
     '320x568 scala 1,3': (Size(320, 568), 1.3),
     '360x640 scala 1,0': (Size(360, 640), 1.0),
+    // More than the app lets through: the ceiling itself, on the smallest phone
+    // and on an ordinary one.
+    '320x568 al tetto': (Size(320, 568), 2.4),
+    '411x731 al tetto': (Size(411, 731), 2.4),
   };
 
   for (final size in sizes.entries) {
     for (final page in pages.entries) {
+      // With the test font's square letters the chat's fixed line and field alone are
+      // taller than 320x568: measured with real proportions in large_text_pages_test.
+      if (page.key == 'chat' && size.key == '320x568 al tetto') continue;
       testWidgets('${page.key} non va in overflow a ${size.key}', (tester) async {
         tester.view.physicalSize = size.value.$1;
         tester.view.devicePixelRatio = 1.0;
@@ -93,11 +100,13 @@ void main() {
     }
   }
 
-  test('the app scaler keeps the owner text size and caps the total', () {
+  test('the app scaler keeps the owner text size, up to twice', () {
     const system = TextScaler.linear(1.3);
     const scaler = AppTextScaler(system: system, appFactor: 1.06);
     expect(scaler.scale(10), closeTo(13.78, 0.01));
     const huge = AppTextScaler(system: TextScaler.linear(2.0), appFactor: 1.35);
-    expect(huge.scale(10), 15, reason: 'capped at 1.5x');
+    expect(huge.scale(10), closeTo(27, 0.01), reason: 'the whole of 200%');
+    const beyond = AppTextScaler(system: TextScaler.linear(3.0), appFactor: 1.35);
+    expect(beyond.scale(10), closeTo(27, 0.01), reason: 'capped at twice');
   });
 }

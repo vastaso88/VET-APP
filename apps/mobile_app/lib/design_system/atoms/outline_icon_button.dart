@@ -25,7 +25,7 @@ class OutlineIconButton extends StatelessWidget {
       color: AppColors.primary,
       style: IconButton.styleFrom(
         backgroundColor: AppColors.surfaceElevated,
-        side: const BorderSide(color: AppColors.secondary),
+        side: const BorderSide(color: AppColors.borderStrong),
         // 40 px visible, 48 px to touch.
         tapTargetSize: MaterialTapTargetSize.padded,
       ),

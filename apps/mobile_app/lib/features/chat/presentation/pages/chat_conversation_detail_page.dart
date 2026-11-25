@@ -11,6 +11,7 @@ import '../../../../app/launch/route_restoration.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 
 
+import '../../../../design_system/app_text_scaler.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -137,6 +138,14 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
   }
 
   Widget _buildPage(BuildContext context) {
+    // The chat has its own text size (Layout): the phone's one stops earlier here.
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: maxChatTextScale,
+      child: _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -452,7 +461,7 @@ class _Header extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: AppColors.secondaryText,
-                  fontSize: 12,
+                  fontSize: 14,
                   height: 1.3,
                   fontWeight: FontWeight.w400,
                 ),
@@ -675,7 +684,7 @@ class _NewConversationPlaceholder extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.secondaryText,
-                fontSize: 13,
+                fontSize: 14,
                 height: 1.4,
               ),
             ),
@@ -831,7 +840,7 @@ class _ChatTypingBubbleState extends State<ChatTypingBubble> {
                 _slow ? context.l10n.chatTypingSlowText : context.l10n.chatTypingText,
                 style: const TextStyle(
                   color: AppColors.secondaryText,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),

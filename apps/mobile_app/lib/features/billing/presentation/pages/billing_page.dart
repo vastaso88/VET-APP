@@ -473,7 +473,7 @@ class _CyclePill extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.pill),
-            border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+            border: Border.all(color: selected ? AppColors.primary : AppColors.borderStrong),
           ),
           child: Text(
             label,

@@ -85,7 +85,7 @@ void main() {
       find.descendant(of: find.byType(OutlineIconButton), matching: find.byType(Material)).first,
     );
     expect(material.color, AppColors.surfaceElevated);
-    expect((material.shape! as OutlinedBorder).side.color, AppColors.secondary);
+    expect((material.shape! as OutlinedBorder).side.color, AppColors.borderStrong);
     final size = tester.getSize(find.byType(OutlineIconButton));
     expect(size.shortestSide, greaterThanOrEqualTo(48));
   });

@@ -54,29 +54,33 @@ class PetInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final labelText = Text(
+      label,
+      style: AppTextStyles.caption.copyWith(
+        color: AppColors.mutedText,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+    final valueText = Text(
+      value,
+      style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
+    );
+    // Large text: one under the other, the words stay whole.
+    final stacked = MediaQuery.textScalerOf(context).scale(14) > 20;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 106,
-            child: Text(
-              label,
-              style: AppTextStyles.caption.copyWith(
-                color: AppColors.mutedText,
-                fontWeight: FontWeight.w700,
-              ),
+      child: stacked
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [labelText, valueText],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(width: 120, child: labelText),
+                Expanded(child: valueText),
+              ],
             ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
