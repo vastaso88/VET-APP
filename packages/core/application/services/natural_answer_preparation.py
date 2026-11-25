@@ -300,6 +300,7 @@ class NaturalPromptInputs:
     history_block: str
     pet_block: str
     today: date
+    product_notes: str = ""
 
 
 @dataclass(frozen=True)
@@ -411,6 +412,7 @@ def assemble_natural_prompts(
         f"{inputs.attachment_note}"
         f"\n\nToday's date: {inputs.today.isoformat()}"
         + inputs.official
+        + inputs.product_notes
         + (
             f"\n\nReference material (optional, use only if genuinely "
             f"relevant):\n{inputs.evidence_block}"

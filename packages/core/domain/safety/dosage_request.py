@@ -279,10 +279,42 @@ def _a_food_portion(text: str) -> bool:
     return all(_FORM_ONLY.fullmatch(m.group(0)) for m in _MEDICINE.finditer(text))
 
 
+# Products that are not medicines (owner, 25/11/2026): the amount is answered from the label.
+SUPPLEMENT_WORDS = (
+    r"calcio|calcium|kalzium|calcico|integrator\w*|supplement\w*|suplemento\w*|"
+    r"erganzungs\w*|complement\w*|multivitamin\w*|vitamin\w*|vitamina\w*|vitamine\w*|"
+    r"minerali|minerals|minerales|mineralien|mineraux|d3|omega ?3|taurin\w*|probiotic\w*|"
+    r"olio di (?:salmone|pesce|fegato di merluzzo|krill)|(?:salmon|fish|cod liver|krill) oil|"
+    r"aceite de (?:salmon|pescado)|(?:lachs|fisch|krill)ol|huile de (?:saumon|poisson)"
+)
+_SUPPLEMENT = _words(SUPPLEMENT_WORDS)
+# Given as a therapy or an antidote: never a supplement.
+_NOT_A_SUPPLEMENT = _words(
+    r"vitamin\w* k1?|gluconat\w*|iniezion\w*|inject\w*|inyec\w*|injekt\w*|flebo|infusion\w*|"
+    r"topicid\w*|rodenticid\w*|rat poison|rattengift|raticid\w*|mort[- ]aux[- ]rats|"
+    r"siringa|syringe|jeringa|spritze\w*|seringue"
+)
+_UNIT_ONLY = _words(r"ml|mg|millilit\w*|milligram\w*")
+
+
+def _a_supplement_portion(text: str) -> bool:
+    """A supplement, and every medicine word of the message is only a form or a unit."""
+    if not _SUPPLEMENT.search(text) or _NOT_A_SUPPLEMENT.search(text) or _MG_PER_KG.search(text):
+        return False
+    return all(
+        _FORM_ONLY.fullmatch(m.group(0)) or _UNIT_ONLY.fullmatch(m.group(0))
+        for m in _MEDICINE.finditer(text)
+    )
+
+
+def asks_a_supplement_portion(message: str) -> bool:
+    return _a_supplement_portion(normalize_for_matching(message))
+
+
 def is_dosage_request(message: str) -> bool:
     text = _NOT_ASKING_A_DOSE.sub(" ", normalize_for_matching(message))
     text = without_water_amounts(_NOT_MEDICINE_DROPS.sub(" ", text))
-    if _a_food_portion(text):
+    if _a_food_portion(text) or _a_supplement_portion(text):
         return False
     if _VACCINE.search(text) and not _VACCINE_EXCEPTION.search(text):
         # "quante dosi di vaccino deve fare?" is a schedule question.

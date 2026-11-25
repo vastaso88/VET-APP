@@ -648,13 +648,21 @@ _ONLY_WHAT_WAS_SAID = (
     "wrote 'meows a lot'). If it matters for the advice, ask it."
 )
 
-# Round 4d (21/11/2026), product decision of the Orchestrator: a supplement with an amount is
-# a dose. Rinsing with saline, with no amount, stays first aid.
+# Owner 25/11/2026 (the 21/11 decision is withdrawn): the amount of a product that is not a
+# medicine may be said when its source is certain (product_notes.py); the net is
+# dose_in_answer.without_unsourced_supplements. Medicines as before.
 _SUPPLEMENTS_V2 = (
-    "SUPPLEMENTS ARE DOSED TOO. A supplement (calcium powder, vitamins, minerals, a "
-    "multivitamin) with an amount or a frequency (a teaspoon, a pinch, at every meal, once "
-    "a week, a number) is a dose: never give it. You may say that the animal needs it and "
-    "that the amount and how often are for the vet to set."
+    "SUPPLEMENTS THAT ARE NOT MEDICINES (calcium powder, vitamins, minerals, a multivitamin, an "
+    "oil). Explain freely what it is for, how it is used (dusting the prey, mixing it in) and "
+    "that too much can harm (vitamin D3, vitamin A, iron). The amount and how often are said ONLY"
+    " as the PRODUCT NOTES given here state, for that product and that animal, naming the product"
+    " and saying 'according to the label' or 'according to the manufacturer', whichever it is. "
+    "Without a note give no figure and no frequency ('once a week', 'a pinch', 'every meal'): say"
+    " that it depends on the product and the animal, to follow the label of the product made for "
+    "that animal, and ask which one it is. A product made for people has no label for the animal:"
+    " say so, and to ask for one made for the species. Do not send the owner to the vet for this "
+    "alone; the vet is for an animal that is ill, growing, gravid or on a therapy, or fed at "
+    "home. Medicines: never an amount."
 )
 _LANGUAGE_COUNTRY_PROFILE = (
     "LANGUAGE, COUNTRY, PROFILE. Every word in the owner's language: no Italian words in "

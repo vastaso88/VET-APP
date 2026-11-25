@@ -107,7 +107,12 @@ from packages.core.domain.knowledge.answer_validation import (
     without_phone_numbers,
     without_sentences,
 )
-from packages.core.domain.knowledge.dose_in_answer import find_dosage, without_dose_sentences
+from packages.core.domain.knowledge.dose_in_answer import (
+    find_dosage,
+    unsourced_supplement,
+    without_dose_sentences,
+    without_unsourced_supplements,
+)
 from packages.core.domain.knowledge.duty_claims import (
     has_no_pet_passport,
     unsourced_duties,
@@ -121,6 +126,7 @@ from packages.core.domain.knowledge.enclosure_size import (
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.invented_symptoms import invented_symptoms
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.core.domain.knowledge.product_notes import product_notes_block, product_notes_for
 from packages.core.domain.knowledge.quantities import (
     unsourced_quantities,
     without_unsourced_quantities,
@@ -154,6 +160,7 @@ from packages.core.domain.safety.clarification_fit import (
 )
 from packages.core.domain.safety.delay_in_answer import delays_or_reassures
 from packages.core.domain.safety.dosage_request import (
+    asks_a_supplement_portion,
     asks_an_amount,
     is_dosage_request,
     names_a_medicine,
@@ -3297,6 +3304,8 @@ class ChatOrchestrator:
     def _is_dosage_request(message: str) -> bool:
         # The fixed phrases, plus the general rule (dosage_request.py):
         # the phrases alone stopped 6 of 15 realistic requests (2026-10-14).
+        if asks_a_supplement_portion(message):
+            return is_dosage_request(message)
         text = without_water_amounts(message)
         return any(marker in text for marker in DOSAGE_REQUEST_MARKERS) or (
             is_dosage_request(message)
@@ -4124,6 +4133,11 @@ class ChatOrchestrator:
             pet_block = self._other_animal_block(data, effective_species)
         else:
             pet_block = self._pet_context_block(data, generic=generic_context)
+        product_notes = (
+            product_notes_block(product_notes_for(message, normalize_species(effective_species)))
+            if self._answer_v2 and not generic_context
+            else ""
+        )
         prompts = assemble_natural_prompts(
             self,
             NaturalPromptInputs(
@@ -4144,6 +4158,7 @@ class ChatOrchestrator:
                 history_block=history_block,
                 pet_block=pet_block,
                 today=today,
+                product_notes=product_notes,
             ),
             answer_v2=self._answer_v2,
             safety_gate=self._safety_gate,
@@ -4276,13 +4291,44 @@ class ChatOrchestrator:
             response = response.model_copy(
                 update={"content": without_phone_numbers(response.content)}
             )
-        dosage = find_dosage(response.content, allowed_text=medical_context)
+        # Owner 25/11/2026: the amount of a supplement that is not a medicine is said only as a
+        # product note states it, or the owner, or their documents; otherwise the sentence goes.
+        if self._answer_v2:
+            supplement_text = " ".join(
+                [
+                    product_notes,
+                    medical_context,
+                    message,
+                    *(m.content for m in data.conversation_history if m.role == "user"),
+                ]
+            )
+            if unsourced_supplement(response.content, allowed_text=supplement_text):
+                trimmed = without_unsourced_supplements(
+                    response.content, allowed_text=supplement_text
+                )
+                logger.warning("answer validator: an amount of a supplement was cut")
+                if len(trimmed) < 80:
+                    # Nothing useful would remain: never the figure by itself.
+                    return self._validation_failure_result(
+                        sources=sources,
+                        violations=["unsourced_supplement"],
+                        mode="natural",
+                        response_locale=data.language,
+                    )
+                response = response.model_copy(update={"content": trimmed})
+        dosage = find_dosage(
+            response.content,
+            allowed_text=f"{medical_context} {product_notes}".strip(),
+            supplements=not self._answer_v2,
+        )
         if dosage is not None:
             # Synthetic users round 3: four different questions about a cockatiel
             # that asked no dose got the same refusal four times. When the owner
             # asked no amount, only the sentences with the dose go; the refusal
             # stays for a real request, or when nothing useful would remain.
-            trimmed = without_dose_sentences(response.content, allowed_text=medical_context)
+            trimmed = without_dose_sentences(
+                response.content, allowed_text=f"{medical_context} {product_notes}".strip()
+            )
             refuse = self._owner_asked_an_amount(data, message) and not (
                 # v2: the refusal sentence opens the answer (dose_part), the rest stays
                 self._answer_v2 and dose_part

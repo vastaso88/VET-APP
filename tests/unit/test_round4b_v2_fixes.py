@@ -363,7 +363,8 @@ def test_the_v2_prompt_has_the_round4d_rules() -> None:
     system = request.system_prompt
     assert "never 'if the bleeding continues'" in system
     assert "the person comes first" in system
-    assert "SUPPLEMENTS ARE DOSED TOO" in system
+    # withdrawn by the owner on 25/11/2026: only a certain source gives a figure (product notes)
+    assert "SUPPLEMENTS THAT ARE NOT MEDICINES" in system
     assert "a video they made" in system
 
 

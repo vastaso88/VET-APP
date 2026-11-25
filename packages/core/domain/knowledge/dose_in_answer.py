@@ -25,7 +25,11 @@ from __future__ import annotations
 
 import re
 
-from packages.core.domain.safety.dosage_request import MEDICINE_WORDS, PREVENTION_CLASSES
+from packages.core.domain.safety.dosage_request import (
+    MEDICINE_WORDS,
+    PREVENTION_CLASSES,
+    SUPPLEMENT_WORDS,
+)
 from packages.core.domain.safety.emergency_patterns import normalize_for_matching
 
 # English and Spanish medicine words (the Italian, German and French ones
@@ -195,11 +199,7 @@ def _only_prevention_classes(sentence: str) -> bool:
 
 # Round 4d (21/11/2026, product decision of the Orchestrator): a supplement with an amount
 # or a frequency is a dose ("un cucchiaino di polvere di calcio", "calcium at every meal").
-_SUPPLEMENT = re.compile(
-    r"\b(?:calcio|calcium|kalzium|calcico|integrator\w*|supplement\w*|suplemento\w*|"
-    r"erganzungs\w*|complement\w*|multivitamin\w*|vitamin\w*|vitamina\w*|vitamine\w*|"
-    r"minerali|minerals|minerales|mineralien|mineraux|d3)\b"
-)
+_SUPPLEMENT = re.compile(rf"\b(?:{SUPPLEMENT_WORDS})\b")
 _SUPPLEMENT_AMOUNT = re.compile(
     r"\b(?:cucchiain\w*|cucchiai\w*|pizzic\w*|misurin\w*|teaspoons?|tablespoons?|pinch\w*|"
     r"scoops?|cucharadit\w*|pizcas?|teeloffel\w*|essloffel\w*|prisen?|cuilleres?|pincees?|"
@@ -215,17 +215,24 @@ _SUPPLEMENT_AMOUNT = re.compile(
 )
 
 
+# "Dust the crickets twice a week": the supplement is named in the sentence before. Not a dust bath.
+_SUPPLEMENT_USE = re.compile(
+    r"\b(?:spolver\w*|dust(?:ing|ed|s)?(?! ?baths?)|espolvore\w*|bestaub\w*|saupoudr\w*)\b"
+)
+
+
 def _supplement_dose(sentence: str) -> str | None:
-    if not _SUPPLEMENT.search(sentence):
+    if not (_SUPPLEMENT.search(sentence) or _SUPPLEMENT_USE.search(sentence)):
         return None
     amount = _SUPPLEMENT_AMOUNT.search(sentence)
     return amount.group(0) if amount else None
 
 
-def find_dosage(answer: str, *, allowed_text: str = "") -> str | None:
+def find_dosage(answer: str, *, allowed_text: str = "", supplements: bool = True) -> str | None:
     """The first dosage expression the model wrote on its own, or None.
     Comparisons run on normalised text (case, accents); an expression also
-    present in [allowed_text] (the owner's document) is skipped."""
+    present in [allowed_text] (the owner's document) is skipped. With [supplements] False the
+    amounts of a supplement are left to without_unsourced_supplements()."""
     text = normalize_for_matching(answer)
     allowed = normalize_for_matching(allowed_text) if allowed_text else ""
 
@@ -244,7 +251,7 @@ def find_dosage(answer: str, *, allowed_text: str = "") -> str | None:
                 return match.group(0)
     for sentence in sentences:
         supplement = _supplement_dose(sentence)
-        if supplement is not None and is_models_own(supplement):
+        if supplements and supplement is not None and is_models_own(supplement):
             return supplement
         if not _names_a_medicine(sentence) or _is_a_food_amount(sentence):
             continue
@@ -270,6 +277,31 @@ def find_dosage(answer: str, *, allowed_text: str = "") -> str | None:
 
 
 _LINE_SENTENCES = re.compile(r"(?<=[.!?;])\s+")
+
+
+def unsourced_supplement(answer: str, *, allowed_text: str = "") -> str | None:
+    """The first amount or frequency of a supplement that no given text states, or None. Owner,
+    25/11/2026: for a product that is not a medicine the figure may be said when a certain source
+    (the product's label or maker) is given; without one it is cut, the rest stays."""
+    allowed = normalize_for_matching(allowed_text) if allowed_text else ""
+    for sentence in _SENTENCE_SPLIT.split(normalize_for_matching(answer)):
+        found = _supplement_dose(sentence)
+        if found is not None and (not allowed or found not in allowed):
+            return found
+    return None
+
+
+def without_unsourced_supplements(answer: str, *, allowed_text: str = "") -> str:
+    """The answer without the sentences that state such an amount, layout kept."""
+    kept_lines: list[str] = []
+    for line in answer.split("\n"):
+        sentences = _LINE_SENTENCES.split(line)
+        kept = [s for s in sentences if unsourced_supplement(s, allowed_text=allowed_text) is None]
+        if len(kept) == len(sentences):
+            kept_lines.append(line)
+        elif any(not re.fullmatch(r"\d+[.)]|[-*•]", part.strip()) for part in kept):
+            kept_lines.append(" ".join(kept))
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(kept_lines)).strip()
 
 
 def without_dose_sentences(answer: str, *, allowed_text: str = "") -> str:
