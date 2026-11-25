@@ -25,6 +25,8 @@ import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_models.dart';
 import '../../domain/pet_video_rules.dart';
 import '../widgets/pets_scaffold.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../widgets/pet_avatar.dart';
 
 /// Every photo and short video of one pet, newest first: profile pictures
 /// saved over time plus anything imported from the gallery or recorded here.
@@ -318,14 +320,11 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
               }
               final photos = snapshot.data ?? const <PetPhotoEntry>[];
               if (photos.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
-                  child: Center(
-                    child: Text(
-                      context.l10n.petsMediaGalleryEmpty,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodySmall,
-                    ),
+                return CenteredPageState(
+                  child: EmptyState.figure(
+                    figure: PetRingAvatar(pet: pet, size: 64),
+                    text: context.l10n.petsMediaGalleryEmpty,
+                    padding: EmptyState.insidePage,
                   ),
                 );
               }

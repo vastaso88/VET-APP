@@ -9,6 +9,7 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/date/calendar_days.dart';
 import '../domain/history_event.dart';
 import 'history_labels.dart';
+import '../../../shared/widgets/app_card.dart';
 
 /// "Storico": a month calendar with every event of the pet (entries of the
 /// cartella clinica on the day they happened, illnesses on the day they
@@ -61,13 +62,8 @@ class _PetHistorySectionState extends State<PetHistorySection> {
     final selected = _selected;
     final monthLabel = formatAppDate(_month, 'LLLL y');
 
-    return Container(
+    return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: AppColors.border),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

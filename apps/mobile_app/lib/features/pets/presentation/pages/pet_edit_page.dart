@@ -15,20 +15,15 @@ import '../memorial_restore_message.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pet_profile_form.dart';
 import '../widgets/pets_scaffold.dart';
-import '../widgets/pets_state_views.dart';
 import 'memorial_move_page.dart';
 
 class PetEditPage extends StatelessWidget {
   const PetEditPage({
     required this.pet,
     super.key,
-    this.state = PetsScreenStatus.success,
-    this.errorMessage,
   });
 
   final PetProfile pet;
-  final PetsScreenStatus state;
-  final String? errorMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -43,28 +38,7 @@ class PetEditPage extends StatelessWidget {
         identityColor: pet.identityColor,
         size: 36,
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).maybePop(),
-          style: TextButton.styleFrom(
-            foregroundColor: AppColors.primary,
-            textStyle: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-          child: Text(context.l10n.commonClose),
-        ),
-      ],
-      body: switch (state) {
-        PetsScreenStatus.loading =>
-          PetsLoadingView(label: context.l10n.petsEditLoading),
-        PetsScreenStatus.error => PetsErrorView(
-            title: context.l10n.petsEditErrorTitle,
-            subtitle: errorMessage ?? context.l10n.petsEditErrorDefault,
-            actionLabel: context.l10n.commonClose,
-            onRetry: () => Navigator.of(context).maybePop(),
-          ),
-        PetsScreenStatus.empty => _EditForm(pet: pet),
-        PetsScreenStatus.success => _EditForm(pet: pet),
-      },
+      body: _EditForm(pet: pet),
     );
   }
 }

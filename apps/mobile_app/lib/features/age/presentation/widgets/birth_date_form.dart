@@ -8,6 +8,7 @@ import '../../../../l10n/regional_defaults.dart';
 import '../../../../shared/formatters/date_input_formatter.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../../../../shared/widgets/typed_date_field.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// The one question of the age step: a date of birth, typed or picked, and a
 /// button. Neutral on purpose: nothing here hints at a limit. What happens
@@ -65,24 +66,26 @@ class _BirthDateFormState extends State<BirthDateForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TypedDateField(
-            controller: _controller,
-            onPick: _pick,
-            pickIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.secondaryStrong),
-            decoration: InputDecoration(
-              labelText: l10n.petsFormBirthDateLabel,
-              hintText: appDateInputText(l10n.petsFormBirthDateHint),
-              errorText: widget.errorText,
+          AppField(
+            label: l10n.petsFormBirthDateLabel,
+            child: TypedDateField(
+              controller: _controller,
+              onPick: _pick,
+              pickIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.secondaryStrong),
+              decoration: InputDecoration(
+                hintText: appDateInputText(l10n.petsFormBirthDateHint),
+                errorText: widget.errorText,
+              ),
+              validator: (value) {
+                final raw = (value ?? '').trim();
+                if (raw.isEmpty) return l10n.petsFormBirthDateRequired;
+                final parsed = parseStrictDate(raw);
+                if (parsed == null) return appDateInputText(l10n.petsFormBirthDateInvalid);
+                if (parsed.isAfter(DateTime.now())) return l10n.petsFormBirthDateFuture;
+                if (parsed.year < 1900) return appDateInputText(l10n.petsFormBirthDateInvalid);
+                return null;
+              },
             ),
-            validator: (value) {
-              final raw = (value ?? '').trim();
-              if (raw.isEmpty) return l10n.petsFormBirthDateRequired;
-              final parsed = parseStrictDate(raw);
-              if (parsed == null) return appDateInputText(l10n.petsFormBirthDateInvalid);
-              if (parsed.isAfter(DateTime.now())) return l10n.petsFormBirthDateFuture;
-              if (parsed.year < 1900) return appDateInputText(l10n.petsFormBirthDateInvalid);
-              return null;
-            },
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(

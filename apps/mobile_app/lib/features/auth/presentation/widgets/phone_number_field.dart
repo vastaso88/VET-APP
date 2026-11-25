@@ -7,6 +7,7 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../l10n/regional_defaults.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// State of a [PhoneNumberField]: the digits typed and the country whose
 /// prefix applies. The value out is always E.164 ("+393331234567") or null
@@ -98,53 +99,60 @@ class PhoneNumberField extends StatelessWidget {
         final hint =
             format == null ? '' : format.phoneHint.replaceFirst('+${format.dialCode} ', '');
 
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Semantics(
-              button: true,
-              label: context.l10n.phonePickerSemantics(countryName, format?.dialCode ?? ''),
-              excludeSemantics: true,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(AppRadii.medium),
-                onTap: enabled ? () => _pickCountry(context) : null,
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: 56),
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceElevated,
+            // One name over the prefix and the number; spoken with the number.
+            ExcludeSemantics(child: FieldLabel(label)),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Semantics(
+                  button: true,
+                  label: context.l10n.phonePickerSemantics(countryName, format?.dialCode ?? ''),
+                  excludeSemantics: true,
+                  child: InkWell(
                     borderRadius: BorderRadius.circular(AppRadii.medium),
-                    border: Border.all(color: AppColors.borderStrong, width: 1.5),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(countryFlagEmoji(controller.country),
-                          style: const TextStyle(fontSize: 22)),
-                      const SizedBox(width: AppSpacing.xs),
-                      Text(dial, style: AppTextStyles.body.copyWith(color: AppColors.text)),
-                      const Icon(Icons.arrow_drop_down_rounded, color: AppColors.mutedText),
-                    ],
+                    onTap: enabled ? () => _pickCountry(context) : null,
+                    child: Container(
+                      // As tall as the number beside it.
+                      constraints: const BoxConstraints(minHeight: 51),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceElevated,
+                        borderRadius: BorderRadius.circular(AppRadii.medium),
+                        border: Border.all(color: AppColors.borderStrong, width: 1.5),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(countryFlagEmoji(controller.country),
+                              style: const TextStyle(fontSize: 22)),
+                          const SizedBox(width: AppSpacing.xs),
+                          Text(dial, style: AppTextStyles.body.copyWith(color: AppColors.text)),
+                          const Icon(Icons.arrow_drop_down_rounded, color: AppColors.mutedText),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: TextFormField(
-                controller: controller.text,
-                enabled: enabled,
-                keyboardType: TextInputType.phone,
-                autofillHints: const [AutofillHints.telephoneNumberNational],
-                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+\s().\-/]'))],
-                validator: (_) =>
-                    controller.isValid ? null : context.l10n.accountProfilePhoneInvalid,
-                decoration: InputDecoration(
-                  labelText: label,
-                  hintText: hint,
-                  helperText: helperText,
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Semantics(
+                    label: label,
+                    child: TextFormField(
+                      controller: controller.text,
+                      enabled: enabled,
+                      keyboardType: TextInputType.phone,
+                      autofillHints: const [AutofillHints.telephoneNumberNational],
+                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+\s().\-/]'))],
+                      validator: (_) =>
+                          controller.isValid ? null : context.l10n.accountProfilePhoneInvalid,
+                      decoration: InputDecoration(hintText: hint, helperText: helperText),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
         );

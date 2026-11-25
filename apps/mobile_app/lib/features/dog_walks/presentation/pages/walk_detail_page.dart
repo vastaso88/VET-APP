@@ -18,6 +18,7 @@ import '../../domain/walk_session.dart';
 import '../walk_labels.dart';
 import '../widgets/walk_map_style.dart';
 import '../widgets/walk_route_markers_layer.dart';
+import '../../../../shared/widgets/page_header.dart';
 
 /// The pet's photo rows, for the pins on the map.
 typedef WalkPhotosLoader = Future<List<PetPhotoEntry>> Function(String petId);
@@ -102,12 +103,7 @@ class _WalkDetailPageState extends State<WalkDetailPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(context.l10n.walksPageTitle(widget.petName), style: AppTextStyles.title),
-      ),
+      appBar: PageHeader(title: context.l10n.walksPageTitle(widget.petName)),
       body: SafeArea(
         child: Column(
           children: [
@@ -121,7 +117,7 @@ class _WalkDetailPageState extends State<WalkDetailPage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
+              padding: const EdgeInsets.all(AppSpacing.page),
               child: Column(
                 children: [
                   Text(walkDateLabel(walk.startedAt), style: AppTextStyles.caption),

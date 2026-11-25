@@ -41,7 +41,7 @@ class CancelSubscriptionSection extends StatelessWidget {
         final subscription = store.storeSubscription;
         if (subscription == null || !subscription.renews) return const SizedBox.shrink();
         return Padding(
-          padding: const EdgeInsets.only(top: AppSpacing.md),
+          padding: const EdgeInsets.only(top: AppSpacing.sm),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

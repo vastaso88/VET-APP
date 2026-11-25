@@ -8,6 +8,7 @@ import '../../../location/data/address_geocoder.dart';
 import '../../../location/domain/coordinates.dart';
 import '../../../location/presentation/center_pin_map_picker.dart';
 import '../../../nearby_places/data/reverse_geocoder.dart';
+import '../../../../shared/widgets/page_header.dart';
 
 /// Pick a point by panning the map under a fixed pin — same interaction as
 /// "Segnala un luogo mancante" (report_missing_place_page.dart). Only one
@@ -51,12 +52,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(context.l10n.settingsLocationPickerTitle, style: AppTextStyles.title),
-      ),
+      appBar: PageHeader(title: context.l10n.settingsLocationPickerTitle),
       body: SafeArea(
         child: Stack(
           children: [

@@ -18,6 +18,10 @@ import 'submit_event_page.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../l10n/regional_defaults.dart' show appCountryName;
 import '../../../../shared/widgets/min_tap_target.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/app_card.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../../../../design_system/atoms/outline_icon_button.dart';
 
 typedef EventLinkLauncher = Future<void> Function(Uri url);
 
@@ -169,15 +173,12 @@ class _EventsPageState extends State<EventsPage> {
     final today = dayOnly(widget.now());
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(context.l10n.eventsTitle, style: AppTextStyles.title),
+      appBar: PageHeader(
+        title: context.l10n.eventsTitle,
         actions: [
-          IconButton(
+          OutlineIconButton(
             tooltip: context.l10n.eventsSuggestAction,
-            icon: const Icon(Icons.add_circle_outline_rounded),
+            icon: Icons.add_rounded,
             onPressed: _openSuggest,
           ),
         ],
@@ -193,10 +194,25 @@ class _EventsPageState extends State<EventsPage> {
             final result = snapshot.data ??
                 const EventsLoadResult(events: [], failed: true);
             if (result.needsPlan) {
-              return const _NeedsPlanState();
+              return CenteredPageState(
+                child: EmptyState.icon(
+                  key: const ValueKey('events-needs-plan'),
+                  icon: Icons.lock_outline_rounded,
+                  text: context.l10n.eventsNeedsPlan,
+                ),
+              );
             }
             if (result.failed) {
-              return _ErrorState(onRetry: _reload);
+              return CenteredPageState(
+                child: EmptyState.icon(
+                  icon: Icons.cloud_off_outlined,
+                  text: context.l10n.eventsLoadError,
+                  action: FilledButton(
+                    onPressed: _reload,
+                    child: Text(context.l10n.commonRetry),
+                  ),
+                ),
+              );
             }
 
             final inWindow = filterEventsByWindow(result.events, _filter);
@@ -209,9 +225,9 @@ class _EventsPageState extends State<EventsPage> {
               },
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.sm,
-                  AppSpacing.lg,
+                  AppSpacing.page,
+                  0,
+                  AppSpacing.page,
                   AppSpacing.xxxl,
                 ),
                 children: [
@@ -231,8 +247,9 @@ class _EventsPageState extends State<EventsPage> {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   if (visible.isEmpty) ...[
-                    _EmptyState(
-                      message: result.countryHasEvents
+                    EmptyState(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                      text: result.countryHasEvents
                           ? eventsEmptyMessage(_filter, today)
                           : context.l10n.eventsNoneInCountry,
                     ),
@@ -399,110 +416,98 @@ class _EventCard extends StatelessWidget {
         appCountryName(event.country) ?? event.country,
     ];
 
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(AppRadii.large),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        // Nessun link verificato: nessuna azione (e nessun effetto di tocco).
-        onTap: url == null ? null : () => launcher(url),
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(color: url == null ? AppColors.border : AppColors.borderStrong),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      onTap: url == null ? null : () => launcher(url),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      eventDateRangeLabel(event.startsOn, event.endsOn),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.primary,
+              Expanded(
+                child: Text(
+                  eventDateRangeLabel(event.startsOn, event.endsOn),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              if (cancelled || postponed) _Pill(
+                  label: cancelled
+                      ? context.l10n.eventsStatusCancelled
+                      : context.l10n.eventsStatusPostponed,
+                  danger: true,
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            event.title,
+            style: AppTextStyles.title.copyWith(
+              decoration: cancelled ? TextDecoration.lineThrough : null,
+            ),
+          ),
+          if (place.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.place_rounded, size: 18, color: AppColors.secondaryStrong),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text.rich(
+                    TextSpan(
+                      text: place,
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.text,
                         fontWeight: FontWeight.w700,
                       ),
-                    ),
-                  ),
-                  if (cancelled || postponed) _Pill(
-                      label: cancelled
-                          ? context.l10n.eventsStatusCancelled
-                          : context.l10n.eventsStatusPostponed,
-                      danger: true,
-                    ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                event.title,
-                style: AppTextStyles.title.copyWith(
-                  decoration: cancelled ? TextDecoration.lineThrough : null,
-                ),
-              ),
-              if (place.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.place_rounded, size: 18, color: AppColors.secondaryStrong),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text.rich(
-                        TextSpan(
-                          text: place,
-                          style: AppTextStyles.body.copyWith(
-                            color: AppColors.text,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          children: [
-                            for (final name in around)
-                              TextSpan(
-                                text: ' · $name',
-                                style: AppTextStyles.bodySmall,
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-              if (event.venueName != null) ...[
-                const SizedBox(height: 2),
-                Padding(
-                  padding: const EdgeInsets.only(left: 22),
-                  child: Text(event.venueName!, style: AppTextStyles.bodySmall),
-                ),
-              ],
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  Expanded(
-                    child: Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.xs,
                       children: [
-                        _Pill(label: eventTypeLabel(event.eventType)),
-                        _Pill(label: event.level.label, emphasized: true),
+                        for (final name in around)
+                          TextSpan(
+                            text: ' · $name',
+                            style: AppTextStyles.bodySmall,
+                          ),
                       ],
                     ),
                   ),
-                  if (url != null)
-                    const Icon(Icons.open_in_new_rounded, size: 18, color: AppColors.mutedText),
-                ],
-              ),
-              if (event.organizerName != null) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  context.l10n.eventsOrganizedBy(event.organizerName!),
-                  style: AppTextStyles.caption,
                 ),
               ],
+            ),
+          ],
+          if (event.venueName != null) ...[
+            const SizedBox(height: 2),
+            Padding(
+              padding: const EdgeInsets.only(left: 22),
+              child: Text(event.venueName!, style: AppTextStyles.bodySmall),
+            ),
+          ],
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    _Pill(label: eventTypeLabel(event.eventType)),
+                    _Pill(label: event.level.label, emphasized: true),
+                  ],
+                ),
+              ),
+              if (url != null)
+                const Icon(Icons.open_in_new_rounded, size: 18, color: AppColors.mutedText),
             ],
           ),
-        ),
+          if (event.organizerName != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              context.l10n.eventsOrganizedBy(event.organizerName!),
+              style: AppTextStyles.caption,
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -535,82 +540,6 @@ class _Pill extends StatelessWidget {
       child: Text(
         label,
         style: AppTextStyles.caption.copyWith(color: foreground, fontWeight: FontWeight.w700),
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxxl),
-      child: Column(
-        children: [
-          const Icon(Icons.event_busy_outlined, size: 40, color: AppColors.mutedText),
-          const SizedBox(height: AppSpacing.md),
-          Text(message, textAlign: TextAlign.center, style: AppTextStyles.body),
-        ],
-      ),
-    );
-  }
-}
-
-class _NeedsPlanState extends StatelessWidget {
-  const _NeedsPlanState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.lock_outline_rounded,
-                size: 36, color: AppColors.mutedText),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              context.l10n.eventsNeedsPlan,
-              key: const ValueKey('events-needs-plan'),
-              textAlign: TextAlign.center,
-              style: AppTextStyles.body,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({required this.onRetry});
-
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.cloud_off_outlined, size: 40, color: AppColors.mutedText),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              context.l10n.eventsLoadError,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.body,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            FilledButton(onPressed: onRetry, child: Text(context.l10n.commonRetry)),
-          ],
-        ),
       ),
     );
   }

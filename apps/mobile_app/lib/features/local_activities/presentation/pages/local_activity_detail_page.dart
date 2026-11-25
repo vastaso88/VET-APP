@@ -7,6 +7,7 @@ import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../location/presentation/distance_label.dart';
 import '../../domain/local_activity.dart';
 import '../local_activity_labels.dart';
+import '../../../../shared/widgets/page_header.dart';
 
 class LocalActivityDetailPage extends StatelessWidget {
   const LocalActivityDetailPage({super.key, required this.activity, this.distanceMeters});
@@ -19,18 +20,13 @@ class LocalActivityDetailPage extends StatelessWidget {
     final dateLabel = localActivityDateRangeLabel(activity);
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(activity.title, style: AppTextStyles.title, overflow: TextOverflow.ellipsis),
-      ),
+      appBar: PageHeader(title: activity.title),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.xl,
-            AppSpacing.md,
-            AppSpacing.xl,
+            AppSpacing.page,
+            0,
+            AppSpacing.page,
             AppSpacing.xxxl,
           ),
           children: [

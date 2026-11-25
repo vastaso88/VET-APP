@@ -7,6 +7,8 @@ import 'package:vet_app_mobile/features/pets/presentation/pages/pet_create_page.
 import 'package:vet_app_mobile/features/pets/presentation/pages/pets_list_page.dart';
 import 'package:vet_app_mobile/l10n/app_localizations.dart';
 
+import '../support/fields.dart';
+
 Widget _app(Widget home) => MaterialApp(
       theme: AppTheme.light(),
       locale: const Locale('it'),
@@ -48,7 +50,7 @@ Future<void> _tapNext(WidgetTester tester, [String label = 'Prosegui']) async {
   await tester.pumpAndSettle();
 }
 
-Finder _nameField() => find.widgetWithText(TextFormField, 'Nome');
+Finder _nameField() => fieldNamed('Nome');
 
 /// The fish chip of step 1 (the word "Pesce" also titles a card below it).
 Finder _fishChip() => find.widgetWithText(InkWell, 'Pesce').first;
@@ -157,16 +159,16 @@ void main() {
 
     // 3 - general information
     expect(find.text('Informazioni generali'), findsOneWidget);
-    await tester.enterText(find.widgetWithText(TextFormField, 'Data di nascita'), '14052020');
-    await tester.enterText(find.widgetWithText(TextFormField, 'Peso (facoltativo, kg)'), '23');
-    await tester.enterText(find.widgetWithText(TextFormField, 'Colore del mantello'), 'Nero');
+    await tester.enterText(fieldNamed('Data di nascita'), '14052020');
+    await tester.enterText(fieldNamed('Peso (facoltativo, kg)'), '23');
+    await tester.enterText(fieldNamed('Colore del mantello'), 'Nero');
     await _tapNext(tester);
 
     // 4 - final information
     expect(find.text('Informazioni finali'), findsOneWidget);
     expect(find.text('Conferma'), findsOneWidget);
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'N. microchip'), '380 2600 0012 3456');
+        fieldNamed('N. microchip'), '380 2600 0012 3456');
     await tester.tap(find.byType(Switch));
     await tester.pump();
     await _tapNext(tester, 'Conferma');
@@ -242,7 +244,7 @@ void main() {
 
     expect(find.text('Scrivi la razza.'), findsOneWidget);
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'Quale razza?'), 'Incrocio di barboncino');
+        fieldNamed('Quale razza?'), 'Incrocio di barboncino');
     await _tapNext(tester);
     expect(find.text('Parlaci del tuo animale'), findsOneWidget);
   });
@@ -311,10 +313,10 @@ void main() {
     await _openWizard(tester);
     await _speciesStepMixed(tester, 'Gatto');
     await _nameStep(tester, 'Micio');
-    await tester.enterText(find.widgetWithText(TextFormField, 'Data di nascita'), '01012021');
+    await tester.enterText(fieldNamed('Data di nascita'), '01012021');
     await _tapNext(tester);
 
-    await tester.enterText(find.widgetWithText(TextFormField, 'N. microchip'), '12345');
+    await tester.enterText(fieldNamed('N. microchip'), '12345');
     await _tapNext(tester, 'Conferma');
 
     expect(find.text('Il microchip ha 15 cifre.'), findsOneWidget);
@@ -326,7 +328,7 @@ void main() {
     await _openWizard(tester);
     await _speciesStepMixed(tester, 'Gatto');
     await _nameStep(tester, 'Primo');
-    await tester.enterText(find.widgetWithText(TextFormField, 'Data di nascita'), '01012021');
+    await tester.enterText(fieldNamed('Data di nascita'), '01012021');
     await _tapNext(tester);
     await _tapNext(tester, 'Conferma');
     expect(find.text('Profilo creato!'), findsOneWidget);
@@ -437,7 +439,7 @@ void main() {
       await tester.enterText(_nameField(), 'Nemo');
       await _tapNext(tester);
 
-      await tester.enterText(find.widgetWithText(TextFormField, 'Data di nascita'), '01012024');
+      await tester.enterText(fieldNamed('Data di nascita'), '01012024');
       expect(find.text('Corporatura'), findsNothing);
       expect(find.text('Attività'), findsNothing);
       expect(find.textContaining('Peso'), findsNothing);
@@ -473,8 +475,8 @@ void main() {
 
       expect(find.text('Corporatura'), findsNothing);
       expect(find.text('Attività'), findsNothing);
-      expect(find.widgetWithText(TextFormField, 'Peso (facoltativo, g)'), findsOneWidget);
-      expect(find.widgetWithText(TextFormField, 'Colore'), findsOneWidget);
+      expect(fieldNamed('Peso (facoltativo, g)'), findsOneWidget);
+      expect(fieldNamed('Colore'), findsOneWidget);
     });
 
     testWidgets('a reptile: no activity or body condition', (tester) async {
@@ -493,7 +495,7 @@ void main() {
 
       expect(find.text('Corporatura'), findsOneWidget);
       expect(find.text('Attività'), findsNothing);
-      expect(find.widgetWithText(TextFormField, 'Peso (facoltativo, kg)'), findsOneWidget);
+      expect(fieldNamed('Peso (facoltativo, kg)'), findsOneWidget);
     });
 
     testWidgets('a hamster: no body condition, weight in grams', (tester) async {
@@ -505,7 +507,7 @@ void main() {
 
       expect(find.text('Corporatura'), findsNothing);
       expect(find.text('Attività'), findsNothing);
-      expect(find.widgetWithText(TextFormField, 'Peso (facoltativo, g)'), findsOneWidget);
+      expect(fieldNamed('Peso (facoltativo, g)'), findsOneWidget);
     });
 
     testWidgets('a cat has both', (tester) async {
@@ -519,7 +521,7 @@ void main() {
 
     testWidgets('neutering is asked of a rabbit', (tester) async {
       await toGeneralStep(tester, category: 'Piccoli mammiferi', entry: 'Coniglio nano');
-      await tester.enterText(find.widgetWithText(TextFormField, 'Data di nascita'), '01012023');
+      await tester.enterText(fieldNamed('Data di nascita'), '01012023');
       await _tapNext(tester);
 
       expect(find.byType(Switch), findsOneWidget);
@@ -531,7 +533,7 @@ void main() {
         category: 'Uccello',
         entry: 'Cocorita (Melopsittacus undulatus)',
       );
-      await tester.enterText(find.widgetWithText(TextFormField, 'Data di nascita'), '01012023');
+      await tester.enterText(fieldNamed('Data di nascita'), '01012023');
       await _tapNext(tester);
 
       expect(find.byType(Switch), findsNothing);
@@ -546,8 +548,8 @@ void main() {
     await _pickFromSheet(tester, 'Seleziona una specie', 'Cocorita (Melopsittacus undulatus)');
     await _tapNext(tester);
     await _nameStep(tester, 'Pico');
-    await tester.enterText(find.widgetWithText(TextFormField, 'Data di nascita'), '01012023');
-    await tester.enterText(find.widgetWithText(TextFormField, 'Peso (facoltativo, g)'), '35');
+    await tester.enterText(fieldNamed('Data di nascita'), '01012023');
+    await tester.enterText(fieldNamed('Peso (facoltativo, g)'), '35');
     await _tapNext(tester);
     await _tapNext(tester, 'Conferma');
 

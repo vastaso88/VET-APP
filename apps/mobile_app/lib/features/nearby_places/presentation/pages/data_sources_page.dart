@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../shared/widgets/pet_loader.dart';
@@ -10,6 +9,8 @@ import '../../data/radar_places_repository.dart';
 import '../../domain/radar_data_source.dart';
 import '../../../../l10n/date_formats.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 /// "Fonti dati": where the radar's places come from and under which
 /// license. The list of sources is fixed (attribution must be shown even
@@ -33,12 +34,7 @@ class _DataSourcesPageState extends State<DataSourcesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(context.l10n.placesSourcesTitle, style: AppTextStyles.title),
-      ),
+      appBar: PageHeader(title: context.l10n.placesSourcesTitle),
       body: SafeArea(
         child: FutureBuilder<RadarSourcesInfo>(
           future: _sourcesFuture,
@@ -50,7 +46,12 @@ class _DataSourcesPageState extends State<DataSourcesPage> {
             final imported = {for (final source in info.sources) source.source: source};
             final contact = info.supportContactEmail;
             return ListView(
-              padding: const EdgeInsets.all(AppSpacing.xl),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.page,
+                0,
+                AppSpacing.page,
+                AppSpacing.xl,
+              ),
               children: [
                 Text(
                   context.l10n.placesSourcesIntro,
@@ -85,13 +86,7 @@ class _SourceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imported = this.imported;
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: AppColors.border),
-      ),
+    return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

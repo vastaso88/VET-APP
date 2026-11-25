@@ -10,6 +10,7 @@ import '../../../../shared/widgets/pet_loader.dart';
 import '../../data/medical_record_consent_remote_data_source.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/pet_models.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 /// Per-pet switch for letting the chat read this pet's clinical records.
 /// Off means the chat sees neither titles nor contents. Read from the pet row
@@ -175,13 +176,8 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
       ],
     );
 
-    return Container(
+    return AppCard(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        border: Border.all(color: AppColors.border),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -24,6 +24,9 @@ class ShellBottomBar extends StatelessWidget {
 
   static const _edge = AppSpacing.sm;
 
+  /// Left free on the sides of the longest name, all together.
+  static const _gap = 10.0;
+
   /// How much the names may grow: the longest fills its part, less a margin.
   double _largestScale(BuildContext context) {
     final style = Theme.of(context).textTheme.labelMedium!;
@@ -33,7 +36,7 @@ class ShellBottomBar extends StatelessWidget {
               textDirection: Directionality.of(context),
             ))
         .reduce(math.max);
-    return ((width - 2 * _edge) / destinations.length - AppSpacing.xs) / longest;
+    return ((width - 2 * _edge) / destinations.length - _gap) / longest;
   }
 
   @override

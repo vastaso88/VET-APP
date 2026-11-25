@@ -7,6 +7,8 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/quokka_logo.dart';
 import '../../../language/presentation/widgets/language_selector.dart';
+import '../../../../shared/widgets/app_field.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 const _kAuthContentMaxWidth = 520.0;
 
@@ -64,21 +66,9 @@ class AuthScreenScaffold extends StatelessWidget {
                             : null,
                       ),
                       const SizedBox(height: AppSpacing.xl),
-                      Container(
+                      AppCard(
                         width: double.infinity,
                         padding: const EdgeInsets.all(AppSpacing.xl),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(AppRadii.xl),
-                          border: Border.all(color: AppColors.border),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: AppColors.shadow,
-                              blurRadius: 28,
-                              offset: Offset(0, 16),
-                            ),
-                          ],
-                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -214,25 +204,27 @@ class _AuthInputFieldState extends State<AuthInputField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: widget.controller,
-      keyboardType: widget.keyboardType,
-      obscureText: _obscured,
-      autofillHints: widget.autofillHints,
-      validator: widget.validator,
-      decoration: InputDecoration(
-        labelText: widget.label,
-        errorText: widget.serverError,
-        hintText: widget.hintText,
-        suffixIcon: widget.obscureText
-            ? IconButton(
-                icon: Icon(_obscured ? Icons.visibility_off : Icons.visibility),
-                tooltip: _obscured
-                    ? context.l10n.authPasswordShow
-                    : context.l10n.authPasswordHide,
-                onPressed: () => setState(() => _obscured = !_obscured),
-              )
-            : null,
+    return AppField(
+      label: widget.label,
+      child: TextFormField(
+        controller: widget.controller,
+        keyboardType: widget.keyboardType,
+        obscureText: _obscured,
+        autofillHints: widget.autofillHints,
+        validator: widget.validator,
+        decoration: InputDecoration(
+          errorText: widget.serverError,
+          hintText: widget.hintText,
+          suffixIcon: widget.obscureText
+              ? IconButton(
+                  icon: Icon(_obscured ? Icons.visibility_off : Icons.visibility),
+                  tooltip: _obscured
+                      ? context.l10n.authPasswordShow
+                      : context.l10n.authPasswordHide,
+                  onPressed: () => setState(() => _obscured = !_obscured),
+                )
+              : null,
+        ),
       ),
     );
   }

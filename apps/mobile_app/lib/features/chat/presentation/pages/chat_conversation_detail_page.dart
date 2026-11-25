@@ -27,10 +27,9 @@ import '../example_questions.dart';
 import '../widgets/chat_fixed_line.dart';
 import '../widgets/chat_composer.dart';
 import '../widgets/chat_conversation_menu.dart';
-import '../widgets/chat_empty_state.dart';
-import '../widgets/chat_error_state.dart';
-import '../widgets/chat_loading_state.dart';
 import '../widgets/chat_message_bubble.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../../../../design_system/atoms/outline_icon_button.dart';
 
 class ChatConversationDetailPage extends StatefulWidget {
   const ChatConversationDetailPage({
@@ -172,21 +171,29 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 220),
                     child: switch (widget.state) {
-                      ChatScreenState.loading => ChatLoadingState(
+                      ChatScreenState.loading => CenteredPageState(
                           key: const ValueKey('loading'),
-                          title: context.l10n.chatLoadingTitle,
-                          subtitle: context.l10n.chatLoadingSubtitle,
+                          child: EmptyState.figure(
+                            figure: const PetLoader(),
+                            title: context.l10n.chatLoadingTitle,
+                            text: context.l10n.chatLoadingSubtitle,
+                          ),
                         ),
                       ChatScreenState.empty => Column(
                           key: const ValueKey('empty'),
                           children: [
                             Expanded(
-                              child: ChatEmptyState(
-                                title: context.l10n.chatEmptyTitle,
-                                subtitle: context.l10n.chatEmptySubtitle,
-                                actionLabel: context.l10n.chatEmptyAction,
-                                onAction: () => _sendMessage(
-                                  context.l10n.chatEmptyGreeting(conversation.petName),
+                              child: CenteredPageState(
+                                child: EmptyState.icon(
+                                  icon: Icons.forum_outlined,
+                                  title: context.l10n.chatEmptyTitle,
+                                  text: context.l10n.chatEmptySubtitle,
+                                  action: FilledButton(
+                                    onPressed: () => _sendMessage(
+                                      context.l10n.chatEmptyGreeting(conversation.petName),
+                                    ),
+                                    child: Text(context.l10n.chatEmptyAction),
+                                  ),
                                 ),
                               ),
                             ),
@@ -200,13 +207,18 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
                               ),
                           ],
                         ),
-                      ChatScreenState.error => ChatErrorState(
+                      ChatScreenState.error => CenteredPageState(
                           key: const ValueKey('error'),
-                          title: context.l10n.chatErrorTitle,
-                          subtitle: context.l10n.chatErrorSubtitle,
-                          actionLabel: context.l10n.chatErrorAction,
-                          onAction:
-                              widget.onRetry ?? () => Navigator.of(context).maybePop(),
+                          child: EmptyState.icon(
+                            icon: Icons.cloud_off_outlined,
+                            title: context.l10n.chatErrorTitle,
+                            text: context.l10n.chatErrorSubtitle,
+                            action: OutlinedButton(
+                              onPressed:
+                                  widget.onRetry ?? () => Navigator.of(context).maybePop(),
+                              child: Text(context.l10n.chatErrorAction),
+                            ),
+                          ),
                         ),
                       ChatScreenState.success => _SuccessConversationView(
                           key: const ValueKey('success'),
@@ -431,15 +443,12 @@ class _Header extends StatelessWidget {
     // below permanently loses.
     return Row(
       children: [
-        IconButton(
+        OutlineIconButton(
           tooltip: context.l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
-          icon: const Icon(Icons.arrow_back_rounded),
-          // Not compact: a compact button answers to 40 px only.
-          visualDensity: VisualDensity.standard,
-          style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.padded),
+          icon: Icons.arrow_back_rounded,
         ),
-        const SizedBox(width: AppSpacing.xs),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,23 +457,14 @@ class _Header extends StatelessWidget {
                 _headerTitle(context, conversation),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.text,
-                  fontSize: 15,
-                  height: 1.2,
-                  fontWeight: FontWeight.w700,
-                ),
+                // Two lines of its own, the typeface of every header.
+                style: AppTextStyles.title.copyWith(fontSize: 18, height: 1.2),
               ),
               Text(
                 conversation.petName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.secondaryText,
-                  fontSize: 14,
-                  height: 1.3,
-                  fontWeight: FontWeight.w400,
-                ),
+                style: AppTextStyles.bodySmall.copyWith(height: 1.3),
               ),
             ],
           ),
@@ -525,12 +525,17 @@ class _SuccessConversationView extends StatelessWidget {
               child: !conversation.messagesLoaded && conversation.messages.isEmpty
                   // A chat known only from the list: its messages are being fetched (QK-12).
                   ? (ChatDemoStore.instance.messagesLoadFailed(conversation.id)
-                      ? ChatErrorState(
-                          title: context.l10n.chatErrorListChats,
-                          subtitle: context.l10n.chatErrorGeneric,
-                          actionLabel: context.l10n.commonRetry,
-                          onAction: () => unawaited(
-                            ChatDemoStore.instance.ensureMessagesLoaded(conversation.id),
+                      ? CenteredPageState(
+                          child: EmptyState.icon(
+                            icon: Icons.cloud_off_outlined,
+                            title: context.l10n.chatErrorListChats,
+                            text: context.l10n.chatErrorGeneric,
+                            action: OutlinedButton(
+                              onPressed: () => unawaited(
+                                ChatDemoStore.instance.ensureMessagesLoaded(conversation.id),
+                              ),
+                              child: Text(context.l10n.commonRetry),
+                            ),
                           ),
                         )
                       : const Center(child: PetLoader()))
@@ -882,28 +887,16 @@ class _ConversationNotFound extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.chat_bubble_outline_rounded, size: 48, color: AppColors.mutedText),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              context.l10n.chatConversationNotFound,
-              key: const ValueKey('chat-conversation-not-found'),
-              style: AppTextStyles.title,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            OutlinedButton.icon(
-              key: const ValueKey('chat-conversation-not-found-back'),
-              onPressed: () => Navigator.of(context).maybePop(),
-              icon: const Icon(Icons.arrow_back_rounded, size: 18),
-              label: Text(context.l10n.commonBack),
-            ),
-          ],
+    return CenteredPageState(
+      child: EmptyState.icon(
+        key: const ValueKey('chat-conversation-not-found'),
+        icon: Icons.chat_bubble_outline_rounded,
+        title: context.l10n.chatConversationNotFound,
+        action: OutlinedButton.icon(
+          key: const ValueKey('chat-conversation-not-found-back'),
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.arrow_back_rounded, size: 18),
+          label: Text(context.l10n.commonBack),
         ),
       ),
     );

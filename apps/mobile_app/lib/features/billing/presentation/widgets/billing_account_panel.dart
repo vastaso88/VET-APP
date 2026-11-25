@@ -45,7 +45,7 @@ class BillingAccountPanel extends StatelessWidget {
 
   Widget _panel(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

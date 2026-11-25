@@ -78,10 +78,6 @@ class AppColors {
   static const shadow = Color(0x1A6D5E4C);
   static const shadowSoft = Color(0x0F6D5E4C);
   static const shadowStrong = Color(0x266D5E4C);
-
-  /// Top to bottom of the page background where a screen has a gradient: the
-  /// same three steps everywhere, so no screen drifts to a different tint.
-  static const backgroundGradient = <Color>[surface, background, backgroundDeep];
 }
 
 /// What tells the kinds of place of the radar ("Vicino a me") apart. They keep

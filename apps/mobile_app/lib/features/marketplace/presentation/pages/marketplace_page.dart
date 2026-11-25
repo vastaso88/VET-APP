@@ -35,6 +35,8 @@ import 'create_listing_page.dart';
 import 'listing_detail_page.dart';
 import 'marketplace_map_page.dart';
 import 'my_listings_page.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/empty_state.dart';
 
 /// The user's position for distances: the Località preference (its mode
 /// decides between current position and residence), or null when neither
@@ -205,15 +207,11 @@ class _MarketplacePageState extends State<MarketplacePage> {
     final limited = !BillingDemoStore.instance.hasAccess;
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(context.l10n.marketplacePageTitle, style: AppTextStyles.title),
+      appBar: PageHeader(
+        title: context.l10n.marketplacePageTitle,
         actions: [
           const MarketplaceInfoButton(),
           MarketplaceMessagesButton(repository: widget.messagesRepository),
-          const SizedBox(width: AppSpacing.sm),
         ],
       ),
       floatingActionButton: limited || _restriction != null
@@ -228,7 +226,16 @@ class _MarketplacePageState extends State<MarketplacePage> {
           future: _dataFuture,
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              return _LoadError(onRetry: _reload);
+              return CenteredPageState(
+                child: EmptyState.icon(
+                  icon: Icons.cloud_off_outlined,
+                  text: context.l10n.marketplaceLoadError,
+                  action: OutlinedButton(
+                    onPressed: _reload,
+                    child: Text(context.l10n.commonRetry),
+                  ),
+                ),
+              );
             }
             if (!snapshot.hasData) {
               return const Center(child: PetLoader());
@@ -245,9 +252,9 @@ class _MarketplacePageState extends State<MarketplacePage> {
               onRefresh: _reload,
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.xl,
-                  AppSpacing.md,
-                  AppSpacing.xl,
+                  AppSpacing.page,
+                  0,
+                  AppSpacing.page,
                   AppSpacing.xxxxl + AppSpacing.xl,
                 ),
                 children: [
@@ -311,33 +318,20 @@ class _MarketplacePageState extends State<MarketplacePage> {
                     ),
                   const SizedBox(height: AppSpacing.lg),
                   if (data.referenceLocation == null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
-                      child: Column(
-                        children: [
-                          Text(
-                            context.l10n.marketplaceNeedsLocation,
-                            style: AppTextStyles.bodySmall,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          FilledButton.icon(
-                            key: const ValueKey('marketplace-set-location'),
-                            onPressed: HomeShellNavigation.showSettingsLocation,
-                            icon: const Icon(Icons.place_outlined),
-                            label: Text(context.l10n.marketplaceSetLocationAction),
-                          ),
-                        ],
+                    EmptyState(
+                      padding: EdgeInsets.zero,
+                      text: context.l10n.marketplaceNeedsLocation,
+                      action: FilledButton.icon(
+                        key: const ValueKey('marketplace-set-location'),
+                        onPressed: HomeShellNavigation.showSettingsLocation,
+                        icon: const Icon(Icons.place_outlined),
+                        label: Text(context.l10n.marketplaceSetLocationAction),
                       ),
                     )
                   else if (matches.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
-                      child: Text(
-                        context.l10n.marketplaceEmptyFiltered,
-                        style: AppTextStyles.bodySmall,
-                        textAlign: TextAlign.center,
-                      ),
+                    EmptyState(
+                      padding: EdgeInsets.zero,
+                      text: context.l10n.marketplaceEmptyFiltered,
                     )
                   else
                     ...matches.map(
@@ -399,33 +393,6 @@ class _ListingRow extends StatelessWidget {
       ),
       trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
       onTap: onTap,
-    );
-  }
-}
-
-class _LoadError extends StatelessWidget {
-  const _LoadError({required this.onRetry});
-
-  final Future<void> Function() onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              context.l10n.marketplaceLoadError,
-              style: AppTextStyles.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            OutlinedButton(onPressed: onRetry, child: Text(context.l10n.commonRetry)),
-          ],
-        ),
-      ),
     );
   }
 }

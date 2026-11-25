@@ -13,6 +13,7 @@ import '../../data/marketplace_repository.dart';
 import '../../domain/listing_filters.dart';
 import '../marketplace_labels.dart';
 import 'listing_detail_page.dart';
+import '../../../../shared/widgets/page_header.dart';
 
 /// Milano center, the same fallback the marketplace list uses when nothing
 /// else gives the map a center.
@@ -144,12 +145,7 @@ class _MarketplaceMapPageState extends State<MarketplaceMapPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(context.l10n.marketplaceMapTitle, style: AppTextStyles.title),
-      ),
+      appBar: PageHeader(title: context.l10n.marketplaceMapTitle),
       body: Stack(
         children: [
           FlutterMap(

@@ -9,6 +9,7 @@ import '../../../../shared/widgets/coming_soon_page.dart';
 import '../../../../app/launch/restorable_pages.dart';
 import '../../../travel_guide/data/travel_cards_repository.dart';
 import '../../../travel_guide/presentation/pages/travel_guide_page.dart';
+import '../../../../shared/widgets/page_header.dart';
 
 /// The "Pet friend" entry is frozen: set to true to bring it back.
 const _petFriendEnabled = false;
@@ -26,19 +27,20 @@ class ActivitiesPage extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg,
-            AppSpacing.lg,
-            AppSpacing.lg,
+            AppSpacing.page,
+            PageHeader.top,
+            AppSpacing.page,
             AppSpacing.xxxl,
           ),
           children: [
-            Text(context.l10n.activitiesTitle, style: AppTextStyles.display.copyWith(fontSize: 28)),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              context.l10n.activitiesSubtitle,
-              style: AppTextStyles.bodySmall,
+            PageHeader(
+              title: context.l10n.activitiesTitle,
+              subtitle: context.l10n.activitiesSubtitle,
+              root: true,
+              showBack: false,
+              padding: EdgeInsets.zero,
             ),
-            const SizedBox(height: AppSpacing.xl),
+            const SizedBox(height: AppSpacing.md),
             _ActivityRow(
               icon: Icons.newspaper_outlined,
               iconTone: AppColors.primary,

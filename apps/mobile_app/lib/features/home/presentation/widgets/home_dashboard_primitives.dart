@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 enum DashboardTone {
   neutral,
@@ -46,72 +47,6 @@ class DashboardPrimitivePalette {
       foreground: filled ? AppColors.onPrimary : base,
       background: filled ? base : background,
       border: filled ? base : base.withValues(alpha: 0.18),
-    );
-  }
-}
-
-class DashboardSurfaceCard extends StatelessWidget {
-  const DashboardSurfaceCard({
-    super.key,
-    required this.child,
-    this.padding = const EdgeInsets.all(AppSpacing.xl),
-    this.margin = EdgeInsets.zero,
-    this.onTap,
-    this.tone = DashboardTone.neutral,
-    this.elevation = 0,
-    this.radius = AppRadii.xl,
-    this.backgroundColor,
-    this.borderColor,
-    this.clipBehavior = Clip.antiAlias,
-  });
-
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-  final EdgeInsetsGeometry margin;
-  final VoidCallback? onTap;
-  final DashboardTone tone;
-  final double elevation;
-  final double radius;
-  final Color? backgroundColor;
-  final Color? borderColor;
-  final Clip clipBehavior;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = DashboardPrimitivePalette.colorsFor(tone);
-    final surface = Theme.of(context).colorScheme.surface;
-    final background = backgroundColor ??
-        (tone == DashboardTone.neutral
-            ? surface
-            : Color.lerp(surface, palette.background, 0.48)!);
-    final outline = borderColor ?? palette.border.withValues(alpha: 0.9);
-
-    final card = Material(
-      color: background,
-      elevation: elevation,
-      shadowColor: AppColors.shadow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(radius),
-        side: BorderSide(color: outline),
-      ),
-      clipBehavior: clipBehavior,
-      child: Padding(
-        padding: padding,
-        child: child,
-      ),
-    );
-
-    if (onTap == null) {
-      return Padding(padding: margin, child: card);
-    }
-
-    return Padding(
-      padding: margin,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(radius),
-        child: card,
-      ),
     );
   }
 }
@@ -286,8 +221,6 @@ class DashboardListRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = DashboardPrimitivePalette.colorsFor(tone);
-
     final row = Padding(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? AppSpacing.md : AppSpacing.lg,
@@ -332,27 +265,7 @@ class DashboardListRow extends StatelessWidget {
       ),
     );
 
-    final decorated = DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: palette.border.withValues(alpha: 0.65)),
-      ),
-      child: row,
-    );
-
-    if (onTap == null) {
-      return decorated;
-    }
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        child: decorated,
-      ),
-    );
+    return AppCard(padding: EdgeInsets.zero, onTap: onTap, child: row);
   }
 }
 

@@ -29,6 +29,8 @@ import '../../../../shared/widgets/pet_loader.dart';
 import 'pet_avatar.dart';
 import 'pet_form_fields.dart';
 import 'pet_sections.dart';
+import '../../../../shared/widgets/app_field.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 class PetProfileDraft {
   const PetProfileDraft({
@@ -305,15 +307,15 @@ class _PetProfileFormState extends State<PetProfileForm> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(dialogContext.l10n.petsFormOtherSpeciesDialogTitle),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: _inputDecoration(
-            dialogContext.l10n.petsFormBreedSpeciesLabel,
-            dialogContext.l10n.petsFormOtherSpeciesHint,
+        content: AppField(
+          label: dialogContext.l10n.petsFormBreedSpeciesLabel,
+          child: TextField(
+            controller: controller,
+            autofocus: true,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(hintText: dialogContext.l10n.petsFormOtherSpeciesHint),
+            onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
           ),
-          onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
         ),
         actions: [
           TextButton(
@@ -451,8 +453,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
           },
         ),
         const SizedBox(height: AppSpacing.md),
-        Text(context.l10n.petsFormIdentityColor, style: AppTextStyles.caption),
-        const SizedBox(height: AppSpacing.xs),
+        FieldLabel(context.l10n.petsFormIdentityColor),
         _IdentityColorPicker(
           value: _identityColor,
           onChanged: (color) => setState(() => _identityColor = color),
@@ -462,45 +463,50 @@ class _PetProfileFormState extends State<PetProfileForm> {
   }
 
   Widget _nameField() {
-    return TextFormField(
-      controller: _nameController,
-      textInputAction: TextInputAction.next,
-      decoration: _inputDecoration(context.l10n.petsFormNameLabel, context.l10n.petsFormNameHint)
-          .copyWith(helperText: widget.stepped ? ' ' : null),
-      // "Prosegui" becomes the full button once there is a name.
-      onChanged: (_) => setState(() {}),
-      validator: (value) {
-        if ((value ?? '').trim().isEmpty) {
-          return context.l10n.petsFormNameError;
-        }
-        return null;
-      },
+    return AppField(
+      label: context.l10n.petsFormNameLabel,
+      child: TextFormField(
+        controller: _nameController,
+        textInputAction: TextInputAction.next,
+        decoration: InputDecoration(
+          hintText: context.l10n.petsFormNameHint,
+          helperText: widget.stepped ? ' ' : null,
+        ),
+        // "Prosegui" becomes the full button once there is a name.
+        onChanged: (_) => setState(() {}),
+        validator: (value) {
+          if ((value ?? '').trim().isEmpty) {
+            return context.l10n.petsFormNameError;
+          }
+          return null;
+        },
+      ),
     );
   }
 
   Widget _speciesDropdown() {
-    return DropdownButtonFormField<String>(
-      isExpanded: true,
-      initialValue: _species,
-      decoration: _inputDecoration(
-        context.l10n.petsFormSpeciesLabel,
-        context.l10n.petsFormSpeciesHint,
+    return AppField(
+      label: context.l10n.petsFormSpeciesLabel,
+      child: DropdownButtonFormField<String>(
+        isExpanded: true,
+        initialValue: _species,
+        decoration: InputDecoration(hintText: context.l10n.petsFormSpeciesHint),
+        items: PetDemoStore.speciesOptions
+            .map(
+              (option) => DropdownMenuItem<String>(
+                value: option.label,
+                child: Text(localizedSpeciesLabel(option.label)),
+              ),
+            )
+            .toList(growable: false),
+        onChanged: _onSpeciesChanged,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return context.l10n.petsFormSpeciesError;
+          }
+          return null;
+        },
       ),
-      items: PetDemoStore.speciesOptions
-          .map(
-            (option) => DropdownMenuItem<String>(
-              value: option.label,
-              child: Text(localizedSpeciesLabel(option.label)),
-            ),
-          )
-          .toList(growable: false),
-      onChanged: _onSpeciesChanged,
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return context.l10n.petsFormSpeciesError;
-        }
-        return null;
-      },
     );
   }
 
@@ -576,45 +582,47 @@ class _PetProfileFormState extends State<PetProfileForm> {
       key: ValueKey('breed-$_species-$_isAquarium'),
       initialValue: _breed,
       validator: (_) => _breedError(),
-      builder: (field) => InkWell(
-        onTap: _species == null
-            ? null
-            : () async {
-                final picked = await _pickBreed(breedOptions);
-                if (picked == null || !mounted) return;
-                setState(() {
-                  if (isOtherBreedEntry(picked)) {
-                    _otherBreed = true;
-                    _breed = _otherBreedController.text.trim().isEmpty
-                        ? 'Altro'
-                        : _otherBreedController.text.trim();
-                  } else {
-                    _otherBreed = false;
-                    _breed = picked == 'Razza non specificata' ? null : picked;
-                  }
-                });
-                field.didChange(picked);
-              },
-        borderRadius: BorderRadius.circular(18),
-        child: InputDecorator(
-          decoration: _inputDecoration(petBreedFieldLabel(context.l10n, _species), '')
-              .copyWith(
-            errorText: field.errorText,
-            // The place of the error is kept: nothing jumps when it comes.
-            helperText: widget.stepped ? ' ' : null,
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  _breedDisplay(context.l10n),
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: _breedIsPlaceholder ? AppColors.mutedText : AppColors.text,
+      builder: (field) => AppField(
+        label: petBreedFieldLabel(context.l10n, _species),
+        child: InkWell(
+          onTap: _species == null
+              ? null
+              : () async {
+                  final picked = await _pickBreed(breedOptions);
+                  if (picked == null || !mounted) return;
+                  setState(() {
+                    if (isOtherBreedEntry(picked)) {
+                      _otherBreed = true;
+                      _breed = _otherBreedController.text.trim().isEmpty
+                          ? 'Altro'
+                          : _otherBreedController.text.trim();
+                    } else {
+                      _otherBreed = false;
+                      _breed = picked == 'Razza non specificata' ? null : picked;
+                    }
+                  });
+                  field.didChange(picked);
+                },
+          borderRadius: BorderRadius.circular(AppRadii.medium),
+          child: InputDecorator(
+            decoration: InputDecoration(
+              errorText: field.errorText,
+              // The place of the error is kept: nothing jumps when it comes.
+              helperText: widget.stepped ? ' ' : null,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _breedDisplay(context.l10n),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: _breedIsPlaceholder ? AppColors.mutedText : AppColors.text,
+                    ),
                   ),
                 ),
-              ),
-              const Icon(Icons.search_rounded, color: AppColors.secondaryStrong),
-            ],
+                const Icon(Icons.search_rounded, color: AppColors.secondaryStrong),
+              ],
+            ),
           ),
         ),
       ),
@@ -622,26 +630,27 @@ class _PetProfileFormState extends State<PetProfileForm> {
   }
 
   Widget _otherBreedField() {
-    return TextFormField(
-      controller: _otherBreedController,
-      textCapitalization: TextCapitalization.sentences,
-      decoration: _usesBreedWord
-          ? _inputDecoration(
-              context.l10n.petsFormOtherBreedLabel,
-              context.l10n.petsFormOtherBreedHint,
-            )
-          : _inputDecoration(
-              context.l10n.petsFormOtherSpeciesLabel,
-              context.l10n.petsFormOtherSpeciesHint,
-            ),
-      validator: (value) => (value ?? '').trim().isEmpty
-          ? (_usesBreedWord
-              ? context.l10n.petsFormBreedTextRequired
-              : context.l10n.petsFormBreedSpeciesTextRequired)
-          : null,
-      onChanged: (value) => setState(() {
-        _breed = value.trim().isEmpty ? 'Altro' : value.trim();
-      }),
+    return AppField(
+      label: _usesBreedWord
+          ? context.l10n.petsFormOtherBreedLabel
+          : context.l10n.petsFormOtherSpeciesLabel,
+      child: TextFormField(
+        controller: _otherBreedController,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: InputDecoration(
+          hintText: _usesBreedWord
+              ? context.l10n.petsFormOtherBreedHint
+              : context.l10n.petsFormOtherSpeciesHint,
+        ),
+        validator: (value) => (value ?? '').trim().isEmpty
+            ? (_usesBreedWord
+                ? context.l10n.petsFormBreedTextRequired
+                : context.l10n.petsFormBreedSpeciesTextRequired)
+            : null,
+        onChanged: (value) => setState(() {
+          _breed = value.trim().isEmpty ? 'Altro' : value.trim();
+        }),
+      ),
     );
   }
 
@@ -680,8 +689,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(petHabitatLabel(_species, context.l10n), style: AppTextStyles.caption),
-        const SizedBox(height: AppSpacing.xs),
+        FieldLabel(petHabitatLabel(_species, context.l10n)),
         _HabitatFields(
           showVolume: _species == 'Pesce',
           lengthController: _lengthController,
@@ -691,7 +699,6 @@ class _PetProfileFormState extends State<PetProfileForm> {
           temperatureController: _temperatureController,
           substrateController: _substrateController,
           notesController: _habitatNotesController,
-          inputDecoration: _inputDecoration,
           onDimensionChanged: _recalculateVolume,
         ),
       ],
@@ -702,28 +709,28 @@ class _PetProfileFormState extends State<PetProfileForm> {
   /// single pet (a lone fish included).
   Widget? _birthDateField() {
     if (_isAquariumProfile) return null;
-    return TypedDateField(
-      controller: _birthDateController,
-      onPick: _pickBirthDate,
-      pickIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.secondaryStrong),
-      decoration: _inputDecoration(
-        context.l10n.petsFormBirthDateLabel,
-        appDateInputText(context.l10n.petsFormBirthDateHint),
+    return AppField(
+      label: context.l10n.petsFormBirthDateLabel,
+      child: TypedDateField(
+        controller: _birthDateController,
+        onPick: _pickBirthDate,
+        pickIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.secondaryStrong),
+        decoration: InputDecoration(hintText: appDateInputText(context.l10n.petsFormBirthDateHint)),
+        validator: (value) {
+          final raw = (value ?? '').trim();
+          if (raw.isEmpty) {
+            return context.l10n.petsFormBirthDateRequired;
+          }
+          final parsed = parseStrictDate(raw);
+          if (parsed == null) {
+            return appDateInputText(context.l10n.petsFormBirthDateInvalid);
+          }
+          if (parsed.isAfter(DateTime.now())) {
+            return context.l10n.petsFormBirthDateFuture;
+          }
+          return null;
+        },
       ),
-      validator: (value) {
-        final raw = (value ?? '').trim();
-        if (raw.isEmpty) {
-          return context.l10n.petsFormBirthDateRequired;
-        }
-        final parsed = parseStrictDate(raw);
-        if (parsed == null) {
-          return appDateInputText(context.l10n.petsFormBirthDateInvalid);
-        }
-        if (parsed.isAfter(DateTime.now())) {
-          return context.l10n.petsFormBirthDateFuture;
-        }
-        return null;
-      },
     );
   }
 
@@ -750,38 +757,38 @@ class _PetProfileFormState extends State<PetProfileForm> {
   Widget? _weightField() {
     if (!speciesHasWeight(_species)) return null;
     final grams = _weighsInGrams;
-    return TextFormField(
-      controller: _weightController,
-      textInputAction: TextInputAction.next,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'[0-9,.\s]')),
-      ],
-      decoration: _inputDecoration(
-        grams
+    return AppField(
+      label: grams
             ? context.l10n.petsFormWeightLabelG
             : _units.usesPounds
                 ? context.l10n.petsFormWeightLabelLb
                 : context.l10n.petsFormWeightLabelKg,
-        grams
-            ? context.l10n.petsFormWeightHintG
-            : _units.usesPounds
-                ? context.l10n.petsFormWeightHintLb
-                : context.l10n.petsFormWeightHintKg,
-      ),
-      validator: (value) {
-        if ((value ?? '').trim().isEmpty) {
+      child: TextFormField(
+        controller: _weightController,
+        textInputAction: TextInputAction.next,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[0-9,.\s]')),
+        ],
+        decoration: InputDecoration(hintText: grams
+              ? context.l10n.petsFormWeightHintG
+              : _units.usesPounds
+                  ? context.l10n.petsFormWeightHintLb
+                  : context.l10n.petsFormWeightHintKg),
+        validator: (value) {
+          if ((value ?? '').trim().isEmpty) {
+            return null;
+          }
+          final parsed = _parseWeight(value);
+          if (parsed == null) {
+            return context.l10n.petsFormWeightInvalid;
+          }
+          if (parsed <= 0) {
+            return context.l10n.petsFormWeightPositive;
+          }
           return null;
-        }
-        final parsed = _parseWeight(value);
-        if (parsed == null) {
-          return context.l10n.petsFormWeightInvalid;
-        }
-        if (parsed <= 0) {
-          return context.l10n.petsFormWeightPositive;
-        }
-        return null;
-      },
+        },
+      ),
     );
   }
 
@@ -816,43 +823,43 @@ class _PetProfileFormState extends State<PetProfileForm> {
   Widget? _coatColorField() {
     if (!speciesHasCoatColor(_species)) return null;
     final furred = speciesHasCoat(_species, breed: _breed);
-    return TextFormField(
-      controller: _coatColorController,
-      textInputAction: TextInputAction.next,
-      textCapitalization: TextCapitalization.sentences,
-      decoration: _inputDecoration(
-        furred ? context.l10n.petsFormCoatColorLabel : context.l10n.petsFormColorLabel,
-        furred ? context.l10n.petsFormCoatColorHint : context.l10n.petsFormColorHint,
+    return AppField(
+      label: furred ? context.l10n.petsFormCoatColorLabel : context.l10n.petsFormColorLabel,
+      child: TextFormField(
+        controller: _coatColorController,
+        textInputAction: TextInputAction.next,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: InputDecoration(hintText: furred ? context.l10n.petsFormCoatColorHint : context.l10n.petsFormColorHint),
       ),
     );
   }
 
   Widget? _microchipField() {
     if (!speciesHasMicrochip(_species, breed: _breed)) return null;
-    return TextFormField(
-      controller: _microchipController,
-      textInputAction: TextInputAction.next,
-      keyboardType: TextInputType.number,
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'[0-9\s-]')),
-        LengthLimitingTextInputFormatter(25),
-      ],
-      decoration: _inputDecoration(
-        context.l10n.petsFormMicrochipLabel,
-        context.l10n.petsFormMicrochipHint,
+    return AppField(
+      label: context.l10n.petsFormMicrochipLabel,
+      child: TextFormField(
+        controller: _microchipController,
+        textInputAction: TextInputAction.next,
+        keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[0-9\s-]')),
+          LengthLimitingTextInputFormatter(25),
+        ],
+        decoration: InputDecoration(hintText: context.l10n.petsFormMicrochipHint),
+        validator: (value) =>
+            isValidMicrochip(value) ? null : context.l10n.petsFormMicrochipInvalid,
       ),
-      validator: (value) =>
-          isValidMicrochip(value) ? null : context.l10n.petsFormMicrochipInvalid,
     );
   }
 
   Widget _notesField() {
-    return TextFormField(
-      controller: _notesController,
-      maxLines: 4,
-      decoration: _inputDecoration(
-        context.l10n.petsFormNotesLabel,
-        context.l10n.petsFormNotesHint,
+    return AppField(
+      label: context.l10n.petsFormNotesLabel,
+      child: TextFormField(
+        controller: _notesController,
+        maxLines: 4,
+        decoration: InputDecoration(hintText: context.l10n.petsFormNotesHint),
       ),
     );
   }
@@ -1165,8 +1172,6 @@ class _PetProfileFormState extends State<PetProfileForm> {
       _step = 0;
     });
   }
-
-  InputDecoration _inputDecoration(String label, String hint) => petFieldDecoration(label, hint);
 
   /// True while the breed row shows a hint ("Seleziona una razza") rather than a value.
   bool get _breedIsPlaceholder {
@@ -1592,13 +1597,8 @@ class _StockRow extends StatelessWidget {
     // zebra" → "Da…"). Name + remove share the top line (both fixed,
     // short); the male/female counters — the part users actually adjust —
     // get their own full-width line below.
-    return Container(
+    return AppCard(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        border: Border.all(color: AppColors.border),
-        color: AppColors.background,
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1744,7 +1744,6 @@ class _HabitatFields extends StatelessWidget {
     required this.temperatureController,
     required this.substrateController,
     required this.notesController,
-    required this.inputDecoration,
     required this.onDimensionChanged,
   });
 
@@ -1756,7 +1755,6 @@ class _HabitatFields extends StatelessWidget {
   final TextEditingController temperatureController;
   final TextEditingController substrateController;
   final TextEditingController notesController;
-  final InputDecoration Function(String label, String hint) inputDecoration;
   final VoidCallback onDimensionChanged;
 
   @override
@@ -1774,79 +1772,88 @@ class _HabitatFields extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: TextFormField(
-                controller: lengthController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: dimensionFormatters,
-                decoration: inputDecoration(context.l10n.petsFormHabitatLength, lengthUnit),
-                onChanged: (_) => onDimensionChanged(),
+              child: AppField(
+                label: context.l10n.petsFormHabitatLength,
+                child: TextFormField(
+                  controller: lengthController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: dimensionFormatters,
+                  decoration: InputDecoration(hintText: lengthUnit),
+                  onChanged: (_) => onDimensionChanged(),
+                ),
               ),
             ),
             const SizedBox(width: AppSpacing.xs),
             Expanded(
-              child: TextFormField(
-                controller: widthController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: dimensionFormatters,
-                decoration: inputDecoration(context.l10n.petsFormHabitatWidth, lengthUnit),
-                onChanged: (_) => onDimensionChanged(),
+              child: AppField(
+                label: context.l10n.petsFormHabitatWidth,
+                child: TextFormField(
+                  controller: widthController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: dimensionFormatters,
+                  decoration: InputDecoration(hintText: lengthUnit),
+                  onChanged: (_) => onDimensionChanged(),
+                ),
               ),
             ),
             const SizedBox(width: AppSpacing.xs),
             Expanded(
-              child: TextFormField(
-                controller: heightController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: dimensionFormatters,
-                decoration: inputDecoration(context.l10n.petsFormHabitatHeight, lengthUnit),
-                onChanged: (_) => onDimensionChanged(),
+              child: AppField(
+                label: context.l10n.petsFormHabitatHeight,
+                child: TextFormField(
+                  controller: heightController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: dimensionFormatters,
+                  decoration: InputDecoration(hintText: lengthUnit),
+                  onChanged: (_) => onDimensionChanged(),
+                ),
               ),
             ),
           ],
         ),
         if (showVolume) ...[
           const SizedBox(height: AppSpacing.md),
-          TextFormField(
-            controller: volumeController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              system.usesUsGallons
-                  ? FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]'))
-                  : FilteringTextInputFormatter.digitsOnly,
-            ],
-            decoration: inputDecoration(
-              system.usesUsGallons
+          AppField(
+            label: system.usesUsGallons
                   ? context.l10n.petsFormHabitatUsGallons
                   : context.l10n.petsFormHabitatLiters,
-              context.l10n.petsFormHabitatVolumeHint,
+            child: TextFormField(
+              controller: volumeController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                system.usesUsGallons
+                    ? FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]'))
+                    : FilteringTextInputFormatter.digitsOnly,
+              ],
+              decoration: InputDecoration(hintText: context.l10n.petsFormHabitatVolumeHint),
             ),
           ),
         ],
         const SizedBox(height: AppSpacing.md),
-        TextFormField(
-          controller: temperatureController,
-          decoration: inputDecoration(
-            context.l10n.petsFormHabitatTemperature,
-            system.usesFahrenheit
-                ? context.l10n.petsFormHabitatTemperatureHintF
-                : context.l10n.petsFormHabitatTemperatureHintC,
+        AppField(
+          label: context.l10n.petsFormHabitatTemperature,
+          child: TextFormField(
+            controller: temperatureController,
+            decoration: InputDecoration(hintText: system.usesFahrenheit
+                  ? context.l10n.petsFormHabitatTemperatureHintF
+                  : context.l10n.petsFormHabitatTemperatureHintC),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
-        TextFormField(
-          controller: substrateController,
-          decoration: inputDecoration(
-            context.l10n.petsFormHabitatSubstrate,
-            context.l10n.petsFormHabitatSubstrateHint,
+        AppField(
+          label: context.l10n.petsFormHabitatSubstrate,
+          child: TextFormField(
+            controller: substrateController,
+            decoration: InputDecoration(hintText: context.l10n.petsFormHabitatSubstrateHint),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
-        TextFormField(
-          controller: notesController,
-          maxLines: 3,
-          decoration: inputDecoration(
-            context.l10n.petsFormHabitatEquipment,
-            context.l10n.petsFormHabitatEquipmentHint,
+        AppField(
+          label: context.l10n.petsFormHabitatEquipment,
+          child: TextFormField(
+            controller: notesController,
+            maxLines: 3,
+            decoration: InputDecoration(hintText: context.l10n.petsFormHabitatEquipmentHint),
           ),
         ),
       ],

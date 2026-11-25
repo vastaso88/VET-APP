@@ -2,9 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
-import '../../../../design_system/atoms/outline_icon_button.dart';
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
@@ -14,6 +12,9 @@ import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_models.dart';
 import '../widgets/pet_avatar.dart';
 import 'pet_gallery_page.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 /// Attività > Galleria: one folder per pet, two columns. The cover is the
 /// current profile photo (or the pet's avatar when there is none).
@@ -43,30 +44,13 @@ class _GalleryFoldersPageState extends State<GalleryFoldersPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Same header as the other Attività pages (back button + title).
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: PageHeader(title: context.l10n.petsMediaGalleryTitle, showBack: true),
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.md),
-              child: Row(
-                children: [
-                  OutlineIconButton(
-                    tooltip: context.l10n.commonBack,
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    icon: Icons.arrow_back_rounded,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(context.l10n.petsMediaGalleryTitle,
-                        style: AppTextStyles.display.copyWith(fontSize: 26)),
-                  ),
-                ],
-              ),
-            ),
             Expanded(
               child: FutureBuilder<List<PetProfile>>(
                 future: _pets,
@@ -77,19 +61,17 @@ class _GalleryFoldersPageState extends State<GalleryFoldersPage> {
                   }
                   final pets = snapshot.data ?? const <PetProfile>[];
                   if (pets.isEmpty) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.xl),
-                        child: Text(
-                          context.l10n.petsMediaFoldersEmpty,
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.bodySmall,
-                        ),
-                      ),
+                    return CenteredPageState(
+                      child: EmptyState(text: context.l10n.petsMediaFoldersEmpty),
                     );
                   }
                   return GridView.builder(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.page,
+                      0,
+                      AppSpacing.page,
+                      AppSpacing.lg,
+                    ),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
@@ -154,17 +136,10 @@ class _FolderCardState extends State<_FolderCard> {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return AppCard(
       onTap: widget.onTap,
-      borderRadius: BorderRadius.circular(AppRadii.large),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadii.large),
-          border: Border.all(color: AppColors.borderStrong),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
+      padding: EdgeInsets.zero,
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(child: _cover == null ? _avatarCover() : _photoCover()),
@@ -198,7 +173,6 @@ class _FolderCardState extends State<_FolderCard> {
             ),
           ],
         ),
-      ),
     );
   }
 

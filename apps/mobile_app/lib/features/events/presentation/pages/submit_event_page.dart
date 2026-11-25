@@ -13,6 +13,8 @@ import '../../domain/event_entry.dart';
 import '../../domain/event_regions.dart';
 import '../../domain/event_submission.dart';
 import '../event_labels.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// "Segnala un evento": titolo, tipo, date, paese, luogo e link. L'invio va in
 /// moderazione (non compare subito nell'elenco) e non raccoglie dati di terzi.
@@ -151,20 +153,15 @@ class _SubmitEventPageState extends State<SubmitEventPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(l10n.eventsSuggestTitle, style: AppTextStyles.title),
-      ),
+      appBar: PageHeader(title: l10n.eventsSuggestTitle),
       body: SafeArea(
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.sm,
-              AppSpacing.lg,
+              AppSpacing.page,
+              0,
+              AppSpacing.page,
               AppSpacing.xxxl,
             ),
             // Not a lazy list: the fields out of view must be validated too.
@@ -175,22 +172,27 @@ class _SubmitEventPageState extends State<SubmitEventPage> {
                 const SizedBox(height: AppSpacing.sm),
                 Text(l10n.eventsSuggestPrivacy, style: AppTextStyles.caption),
                 const SizedBox(height: AppSpacing.lg),
-                TextFormField(
-                  controller: _title,
-                  maxLength: 120,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldTitle),
-                  validator: required,
+                AppField(
+                  label: l10n.eventsSuggestFieldTitle,
+                  child: TextFormField(
+                    controller: _title,
+                    maxLength: 120,
+                    textCapitalization: TextCapitalization.sentences,
+                    validator: required,
+                  ),
                 ),
-                DropdownButtonFormField<String>(
-                  initialValue: _eventType,
-                  isExpanded: true,
-                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldType),
-                  items: [
-                    for (final code in eventTypeCodes)
-                      DropdownMenuItem(value: code, child: Text(eventTypeLabel(code))),
-                  ],
-                  onChanged: (value) => setState(() => _eventType = value ?? _eventType),
+                const SizedBox(height: AppSpacing.sm),
+                AppField(
+                  label: l10n.eventsSuggestFieldType,
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _eventType,
+                    isExpanded: true,
+                    items: [
+                      for (final code in eventTypeCodes)
+                        DropdownMenuItem(value: code, child: Text(eventTypeLabel(code))),
+                    ],
+                    onChanged: (value) => setState(() => _eventType = value ?? _eventType),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 OutlinedButton.icon(
@@ -211,72 +213,86 @@ class _SubmitEventPageState extends State<SubmitEventPage> {
                     ),
                   ),
                 const SizedBox(height: AppSpacing.md),
-                DropdownButtonFormField<String>(
+                AppField(
                   key: const ValueKey('event-country'),
-                  initialValue: _country,
-                  isExpanded: true,
-                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldCountry),
-                  items: [
-                    for (final country in countries)
-                      DropdownMenuItem(value: country.code, child: Text(country.name)),
-                  ],
-                  onChanged: _chooseCountry,
+                  label: l10n.eventsSuggestFieldCountry,
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _country,
+                    isExpanded: true,
+                    items: [
+                      for (final country in countries)
+                        DropdownMenuItem(value: country.code, child: Text(country.name)),
+                    ],
+                    onChanged: _chooseCountry,
+                  ),
                 ),
                 if (regions.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.md),
-                  DropdownButtonFormField<String?>(
+                  AppField(
                     key: ValueKey('event-region-$_country'),
-                    initialValue: _region,
-                    isExpanded: true,
-                    decoration: InputDecoration(labelText: l10n.eventsSuggestFieldRegion),
-                    items: [
-                      DropdownMenuItem<String?>(child: Text(l10n.eventsSuggestRegionNone)),
-                      for (final region in regions)
-                        DropdownMenuItem<String?>(value: region, child: Text(region)),
-                    ],
-                    onChanged: (value) => setState(() => _region = value),
+                    label: l10n.eventsSuggestFieldRegion,
+                    child: DropdownButtonFormField<String?>(
+                      initialValue: _region,
+                      isExpanded: true,
+                      items: [
+                        DropdownMenuItem<String?>(child: Text(l10n.eventsSuggestRegionNone)),
+                        for (final region in regions)
+                          DropdownMenuItem<String?>(value: region, child: Text(region)),
+                      ],
+                      onChanged: (value) => setState(() => _region = value),
+                    ),
                   ),
                 ],
                 const SizedBox(height: AppSpacing.md),
-                TextFormField(
+                AppField(
                   // Keys: the fields below keep their own state when the region or the
                   // province comes and goes with the country.
                   key: const ValueKey('event-city'),
-                  controller: _city,
-                  maxLength: 80,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldCity),
-                  validator: required,
+                  label: l10n.eventsSuggestFieldCity,
+                  child: TextFormField(
+                    controller: _city,
+                    maxLength: 80,
+                    textCapitalization: TextCapitalization.words,
+                    validator: required,
+                  ),
                 ),
                 if (_asksProvince)
-                  TextFormField(
+                  AppField(
                     key: const ValueKey('event-province'),
-                    controller: _province,
-                    maxLength: 2,
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: InputDecoration(labelText: l10n.eventsSuggestFieldProvince),
+                    label: l10n.eventsSuggestFieldProvince,
+                    child: TextFormField(
+                      controller: _province,
+                      maxLength: 2,
+                      textCapitalization: TextCapitalization.characters,
+                      validator: (value) {
+                        final text = value?.trim() ?? '';
+                        return text.isNotEmpty && text.length != 2
+                            ? l10n.eventsSuggestInvalidProvince
+                            : null;
+                      },
+                    ),
+                  ),
+                const SizedBox(height: AppSpacing.sm),
+                AppField(
+                  key: const ValueKey('event-venue'),
+                  label: l10n.eventsSuggestFieldVenue,
+                  child: TextFormField(
+                    controller: _venue,
+                    maxLength: 80,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                AppField(
+                  key: const ValueKey('event-link'),
+                  label: l10n.eventsSuggestFieldLink,
+                  child: TextFormField(
+                    controller: _link,
+                    keyboardType: TextInputType.url,
                     validator: (value) {
-                      final text = value?.trim() ?? '';
-                      return text.isNotEmpty && text.length != 2
-                          ? l10n.eventsSuggestInvalidProvince
-                          : null;
+                      if (value == null || value.trim().isEmpty) return l10n.eventsSuggestRequired;
+                      return isValidEventLink(value) ? null : l10n.eventsSuggestInvalidLink;
                     },
                   ),
-                TextFormField(
-                  key: const ValueKey('event-venue'),
-                  controller: _venue,
-                  maxLength: 80,
-                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldVenue),
-                ),
-                TextFormField(
-                  key: const ValueKey('event-link'),
-                  controller: _link,
-                  keyboardType: TextInputType.url,
-                  decoration: InputDecoration(labelText: l10n.eventsSuggestFieldLink),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) return l10n.eventsSuggestRequired;
-                    return isValidEventLink(value) ? null : l10n.eventsSuggestInvalidLink;
-                  },
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: AppSpacing.md),

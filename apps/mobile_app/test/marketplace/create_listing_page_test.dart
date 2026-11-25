@@ -8,6 +8,8 @@ import 'package:vet_app_mobile/features/marketplace/data/marketplace_repository.
 import 'package:vet_app_mobile/features/marketplace/domain/marketplace_listing.dart';
 import 'package:vet_app_mobile/features/marketplace/presentation/pages/create_listing_page.dart';
 
+import '../support/fields.dart';
+
 class _FakeLocationSampler implements LocationSampler {
   const _FakeLocationSampler(this.result);
 
@@ -86,11 +88,11 @@ void main() {
     // Only the rounded point is sent to the geocoding service.
     expect(resolver.requested, [const Coordinates(latitude: 45.46, longitude: 9.19)]);
 
-    await tester.enterText(find.widgetWithText(TextFormField, 'Titolo'), 'Guinzaglio test');
+    await tester.enterText(fieldNamed('Titolo'), 'Guinzaglio test');
     await _pickCategory(tester, 'Guinzagli, collari e pettorine');
     await tester.tap(find.text('Come nuovo'));
     await tester.tap(find.text('Cane'));
-    await tester.enterText(find.widgetWithText(TextFormField, 'Prezzo in €'), '12,50');
+    await tester.enterText(fieldNamed('Prezzo in €'), '12,50');
     await _tapPublish(tester);
     await tester.pumpAndSettle();
 
@@ -118,12 +120,12 @@ void main() {
       ),
     );
 
-    await tester.enterText(find.widgetWithText(TextFormField, 'Titolo'), 'Ciotole');
+    await tester.enterText(fieldNamed('Titolo'), 'Ciotole');
     await _pickCategory(tester, 'Ciotole e alimentazione');
     await tester.tap(find.text('Tutte le specie'));
     await tester.tap(find.text('In regalo'));
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(TextFormField, 'Prezzo in €'), findsNothing);
+    expect(fieldNamed('Prezzo in €'), findsNothing);
 
     await _tapPublish(tester);
     await tester.pumpAndSettle();
@@ -146,7 +148,7 @@ void main() {
       ),
     );
 
-    await tester.enterText(find.widgetWithText(TextFormField, 'Titolo'), 'Senza posizione');
+    await tester.enterText(fieldNamed('Titolo'), 'Senza posizione');
     await _pickCategory(tester, 'Giochi');
     await tester.tap(find.text('Gatto'));
     await tester.tap(find.text('In regalo'));
@@ -169,8 +171,8 @@ void main() {
       ),
     );
 
-    await tester.enterText(find.widgetWithText(TextFormField, 'Titolo'), 'Ciotola test');
-    await tester.enterText(find.widgetWithText(TextFormField, 'Prezzo in €'), '-5');
+    await tester.enterText(fieldNamed('Titolo'), 'Ciotola test');
+    await tester.enterText(fieldNamed('Prezzo in €'), '-5');
     await _tapPublish(tester);
     await tester.pumpAndSettle();
 
@@ -213,7 +215,7 @@ void main() {
     expect(find.text('20,00'), findsOneWidget);
     expect(find.text('Città Studi, Milano'), findsOneWidget);
 
-    await tester.enterText(find.widgetWithText(TextFormField, 'Titolo'), 'Trasportino grande');
+    await tester.enterText(fieldNamed('Titolo'), 'Trasportino grande');
     await _declarePrivateSeller(tester);
     await tester.scrollUntilVisible(
       find.text('Salva modifiche'),

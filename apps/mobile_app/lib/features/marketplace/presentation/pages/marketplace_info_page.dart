@@ -4,6 +4,8 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../design_system/atoms/outline_icon_button.dart';
 
 /// "Come funziona il Mercatino": rules, deals between private people, safety
 /// advice and how to report. Texts from the legal session
@@ -29,20 +31,16 @@ class MarketplaceInfoPage extends StatelessWidget {
     ];
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(
-          l10n.marketplaceInfoTitle,
-          style: AppTextStyles.title,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
+      appBar: PageHeader(title: l10n.marketplaceInfoTitle),
       body: SafeArea(
         child: ListView.separated(
           key: const ValueKey('marketplace-info'),
-          padding: const EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.page,
+            0,
+            AppSpacing.page,
+            AppSpacing.xl,
+          ),
           itemCount: points.length,
           separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
           itemBuilder: (context, index) => Row(
@@ -67,10 +65,10 @@ class MarketplaceInfoButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
+    return OutlineIconButton(
       key: const ValueKey('marketplace-info-button'),
       tooltip: context.l10n.marketplaceInfoTitle,
-      icon: const Icon(Icons.info_outline_rounded),
+      icon: Icons.info_outline_rounded,
       onPressed: () => Navigator.of(context).push<void>(
         MaterialPageRoute<void>(builder: (_) => const MarketplaceInfoPage()),
       ),

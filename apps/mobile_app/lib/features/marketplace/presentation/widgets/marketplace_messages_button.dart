@@ -7,6 +7,7 @@ import '../../data/marketplace_messages_repository.dart';
 import '../../data/marketplace_unread_store.dart';
 import '../pages/marketplace_conversations_page.dart';
 import 'visibility_poller.dart';
+import '../../../../design_system/atoms/outline_icon_button.dart';
 
 /// The envelope in the Mercatino's bar, with the number of unread messages. It
 /// asks at opening and then every minute, but only while its page is the one on
@@ -54,11 +55,12 @@ class _MarketplaceMessagesButtonState extends State<MarketplaceMessagesButton> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
       valueListenable: MarketplaceUnreadStore.instance.count,
-      builder: (context, count, _) => IconButton(
+      builder: (context, count, _) => OutlineIconButton(
         key: const ValueKey('marketplace-messages-button'),
         tooltip: context.l10n.marketplaceMessagesOpen(count),
         onPressed: _open,
-        icon: Badge(
+        icon: Icons.mail_outline_rounded,
+        child: Badge(
           key: const ValueKey('marketplace-messages-badge'),
           isLabelVisible: count > 0,
           label: Text('$count', textScaler: TextScaler.noScaling),

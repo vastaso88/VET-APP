@@ -35,6 +35,7 @@ import '../widgets/body_condition_guide_dialog.dart';
 import '../widgets/growth_reference_notes.dart';
 import '../widgets/measurement_sheet.dart';
 import '../widgets/weight_chart_view.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 /// "Monitoraggio" tab of one pet: current weight and body condition, the
 /// weight chart (a growth curve for a pet under a year), the history of
@@ -418,13 +419,7 @@ class _CurrentWeightCard extends StatelessWidget {
     final sorted = sortedByDate(measurements);
     final alwaysKg = isAlwaysWeighedInKg(pet.species, pet.breed);
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: AppColors.border),
-      ),
+    return AppCard(
       child: latest == null
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,

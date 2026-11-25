@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
-import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../medical_records/presentation/record_category_labels.dart';
 import '../../domain/reminder_category.dart';
 import '../reminder_category_labels.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// The category of a reminder as chips - each with the symbol of its record
 /// category - and, for the clinical ones that have them, the finer types.
@@ -37,8 +37,7 @@ class ReminderCategoryPicker extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.remindersFormCategory, style: AppTextStyles.caption),
-        const SizedBox(height: AppSpacing.xs),
+        FieldLabel(l10n.remindersFormCategory),
         Wrap(
           spacing: AppSpacing.sm,
           runSpacing: AppSpacing.sm,
@@ -54,8 +53,7 @@ class ReminderCategoryPicker extends StatelessWidget {
         ),
         if (showSubtypes && category.subtypes.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          Text(l10n.remindersFormSubtype, style: AppTextStyles.caption),
-          const SizedBox(height: AppSpacing.xs),
+          FieldLabel(l10n.remindersFormSubtype),
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,

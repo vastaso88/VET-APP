@@ -14,6 +14,9 @@ import '../../data/pet_conditions_repository.dart';
 import '../../domain/pet_condition.dart';
 import '../record_category_labels.dart';
 import 'pet_condition_form_page.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/app_card.dart';
+import '../../../../shared/widgets/empty_state.dart';
 
 /// "Patologie": the illnesses of a pet, ongoing first. A tap opens the entry
 /// to edit it; "Aggiungi" starts a new one.
@@ -65,12 +68,7 @@ class _PetConditionsPageState extends State<PetConditionsPage> {
     final l10n = context.l10n;
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(l10n.medCatCondition),
-      ),
+      appBar: PageHeader(title: l10n.medCatCondition),
       // A pet in Ricordi: read only (the form opens without saving).
       floatingActionButton: widget.pet.isMemorial
           ? null
@@ -87,23 +85,13 @@ class _PetConditionsPageState extends State<PetConditionsPage> {
               return const Center(child: PetLoader());
             }
             if (snapshot.hasError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        l10n.medCondLoadError,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.bodySmall,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      TextButton(
-                        onPressed: _reload,
-                        child: Text(l10n.commonRetry),
-                      ),
-                    ],
+              return CenteredPageState(
+                child: EmptyState.icon(
+                  icon: Icons.cloud_off_outlined,
+                  text: l10n.medCondLoadError,
+                  action: OutlinedButton(
+                    onPressed: _reload,
+                    child: Text(l10n.commonRetry),
                   ),
                 ),
               );
@@ -111,55 +99,27 @@ class _PetConditionsPageState extends State<PetConditionsPage> {
 
             final conditions = snapshot.data ?? const <PetConditionEntry>[];
             if (conditions.isEmpty) {
-              return Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.secondarySoft,
-                          borderRadius: BorderRadius.circular(AppRadii.large),
-                        ),
-                        child: const Icon(
-                          conditionIcon,
-                          size: 30,
-                          color: AppColors.secondaryStrong,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      Text(
-                        l10n.medEmptyConditionTitle,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.title,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        l10n.medEmptyConditionBody(widget.pet.name),
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.bodySmall,
-                      ),
-                      if (!widget.pet.isMemorial) ...[
-                        const SizedBox(height: AppSpacing.xl),
-                        FilledButton.icon(
+              return CenteredPageState(
+                child: EmptyState.icon(
+                  icon: conditionIcon,
+                  title: l10n.medEmptyConditionTitle,
+                  text: l10n.medEmptyConditionBody(widget.pet.name),
+                  action: widget.pet.isMemorial
+                      ? null
+                      : FilledButton.icon(
                           onPressed: _openForm,
                           icon: const Icon(Icons.add_rounded, size: 18),
                           label: Text(l10n.medEmptyConditionAction),
                         ),
-                      ],
-                    ],
-                  ),
                 ),
               );
             }
 
             return ListView(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.sm,
-                AppSpacing.lg,
+                AppSpacing.page,
+                0,
+                AppSpacing.page,
                 96,
               ),
               children: [
@@ -209,90 +169,79 @@ class _ConditionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final period = _period(context);
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(AppRadii.large),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
+    return AppCard(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      onTap: onTap,
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.secondarySoft,
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+            ),
+            child: const Icon(
+              conditionIcon,
+              size: 17,
+              color: AppColors.secondaryStrong,
+            ),
           ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(color: AppColors.borderStrong),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.secondarySoft,
-                  borderRadius: BorderRadius.circular(AppRadii.medium),
-                ),
-                child: const Icon(
-                  conditionIcon,
-                  size: 17,
-                  color: AppColors.secondaryStrong,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      condition.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.text,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    if (period.isNotEmpty)
-                      Text(
-                        period,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.caption,
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: condition.ongoing
-                      ? AppColors.secondarySoft
-                      : AppColors.background,
-                  borderRadius: BorderRadius.circular(AppRadii.pill),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Text(
-                  condition.ongoing ? l10n.medCondOngoing : l10n.medCondResolved,
-                  style: AppTextStyles.caption.copyWith(
-                    color: condition.ongoing
-                        ? AppColors.primary
-                        : AppColors.secondaryText,
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  condition.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.text,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              const Icon(
-                Icons.chevron_right_rounded,
-                size: 18,
-                color: AppColors.mutedText,
-              ),
-            ],
+                if (period.isNotEmpty)
+                  Text(
+                    period,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.caption,
+                  ),
+              ],
+            ),
           ),
-        ),
+          const SizedBox(width: AppSpacing.sm),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: condition.ongoing
+                  ? AppColors.secondarySoft
+                  : AppColors.background,
+              borderRadius: BorderRadius.circular(AppRadii.pill),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Text(
+              condition.ongoing ? l10n.medCondOngoing : l10n.medCondResolved,
+              style: AppTextStyles.caption.copyWith(
+                color: condition.ongoing
+                    ? AppColors.primary
+                    : AppColors.secondaryText,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          const Icon(
+            Icons.chevron_right_rounded,
+            size: 18,
+            color: AppColors.mutedText,
+          ),
+        ],
       ),
     );
   }

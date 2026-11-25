@@ -20,6 +20,7 @@ import '../widgets/listing_photo.dart';
 import '../widgets/listing_removal_notice.dart';
 import 'create_listing_page.dart';
 import 'marketplace_conversation_page.dart';
+import '../../../../shared/widgets/page_header.dart';
 
 /// Pops `true` whenever the listing changed (edited, deleted, removed by
 /// reports) so the list reloads.
@@ -223,18 +224,13 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
     final isOwner = canManageListing(listing, _currentOwnerId);
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(listing.title, style: AppTextStyles.title, overflow: TextOverflow.ellipsis),
-      ),
+      appBar: PageHeader(title: listing.title),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.xl,
-            AppSpacing.md,
-            AppSpacing.xl,
+            AppSpacing.page,
+            0,
+            AppSpacing.page,
             AppSpacing.xxxl,
           ),
           children: [

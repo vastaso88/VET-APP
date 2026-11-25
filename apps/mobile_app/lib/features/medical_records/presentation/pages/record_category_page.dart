@@ -18,6 +18,9 @@ import '../medical_records_controller.dart';
 import '../record_category_labels.dart';
 import '../record_file_actions.dart';
 import 'medical_record_upload_page.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/app_card.dart';
+import '../../../../shared/widgets/empty_state.dart';
 
 /// The entries of one category (e.g. all the visits) of a pet, newest event
 /// first, with "Aggiungi" and the same actions as before on each entry: open,
@@ -105,12 +108,7 @@ class _RecordCategoryPageState extends State<RecordCategoryPage> {
     final category = widget.category;
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(category.tileLabel(l10n)),
-      ),
+      appBar: PageHeader(title: category.tileLabel(l10n)),
       floatingActionButton: _readOnly
           ? null
           : FloatingActionButton.extended(
@@ -126,23 +124,13 @@ class _RecordCategoryPageState extends State<RecordCategoryPage> {
               return const Center(child: PetLoader());
             }
             if (_controller.recordsFailed) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        l10n.petsDetailRecordsLoadError,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.bodySmall,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      TextButton(
-                        onPressed: () => unawaited(_controller.retry()),
-                        child: Text(l10n.commonRetry),
-                      ),
-                    ],
+              return CenteredPageState(
+                child: EmptyState.icon(
+                  icon: Icons.cloud_off_outlined,
+                  text: l10n.petsDetailRecordsLoadError,
+                  action: OutlinedButton(
+                    onPressed: () => unawaited(_controller.retry()),
+                    child: Text(l10n.commonRetry),
                   ),
                 ),
               );
@@ -159,20 +147,27 @@ class _RecordCategoryPageState extends State<RecordCategoryPage> {
                   ..sort((a, b) => b.sortDate.compareTo(a.sortDate));
 
             if (records.isEmpty) {
-              return _EmptyCategory(
-                icon: category.icon,
-                title: category.emptyTitle(l10n),
-                body: category.emptyBody(l10n, widget.pet.name),
-                actionLabel: category.emptyAction(l10n),
-                onAction: _readOnly ? null : _add,
+              return CenteredPageState(
+                child: EmptyState.icon(
+                  icon: category.icon,
+                  title: category.emptyTitle(l10n),
+                  text: category.emptyBody(l10n, widget.pet.name),
+                  action: _readOnly
+                      ? null
+                      : FilledButton.icon(
+                          onPressed: _add,
+                          icon: const Icon(Icons.add_rounded, size: 18),
+                          label: Text(category.emptyAction(l10n)),
+                        ),
+                ),
               );
             }
 
             return ListView(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.sm,
-                AppSpacing.lg,
+                AppSpacing.page,
+                0,
+                AppSpacing.page,
                 96,
               ),
               children: [
@@ -238,97 +233,84 @@ class _EntryRow extends StatelessWidget {
         ? suggestCategoryFromTitle(record.title)
         : null;
 
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(AppRadii.large),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        onTap: onTap,
-        onLongPress: onLongPress,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(
-              color: selected ? AppColors.primary : AppColors.borderStrong,
-              width: selected ? 2 : 1,
+    return AppCard(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      onTap: onTap,
+      onLongPress: onLongPress,
+      selected: selected,
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.secondarySoft,
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+            ),
+            child: Icon(
+              selected
+                  ? Icons.check_circle_rounded
+                  : isPdfFileName(record.title)
+                  ? Icons.picture_as_pdf_outlined
+                  : record.category.icon,
+              size: 17,
+              color: AppColors.secondaryStrong,
             ),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.secondarySoft,
-                  borderRadius: BorderRadius.circular(AppRadii.medium),
-                ),
-                child: Icon(
-                  selected
-                      ? Icons.check_circle_rounded
-                      : isPdfFileName(record.title)
-                      ? Icons.picture_as_pdf_outlined
-                      : record.category.icon,
-                  size: 17,
-                  color: AppColors.secondaryStrong,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      record.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.text,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.caption,
-                    ),
-                  ],
-                ),
-              ),
-              if (suggestion != null) ...[
-                const SizedBox(width: AppSpacing.sm),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  record.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.text,
+                    fontWeight: FontWeight.w700,
                   ),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondarySoft,
-                    borderRadius: BorderRadius.circular(AppRadii.pill),
-                  ),
-                  child: Text(
-                    l10n.medSuggestPill(suggestion.singularLabel(l10n)),
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                ),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.caption,
                 ),
               ],
-              const SizedBox(width: AppSpacing.xs),
-              const Icon(
-                Icons.chevron_right_rounded,
-                size: 18,
-                color: AppColors.mutedText,
-              ),
-            ],
+            ),
           ),
-        ),
+          if (suggestion != null) ...[
+            const SizedBox(width: AppSpacing.sm),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 3,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.secondarySoft,
+                borderRadius: BorderRadius.circular(AppRadii.pill),
+              ),
+              child: Text(
+                l10n.medSuggestPill(suggestion.singularLabel(l10n)),
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(width: AppSpacing.xs),
+          const Icon(
+            Icons.chevron_right_rounded,
+            size: 18,
+            color: AppColors.mutedText,
+          ),
+        ],
       ),
     );
   }
@@ -377,64 +359,6 @@ class _SelectionBar extends StatelessWidget {
             label: Text(context.l10n.petsDetailRecordsSend),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _EmptyCategory extends StatelessWidget {
-  const _EmptyCategory({
-    required this.icon,
-    required this.title,
-    required this.body,
-    required this.actionLabel,
-    required this.onAction,
-  });
-
-  final IconData icon;
-  final String title;
-  final String body;
-  final String actionLabel;
-  final VoidCallback? onAction;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.secondarySoft,
-                borderRadius: BorderRadius.circular(AppRadii.large),
-              ),
-              child: Icon(icon, size: 30, color: AppColors.secondaryStrong),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.title,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              body,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodySmall,
-            ),
-            if (onAction != null) ...[
-              const SizedBox(height: AppSpacing.xl),
-              FilledButton.icon(
-                onPressed: onAction,
-                icon: const Icon(Icons.add_rounded, size: 18),
-                label: Text(actionLabel),
-              ),
-            ],
-          ],
-        ),
       ),
     );
   }

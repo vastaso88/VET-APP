@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/date_formats.dart';
@@ -12,6 +11,8 @@ import '../../domain/pet_value_labels.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
 import 'pet_memorial_page.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 /// Pets moved to Ricordi (docs/product/17_ricordi_animali.md §6). A row
 /// opens the pet's memorial page; deleting forever happens only there, with
@@ -61,8 +62,12 @@ class _PetMemoriesPageState extends State<PetMemoriesPage> {
       subtitle: context.l10n.petsMemoriesSubtitle,
       onBack: () => Navigator.of(context).maybePop(),
       body: _pets.isEmpty
-          ? Center(
-              child: Text(context.l10n.petsMemoriesEmpty, style: AppTextStyles.bodySmall),
+          ? CenteredPageState(
+              child: EmptyState.icon(
+                icon: Icons.auto_awesome_outlined,
+                text: context.l10n.petsMemoriesEmpty,
+                padding: EmptyState.insidePage,
+              ),
             )
           : ListView.separated(
               itemCount: _pets.length,
@@ -94,18 +99,10 @@ class _MemoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        side: const BorderSide(color: AppColors.borderStrong),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Row(
+    return AppCard(
+      onTap: onTap,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               PetAvatar(
@@ -147,8 +144,6 @@ class _MemoryRow extends StatelessWidget {
               const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
             ],
           ),
-        ),
-      ),
     );
   }
 }

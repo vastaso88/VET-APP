@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/date_formats.dart';
@@ -15,6 +14,7 @@ import '../../domain/pet_models.dart';
 import '../memorial_restore_message.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// "Sposta nei ricordi" in two quiet steps (docs/product/17_ricordi_animali.md
 /// §3): the date of the loss, then — only when at least one is possible —
@@ -178,24 +178,13 @@ class _MemorialMovePageState extends State<MemorialMovePage> {
           style: AppTextStyles.body.copyWith(color: AppColors.secondaryText),
         ),
         const SizedBox(height: AppSpacing.xl),
-        Text(context.l10n.memorialMoveDateLabel, style: AppTextStyles.caption),
-        const SizedBox(height: AppSpacing.xs),
-        OutlinedButton.icon(
-          key: const ValueKey('memorial-loss-date'),
-          onPressed: _saving ? null : _pickDate,
-          icon: const Icon(Icons.calendar_today_outlined, size: 18),
-          label: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(formatAppDate(_lossDate, 'd MMMM y')),
-          ),
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.md,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadii.medium),
-            ),
+        AppField(
+          label: context.l10n.memorialMoveDateLabel,
+          child: PickerField(
+            key: const ValueKey('memorial-loss-date'),
+            icon: Icons.calendar_today_outlined,
+            text: formatAppDate(_lossDate, 'd MMMM y'),
+            onTap: _saving ? null : _pickDate,
           ),
         ),
         const SizedBox(height: AppSpacing.xs),

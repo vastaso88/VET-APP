@@ -23,6 +23,9 @@ import '../../../../shared/widgets/pill_row.dart';
 import '../widgets/reminder_page_parts.dart';
 import 'reminder_create_edit_pages.dart';
 import 'reminder_detail_page.dart';
+import '../../../../shared/widgets/app_card.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/pet_loader.dart';
 
 enum _ViewMode { list, calendar }
 
@@ -105,8 +108,15 @@ class _RemindersListPageState extends State<RemindersListPage> {
     return ReminderPageShell(
           title: context.l10n.remindersTitle,
           subtitle: context.l10n.remindersSubtitle,
-          actionLabel: context.l10n.remindersCreateButton,
-          onAction: _openCreate,
+          actions: [
+            IconButton(
+              tooltip: context.l10n.remindersCreateTitle,
+              onPressed: _openCreate,
+              icon: const Icon(Icons.add_rounded),
+              color: AppColors.onPrimary,
+              style: IconButton.styleFrom(backgroundColor: AppColors.primary),
+            ),
+          ],
           showNotificationsBanner: true,
           child: ValueListenableBuilder<int>(
             valueListenable: RemindersRepository.changes,
@@ -114,20 +124,24 @@ class _RemindersListPageState extends State<RemindersListPage> {
               future: _repository.loadActiveReminders(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return ReminderLoadingPanel(
-                    title: context.l10n.remindersLoadingTitle,
-                    body: context.l10n.remindersLoadingBody,
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxxl),
+                    child: Center(
+                      child: PetLoader(label: context.l10n.remindersLoadingTitle),
+                    ),
                   );
                 }
 
                 if (snapshot.hasError) {
-                  return ReminderStatePanel(
-                    label: context.l10n.remindersSyncErrorLabel,
-                    title: context.l10n.remindersSyncErrorTitle,
-                    body: context.l10n.remindersSyncErrorBody,
+                  return EmptyState.icon(
                     icon: Icons.wifi_off_outlined,
-                    actionLabel: context.l10n.commonRetry,
-                    onAction: () => unawaited(_reload()),
+                    title: context.l10n.remindersSyncErrorTitle,
+                    text: context.l10n.remindersSyncErrorBody,
+                    padding: EdgeInsets.zero,
+                    action: FilledButton(
+                      onPressed: () => unawaited(_reload()),
+                      child: Text(context.l10n.commonRetry),
+                    ),
                   );
                 }
 
@@ -136,13 +150,15 @@ class _RemindersListPageState extends State<RemindersListPage> {
                     .toList(growable: false);
 
                 if (all.isEmpty) {
-                  return ReminderStatePanel(
-                    label: context.l10n.remindersEmptyLabel,
-                    title: context.l10n.remindersEmptyTitle,
-                    body: context.l10n.remindersEmptyBody,
+                  return EmptyState.icon(
                     icon: Icons.event_note_outlined,
-                    actionLabel: context.l10n.remindersCreateTitle,
-                    onAction: _openCreate,
+                    title: context.l10n.remindersEmptyLabel,
+                    text: context.l10n.remindersEmptyBody,
+                    padding: EdgeInsets.zero,
+                    action: FilledButton(
+                      onPressed: _openCreate,
+                      child: Text(context.l10n.remindersCreateTitle),
+                    ),
                   );
                 }
 
@@ -181,13 +197,10 @@ class _RemindersListPageState extends State<RemindersListPage> {
                         onMarkDone: _markDone,
                       )
                     else if (filtered.isEmpty)
-                      Padding(
-                        padding:
-                            const EdgeInsets.symmetric(vertical: AppSpacing.xl),
-                        child: Text(
-                          context.l10n.remindersNoMatchForFilters,
-                          style: AppTextStyles.bodySmall,
-                        ),
+                      EmptyState.icon(
+                        icon: Icons.filter_alt_off_outlined,
+                        text: context.l10n.remindersNoMatchForFilters,
+                        padding: EdgeInsets.zero,
                       )
                     else
                       ...filtered.asMap().entries.expand(
@@ -439,9 +452,7 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
             .toList()
           ..sort((a, b) => a.dueAt.compareTo(b.dueAt)));
 
-    return DashboardSurfaceCard(
-      backgroundColor: AppColors.surfaceElevated,
-      padding: const EdgeInsets.all(AppSpacing.lg),
+    return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -646,75 +657,64 @@ class _ReminderTile extends StatelessWidget {
     final palette = DashboardPrimitivePalette.colorsFor(presentation.tone);
     final iconSize = (compact ? 40.0 : 52.0) * appScaleOf(context);
 
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(24),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(24),
-        onTap: onTap,
-        child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.borderStrong),
+    return AppCard(
+      padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
+      width: double.infinity,
+      onTap: onTap,
+      child: Row(
+        children: [
+          Container(
+            width: iconSize,
+            height: iconSize,
+            decoration: BoxDecoration(
+              color: palette.background,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Icon(presentation.icon,
+                color: palette.foreground, size: compact ? 18 : 24),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: iconSize,
-                height: iconSize,
-                decoration: BoxDecoration(
-                  color: palette.background,
-                  borderRadius: BorderRadius.circular(18),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  reminder.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.title
+                      .copyWith(fontSize: compact ? 15 : 17),
                 ),
-                child: Icon(presentation.icon,
-                    color: palette.foreground, size: compact ? 18 : 24),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      reminder.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.title
-                          .copyWith(fontSize: compact ? 15 : 17),
-                    ),
-                    if (!compact &&
-                        (reminder.petName.isNotEmpty || presentation.listKindLabel != null)) ...[
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        [
-                          if (reminder.petName.isNotEmpty) reminder.petName,
-                          if (presentation.listKindLabel != null) presentation.listKindLabel!,
-                        ].join(' · '),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.bodySmall,
-                      ),
-                    ],
-                    const SizedBox(height: AppSpacing.sm),
-                    // Under the title, so that neither is cut or made smaller.
-                    DashboardBadge(
-                        label: presentation.dateLabel,
-                        tone: presentation.tone,
-                        compact: true),
-                  ],
-                ),
-              ),
-              if (onMarkDone != null)
-                IconButton(
-                  tooltip: context.l10n.remindersDoneTooltip,
-                  onPressed: onMarkDone,
-                  icon: const Icon(Icons.check_circle_outline, size: 22),
-                  color: AppColors.successStrong,
-                ),
-            ],
+                if (!compact &&
+                    (reminder.petName.isNotEmpty || presentation.listKindLabel != null)) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    [
+                      if (reminder.petName.isNotEmpty) reminder.petName,
+                      if (presentation.listKindLabel != null) presentation.listKindLabel!,
+                    ].join(' · '),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodySmall,
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.sm),
+                // Under the title, so that neither is cut or made smaller.
+                DashboardBadge(
+                    label: presentation.dateLabel,
+                    tone: presentation.tone,
+                    compact: true),
+              ],
+            ),
           ),
-        ),
+          if (onMarkDone != null)
+            IconButton(
+              tooltip: context.l10n.remindersDoneTooltip,
+              onPressed: onMarkDone,
+              icon: const Icon(Icons.check_circle_outline, size: 22),
+              color: AppColors.successStrong,
+            ),
+        ],
       ),
     );
   }

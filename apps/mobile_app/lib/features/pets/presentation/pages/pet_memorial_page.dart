@@ -30,6 +30,7 @@ import '../widgets/pets_scaffold.dart';
 import 'memorial_move_page.dart';
 import 'pet_data_page.dart';
 import 'pet_gallery_page.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 /// One pet in Ricordi (docs/product/17_ricordi_animali.md §6): its photo and
 /// dates, "moved by mistake? bring back", photos, favourite walks, the memory
@@ -277,15 +278,9 @@ class _PetMemorialPageState extends State<PetMemorialPage> {
               // Says plainly that this page is read-only, with the way back right
               // under it: a move made by mistake (or out of curiosity) is undone
               // without hunting for it.
-              Container(
+              AppCard(
                 key: const ValueKey('memorial-read-only-notice'),
                 margin: const EdgeInsets.only(bottom: AppSpacing.md),
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(AppRadii.large),
-                  border: Border.all(color: AppColors.border),
-                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

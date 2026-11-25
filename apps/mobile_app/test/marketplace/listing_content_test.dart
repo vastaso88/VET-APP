@@ -20,6 +20,8 @@ import 'package:vet_app_mobile/shared/config/app_runtime_config_loader.dart';
 
 import '../territory/territory_test_helpers.dart';
 
+import '../support/fields.dart';
+
 class _ConfigWithBackend extends AppRuntimeConfigLoader {
   const _ConfigWithBackend();
 
@@ -136,13 +138,13 @@ Future<void> _openForm(WidgetTester tester, _Backend backend, {MarketplaceListin
   await tester.tap(find.text('apri'));
   await tester.pumpAndSettle();
   if (existing == null) {
-    await tester.enterText(find.widgetWithText(TextFormField, 'Titolo'), 'Ciotola per crocchette');
+    await tester.enterText(fieldNamed('Titolo'), 'Ciotola per crocchette');
     await tester.tap(find.byType(DropdownButtonFormField<ListingCategory>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Giochi').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Cane'));
-    await tester.enterText(find.widgetWithText(TextFormField, 'Prezzo in €'), '10');
+    await tester.enterText(fieldNamed('Prezzo in €'), '10');
   }
   await tester.tap(find.byKey(const ValueKey('marketplace-private-seller')));
   await tester.pump();

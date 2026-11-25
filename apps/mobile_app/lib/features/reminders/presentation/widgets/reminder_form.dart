@@ -17,6 +17,8 @@ import '../../domain/clock_time.dart';
 import '../../domain/reminder_category.dart';
 import '../widgets/reminder_category_picker.dart';
 import 'reminder_page_parts.dart';
+import '../../../../shared/widgets/app_card.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// Width, before the text size, of a date and a time side by side.
 const _dateAndTimeRow = 272.0;
@@ -268,19 +270,12 @@ class _ReminderFormState extends State<ReminderForm> {
       // Mirrors the pet form: a date typo shows its error as soon as the
       // owner types it, not only after they hit Salva.
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: Container(
+      child: AppCard(
         width: double.infinity,
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadii.large),
-          border: Border.all(color: AppColors.border),
-        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(context.l10n.remindersFormKind, style: AppTextStyles.caption),
-            const SizedBox(height: AppSpacing.sm),
+            FieldLabel(context.l10n.remindersFormKind),
             _KindSelector(
                 value: _kind,
                 onChanged: (kind) {
@@ -288,17 +283,18 @@ class _ReminderFormState extends State<ReminderForm> {
                   _followGuess();
                 }),
             const SizedBox(height: AppSpacing.lg),
-            _FieldLabel(context.l10n.remindersFormTitleLabel),
-            const SizedBox(height: AppSpacing.xs),
-            _TextField(
-              controller: _titleController,
-              hintText: widget.petName.isEmpty
-                  ? context.l10n.remindersFormTitleHint
-                  : context.l10n.remindersFormTitleHintWithPet(widget.petName),
-              onChanged: (_) => _followGuess(),
-              validator: (value) => (value ?? '').trim().isEmpty
-                  ? context.l10n.remindersTitleRequired
-                  : null,
+            AppField(
+              label: context.l10n.remindersFormTitleLabel,
+              child: _TextField(
+                controller: _titleController,
+                hintText: widget.petName.isEmpty
+                    ? context.l10n.remindersFormTitleHint
+                    : context.l10n.remindersFormTitleHintWithPet(widget.petName),
+                onChanged: (_) => _followGuess(),
+                validator: (value) => (value ?? '').trim().isEmpty
+                    ? context.l10n.remindersTitleRequired
+                    : null,
+              ),
             ),
             const SizedBox(height: AppSpacing.lg),
             ReminderCategoryPicker(
@@ -327,12 +323,15 @@ class _ReminderFormState extends State<ReminderForm> {
                 );
                 // A course is notified at its dose times instead.
                 if (_kind == EventKind.course) return date;
-                final time = _PickerField(
+                final time = AppField(
                   label: context.l10n.remindersFieldTime,
-                  icon: Icons.schedule_rounded,
-                  text: formatClockTime(_time.hour, _time.minute),
-                  onTap: _pickTime,
-                  showChevron: false,
+                  child: PickerField(
+                    icon: Icons.schedule_rounded,
+                    text: formatClockTime(_time.hour, _time.minute),
+                    onTap: _pickTime,
+                    // Narrow, next to the date: no arrow to squeeze the value.
+                    trailing: null,
+                  ),
                 );
                 // Side by side only where the whole date and the whole time fit.
                 if (box.maxWidth < MediaQuery.textScalerOf(context).scale(_dateAndTimeRow)) {
@@ -353,8 +352,7 @@ class _ReminderFormState extends State<ReminderForm> {
             ),
             if (_kind == EventKind.recurring) ...[
               const SizedBox(height: AppSpacing.lg),
-              Text(context.l10n.remindersRepeats, style: AppTextStyles.caption),
-              const SizedBox(height: AppSpacing.sm),
+              FieldLabel(context.l10n.remindersRepeats),
               _IntervalPresetChips(
                 selectedUnit: _intervalUnit,
                 selectedValue: _intervalValue,
@@ -395,8 +393,7 @@ class _ReminderFormState extends State<ReminderForm> {
                 ),
               ],
               const SizedBox(height: AppSpacing.lg),
-              Text(context.l10n.remindersRecurrenceEndLabel, style: AppTextStyles.caption),
-              const SizedBox(height: AppSpacing.sm),
+              FieldLabel(context.l10n.remindersRecurrenceEndLabel),
               _RecurrenceEndChips(
                 value: _recurrenceEnd,
                 onChanged: (end) => setState(() => _recurrenceEnd = end),
@@ -427,15 +424,13 @@ class _ReminderFormState extends State<ReminderForm> {
             ],
             if (_kind == EventKind.course) ...[
               const SizedBox(height: AppSpacing.lg),
-              Text(context.l10n.remindersCourseDuration, style: AppTextStyles.caption),
-              const SizedBox(height: AppSpacing.sm),
+              FieldLabel(context.l10n.remindersCourseDuration),
               _DurationStepper(
                 days: _courseDuration,
                 onChanged: (days) => setState(() => _courseDuration = days),
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text(context.l10n.remindersDoseTimes, style: AppTextStyles.caption),
-              const SizedBox(height: AppSpacing.sm),
+              FieldLabel(context.l10n.remindersDoseTimes),
               Wrap(
                 spacing: AppSpacing.sm,
                 runSpacing: AppSpacing.sm,
@@ -461,12 +456,13 @@ class _ReminderFormState extends State<ReminderForm> {
               ],
             ],
             const SizedBox(height: AppSpacing.lg),
-            _FieldLabel(context.l10n.remindersFormNote),
-            const SizedBox(height: AppSpacing.xs),
-            _TextField(
-              controller: _noteController,
-              hintText: context.l10n.remindersFormNoteHint,
-              maxLines: 2,
+            AppField(
+              label: context.l10n.remindersFormNote,
+              child: _TextField(
+                controller: _noteController,
+                hintText: context.l10n.remindersFormNoteHint,
+                maxLines: 2,
+              ),
             ),
             const SizedBox(height: AppSpacing.xl),
             Row(
@@ -486,16 +482,6 @@ class _ReminderFormState extends State<ReminderForm> {
       ),
     );
   }
-}
-
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.label);
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) =>
-      Text(label, style: AppTextStyles.caption);
 }
 
 /// A `SegmentedButton` here used to force all three options into equal
@@ -616,89 +602,19 @@ class _DatePickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTextStyles.caption),
-        const SizedBox(height: AppSpacing.xs),
-        TypedDateField(
-          controller: controller,
-          validator: validator,
-          onPick: onPick,
-          pickIcon: const Icon(Icons.calendar_today_outlined,
-              size: 18, color: AppColors.primary),
-          style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
-          decoration: InputDecoration(
-            hintText: appDateInputText(context.l10n.remindersDatePlaceholder),
-          ),
+    return AppField(
+      label: label,
+      child: TypedDateField(
+        controller: controller,
+        validator: validator,
+        onPick: onPick,
+        pickIcon: const Icon(Icons.calendar_today_outlined,
+            size: 18, color: AppColors.primary),
+        style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
+        decoration: InputDecoration(
+          hintText: appDateInputText(context.l10n.remindersDatePlaceholder),
         ),
-      ],
-    );
-  }
-}
-
-/// A tappable field showing a picked value (a date, a time) that opens its
-/// picker on tap.
-class _PickerField extends StatelessWidget {
-  const _PickerField({
-    required this.label,
-    required this.icon,
-    required this.text,
-    required this.onTap,
-    this.showChevron = true,
-  });
-
-  final String label;
-  final IconData icon;
-  final String text;
-  final VoidCallback onTap;
-
-  /// Off for narrow fields (the time next to the date), where it would
-  /// squeeze the value itself.
-  final bool showChevron;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTextStyles.caption),
-        const SizedBox(height: AppSpacing.xs),
-        Material(
-          color: AppColors.surfaceElevated,
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(AppRadii.medium),
-            onTap: onTap,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppRadii.medium),
-                border: Border.all(color: AppColors.borderStrong, width: 1.5),
-              ),
-              child: Row(
-                children: [
-                  Icon(icon, size: 16, color: AppColors.secondaryStrong),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      text,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style:
-                          AppTextStyles.bodySmall.copyWith(color: AppColors.text),
-                    ),
-                  ),
-                  if (showChevron)
-                    const Icon(Icons.chevron_right_rounded,
-                        color: AppColors.mutedText),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

@@ -219,14 +219,8 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     final sectionGap = SizedBox(height: compact ? AppSpacing.lg + AppSpacing.xs : AppSpacing.xl);
 
     return SizedBox.expand(
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: AppColors.backgroundGradient,
-          ),
-        ),
+      child: ColoredBox(
+        color: AppColors.background,
         child: SafeArea(
           child: SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(

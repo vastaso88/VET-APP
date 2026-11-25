@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
-import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../location/domain/coordinates.dart';
 import '../../../settings/data/unit_settings_store.dart';
 import '../../../settings/domain/unit_conversion.dart';
 import '../widgets/radar_map.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/page_header.dart';
 
 /// Full-screen version of the radar map preview: same markers, pan and
 /// zoom enabled, legend pinned at the bottom.
@@ -27,16 +27,10 @@ class RadarMapPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(
-          context.l10n.placesMapTitle(
+      appBar: PageHeader(
+        title: context.l10n.placesMapTitle(
             formatKilometersIn(radiusKm, UnitSettingsStore.instance.system),
           ),
-          style: AppTextStyles.title,
-        ),
       ),
       body: SafeArea(
         child: Column(

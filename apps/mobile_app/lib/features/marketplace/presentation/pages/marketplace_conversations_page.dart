@@ -13,6 +13,8 @@ import '../../data/marketplace_unread_store.dart';
 import '../../domain/marketplace_conversation.dart';
 import '../widgets/visibility_poller.dart';
 import 'marketplace_conversation_page.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/empty_state.dart';
 
 /// The owner's conversations on the Mercatino, as buyer and as seller.
 class MarketplaceConversationsPage extends StatefulWidget {
@@ -96,16 +98,7 @@ class _MarketplaceConversationsPageState extends State<MarketplaceConversationsP
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(
-          context.l10n.marketplaceMessagesTitle,
-          style: AppTextStyles.title,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
+      appBar: PageHeader(title: context.l10n.marketplaceMessagesTitle),
       body: SafeArea(child: _body(context)),
     );
   }
@@ -114,19 +107,24 @@ class _MarketplaceConversationsPageState extends State<MarketplaceConversationsP
     final conversations = _conversations;
     if (conversations == null) {
       if (!_failed) return const Center(child: PetLoader());
-      return _CenteredMessage(
-        text: context.l10n.marketplaceMessagesLoadFailed,
-        action: TextButton(
-          onPressed: () {
-            setState(() => _failed = false);
-            unawaited(_load());
-          },
-          child: Text(context.l10n.commonRetry),
+      return CenteredPageState(
+        child: EmptyState.icon(
+          icon: Icons.cloud_off_outlined,
+          text: context.l10n.marketplaceMessagesLoadFailed,
+          action: OutlinedButton(
+            onPressed: () {
+              setState(() => _failed = false);
+              unawaited(_load());
+            },
+            child: Text(context.l10n.commonRetry),
+          ),
         ),
       );
     }
     if (conversations.isEmpty) {
-      return _CenteredMessage(text: context.l10n.marketplaceMessagesEmpty);
+      return CenteredPageState(
+        child: EmptyState(text: context.l10n.marketplaceMessagesEmpty),
+      );
     }
     return RefreshIndicator(
       onRefresh: _load,
@@ -185,32 +183,6 @@ class _ConversationRow extends StatelessWidget {
               ),
             )
           : null,
-    );
-  }
-}
-
-class _CenteredMessage extends StatelessWidget {
-  const _CenteredMessage({required this.text, this.action});
-
-  final String text;
-  final Widget? action;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(text, textAlign: TextAlign.center, style: AppTextStyles.body),
-            if (action != null) ...[
-              const SizedBox(height: AppSpacing.md),
-              action!,
-            ],
-          ],
-        ),
-      ),
     );
   }
 }

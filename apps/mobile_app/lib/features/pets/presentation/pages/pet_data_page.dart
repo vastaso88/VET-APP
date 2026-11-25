@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../design_system/atoms/outline_icon_button.dart';
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
@@ -20,6 +19,7 @@ import '../widgets/pet_avatar.dart';
 import '../widgets/pet_sections.dart';
 import '../widgets/pets_scaffold.dart';
 import 'pet_edit_page.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 /// One line under the pet's header that opens [PetDataPage]: sex, weight and
 /// whether the microchip is on file, at a glance.
@@ -50,46 +50,35 @@ class PetDataSummaryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final missingChip = isMicrochipMissingForDog(pet);
     final summary = _summary(context);
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(AppRadii.large),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => PetDataPage(petId: pet.id, initialPet: pet)),
-        ),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(color: AppColors.borderStrong),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.badge_outlined, size: 16, color: AppColors.secondaryStrong),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  summary.isEmpty
-                      ? context.l10n.petsDataTitle
-                      : '${context.l10n.petsDataTitle} · $summary',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.text,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+    return AppCard(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      width: double.infinity,
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => PetDataPage(petId: pet.id, initialPet: pet)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.badge_outlined, size: 16, color: AppColors.secondaryStrong),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              summary.isEmpty
+                  ? context.l10n.petsDataTitle
+                  : '${context.l10n.petsDataTitle} · $summary',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.text,
+                fontWeight: FontWeight.w600,
               ),
-              if (missingChip) ...[
-                const Icon(Icons.info_outline_rounded, size: 14, color: AppColors.warning),
-                const SizedBox(width: AppSpacing.xs),
-              ],
-              const Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.mutedText),
-            ],
+            ),
           ),
-        ),
+          if (missingChip) ...[
+            const Icon(Icons.info_outline_rounded, size: 14, color: AppColors.warning),
+            const SizedBox(width: AppSpacing.xs),
+          ],
+          const Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.mutedText),
+        ],
       ),
     );
   }

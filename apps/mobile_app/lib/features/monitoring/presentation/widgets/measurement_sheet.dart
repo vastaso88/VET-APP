@@ -18,6 +18,7 @@ import '../../domain/body_condition_guide.dart';
 import '../../domain/weight_measurement.dart';
 import '../../domain/weight_units.dart';
 import 'body_condition_picker.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// What the owner entered in the "Nuova misurazione" sheet.
 class MeasurementDraft {
@@ -201,13 +202,6 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
     );
   }
 
-  InputDecoration _decoration(String label, {String? hint, Widget? suffix}) =>
-      InputDecoration(
-        labelText: label,
-        hintText: hint,
-        suffixIcon: suffix,
-      );
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -239,40 +233,40 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
                 ],
               ),
               const SizedBox(height: AppSpacing.md),
-              TypedDateField(
-                controller: _dateController,
-                validator: _validateDate,
-                onPick: _pickDate,
-                pickIcon: const Icon(Icons.calendar_today_outlined,
-                    size: 18, color: AppColors.primary),
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
-                decoration: _decoration(
-                  l10n.monitoringFieldDate,
-                  hint: l10n.remindersDatePlaceholder,
+              AppField(
+                label: l10n.monitoringFieldDate,
+                child: TypedDateField(
+                  controller: _dateController,
+                  validator: _validateDate,
+                  onPick: _pickDate,
+                  pickIcon: const Icon(Icons.calendar_today_outlined,
+                      size: 18, color: AppColors.primary),
+                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
+                  decoration: InputDecoration(hintText: l10n.remindersDatePlaceholder),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              TextFormField(
+              AppField(
                 key: const ValueKey('measurement-weight'),
-                controller: _weightController,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]'))
-                ],
-                validator: _validateWeight,
-                decoration: _decoration(
-                  switch (weightEntryUnit(widget.system, small: _small)) {
+                label: switch (weightEntryUnit(widget.system, small: _small)) {
                     WeightUnit.kg => l10n.monitoringFieldWeightKg,
                     WeightUnit.lb => l10n.monitoringFieldWeightLb,
                     WeightUnit.g => l10n.monitoringFieldWeightG,
                     WeightUnit.oz => l10n.monitoringFieldWeightOz,
                   },
-                  hint: switch (weightEntryUnit(widget.system, small: _small)) {
-                    WeightUnit.kg => l10n.monitoringFieldWeightHintKg,
-                    WeightUnit.lb => l10n.monitoringFieldWeightHintLb,
-                    WeightUnit.g || WeightUnit.oz => l10n.petsFormWeightHintG,
-                  },
+                child: TextFormField(
+                  controller: _weightController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]'))
+                  ],
+                  validator: _validateWeight,
+                  decoration: InputDecoration(hintText: switch (weightEntryUnit(widget.system, small: _small)) {
+                      WeightUnit.kg => l10n.monitoringFieldWeightHintKg,
+                      WeightUnit.lb => l10n.monitoringFieldWeightHintLb,
+                      WeightUnit.g || WeightUnit.oz => l10n.petsFormWeightHintG,
+                    }),
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -285,13 +279,16 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
                 ),
                 const SizedBox(height: AppSpacing.lg),
               ],
-              TextFormField(
+              AppField(
                 key: const ValueKey('measurement-note'),
-                controller: _noteController,
-                maxLength: 500,
-                maxLines: 2,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: _decoration(l10n.monitoringFieldNote),
+                label: l10n.monitoringFieldNote,
+                child: TextFormField(
+                  controller: _noteController,
+                  maxLength: 500,
+                  maxLines: 2,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: const InputDecoration(),
+                ),
               ),
               const SizedBox(height: AppSpacing.sm),
               SizedBox(

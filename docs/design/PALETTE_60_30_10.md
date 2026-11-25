@@ -47,7 +47,8 @@ pulsanti tondi; nove colori sparsi nei marker della mappa). Ora sono **0** fuori
 * Il corallo non è più un accento: le sue 22 occorrenze diventano salvia (decorazione) o petrolio
   (prezzo/badge dei piani).
 * I pannelli pesca (`accentSoft`) diventano salvia chiara (`secondarySoft`).
-* Un solo sfondo sfumato per tutta l'app (`backgroundGradient`: tre passi), al posto di tre diversi.
+* Un solo fondo per tutta l'app, piatto (`background`): la sfumatura a tre passi usata da Home, Animali e
+  Promemoria non c'è più (25 novembre 2026), insieme a un solo margine dal bordo (`AppSpacing.page`, 16).
 * Contrasti: `mutedText` `#82908D` → `#5E6E6B` (era 3,0:1, ora 4,8:1), `danger` `#D66B61` → `#B73E34`
   (testo e pulsante ≥ 4,5:1), `success`/`warning`/`info` scuriti per le icone (≥ 3:1) con varianti
   `Strong` per il testo. Pulsante principale: `onPrimary` su `primary` 5,9:1.

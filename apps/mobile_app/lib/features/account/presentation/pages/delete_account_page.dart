@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
@@ -21,6 +20,7 @@ import '../../data/account_deletion_remote_data_source.dart';
 import '../../data/profile_photo_repository.dart';
 import '../widgets/account_page_scaffold.dart';
 import 'change_password_page.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 /// Account deletion (required by the App Store, Google Play and GDPR art. 17).
 /// The owner must type their password and tick that they understand; the
@@ -136,13 +136,8 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
           children: [
             ...[
             const SizedBox(height: AppSpacing.lg),
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppRadii.large),
-                border: Border.all(color: AppColors.danger),
-              ),
+            AppCard(
+              borderColor: AppColors.danger,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

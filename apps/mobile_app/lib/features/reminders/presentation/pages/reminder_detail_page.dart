@@ -13,6 +13,9 @@ import '../reminder_category_labels.dart';
 import '../widgets/reminder_completion_sheet.dart';
 import '../widgets/reminder_page_parts.dart';
 import 'reminder_create_edit_pages.dart';
+import '../../../../shared/widgets/app_card.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../../../../design_system/atoms/outline_icon_button.dart';
 
 class ReminderDetailPage extends StatefulWidget {
   const ReminderDetailPage({super.key, this.reminder});
@@ -83,15 +86,15 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
       return ReminderPageShell(
         title: context.l10n.remindersNotFoundTitle,
         subtitle: context.l10n.remindersNotFoundSubtitle,
-        actionLabel: context.l10n.commonBack,
-        onAction: () => Navigator.of(context).pop(),
-        child: ReminderStatePanel(
-          label: context.l10n.remindersNotFoundLabel,
-          title: context.l10n.remindersNotFoundPanelTitle,
-          body: context.l10n.remindersNotFoundBody,
+        child: EmptyState.icon(
           icon: Icons.search_off_rounded,
-          actionLabel: context.l10n.remindersBackToList,
-          onAction: () => Navigator.of(context).pop(),
+          title: context.l10n.remindersNotFoundPanelTitle,
+          text: context.l10n.remindersNotFoundBody,
+          padding: EdgeInsets.zero,
+          action: FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(context.l10n.remindersBackToList),
+          ),
         ),
       );
     }
@@ -101,8 +104,13 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
     return ReminderPageShell(
       title: context.l10n.remindersDetailTitle,
       subtitle: context.l10n.remindersDetailSubtitle,
-      actionLabel: context.l10n.commonEdit,
-      onAction: _openEdit,
+      actions: [
+        OutlineIconButton(
+          tooltip: context.l10n.commonEdit,
+          onPressed: _openEdit,
+          icon: Icons.edit_outlined,
+        ),
+      ],
       petName: reminder.petName,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,14 +183,9 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
+    return AppCard(
       padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppColors.border),
-      ),
+      width: double.infinity,
       child: Row(
         children: [
           Container(
@@ -231,14 +234,9 @@ class _FormPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
+    return AppCard(
       padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: AppColors.border),
-      ),
+      width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -247,7 +245,7 @@ class _FormPanel extends StatelessWidget {
           ...items.map(
             (item) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.md),
-              child: _InputLike(label: item.label, value: item.value),
+              child: _ReadValue(label: item.label, value: item.value),
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
@@ -279,8 +277,8 @@ class _FormItem {
   final String value;
 }
 
-class _InputLike extends StatelessWidget {
-  const _InputLike({
+class _ReadValue extends StatelessWidget {
+  const _ReadValue({
     required this.label,
     required this.value,
   });
@@ -290,27 +288,13 @@ class _InputLike extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: AppTextStyles.caption),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            value,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
-          ),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTextStyles.caption),
+        const SizedBox(height: 2),
+        Text(value, style: AppTextStyles.body.copyWith(color: AppColors.text)),
+      ],
     );
   }
 }

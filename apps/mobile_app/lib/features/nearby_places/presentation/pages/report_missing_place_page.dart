@@ -14,6 +14,9 @@ import '../radar_category.dart';
 import '../radar_contributions.dart';
 import '../widgets/radar_chip.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// "Segnala!" for a place missing from the map: a category from a closed
 /// list, the name on the sign, and a position picked on the map. No notes
@@ -95,12 +98,7 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(context.l10n.placesReportTitle, style: AppTextStyles.title),
-      ),
+      appBar: PageHeader(title: context.l10n.placesReportTitle),
       body: SafeArea(
         child: FutureBuilder<RadarReportOptions>(
           future: _optionsFuture,
@@ -110,14 +108,10 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
             }
             final options = snapshot.data;
             if (options == null || !options.enabled || options.missingPlaceTypes.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.xxl),
-                  child: Text(
-                    context.l10n.placesReportUnavailable,
-                    style: AppTextStyles.bodySmall,
-                    textAlign: TextAlign.center,
-                  ),
+              return CenteredPageState(
+                child: EmptyState.icon(
+                  icon: Icons.cloud_off_outlined,
+                  text: context.l10n.placesReportUnavailable,
                 ),
               );
             }
@@ -130,7 +124,12 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
 
   Widget _buildForm(RadarReportOptions options) {
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.xl),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.page,
+        0,
+        AppSpacing.page,
+        AppSpacing.xl,
+      ),
       children: [
         Text(context.l10n.placesReportWhatIs,
             style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
@@ -150,16 +149,18 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
           }).toList(),
         ),
         const SizedBox(height: AppSpacing.xl),
-        TextField(
-          controller: _nameController,
-          maxLength: _maxNameLength,
-          textCapitalization: TextCapitalization.words,
-          onChanged: (_) => setState(() {}),
-          decoration: InputDecoration(
-            labelText: _nameIsOptional
+        AppField(
+          label: _nameIsOptional
                 ? context.l10n.placesReportNameOptional
                 : context.l10n.placesReportNameLabel,
-            helperText: context.l10n.placesReportNameHelper,
+          child: TextField(
+            controller: _nameController,
+            maxLength: _maxNameLength,
+            textCapitalization: TextCapitalization.words,
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              helperText: context.l10n.placesReportNameHelper,
+            ),
           ),
         ),
         const SizedBox(height: AppSpacing.lg),

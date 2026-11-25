@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../domain/body_condition.dart';
 import '../../domain/body_condition_guide.dart';
 import 'body_condition_guide_dialog.dart';
+import '../../../../shared/widgets/app_card.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// The "Corporatura" field of the profile form and of the weighing sheet.
 /// There is no list to pick from: it shows the level assessed so far (or that
@@ -41,20 +42,14 @@ class BodyConditionPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final condition = value;
-    return Container(
+    return AppCard(
       key: const ValueKey('bcs-picker'),
-      width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.onMedia,
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        border: Border.all(color: AppColors.border),
-      ),
+      width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l10n.petsFormBodyConditionLabel, style: AppTextStyles.caption),
-          const SizedBox(height: AppSpacing.xs),
+          FieldLabel(l10n.petsFormBodyConditionLabel),
           Row(
             children: [
               if (condition != null)

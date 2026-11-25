@@ -23,6 +23,8 @@ import 'pages/record_category_page.dart';
 import 'pet_history_section.dart';
 import 'record_category_labels.dart';
 import 'record_file_actions.dart';
+import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/empty_state.dart';
 
 /// The "Cartella clinica" tab of a pet: the consent switch for the chat, an
 /// "Aggiungi" button and a grid with one tile per category (Visite, Esami,
@@ -273,22 +275,15 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
   Widget _buildContent(BuildContext context) {
     final l10n = context.l10n;
     if (_controller.recordsFailed) {
-      return Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              l10n.petsDetailRecordsLoadError,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodySmall,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            TextButton(
-              onPressed: () => unawaited(_controller.retry()),
-              child: Text(l10n.commonRetry),
-            ),
-          ],
+      return CenteredPageState(
+        child: EmptyState.icon(
+          icon: Icons.cloud_off_outlined,
+          text: l10n.petsDetailRecordsLoadError,
+          padding: EmptyState.insidePage,
+          action: OutlinedButton(
+            onPressed: () => unawaited(_controller.retry()),
+            child: Text(l10n.commonRetry),
+          ),
         ),
       );
     }
@@ -397,57 +392,46 @@ class _CategoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(AppRadii.large),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(color: AppColors.borderStrong),
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      onTap: onTap,
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.secondarySoft,
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+            ),
+            child: Icon(icon, size: 20, color: AppColors.secondaryStrong),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.secondarySoft,
-                  borderRadius: BorderRadius.circular(AppRadii.medium),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.text,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-                child: Icon(icon, size: 20, color: AppColors.secondaryStrong),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.text,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      countText,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.caption,
-                    ),
-                  ],
+                Text(
+                  countText,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.caption,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -15,6 +15,8 @@ import 'package:vet_app_mobile/l10n/app_localizations.dart';
 import 'package:vet_app_mobile/shared/config/app_runtime_config.dart';
 import 'package:vet_app_mobile/shared/config/app_runtime_config_loader.dart';
 
+import '../support/fields.dart';
+
 TravelCard _card(
   String country,
   TravelSpecies species, {
@@ -300,7 +302,7 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 200));
 
-      await tester.tap(find.text('Dove vai'));
+      await tester.tap(pickerNamed('Dove vai'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'germania');
       await tester.pumpAndSettle();
@@ -338,7 +340,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 200));
 
       Future<void> trip(String to, String pick) async {
-        await tester.tap(find.text('Dove vai'));
+        await tester.tap(pickerNamed('Dove vai'));
         await tester.pumpAndSettle();
         await tester.enterText(find.byType(TextField), to);
         await tester.pumpAndSettle();
@@ -370,7 +372,7 @@ void main() {
         _app(TravelGuidePage(repository: _FakeRepository([], fail: true))),
       );
       await tester.pump(const Duration(milliseconds: 200));
-      await tester.tap(find.text('Dove vai'));
+      await tester.tap(pickerNamed('Dove vai'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'francia');
       await tester.pumpAndSettle();

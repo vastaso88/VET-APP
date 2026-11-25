@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../design_system/tokens/app_colors.dart';
-import '../../design_system/tokens/app_radii.dart';
-import '../../design_system/tokens/app_spacing.dart';
-import '../../design_system/tokens/app_text_styles.dart';
 import '../../l10n/l10n.dart';
+import 'page_header.dart';
+import 'empty_state.dart';
 
 /// Generic placeholder for a feature that's planned but not built yet.
 class ComingSoonPage extends StatelessWidget {
@@ -23,37 +22,12 @@ class ComingSoonPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(title, style: AppTextStyles.title),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xxl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: AppColors.secondarySoft,
-                  borderRadius: BorderRadius.circular(AppRadii.xl),
-                ),
-                child: Icon(icon, size: 32, color: AppColors.secondaryStrong),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              Text(context.l10n.sharedComingSoon, style: AppTextStyles.title),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                description,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodySmall,
-              ),
-            ],
-          ),
+      appBar: PageHeader(title: title),
+      body: CenteredPageState(
+        child: EmptyState.icon(
+          icon: icon,
+          title: context.l10n.sharedComingSoon,
+          text: description,
         ),
       ),
     );

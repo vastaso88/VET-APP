@@ -14,6 +14,7 @@ import '../../../billing/data/billing_demo_store.dart';
 import '../../../billing/data/subscription_remote_data_source.dart';
 import '../../../billing/domain/billing_models.dart';
 import '../../../billing/presentation/widgets/plan_feature_list.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 /// First screen after signup: proposes the 14-day free trial (already
 /// started server-side by the time this shows — see register_page.dart)
@@ -291,13 +292,8 @@ class _CompactPlanCard extends StatelessWidget {
         '${l10n.billingPricePerYear(formatPlanAmount(plan.priceFor(BillingCycle.yearly)))}'
         ' · ${l10n.billingPricePerMonth(formatPlanAmount(plan.priceFor(BillingCycle.monthly)))}';
 
-    return Container(
+    return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: AppColors.border),
-      ),
       child: Row(
         children: [
           Expanded(

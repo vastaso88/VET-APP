@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../../design_system/atoms/outline_icon_button.dart';
-import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
-import '../../../../design_system/tokens/app_text_styles.dart';
-import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/page_header.dart';
 
+/// Frame of the pages about the animals: the header of every page and the body
+/// within the one margin.
 class PetsScaffold extends StatelessWidget {
   const PetsScaffold({
     required this.title,
@@ -29,58 +28,27 @@ class PetsScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleText =
-        Text(title, style: AppTextStyles.heading, maxLines: 2, overflow: TextOverflow.ellipsis);
-    // A root page (no back arrow, no pet): the title and the action share a row.
-    final titleInRow = onBack == null && badge == null;
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: AppColors.backgroundGradient,
+      appBar: PageHeader(
+        title: title,
+        subtitle: subtitle,
+        actions: actions ?? const [],
+        badge: badge,
+        onBack: onBack,
+        showBack: onBack != null,
+        // A page of the bar at the bottom: no arrow, no animal.
+        root: onBack == null && badge == null,
+      ),
+      body: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.page,
+            0,
+            AppSpacing.page,
+            AppSpacing.md,
           ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.md,
-              AppSpacing.lg,
-              AppSpacing.md,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    if (onBack != null) ...[
-                      OutlineIconButton(
-                        tooltip: context.l10n.commonBack,
-                        onPressed: onBack,
-                        icon: Icons.arrow_back_rounded,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                    ],
-                    if (badge != null) badge!,
-                    if (titleInRow) Expanded(child: titleText) else const Spacer(),
-                    if (actions != null) ...actions!,
-                  ],
-                ),
-                if (!titleInRow) ...[
-                  const SizedBox(height: AppSpacing.lg),
-                  titleText,
-                ],
-                if (subtitle != null) ...[
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(subtitle!, style: AppTextStyles.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
-                ],
-                const SizedBox(height: AppSpacing.lg),
-                Expanded(child: body),
-              ],
-            ),
-          ),
+          child: body,
         ),
       ),
     );

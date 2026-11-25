@@ -32,6 +32,8 @@ import '../../../nearby_places/presentation/widgets/radar_map.dart';
 import '../../../settings/data/unit_settings_store.dart';
 import '../../../settings/domain/unit_conversion.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/empty_state.dart';
 
 /// "Vicino a me": the pet-related places around the user's Località in
 /// one page. Clinics, shops, dog parks and the other businesses come from
@@ -421,12 +423,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(context.l10n.localEventsTitle, style: AppTextStyles.title),
-      ),
+      appBar: PageHeader(title: context.l10n.localEventsTitle),
       body: SafeArea(
         child: FutureBuilder<_LocalEventsViewData?>(
           future: _dataFuture,
@@ -517,9 +514,9 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
       onRefresh: _reload,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          AppSpacing.md,
-          AppSpacing.xl,
+          AppSpacing.page,
+          0,
+          AppSpacing.page,
           AppSpacing.xxxl,
         ),
         children: [
@@ -871,26 +868,12 @@ class _NoLocationState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    return CenteredPageState(
+      child: EmptyState(
+        title: context.l10n.localEventsNoLocationTitle,
+        text: context.l10n.localEventsNoLocationBody,
+        action: Column(
           children: [
-            const Icon(Icons.location_off_outlined, size: 48, color: AppColors.mutedText),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              context.l10n.localEventsNoLocationTitle,
-              style: AppTextStyles.title,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              context.l10n.localEventsNoLocationBody,
-              style: AppTextStyles.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.xl),
             FilledButton.icon(
               onPressed: onOpenSettings,
               icon: const Icon(Icons.settings_outlined),

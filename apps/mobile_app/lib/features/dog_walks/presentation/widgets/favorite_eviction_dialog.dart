@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../domain/walk_session.dart';
 import '../walk_labels.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 /// Shown when the owner wants to star a new favorite walk but already has
 /// [maxFavoriteWalks] saved (walk_retention.dart) - one of the current
@@ -73,16 +73,11 @@ class _FavoriteChoiceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(AppRadii.medium),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        onTap: () => Navigator.of(context).pop(walk.id),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-          child: Row(
+    return AppCard(
+      onTap: () => Navigator.of(context).pop(walk.id),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      child: Row(
             children: [
               const Icon(Icons.star_rounded,
                   color: AppColors.warning, size: 18),
@@ -106,8 +101,6 @@ class _FavoriteChoiceRow extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
     );
   }
 }

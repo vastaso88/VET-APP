@@ -10,6 +10,7 @@ import '../../domain/body_condition_guide.dart';
 import '../../domain/body_condition_guide_texts.dart';
 import 'body_condition_bar.dart';
 import 'body_condition_illustration.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 /// What the owner decided in the guide: a level, or "remove the assessment".
 /// The dialog returns null when it is simply dismissed.
@@ -280,13 +281,8 @@ class _InfographicCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Container(
+    return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: AppColors.border),
-      ),
       child: Column(
         children: [
           Row(

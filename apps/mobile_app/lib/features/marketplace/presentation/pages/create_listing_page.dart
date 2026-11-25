@@ -25,6 +25,8 @@ import '../../domain/marketplace_listing.dart';
 import '../marketplace_labels.dart';
 import '../widgets/listing_content_dialog.dart';
 import '../widgets/listing_photo.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// Where the listing's (approximated) position comes from.
 enum _LocationChoice { keep, current, home }
@@ -422,23 +424,17 @@ class _CreateListingPageState extends State<CreateListingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(
-          _isEditing ? context.l10n.marketplaceEditListing : context.l10n.marketplaceNewListing,
-          style: AppTextStyles.title,
-        ),
+      appBar: PageHeader(
+        title: _isEditing ? context.l10n.marketplaceEditListing : context.l10n.marketplaceNewListing,
       ),
       body: SafeArea(
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xl,
-              AppSpacing.md,
-              AppSpacing.xl,
+              AppSpacing.page,
+              0,
+              AppSpacing.page,
               AppSpacing.xxxl,
             ),
             // Not a lazy list: the fields out of view must be validated too.
@@ -453,47 +449,52 @@ class _CreateListingPageState extends State<CreateListingPage> {
                   onRemove: (index) => setState(() => _photos.removeAt(index)),
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                TextFormField(
-                  controller: _titleController,
-                  decoration: InputDecoration(labelText: context.l10n.marketplaceFieldTitle),
-                  maxLength: 80,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return context.l10n.marketplaceTitleRequired;
-                    }
-                    return _contactDetailsError(value) ??
-                        _animalOfferError(value, _descriptionController.text, onTitle: true);
-                  },
+                AppField(
+                  label: context.l10n.marketplaceFieldTitle,
+                  child: TextFormField(
+                    controller: _titleController,
+                    maxLength: 80,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return context.l10n.marketplaceTitleRequired;
+                      }
+                      return _contactDetailsError(value) ??
+                          _animalOfferError(value, _descriptionController.text, onTitle: true);
+                    },
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                TextFormField(
-                  controller: _descriptionController,
-                  decoration: InputDecoration(labelText: context.l10n.marketplaceFieldDescription),
-                  maxLines: 3,
-                  maxLength: 1000,
-                  validator: (value) =>
-                      _contactDetailsError(value) ??
-                      _animalOfferError(_titleController.text, value, onTitle: false),
+                AppField(
+                  label: context.l10n.marketplaceFieldDescription,
+                  child: TextFormField(
+                    controller: _descriptionController,
+                    maxLines: 3,
+                    maxLength: 1000,
+                    validator: (value) =>
+                        _contactDetailsError(value) ??
+                        _animalOfferError(_titleController.text, value, onTitle: false),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                DropdownButtonFormField<ListingCategory>(
-                  initialValue: _category,
-                  isExpanded: true,
-                  decoration: InputDecoration(labelText: context.l10n.marketplaceFieldCategory),
-                  items: ListingCategory.values
-                      .map(
-                        (category) => DropdownMenuItem(
-                          value: category,
-                          child: Text(listingCategoryLabel(category)),
-                        ),
-                      )
-                      .toList(),
-                  validator: (value) => value == null ? context.l10n.marketplaceCategoryRequired : null,
-                  onChanged: (value) => setState(() => _category = value),
+                AppField(
+                  label: context.l10n.marketplaceFieldCategory,
+                  child: DropdownButtonFormField<ListingCategory>(
+                    initialValue: _category,
+                    isExpanded: true,
+                    items: ListingCategory.values
+                        .map(
+                          (category) => DropdownMenuItem(
+                            value: category,
+                            child: Text(listingCategoryLabel(category)),
+                          ),
+                        )
+                        .toList(),
+                    validator: (value) => value == null ? context.l10n.marketplaceCategoryRequired : null,
+                    onChanged: (value) => setState(() => _category = value),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                Text(context.l10n.marketplaceConditionLabel, style: AppTextStyles.bodySmall),
-                const SizedBox(height: AppSpacing.sm),
+                FieldLabel(context.l10n.marketplaceConditionLabel),
                 Wrap(
                   spacing: AppSpacing.sm,
                   runSpacing: AppSpacing.sm,
@@ -508,8 +509,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
                       .toList(),
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                Text(context.l10n.marketplaceSpeciesLabel, style: AppTextStyles.bodySmall),
-                const SizedBox(height: AppSpacing.sm),
+                FieldLabel(context.l10n.marketplaceSpeciesLabel),
                 FormField<Set<ListingSpecies>>(
                   validator: (_) =>
                       _species.isEmpty ? context.l10n.marketplaceSpeciesRequired : null,
@@ -551,11 +551,13 @@ class _CreateListingPageState extends State<CreateListingPage> {
                   onChanged: (value) => setState(() => _isGift = value),
                 ),
                 if (!_isGift)
-                  TextFormField(
-                    controller: _priceController,
-                    decoration: InputDecoration(labelText: listingPriceFieldLabel()),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    validator: _validatePrice,
+                  AppField(
+                    label: listingPriceFieldLabel(),
+                    child: TextFormField(
+                      controller: _priceController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      validator: _validatePrice,
+                    ),
                   ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
@@ -750,7 +752,7 @@ class _LocationSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(context.l10n.marketplaceLocationTitle, style: AppTextStyles.bodySmall),
+        FieldLabel(context.l10n.marketplaceLocationTitle),
         const SizedBox(height: AppSpacing.sm),
         Wrap(
           spacing: AppSpacing.sm,
@@ -783,14 +785,16 @@ class _LocationSection extends StatelessWidget {
           ),
         if (error != null)
           Text(error!, style: AppTextStyles.bodySmall.copyWith(color: AppColors.danger)),
-        TextFormField(
-          controller: zoneController,
-          decoration: InputDecoration(
-            labelText: context.l10n.marketplaceZoneLabel,
-            helperText: context.l10n.marketplaceZoneHelper,
+        AppField(
+          label: context.l10n.marketplaceZoneLabel,
+          child: TextFormField(
+            controller: zoneController,
+            decoration: InputDecoration(
+              helperText: context.l10n.marketplaceZoneHelper,
+            ),
+            maxLength: 80,
+            onChanged: (_) => onZoneEdited(),
           ),
-          maxLength: 80,
-          onChanged: (_) => onZoneEdited(),
         ),
         const SizedBox(height: AppSpacing.sm),
         Container(

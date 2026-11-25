@@ -35,6 +35,7 @@ import '../walk_labels.dart';
 import '../walk_notification_permission.dart';
 import '../widgets/walk_map_style.dart';
 import '../widgets/walk_route_markers_layer.dart';
+import '../../../../shared/widgets/page_header.dart';
 
 /// Live start/stop/pause tracking for one pet's walk. The tracking itself
 /// lives in ActiveWalkController.instance, an app-lifetime singleton - not
@@ -335,12 +336,7 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
   Widget _buildPage(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(context.l10n.walksPageTitle(widget.pet.name), style: AppTextStyles.title),
-      ),
+      appBar: PageHeader(title: context.l10n.walksPageTitle(widget.pet.name)),
       body: SafeArea(
         child: AnimatedBuilder(
           animation: _controller,
@@ -417,7 +413,7 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
                         ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
+                  padding: const EdgeInsets.all(AppSpacing.page),
                   child: Column(
                     children: [
                       if (walk != null)

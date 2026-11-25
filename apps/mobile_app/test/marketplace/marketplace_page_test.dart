@@ -1,3 +1,4 @@
+import 'package:vet_app_mobile/shared/widgets/page_header.dart';
 import 'package:vet_app_mobile/shared/widgets/short_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -310,14 +311,15 @@ void main() {
     expect(find.widgetWithText(TextButton, 'Mappa'), findsOneWidget);
   });
 
-  testWidgets('the map button is in the body, not in the app bar that holds the title',
+  testWidgets('the map button is in the body, not in the header that holds the title',
       (tester) async {
     await _pumpPage(tester, reference: _me);
     final map = find.widgetWithText(TextButton, 'Mappa');
     expect(map, findsOneWidget);
-    expect(find.descendant(of: find.byType(AppBar), matching: map), findsNothing);
-    expect(find.descendant(of: find.byType(AppBar), matching: find.byIcon(Icons.map_outlined)),
-        findsNothing);
+    final header = find.byType(PageHeader);
+    expect(header, findsOneWidget);
+    expect(find.descendant(of: header, matching: map), findsNothing);
+    expect(find.descendant(of: header, matching: find.byIcon(Icons.map_outlined)), findsNothing);
   });
 
   group('listing detail', () {

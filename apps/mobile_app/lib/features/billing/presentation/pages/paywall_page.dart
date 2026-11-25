@@ -26,6 +26,7 @@ import '../plan_over_pet_limit.dart';
 import '../widgets/cancel_subscription_section.dart';
 import '../widgets/plan_feature_list.dart';
 import '../widgets/store_subscription_section.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 /// Blocking screen shown when the free trial has ended and no plan has
 /// been chosen (packages/core/domain/subscription/models.py:
@@ -288,16 +289,8 @@ class _PaywallPlanCard extends StatelessWidget {
         '${l10n.billingPricePerYear(formatPlanAmount(plan.priceFor(BillingCycle.yearly)))}'
         ' · ${l10n.billingPricePerMonth(formatPlanAmount(plan.priceFor(BillingCycle.monthly)))}';
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(
-          color: plan.badge != null ? AppColors.primary : AppColors.border,
-          width: plan.badge != null ? 2 : 1,
-        ),
-      ),
+    return AppCard(
+      selected: plan.badge != null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

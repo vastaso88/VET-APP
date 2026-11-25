@@ -10,24 +10,40 @@ class OutlineIconButton extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onPressed,
+    this.color = AppColors.primary,
+    this.child,
   });
 
   final IconData icon;
   final String tooltip;
   final VoidCallback? onPressed;
 
+  /// Only for what must not look like the others (a deletion).
+  final Color color;
+
+  /// In place of the plain icon: the icon with a counter on it, a loader.
+  final Widget? child;
+
+  /// The same look for a command that is not a button of its own (a menu).
+  static ButtonStyle get look => IconButton.styleFrom(
+        foregroundColor: AppColors.primary,
+        backgroundColor: AppColors.surfaceElevated,
+        side: const BorderSide(color: AppColors.borderStrong),
+        // 40 px visible, 48 px to touch.
+        tapTargetSize: MaterialTapTargetSize.padded,
+      );
+
   @override
   Widget build(BuildContext context) {
     return IconButton.outlined(
       tooltip: tooltip,
       onPressed: onPressed,
-      icon: Icon(icon),
-      color: AppColors.primary,
-      style: IconButton.styleFrom(
-        backgroundColor: AppColors.surfaceElevated,
-        side: const BorderSide(color: AppColors.borderStrong),
-        // 40 px visible, 48 px to touch.
-        tapTargetSize: MaterialTapTargetSize.padded,
+      icon: child ?? Icon(icon),
+      color: color,
+      style: look.copyWith(
+        foregroundColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.disabled) ? AppColors.mutedText : color,
+        ),
       ),
     );
   }

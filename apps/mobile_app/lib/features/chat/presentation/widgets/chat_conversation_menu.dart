@@ -11,6 +11,7 @@ import '../../../../shared/types/result.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../../data/chat_demo_store.dart';
 import '../../domain/chat_models.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// The three-dot menu of one conversation: Rinomina, Esporta chat, Riassunto
 /// and Elimina. Used in the conversation header and on each conversation row.
@@ -116,12 +117,13 @@ class ChatConversationMenuButton extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(dialogContext.l10n.chatRenameTitle),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: InputDecoration(
-              labelText: dialogContext.l10n.chatRenameFieldLabel),
+        content: AppField(
+          label: dialogContext.l10n.chatRenameFieldLabel,
+          child: TextField(
+            controller: controller,
+            autofocus: true,
+            textCapitalization: TextCapitalization.sentences,
+          ),
         ),
         actions: [
           TextButton(

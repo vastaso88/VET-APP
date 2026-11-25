@@ -56,6 +56,8 @@ import '../../../auth/presentation/pages/legal_text_page.dart';
 import '../widgets/collapsible_section.dart';
 import 'location_picker_page.dart';
 import '../../../../l10n/regional_defaults.dart';
+import '../../../../shared/widgets/app_field.dart';
+import '../../../../shared/widgets/page_header.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -589,14 +591,19 @@ class _SettingsPageState extends State<SettingsPage> {
 
             return ListView(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,
-                AppSpacing.lg,
-                AppSpacing.xl,
+                AppSpacing.page,
+                PageHeader.top,
+                AppSpacing.page,
                 AppSpacing.xxxl,
               ),
               children: [
-                Text(context.l10n.settingsTitle, style: AppTextStyles.display.copyWith(fontSize: 28)),
-                const SizedBox(height: AppSpacing.xl),
+                PageHeader(
+                  title: context.l10n.settingsTitle,
+                  root: true,
+                  showBack: false,
+                  padding: EdgeInsets.zero,
+                ),
+                const SizedBox(height: AppSpacing.md),
                 _Row(
                   leading: ProfileAvatar(
                     letter: CurrentUser.firstName(fallback: context.l10n.settingsGuestInitial)
@@ -1471,20 +1478,24 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
   @override
   Widget build(BuildContext context) {
     final format = appRegionalFormat();
-    final postalCodeField = TextFormField(
-      controller: _postalCodeController,
-      keyboardType: format.postalCodeNumeric ? TextInputType.number : TextInputType.text,
-      textCapitalization: TextCapitalization.characters,
-      decoration: InputDecoration(
-        labelText: context.l10n.settingsHomeAddressPostalCode,
-        hintText: format.postalCodeExample,
+    final postalCodeField = AppField(
+      label: context.l10n.settingsHomeAddressPostalCode,
+      child: TextFormField(
+        controller: _postalCodeController,
+        keyboardType: format.postalCodeNumeric ? TextInputType.number : TextInputType.text,
+        textCapitalization: TextCapitalization.characters,
+        decoration: InputDecoration(
+          hintText: format.postalCodeExample,
+        ),
+        validator: (value) => _required(value, context.l10n.settingsHomeAddressPostalCodeRequired),
       ),
-      validator: (value) => _required(value, context.l10n.settingsHomeAddressPostalCodeRequired),
     );
-    final cityField = TextFormField(
-      controller: _cityController,
-      decoration: InputDecoration(labelText: context.l10n.settingsHomeAddressCity),
-      validator: (value) => _required(value, context.l10n.settingsHomeAddressCityRequired),
+    final cityField = AppField(
+      label: context.l10n.settingsHomeAddressCity,
+      child: TextFormField(
+        controller: _cityController,
+        validator: (value) => _required(value, context.l10n.settingsHomeAddressCityRequired),
+      ),
     );
     return AlertDialog(
       backgroundColor: AppColors.surface,
@@ -1506,11 +1517,13 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
               const SizedBox(height: AppSpacing.md),
               Text(context.l10n.settingsHomeAddressOrType, style: AppTextStyles.bodySmall),
               const SizedBox(height: AppSpacing.sm),
-              TextFormField(
-                controller: _streetController,
-                decoration: InputDecoration(labelText: context.l10n.settingsHomeAddressStreet),
-                validator: (value) =>
-                    _required(value, context.l10n.settingsHomeAddressStreetRequired),
+              AppField(
+                label: context.l10n.settingsHomeAddressStreet,
+                child: TextFormField(
+                  controller: _streetController,
+                  validator: (value) =>
+                      _required(value, context.l10n.settingsHomeAddressStreetRequired),
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
               // Germany/France/Spain/Italy/... write "10115 Berlin"; UK, US and
@@ -1519,11 +1532,13 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
                   ? [postalCodeField, const SizedBox(height: AppSpacing.md), cityField]
                   : [cityField, const SizedBox(height: AppSpacing.md), postalCodeField]),
               const SizedBox(height: AppSpacing.md),
-              TextFormField(
-                controller: _countryController,
-                decoration: InputDecoration(labelText: context.l10n.settingsHomeAddressCountry),
-                validator: (value) =>
-                    _required(value, context.l10n.settingsHomeAddressCountryRequired),
+              AppField(
+                label: context.l10n.settingsHomeAddressCountry,
+                child: TextFormField(
+                  controller: _countryController,
+                  validator: (value) =>
+                      _required(value, context.l10n.settingsHomeAddressCountryRequired),
+                ),
               ),
               if (_error != null) ...[
                 const SizedBox(height: AppSpacing.md),

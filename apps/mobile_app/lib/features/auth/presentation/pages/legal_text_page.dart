@@ -6,6 +6,9 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../data/legal_texts_remote_data_source.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../../../../design_system/atoms/outline_icon_button.dart';
 
 /// Shows a legal text (terms of service / privacy policy) from the public
 /// consent catalog, so the wording is maintained in one place.
@@ -40,11 +43,8 @@ class _LegalTextPageState extends State<LegalTextPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(widget.title, style: AppTextStyles.title),
+      appBar: PageHeader(
+        title: widget.title,
         actions: [
           if (widget.shareable)
             FutureBuilder<String?>(
@@ -53,9 +53,9 @@ class _LegalTextPageState extends State<LegalTextPage> {
                 final text = snapshot.data;
                 final ready = text != null &&
                     text.length >= LegalTextPage.fullTextMinLength;
-                return IconButton(
+                return OutlineIconButton(
                   tooltip: context.l10n.authLegalShareTooltip,
-                  icon: const Icon(Icons.ios_share_rounded),
+                  icon: Icons.ios_share_rounded,
                   onPressed: ready
                       ? () => SharePlus.instance.share(
                             ShareParams(text: text, subject: widget.title),
@@ -74,21 +74,22 @@ class _LegalTextPageState extends State<LegalTextPage> {
           }
           final text = snapshot.data;
           if (text == null || text.trim().isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Text(
-                  context.l10n.authLegalLoadError,
-                  style: AppTextStyles.body,
-                  textAlign: TextAlign.center,
-                ),
+            return CenteredPageState(
+              child: EmptyState.icon(
+                icon: Icons.cloud_off_outlined,
+                text: context.l10n.authLegalLoadError,
               ),
             );
           }
           final preparing =
               widget.shareable && text.length < LegalTextPage.fullTextMinLength;
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.xl),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.page,
+              0,
+              AppSpacing.page,
+              AppSpacing.xl,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

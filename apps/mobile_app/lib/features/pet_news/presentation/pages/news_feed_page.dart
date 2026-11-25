@@ -17,6 +17,8 @@ import '../../../../shared/widgets/min_tap_target.dart';
 import '../../data/pet_news_repository.dart';
 import '../../domain/pet_news_item.dart';
 import '../widgets/pet_news_card.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/page_header.dart';
 
 class NewsFeedPage extends StatefulWidget {
   const NewsFeedPage({super.key});
@@ -134,31 +136,22 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: PageHeader(
+        title: context.l10n.petNewsTitle,
+        showBack: true,
+        actions: [
+          OutlineIconButton(
+            tooltip: context.l10n.settingsLocationRefresh,
+            onPressed: _refreshing ? null : _refresh,
+            icon: Icons.refresh_rounded,
+            child: _refreshing ? const PetLoader.small() : null,
+          ),
+        ],
+      ),
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.lg,
-                AppSpacing.lg,
-                AppSpacing.md,
-              ),
-              child: Row(
-                children: [
-                  OutlineIconButton(
-                    tooltip: context.l10n.commonBack,
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    icon: Icons.arrow_back_rounded,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(context.l10n.petNewsTitle, style: AppTextStyles.display.copyWith(fontSize: 26)),
-                  ),
-                  _RefreshButton(refreshing: _refreshing, onTap: _refresh),
-                ],
-              ),
-            ),
             _CategoryBar(
               categories: _categories,
               selected: _selectedCategory,
@@ -172,15 +165,11 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
                       onRefresh: _refresh,
                       child: _shown.isEmpty
                           ? ListView(
-                              padding: const EdgeInsets.all(AppSpacing.xl),
                               children: [
-                                const SizedBox(height: AppSpacing.xxxl),
-                                Text(
-                                  petNewsEditionServed()
+                                EmptyState(
+                                  text: petNewsEditionServed()
                                       ? context.l10n.petNewsEmpty
                                       : context.l10n.petNewsEmptyLocal,
-                                  textAlign: TextAlign.center,
-                                  style: AppTextStyles.bodySmall,
                                 ),
                               ],
                             )
@@ -204,28 +193,6 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
   }
 }
 
-class _RefreshButton extends StatelessWidget {
-  const _RefreshButton({required this.refreshing, required this.onTap});
-
-  final bool refreshing;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: context.l10n.settingsLocationRefresh,
-      onPressed: refreshing ? null : onTap,
-      icon: refreshing
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: PetLoader.small(),
-            )
-          : const Icon(Icons.refresh_rounded, color: AppColors.secondaryStrong),
-    );
-  }
-}
-
 class _CategoryBar extends StatelessWidget {
   const _CategoryBar({
     required this.categories,
@@ -240,7 +207,7 @@ class _CategoryBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PillRow(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
       children: [
         _CategoryChip(
           label: context.l10n.petNewsCategoryAll,

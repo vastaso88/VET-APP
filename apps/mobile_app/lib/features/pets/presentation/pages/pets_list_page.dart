@@ -16,20 +16,14 @@ import '../../domain/pet_models.dart';
 import '../../domain/pet_value_labels.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
-import '../widgets/pets_state_views.dart';
 import 'pet_create_page.dart';
 import 'pet_detail_page.dart';
 import 'pet_memories_page.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../widgets/species_figure.dart';
 
 class PetsListPage extends StatefulWidget {
-  const PetsListPage({
-    super.key,
-    this.state = PetsScreenStatus.success,
-    this.errorMessage,
-  });
-
-  final PetsScreenStatus state;
-  final String? errorMessage;
+  const PetsListPage({super.key});
 
   @override
   State<PetsListPage> createState() => _PetsListPageState();
@@ -70,8 +64,6 @@ class _PetsListPageState extends State<PetsListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final state = widget.state;
-
     return PetsScaffold(
       title: context.l10n.petsListTitle,
       subtitle: petProfilesCountLabel(PetDemoStore.instance.list().length),
@@ -86,36 +78,20 @@ class _PetsListPageState extends State<PetsListPage> {
           style: IconButton.styleFrom(backgroundColor: AppColors.primary),
         ),
       ],
-      body: switch (state) {
-        PetsScreenStatus.loading =>
-          PetsLoadingView(label: context.l10n.petsListLoading),
-        PetsScreenStatus.error => PetsErrorView(
-            title: context.l10n.petsListErrorTitle,
-            subtitle: widget.errorMessage ?? context.l10n.petsListErrorDefault,
-            actionLabel: context.l10n.commonBack,
-            onRetry: () => Navigator.of(context).maybePop(),
-          ),
-        PetsScreenStatus.empty => PetsEmptyView(
-            title: context.l10n.petsListEmptyTitle,
-            subtitle: context.l10n.petsListEmptySubtitle,
-            actionLabel: context.l10n.petsListEmptyAction,
-            onAction: () => _openCreate(context),
-          ),
-        PetsScreenStatus.success => _PetsListContent(
-            pets: _pets,
-            selectedSpecies: _selectedSpecies,
-            onSpeciesChanged: (species) {
-              setState(() {
-                _selectedSpecies = species;
-                _pets = PetDemoStore.instance.list(species: _selectedSpecies);
-              });
-            },
-            onOpenPet: (pet) => _openDetail(context, pet),
-            memorialCount: PetDemoStore.instance.memorialPets().length,
-            onOpenMemories: () => _openMemories(context),
-            onCreate: () => _openCreate(context),
-          ),
-      },
+      body: _PetsListContent(
+        pets: _pets,
+        selectedSpecies: _selectedSpecies,
+        onSpeciesChanged: (species) {
+          setState(() {
+            _selectedSpecies = species;
+            _pets = PetDemoStore.instance.list(species: _selectedSpecies);
+          });
+        },
+        onOpenPet: (pet) => _openDetail(context, pet),
+        memorialCount: PetDemoStore.instance.memorialPets().length,
+        onOpenMemories: () => _openMemories(context),
+        onCreate: () => _openCreate(context),
+      ),
     );
   }
 
@@ -195,16 +171,7 @@ class _PetsListContent extends StatelessWidget {
           child: pets.isEmpty
               ? Column(
                   children: [
-                    Expanded(
-                      child: Center(
-                        child: memorialCount > 0 && selectedSpecies == 'Tutti'
-                            ? _OnlyMemoriesEmpty(onCreate: onCreate)
-                            : Text(
-                                context.l10n.petsListFilterEmpty,
-                                style: AppTextStyles.body,
-                              ),
-                      ),
-                    ),
+                    Expanded(child: CenteredPageState(child: _empty(context))),
                     if (memorialCount > 0)
                       MemoriesListRow(count: memorialCount, onTap: onOpenMemories),
                   ],
@@ -227,40 +194,41 @@ class _PetsListContent extends StatelessWidget {
       ],
     );
   }
-}
 
-/// No active pet left, only memories: no "Crea pet" push — a new profile is
-/// offered softly, for whenever the owner wants it.
-class _OnlyMemoriesEmpty extends StatelessWidget {
-  const _OnlyMemoriesEmpty({required this.onCreate});
-
-  final VoidCallback onCreate;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            context.l10n.petsListEmptyOnlyMemoriesTitle,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.title.copyWith(fontSize: 17),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            context.l10n.petsListEmptyOnlyMemoriesSubtitle,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodySmall,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          TextButton(
-            onPressed: onCreate,
-            child: Text(context.l10n.petsListEmptyOnlyMemoriesAction),
-          ),
-        ],
-      ),
+  Widget _empty(BuildContext context) {
+    final l10n = context.l10n;
+    if (selectedSpecies != 'Tutti') {
+      return EmptyState.figure(
+        figure: ClipOval(
+          child: SpeciesFigure(species: selectedSpecies, size: EmptyState.figureSize),
+        ),
+        title: l10n.petsListFilterEmpty,
+        padding: EmptyState.insidePage,
+        action: FilledButton(
+          onPressed: onCreate,
+          child: Text(l10n.petsListEmptyOnlyMemoriesAction),
+        ),
+      );
+    }
+    if (memorialCount > 0) {
+      // No active pet left, only memories: no mascot and no push, a new profile
+      // is offered softly, for whenever the owner wants it.
+      return EmptyState.icon(
+        icon: Icons.auto_awesome_outlined,
+        title: l10n.petsListEmptyOnlyMemoriesTitle,
+        text: l10n.petsListEmptyOnlyMemoriesSubtitle,
+        padding: EmptyState.insidePage,
+        action: TextButton(
+          onPressed: onCreate,
+          child: Text(l10n.petsListEmptyOnlyMemoriesAction),
+        ),
+      );
+    }
+    return EmptyState(
+      title: l10n.petsListEmptyTitle,
+      text: l10n.petsListEmptySubtitle,
+      padding: EmptyState.insidePage,
+      action: FilledButton(onPressed: onCreate, child: Text(l10n.petsListEmptyAction)),
     );
   }
 }

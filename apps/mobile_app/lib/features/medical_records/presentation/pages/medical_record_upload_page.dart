@@ -20,6 +20,9 @@ import '../../data/medical_record_file_cache.dart';
 import '../../data/medical_records_repository.dart';
 import '../../domain/record_category.dart';
 import '../record_category_labels.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/app_card.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// Adds an entry to a pet's cartella clinica, or edits the details of one.
 ///
@@ -424,13 +427,8 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(
-          _editing ? l10n.medEditDetailsTitle : _category.newEntryTitle(l10n),
-        ),
+      appBar: PageHeader(
+        title: _editing ? l10n.medEditDetailsTitle : _category.newEntryTitle(l10n),
       ),
       body: SafeArea(
         child: Column(
@@ -438,9 +436,9 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.md,
-                  AppSpacing.lg,
+                  AppSpacing.page,
+                  0,
+                  AppSpacing.page,
                   AppSpacing.lg,
                 ),
                 child: Form(
@@ -461,7 +459,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                         const SizedBox(height: AppSpacing.md),
                       ],
                       const SizedBox(height: AppSpacing.xs),
-                      _FieldLabel(l10n.medFieldCategory),
+                      FieldLabel(l10n.medFieldCategory),
                       Wrap(
                         spacing: AppSpacing.sm,
                         runSpacing: AppSpacing.sm,
@@ -491,33 +489,37 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                       ),
                       if (_category.subtypes.isNotEmpty) ...[
                         const SizedBox(height: AppSpacing.lg),
-                        _FieldLabel(l10n.medFieldType),
-                        DropdownButtonFormField<String?>(
-                          initialValue: _subtype,
-                          isExpanded: true,
-                          decoration: _decoration(),
-                          items: [
-                            DropdownMenuItem<String?>(
-                              value: null,
-                              child: Text(l10n.medFieldTypeNone),
-                            ),
-                            for (final key in _category.subtypes)
+                        AppField(
+                          label: l10n.medFieldType,
+                          child: DropdownButtonFormField<String?>(
+                            initialValue: _subtype,
+                            isExpanded: true,
+                            decoration: _decoration(),
+                            items: [
                               DropdownMenuItem<String?>(
-                                value: key,
-                                child: Text(recordSubtypeLabel(l10n, key)),
+                                value: null,
+                                child: Text(l10n.medFieldTypeNone),
                               ),
-                          ],
-                          onChanged: (value) =>
-                              setState(() => _subtype = value),
+                              for (final key in _category.subtypes)
+                                DropdownMenuItem<String?>(
+                                  value: key,
+                                  child: Text(recordSubtypeLabel(l10n, key)),
+                                ),
+                            ],
+                            onChanged: (value) =>
+                                setState(() => _subtype = value),
+                          ),
                         ),
                       ],
                       const SizedBox(height: AppSpacing.lg),
-                      _FieldLabel(l10n.medFieldTitle),
-                      TextField(
-                        controller: _titleController,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: _decoration(),
-                        onChanged: (_) => _titleEdited = true,
+                      AppField(
+                        label: l10n.medFieldTitle,
+                        child: TextField(
+                          controller: _titleController,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: _decoration(),
+                          onChanged: (_) => _titleEdited = true,
+                        ),
                       ),
                       if (suggestion != null) ...[
                         const SizedBox(height: AppSpacing.sm),
@@ -532,24 +534,26 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                         ),
                       ],
                       const SizedBox(height: AppSpacing.lg),
-                      _FieldLabel(l10n.medFieldEventDate),
-                      TypedDateField(
-                        controller: _dateController,
-                        validator: _validateDate,
-                        onPick: _pickDate,
-                        pickIcon: const Icon(
-                          Icons.calendar_today_outlined,
-                          size: 18,
-                          color: AppColors.secondaryStrong,
+                      AppField(
+                        label: l10n.medFieldEventDate,
+                        child: TypedDateField(
+                          controller: _dateController,
+                          validator: _validateDate,
+                          onPick: _pickDate,
+                          pickIcon: const Icon(
+                            Icons.calendar_today_outlined,
+                            size: 18,
+                            color: AppColors.secondaryStrong,
+                          ),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.text,
+                          ),
+                          decoration: _decoration(hint: l10n.medDatePlaceholder),
                         ),
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.text,
-                        ),
-                        decoration: _decoration(hint: l10n.medDatePlaceholder),
                       ),
                       if (!_editing) ...[
                         const SizedBox(height: AppSpacing.lg),
-                        _FieldLabel(l10n.medFieldFile),
+                        FieldLabel(l10n.medFieldFile),
                         if (picked == null)
                           _PickArea(onTap: _pickFile)
                         else
@@ -559,13 +563,15 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                           ),
                       ],
                       const SizedBox(height: AppSpacing.lg),
-                      _FieldLabel(l10n.medFieldNotes),
-                      TextField(
-                        controller: _notesController,
-                        minLines: 3,
-                        maxLines: 6,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: _decoration(hint: l10n.medFieldNotesHint),
+                      AppField(
+                        label: l10n.medFieldNotes,
+                        child: TextField(
+                          controller: _notesController,
+                          minLines: 3,
+                          maxLines: 6,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: _decoration(hint: l10n.medFieldNotesHint),
+                        ),
                       ),
                     ],
                   ),
@@ -603,20 +609,6 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
 }
 
 InputDecoration _decoration({String? hint}) => InputDecoration(hintText: hint);
-
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: Text(text, style: AppTextStyles.caption),
-    );
-  }
-}
 
 /// "Looks like an exam — file it as one?": a proposal from the title, never
 /// applied without the owner's tap.
@@ -676,56 +668,45 @@ class _PickArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        onTap: onTap,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(color: AppColors.borderStrong),
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      width: double.infinity,
+      onTap: onTap,
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.secondarySoft,
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+            ),
+            child: const Icon(
+              Icons.upload_file_outlined,
+              size: 22,
+              color: AppColors.secondaryStrong,
+            ),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.secondarySoft,
-                  borderRadius: BorderRadius.circular(AppRadii.medium),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.l10n.medicalUploadPickPrompt,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.text,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.upload_file_outlined,
-                  size: 22,
-                  color: AppColors.secondaryStrong,
+                Text(
+                  context.l10n.medicalUploadPickHint,
+                  style: AppTextStyles.caption,
                 ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      context.l10n.medicalUploadPickPrompt,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.text,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      context.l10n.medicalUploadPickHint,
-                      style: AppTextStyles.caption,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -739,14 +720,8 @@ class _PickedFileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AppCard(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: AppColors.border),
-      ),
       child: Row(
         children: [
           Container(

@@ -47,23 +47,20 @@ import '../../../notifications/presentation/notifications_off_banner.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pet_tab_bar.dart';
 import '../widgets/pets_scaffold.dart';
-import '../widgets/pets_state_views.dart';
 import 'pet_data_page.dart';
 import 'pet_edit_page.dart';
 import 'pet_gallery_page.dart';
+import '../../../../shared/widgets/app_card.dart';
+import '../../../../shared/widgets/empty_state.dart';
 
 class PetDetailPage extends StatefulWidget {
   const PetDetailPage({
     super.key,
     this.pet,
-    this.state = PetsScreenStatus.success,
-    this.errorMessage,
     this.initialTab = 0,
   });
 
   final PetProfile? pet;
-  final PetsScreenStatus state;
-  final String? errorMessage;
 
   /// Which card opens first (reminders, chat, records...): used when the page
   /// is restored after the app was killed in the background.
@@ -152,33 +149,29 @@ class _PetDetailPageState extends State<PetDetailPage> {
           icon: Icons.edit_outlined,
         ),
       ],
-      body: switch (widget.state) {
-        PetsScreenStatus.loading =>
-          PetsLoadingView(label: context.l10n.petsDetailLoading),
-        PetsScreenStatus.error => PetsErrorView(
-            title: context.l10n.petsDetailErrorTitle,
-            subtitle: widget.errorMessage ?? context.l10n.petsDetailErrorDefault,
-            actionLabel: context.l10n.petsDetailBackToList,
-            onRetry: () => Navigator.of(context).maybePop(),
-          ),
-        PetsScreenStatus.empty => PetsEmptyView(
-            title: context.l10n.petsDetailEmptyTitle,
-            subtitle: context.l10n.petsDetailEmptySubtitle,
-            actionLabel: context.l10n.petsDetailBackToList,
-            onAction: () => Navigator.of(context).maybePop(),
-          ),
-        PetsScreenStatus.success => _PetDetailContent(
-            pet: pet ?? PetDemoStore.instance.list().first,
-            recordsRepository: _recordsRepository,
-            remindersRepository: _remindersRepository,
-            walksRepository: _walksRepository,
-            initialTab: _openTab,
-            onTabChanged: (index) {
-              _openTab = index;
-              RouteRestoration.instance.touch();
-            },
-          ),
-      },
+      body: pet == null
+          ? CenteredPageState(
+              child: EmptyState(
+                title: context.l10n.petsDetailEmptyTitle,
+                text: context.l10n.petsDetailEmptySubtitle,
+                padding: EmptyState.insidePage,
+                action: FilledButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  child: Text(context.l10n.petsDetailBackToList),
+                ),
+              ),
+            )
+          : _PetDetailContent(
+              pet: pet,
+              recordsRepository: _recordsRepository,
+              remindersRepository: _remindersRepository,
+              walksRepository: _walksRepository,
+              initialTab: _openTab,
+              onTabChanged: (index) {
+                _openTab = index;
+                RouteRestoration.instance.touch();
+              },
+            ),
     );
   }
 
@@ -456,39 +449,28 @@ class _HabitatSummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(AppRadii.large),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        onTap: () => _openDetails(context),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(color: AppColors.borderStrong),
+    return AppCard(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      width: double.infinity,
+      onTap: () => _openDetails(context),
+      child: Row(
+        children: [
+          const Icon(Icons.water_outlined,
+              size: 16, color: AppColors.primary),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              '${petHabitatLabel(pet.species, context.l10n)} · ${_summary(context)}',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.caption.copyWith(
+                  color: AppColors.text, fontWeight: FontWeight.w600),
+            ),
           ),
-          child: Row(
-            children: [
-              const Icon(Icons.water_outlined,
-                  size: 16, color: AppColors.primary),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  '${petHabitatLabel(pet.species, context.l10n)} · ${_summary(context)}',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.caption.copyWith(
-                      color: AppColors.text, fontWeight: FontWeight.w600),
-                ),
-              ),
-              const Icon(Icons.chevron_right_rounded,
-                  size: 16, color: AppColors.mutedText),
-            ],
-          ),
-        ),
+          const Icon(Icons.chevron_right_rounded,
+              size: 16, color: AppColors.mutedText),
+        ],
       ),
     );
   }
@@ -524,14 +506,9 @@ class _AquariumStockCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
+    return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: AppColors.border),
-      ),
+      width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -652,8 +629,8 @@ class _RemindersTabState extends State<_RemindersTab> {
                     .toList(growable: false);
 
                 if (reminders.isEmpty) {
-                  return _EmptyTabState(
-                    icon: Icons.notifications_none_rounded,
+                  return _PetEmptyTab(
+                    pet: widget.pet,
                     text: context.l10n.petsDetailRemindersEmpty(widget.pet.name),
                   );
                 }
@@ -747,8 +724,8 @@ class _ChatTabState extends State<_ChatTab> {
             const SizedBox(height: AppSpacing.md),
             Expanded(
               child: conversations.isEmpty
-                  ? _EmptyTabState(
-                      icon: Icons.chat_bubble_outline_rounded,
+                  ? _PetEmptyTab(
+                      pet: widget.pet,
                       text: context.l10n.petsDetailChatEmpty(widget.pet.name),
                     )
                   : ListView.separated(
@@ -999,8 +976,8 @@ class _WalksTabState extends State<_WalksTab> {
                 return const Center(child: PetLoader());
               }
               if (walks.isEmpty) {
-                return _EmptyTabState(
-                  icon: Icons.directions_walk_outlined,
+                return _PetEmptyTab(
+                  pet: widget.pet,
                   text: context.l10n.petsDetailWalksEmpty(widget.pet.name),
                 );
               }
@@ -1267,13 +1244,10 @@ class _WalkCard extends StatelessWidget {
       if (walk.stepCountEstimate != null)
         context.l10n.petsDetailWalkSteps(walk.stepCountEstimate!),
     ];
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(AppRadii.large),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _openDetail(context),
-        child: Column(
+    return AppCard(
+      onTap: () => _openDetail(context),
+      padding: EdgeInsets.zero,
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
@@ -1335,7 +1309,6 @@ class _WalkCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 }
@@ -1385,108 +1358,89 @@ class _CompactRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(AppRadii.large),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(
-              color: onTap == null ? AppColors.border : AppColors.borderStrong,
+    return AppCard(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      onTap: onTap,
+      child: Row(
+        children: [
+          leading,
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.text,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (subtitle.isNotEmpty)
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.caption,
+                  ),
+                // Under the title: beside it, it took the place of its words.
+                if (trailingText != null && trailingText!.isNotEmpty)
+                  Text(trailingText!, style: AppTextStyles.caption),
+              ],
             ),
           ),
-          child: Row(
-            children: [
-              leading,
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.text,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    if (subtitle.isNotEmpty)
-                      Text(
-                        subtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.caption,
-                      ),
-                    // Under the title: beside it, it took the place of its words.
-                    if (trailingText != null && trailingText!.isNotEmpty)
-                      Text(trailingText!, style: AppTextStyles.caption),
-                  ],
+          if (badgeCount > 0) ...[
+            const SizedBox(width: AppSpacing.sm),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(AppRadii.pill),
+              ),
+              child: Text(
+                '$badgeCount',
+                style: const TextStyle(
+                  color: AppColors.onPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              if (badgeCount > 0) ...[
-                const SizedBox(width: AppSpacing.sm),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(AppRadii.pill),
-                  ),
-                  child: Text(
-                    '$badgeCount',
-                    style: const TextStyle(
-                      color: AppColors.onPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-              if (trailingAction != null) ...[
-                const SizedBox(width: 2),
-                trailingAction!,
-              ],
-              if (onTap != null && trailingAction == null) ...[
-                const SizedBox(width: AppSpacing.xs),
-                const Icon(Icons.chevron_right_rounded,
-                    size: 18, color: AppColors.mutedText),
-              ],
-            ],
-          ),
-        ),
+            ),
+          ],
+          if (trailingAction != null) ...[
+            const SizedBox(width: 2),
+            trailingAction!,
+          ],
+          if (onTap != null && trailingAction == null) ...[
+            const SizedBox(width: AppSpacing.xs),
+            const Icon(Icons.chevron_right_rounded,
+                size: 18, color: AppColors.mutedText),
+          ],
+        ],
       ),
     );
   }
 }
 
-class _EmptyTabState extends StatelessWidget {
-  const _EmptyTabState({required this.icon, required this.text});
+/// A card of the animal with nothing in it yet: the animal's own face.
+class _PetEmptyTab extends StatelessWidget {
+  const _PetEmptyTab({required this.pet, required this.text});
 
-  final IconData icon;
+  final PetProfile pet;
   final String text;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 28, color: AppColors.mutedText),
-            const SizedBox(height: AppSpacing.md),
-            Text(text,
-                textAlign: TextAlign.center, style: AppTextStyles.bodySmall),
-          ],
-        ),
+    return CenteredPageState(
+      child: EmptyState.figure(
+        figure: PetRingAvatar(pet: pet, size: 64),
+        text: text,
+        padding: const EdgeInsets.only(bottom: AppSpacing.md),
       ),
     );
   }
@@ -1524,13 +1478,9 @@ class _UnsyncedPetBannerState extends State<_UnsyncedPetBanner> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        border: Border.all(color: AppColors.danger),
-      ),
+      borderColor: AppColors.danger,
       child: Row(
         children: [
           Expanded(

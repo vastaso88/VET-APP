@@ -9,13 +9,6 @@ import 'pet_details.dart';
 import 'pet_value_labels.dart';
 import '../../../design_system/tokens/app_colors.dart';
 
-enum PetsScreenStatus {
-  loading,
-  empty,
-  error,
-  success,
-}
-
 /// One species' headcount within an aquarium population — split by sex
 /// (fish are usually stocked and sexed that way, unlike a single pet with
 /// one "Sesso" field) e.g. "Guppy" — 3 males, 5 females.

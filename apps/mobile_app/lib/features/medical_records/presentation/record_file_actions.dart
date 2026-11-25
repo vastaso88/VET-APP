@@ -17,6 +17,7 @@ import 'record_category_labels.dart';
 import 'native_pdf_opener_stub.dart'
     if (dart.library.io) 'native_pdf_opener.dart';
 import 'pdf_open_outcome.dart';
+import '../../../shared/widgets/app_field.dart';
 
 /// The bytes of a record's file: this session's cache first, then the server.
 /// Null when the record has no file, or the file can't be reached right now.
@@ -333,12 +334,13 @@ Future<void> renameRecordWithDialog(
     context: context,
     builder: (dialogContext) => AlertDialog(
       title: Text(dialogContext.l10n.medicalRenameTitle),
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        textCapitalization: TextCapitalization.sentences,
-        decoration: InputDecoration(
-            labelText: dialogContext.l10n.medicalRenameFieldLabel),
+      content: AppField(
+        label: dialogContext.l10n.medicalRenameFieldLabel,
+        child: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+        ),
       ),
       actions: [
         TextButton(

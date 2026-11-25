@@ -19,6 +19,7 @@ import '../../domain/reminder_category.dart';
 import '../../domain/reminder_completion.dart';
 import 'reminder_category_picker.dart';
 import 'reminder_postpone_sheet.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// What the owner answered to "Fatto?".
 sealed class ReminderAnswer {
@@ -254,29 +255,35 @@ class _CompletionSheetState extends State<_CompletionSheet> {
               ),
               if (clinical) ...[
                 const SizedBox(height: AppSpacing.md),
-                _Label(l10n.remindersDoneFieldTitle),
-                TextField(controller: _title, decoration: _decoration()),
-                const SizedBox(height: AppSpacing.md),
-                _Label(l10n.remindersDoneFieldDate),
-                TypedDateField(
-                  controller: _date,
-                  onPick: _pickDate,
-                  pickIcon: const Icon(Icons.calendar_today_outlined,
-                      size: 18, color: AppColors.primary),
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
-                  decoration: _decoration(hint: l10n.remindersDatePlaceholder, error: _dateError),
-                  onChanged: (_) {
-                    if (_dateError != null) setState(() => _dateError = null);
-                  },
+                AppField(
+                  label: l10n.remindersDoneFieldTitle,
+                  child: TextField(controller: _title, decoration: _decoration()),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                _Label(l10n.remindersDoneFieldNotes),
-                TextField(
-                  controller: _notes,
-                  minLines: 1,
-                  maxLines: 3,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: _decoration(),
+                AppField(
+                  label: l10n.remindersDoneFieldDate,
+                  child: TypedDateField(
+                    controller: _date,
+                    onPick: _pickDate,
+                    pickIcon: const Icon(Icons.calendar_today_outlined,
+                        size: 18, color: AppColors.primary),
+                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
+                    decoration: _decoration(hint: l10n.remindersDatePlaceholder, error: _dateError),
+                    onChanged: (_) {
+                      if (_dateError != null) setState(() => _dateError = null);
+                    },
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppField(
+                  label: l10n.remindersDoneFieldNotes,
+                  child: TextField(
+                    controller: _notes,
+                    minLines: 1,
+                    maxLines: 3,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: _decoration(),
+                  ),
                 ),
               ],
               const SizedBox(height: AppSpacing.lg),
@@ -316,17 +323,5 @@ class _CompletionSheetState extends State<_CompletionSheet> {
   InputDecoration _decoration({String? hint, String? error}) => InputDecoration(
         hintText: hint,
         errorText: error,
-      );
-}
-
-class _Label extends StatelessWidget {
-  const _Label(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-        child: Text(text, style: AppTextStyles.caption),
       );
 }

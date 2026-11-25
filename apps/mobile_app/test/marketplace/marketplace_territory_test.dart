@@ -11,6 +11,8 @@ import 'package:vet_app_mobile/features/territory/domain/territory.dart';
 
 import '../territory/territory_test_helpers.dart';
 
+import '../support/fields.dart';
+
 const _me = Coordinates(latitude: 45.46, longitude: 9.19);
 
 MarketplaceListing _listing(String id, {String country = 'IT', double kmNorth = 1}) {
@@ -146,13 +148,13 @@ void main() {
       final repository = MarketplaceRepository.inMemory(const []);
       await _openCreate(tester, repository);
 
-      await tester.enterText(find.widgetWithText(TextFormField, 'Título'), 'Correa');
+      await tester.enterText(fieldNamed('Título'), 'Correa');
       await tester.tap(find.byType(DropdownButtonFormField<ListingCategory>));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Correas, collares y arneses').last);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Perro'));
-      await tester.enterText(find.widgetWithText(TextFormField, 'Precio (€)'), '5');
+      await tester.enterText(fieldNamed('Precio (€)'), '5');
 
       await _tapPublish(tester, 'Publicar anuncio');
       await tester.pumpAndSettle();
@@ -167,7 +169,7 @@ void main() {
       final repository = MarketplaceRepository.inMemory(const []);
       await _openCreate(tester, repository);
 
-      await tester.enterText(find.widgetWithText(TextFormField, 'Titolo'), 'Vendo cuccioli');
+      await tester.enterText(fieldNamed('Titolo'), 'Vendo cuccioli');
       await _tapPublish(tester, 'Pubblica annuncio');
       await tester.pumpAndSettle();
       // The refusal sits under the title, at the top of the form.

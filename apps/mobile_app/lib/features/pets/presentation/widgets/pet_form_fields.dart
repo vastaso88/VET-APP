@@ -8,17 +8,10 @@ import '../../../../l10n/l10n.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/pet_details.dart';
 import '../../domain/pet_value_labels.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// Shared by the single-page profile form and the step-by-step creation flow:
 /// the fields that exist in both.
-
-/// The look of every text/dropdown field of the pet forms.
-InputDecoration petFieldDecoration(String label, String hint) {
-  return InputDecoration(
-    labelText: label,
-    hintText: hint,
-  );
-}
 
 /// Maschio / Femmina / Non so. Neutering is a separate switch, not a sex value.
 /// Leaving it unselected is the same as "Non so".
@@ -39,11 +32,7 @@ class PetSexField extends FormField<String> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  context.l10n.petsFormSexLabel,
-                  style: AppTextStyles.caption,
-                ),
-                const SizedBox(height: AppSpacing.xs),
+                FieldLabel(context.l10n.petsFormSexLabel),
                 SizedBox(
                   width: double.infinity,
                   child: SegmentedButton<String>(
@@ -283,15 +272,18 @@ class PetCodeDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      initialValue: codes.contains(value) ? value : null,
-      isExpanded: true,
-      decoration: petFieldDecoration(label, hint),
-      items: [
-        for (final code in codes)
-          DropdownMenuItem<String>(value: code, child: Text(labelOf(code))),
-      ],
-      onChanged: onChanged,
+    return AppField(
+      label: label,
+      child: DropdownButtonFormField<String>(
+        initialValue: codes.contains(value) ? value : null,
+        isExpanded: true,
+        decoration: InputDecoration(hintText: hint),
+        items: [
+          for (final code in codes)
+            DropdownMenuItem<String>(value: code, child: Text(labelOf(code))),
+        ],
+        onChanged: onChanged,
+      ),
     );
   }
 }

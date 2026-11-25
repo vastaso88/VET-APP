@@ -17,6 +17,9 @@ import '../../domain/marketplace_conversation.dart';
 import '../../domain/message_caution.dart';
 import '../widgets/messages_safety_notice.dart';
 import 'marketplace_info_page.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../../../../design_system/atoms/outline_icon_button.dart';
 
 /// Same limit as the backend (`MESSAGE_MAX_LENGTH`), which is what decides.
 const _maxMessageLength = 1000;
@@ -230,15 +233,8 @@ class _MarketplaceConversationPageState extends State<MarketplaceConversationPag
     final conversation = _conversation;
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(
-          conversation?.listingTitle ?? widget.listingTitle,
-          style: AppTextStyles.title,
-          overflow: TextOverflow.ellipsis,
-        ),
+      appBar: PageHeader(
+        title: conversation?.listingTitle ?? widget.listingTitle,
         actions: [
           const MarketplaceInfoButton(),
           if (conversation != null) _menu(context, conversation),
@@ -254,6 +250,8 @@ class _MarketplaceConversationPageState extends State<MarketplaceConversationPag
     return PopupMenuButton<String>(
       key: const ValueKey('marketplace-messages-menu'),
       tooltip: l10n.marketplaceMessagesMoreActions,
+      style: OutlineIconButton.look,
+      iconColor: AppColors.primary,
       onSelected: (action) {
         switch (action) {
           case 'block':
@@ -280,29 +278,19 @@ class _MarketplaceConversationPageState extends State<MarketplaceConversationPag
   Widget _body(BuildContext context) {
     if (_loading) return const Center(child: PetLoader());
     if (_failed) {
-      return Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                context.l10n.marketplaceMessagesLoadFailed,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.body,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    _failed = false;
-                    _loading = true;
-                  });
-                  unawaited(_load());
-                },
-                child: Text(context.l10n.commonRetry),
-              ),
-            ],
+      return CenteredPageState(
+        child: EmptyState.icon(
+          icon: Icons.cloud_off_outlined,
+          text: context.l10n.marketplaceMessagesLoadFailed,
+          action: OutlinedButton(
+            onPressed: () {
+              setState(() {
+                _failed = false;
+                _loading = true;
+              });
+              unawaited(_load());
+            },
+            child: Text(context.l10n.commonRetry),
           ),
         ),
       );

@@ -13,6 +13,8 @@ import '../../domain/marketplace_listing.dart';
 import '../marketplace_labels.dart';
 import '../widgets/listing_removal_notice.dart';
 import 'listing_detail_page.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/empty_state.dart';
 
 /// The owner's own ads, whatever their state: the only place where an ad the team
 /// took down is still to be found, with the reason. Open with or without a plan.
@@ -85,16 +87,7 @@ class _MyListingsPageState extends State<MyListingsPage> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.background,
-          elevation: 0,
-          foregroundColor: AppColors.text,
-          title: Text(
-            context.l10n.marketplaceMyListings,
-            style: AppTextStyles.title,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        appBar: PageHeader(title: context.l10n.marketplaceMyListings),
         body: SafeArea(child: _body(context)),
       ),
     );
@@ -104,32 +97,22 @@ class _MyListingsPageState extends State<MyListingsPage> {
     final listings = _listings;
     if (listings == null && !_failed) return const Center(child: PetLoader());
     if (listings == null || listings.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                !_failed
-                    ? context.l10n.marketplaceMyListingsEmpty
-                    : _serverWithoutAds
-                        ? context.l10n.marketplaceBackendUnavailable
-                        : context.l10n.marketplaceLoadError,
-                style: AppTextStyles.bodySmall,
-                textAlign: TextAlign.center,
-              ),
-              if (_failed)
-                TextButton(
+      return CenteredPageState(
+        child: _failed
+            ? EmptyState.icon(
+                icon: Icons.cloud_off_outlined,
+                text: _serverWithoutAds
+                    ? context.l10n.marketplaceBackendUnavailable
+                    : context.l10n.marketplaceLoadError,
+                action: OutlinedButton(
                   onPressed: () {
                     setState(() => _failed = false);
                     unawaited(_load());
                   },
                   child: Text(context.l10n.commonRetry),
                 ),
-            ],
-          ),
-        ),
+              )
+            : EmptyState(text: context.l10n.marketplaceMyListingsEmpty),
       );
     }
     return RefreshIndicator(

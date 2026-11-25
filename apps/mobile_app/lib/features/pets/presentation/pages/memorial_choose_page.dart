@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
@@ -14,6 +13,8 @@ import '../memorial_restore_message.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
 import 'memorial_move_page.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 /// "Which pet is no longer with you?": the active pets, one tap to the usual
 /// two-step move to Ricordi ([MemorialMovePage]).
@@ -72,10 +73,13 @@ class _MemorialChoosePageState extends State<MemorialChoosePage> {
         builder: (context, _, __) {
           final pets = PetDemoStore.instance.list();
           if (pets.isEmpty) {
-            return Text(
-              context.l10n.memorialChooseEmpty,
-              key: const ValueKey('memorial-choose-empty'),
-              style: AppTextStyles.body.copyWith(color: AppColors.secondaryText),
+            return CenteredPageState(
+              child: EmptyState.icon(
+                key: const ValueKey('memorial-choose-empty'),
+                icon: Icons.auto_awesome_outlined,
+                text: context.l10n.memorialChooseEmpty,
+                padding: EmptyState.insidePage,
+              ),
             );
           }
           return ListView(
@@ -102,16 +106,11 @@ class _PetRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(AppRadii.large),
-      child: InkWell(
-        key: ValueKey('memorial-choose-${pet.id}'),
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Row(
+    return AppCard(
+      key: ValueKey('memorial-choose-${pet.id}'),
+      onTap: onTap,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Row(
             children: [
               PetAvatar(
                 label: pet.avatarEmoji,
@@ -126,8 +125,6 @@ class _PetRow extends StatelessWidget {
               const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
             ],
           ),
-        ),
-      ),
     );
   }
 }

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/date_formats.dart';
@@ -12,6 +10,7 @@ import '../../domain/billing_models.dart';
 import '../../domain/renewal_terms.dart';
 import '../../domain/store_subscription.dart';
 import 'plan_feature_list.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 /// The plans the store sells, with the automatic renewal declared where the
 /// owner pays (owner decision 2026-11-25): price, period and date right above
@@ -129,13 +128,8 @@ class _StorePlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final renewal = isCurrent ? null : this.renewal;
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: isCurrent ? AppColors.primary : AppColors.border),
-      ),
+    return AppCard(
+      selected: isCurrent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

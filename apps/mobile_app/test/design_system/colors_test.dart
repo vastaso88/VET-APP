@@ -121,8 +121,4 @@ void main() {
       }
     }
   });
-
-  test('the page gradient is the same three steps everywhere', () {
-    expect(AppColors.backgroundGradient, [AppColors.surface, AppColors.background, AppColors.backgroundDeep]);
-  });
 }

@@ -21,6 +21,9 @@ import '../widgets/cancel_subscription_section.dart';
 import '../widgets/plan_feature_list.dart';
 import '../widgets/store_subscription_section.dart';
 import '../../../../l10n/regional_defaults.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/app_card.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// "Abbonamento e metodi di pagamento" — reached from Impostazioni.
 /// Structured like the subscription/billing screen of most consumer apps:
@@ -114,38 +117,38 @@ class _BillingPageState extends State<BillingPage> {
   Widget _page(BuildContext context) {
     if (!BillingAccountPanel.demoEnabled && !_store.isTestPeriod) {
       return Scaffold(
-        appBar: AppBar(title: Text(context.l10n.billingTitle)),
-        body: ListView(children: [
-          _CurrentPlanCard(store: _store),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-            child: CancelSubscriptionSection(),
+        appBar: PageHeader(title: context.l10n.billingTitle),
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.page,
+            0,
+            AppSpacing.page,
+            AppSpacing.xxxl,
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
-            child: StoreSubscriptionSection(),
-          ),
-          const BillingAccountPanel(),
-        ]),
+          children: [
+            _CurrentPlanCard(store: _store),
+            const CancelSubscriptionSection(),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+              child: StoreSubscriptionSection(),
+            ),
+            const BillingAccountPanel(),
+          ],
+        ),
       );
     }
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(context.l10n.billingTitle, style: AppTextStyles.title),
-      ),
+      appBar: PageHeader(title: context.l10n.billingTitle),
       body: SafeArea(
         child: ListenableBuilder(
           listenable: _store,
           builder: (context, _) {
             return ListView(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,
-                AppSpacing.lg,
-                AppSpacing.xl,
+                AppSpacing.page,
+                0,
+                AppSpacing.page,
                 AppSpacing.xxxl,
               ),
               children: [
@@ -320,14 +323,8 @@ class _TestPeriodLimits extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (features.isEmpty) return const SizedBox.shrink();
-    return Container(
+    return AppCard(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: AppColors.border),
-      ),
       child: PlanFeatureList(features: features),
     );
   }
@@ -375,49 +372,57 @@ class _CurrentPlanCard extends StatelessWidget {
     final renewal = store.renewalDate;
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(AppRadii.large),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  context.l10n.billingCurrentPlanLabel,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.onPrimary.withValues(alpha: 0.7)),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  plan?.displayName ??
-                      (store.isOnTrial
-                          ? context.l10n.billingTrialPlanName
-                          : context.l10n.billingNoPlanName),
-                  style: AppTextStyles.title.copyWith(color: AppColors.onPrimary),
-                ),
-                if (renewal != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    context.l10n.billingRenewalOn(
-                      formatAppDate(
-                        renewal,
-                        appNumericDatePattern(context.l10n.settingsNumericDatePattern),
-                      ),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.l10n.billingCurrentPlanLabel,
+                      style: AppTextStyles.caption
+                          .copyWith(color: AppColors.onPrimary.withValues(alpha: 0.7)),
                     ),
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.onPrimary.withValues(alpha: 0.85)),
-                  ),
-                ],
-              ],
+                    const SizedBox(height: 2),
+                    Text(
+                      plan?.displayName ??
+                          (store.isOnTrial
+                              ? context.l10n.billingTrialPlanName
+                              : context.l10n.billingNoPlanName),
+                      style: AppTextStyles.title.copyWith(color: AppColors.onPrimary),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                plan == null ? Icons.spa_outlined : Icons.workspace_premium_outlined,
+                color: AppColors.onPrimary,
+                size: 32,
+              ),
+            ],
+          ),
+          if (renewal != null) ...[
+            const SizedBox(height: 2),
+            // The whole width of the card: «Disdici» below stays on the first screen.
+            Text(
+              context.l10n.billingRenewalOn(
+                formatAppDate(
+                  renewal,
+                  appNumericDatePattern(context.l10n.settingsNumericDatePattern),
+                ),
+              ),
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: AppColors.onPrimary.withValues(alpha: 0.85)),
             ),
-          ),
-          Icon(
-            plan == null ? Icons.spa_outlined : Icons.workspace_premium_outlined,
-            color: AppColors.onPrimary,
-            size: 32,
-          ),
+          ],
         ],
       ),
     );
@@ -505,13 +510,8 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: isCurrent ? AppColors.primary : AppColors.border, width: isCurrent ? 2 : 1),
-      ),
+    return AppCard(
+      selected: isCurrent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -690,47 +690,55 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            DropdownButtonFormField<CardBrand>(
-              initialValue: _brand,
-              decoration: InputDecoration(labelText: context.l10n.billingCardBrandLabel),
-              items: CardBrand.values
-                  .map((brand) => DropdownMenuItem(value: brand, child: Text(brand.label)))
-                  .toList(),
-              onChanged: (value) => setState(() => _brand = value ?? _brand),
+            AppField(
+              label: context.l10n.billingCardBrandLabel,
+              child: DropdownButtonFormField<CardBrand>(
+                initialValue: _brand,
+                items: CardBrand.values
+                    .map((brand) => DropdownMenuItem(value: brand, child: Text(brand.label)))
+                    .toList(),
+                onChanged: (value) => setState(() => _brand = value ?? _brand),
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
-            TextFormField(
-              controller: _last4Controller,
-              decoration: InputDecoration(labelText: context.l10n.billingCardLast4Label),
-              keyboardType: TextInputType.number,
-              maxLength: 4,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              validator: (value) =>
-                  (value == null || !RegExp(r'^\d{4}$').hasMatch(value)) ? context.l10n.billingCardLast4Error : null,
+            AppField(
+              label: context.l10n.billingCardLast4Label,
+              child: TextFormField(
+                controller: _last4Controller,
+                keyboardType: TextInputType.number,
+                maxLength: 4,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: (value) =>
+                    (value == null || !RegExp(r'^\d{4}$').hasMatch(value)) ? context.l10n.billingCardLast4Error : null,
+              ),
             ),
             Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<int>(
-                    initialValue: _expiryMonth,
-                    decoration: InputDecoration(labelText: context.l10n.billingExpiryMonthLabel),
-                    items: [
-                      for (var month = 1; month <= 12; month++)
-                        DropdownMenuItem(value: month, child: Text(month.toString().padLeft(2, '0'))),
-                    ],
-                    onChanged: (value) => setState(() => _expiryMonth = value ?? _expiryMonth),
+                  child: AppField(
+                    label: context.l10n.billingExpiryMonthLabel,
+                    child: DropdownButtonFormField<int>(
+                      initialValue: _expiryMonth,
+                      items: [
+                        for (var month = 1; month <= 12; month++)
+                          DropdownMenuItem(value: month, child: Text(month.toString().padLeft(2, '0'))),
+                      ],
+                      onChanged: (value) => setState(() => _expiryMonth = value ?? _expiryMonth),
+                    ),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: DropdownButtonFormField<int>(
-                    initialValue: _expiryYear,
-                    decoration: InputDecoration(labelText: context.l10n.billingExpiryYearLabel),
-                    items: [
-                      for (var year = DateTime.now().year; year <= DateTime.now().year + 10; year++)
-                        DropdownMenuItem(value: year, child: Text('$year')),
-                    ],
-                    onChanged: (value) => setState(() => _expiryYear = value ?? _expiryYear),
+                  child: AppField(
+                    label: context.l10n.billingExpiryYearLabel,
+                    child: DropdownButtonFormField<int>(
+                      initialValue: _expiryYear,
+                      items: [
+                        for (var year = DateTime.now().year; year <= DateTime.now().year + 10; year++)
+                          DropdownMenuItem(value: year, child: Text('$year')),
+                      ],
+                      onChanged: (value) => setState(() => _expiryYear = value ?? _expiryYear),
+                    ),
                   ),
                 ),
               ],

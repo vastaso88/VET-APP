@@ -16,6 +16,10 @@ import '../../data/medical_records_repository.dart';
 import '../../data/pet_conditions_repository.dart';
 import '../../domain/pet_condition.dart';
 import '../record_file_actions.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/app_card.dart';
+import '../../../../shared/widgets/app_field.dart';
+import '../../../../design_system/atoms/outline_icon_button.dart';
 
 /// Adds or edits one illness of a pet: name, when it started, ongoing or
 /// resolved (and when it ended), the therapy, notes and an optional file
@@ -252,17 +256,15 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.text,
-        title: Text(_editing ? l10n.medCatCondition : l10n.medNewCondition),
+      appBar: PageHeader(
+        title: _editing ? l10n.medCatCondition : l10n.medNewCondition,
         actions: [
           if (_editing && !_readOnly)
-            IconButton(
+            OutlineIconButton(
               tooltip: l10n.commonDelete,
               onPressed: _delete,
-              icon: const Icon(Icons.delete_outline, color: AppColors.danger),
+              icon: Icons.delete_outline,
+              color: AppColors.danger,
             ),
         ],
       ),
@@ -272,9 +274,9 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.md,
-                  AppSpacing.lg,
+                  AppSpacing.page,
+                  0,
+                  AppSpacing.page,
                   AppSpacing.lg,
                 ),
                 child: Form(
@@ -287,28 +289,32 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
                         style: AppTextStyles.bodySmall,
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      _Label(l10n.medCondName),
-                      TextFormField(
-                        controller: _nameController,
-                        readOnly: _readOnly,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: _decoration(),
-                        validator: (value) => (value ?? '').trim().isEmpty
-                            ? l10n.medCondNameRequired
-                            : null,
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      _Label(l10n.medCondStarted),
-                      IgnorePointer(
-                        ignoring: _readOnly,
-                        child: _DateField(
-                          controller: _startedController,
-                          validator: _validateOptionalDate,
-                          onPick: () => _pickDate(_startedController),
+                      AppField(
+                        label: l10n.medCondName,
+                        child: TextFormField(
+                          controller: _nameController,
+                          readOnly: _readOnly,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: _decoration(),
+                          validator: (value) => (value ?? '').trim().isEmpty
+                              ? l10n.medCondNameRequired
+                              : null,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      _Label(l10n.medCondStatus),
+                      AppField(
+                        label: l10n.medCondStarted,
+                        child: IgnorePointer(
+                          ignoring: _readOnly,
+                          child: _DateField(
+                            controller: _startedController,
+                            validator: _validateOptionalDate,
+                            onPick: () => _pickDate(_startedController),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      FieldLabel(l10n.medCondStatus),
                       Wrap(
                         spacing: AppSpacing.sm,
                         children: [
@@ -326,36 +332,35 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
                       ),
                       if (!_ongoing) ...[
                         const SizedBox(height: AppSpacing.lg),
-                        _Label(l10n.medCondEnded),
-                        IgnorePointer(
-                          ignoring: _readOnly,
-                          child: _DateField(
-                            controller: _endedController,
-                            validator: _validateEndDate,
-                            onPick: () => _pickDate(_endedController),
+                        AppField(
+                          label: l10n.medCondEnded,
+                          child: IgnorePointer(
+                            ignoring: _readOnly,
+                            child: _DateField(
+                              controller: _endedController,
+                              validator: _validateEndDate,
+                              onPick: () => _pickDate(_endedController),
+                            ),
                           ),
                         ),
                       ],
                       const SizedBox(height: AppSpacing.lg),
-                      _Label(l10n.medCondTherapy),
-                      TextField(
-                        controller: _therapyController,
-                        readOnly: _readOnly,
-                        minLines: 2,
-                        maxLines: 5,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: _decoration(hint: l10n.medCondTherapyHint),
+                      AppField(
+                        label: l10n.medCondTherapy,
+                        child: TextField(
+                          controller: _therapyController,
+                          readOnly: _readOnly,
+                          minLines: 2,
+                          maxLines: 5,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: _decoration(hint: l10n.medCondTherapyHint),
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      _Label(l10n.medCondAttachment),
-                      Container(
-                        width: double.infinity,
+                      FieldLabel(l10n.medCondAttachment),
+                      AppCard(
                         padding: const EdgeInsets.all(AppSpacing.md),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(AppRadii.large),
-                          border: Border.all(color: AppColors.border),
-                        ),
+                        width: double.infinity,
                         child: Row(
                           children: [
                             const Icon(
@@ -389,14 +394,16 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
                         ),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      _Label(l10n.medFieldNotes),
-                      TextField(
-                        controller: _notesController,
-                        readOnly: _readOnly,
-                        minLines: 3,
-                        maxLines: 6,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: _decoration(hint: l10n.medFieldNotesHint),
+                      AppField(
+                        label: l10n.medFieldNotes,
+                        child: TextField(
+                          controller: _notesController,
+                          readOnly: _readOnly,
+                          minLines: 3,
+                          maxLines: 6,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: _decoration(hint: l10n.medFieldNotesHint),
+                        ),
                       ),
                     ],
                   ),
@@ -435,20 +442,6 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
 }
 
 InputDecoration _decoration({String? hint}) => InputDecoration(hintText: hint);
-
-class _Label extends StatelessWidget {
-  const _Label(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: Text(text, style: AppTextStyles.caption),
-    );
-  }
-}
 
 class _DateField extends StatelessWidget {
   const _DateField({

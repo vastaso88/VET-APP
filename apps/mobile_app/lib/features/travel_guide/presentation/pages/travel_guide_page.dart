@@ -18,6 +18,8 @@ import '../../domain/travel_pet_species.dart';
 import '../../domain/travel_resolver.dart';
 import '../widgets/travel_country_sheet.dart';
 import '../widgets/travel_result_view.dart';
+import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/app_field.dart';
 
 /// "Around the world": the rules for travelling with a pet (docs/product/18).
 ///
@@ -166,31 +168,24 @@ class _TravelGuidePageState extends State<TravelGuidePage> {
     final canReport = (AgeStore.instance.status.supportContactEmail ?? '').isNotEmpty;
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        title: Text(l10n.aroundWorldTitle, style: AppTextStyles.heading),
-      ),
+      appBar: PageHeader(title: l10n.aroundWorldTitle),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.xxxl),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.page,
+            0,
+            AppSpacing.page,
+            AppSpacing.xxxl,
+          ),
           children: [
             // Level 1 of the notices (docs/compliance/17 A.11): always visible.
             _NoticeBox(text: l10n.aroundWorldNotice),
             const SizedBox(height: AppSpacing.md),
             _InfoTile(title: l10n.aroundWorldInfoTitle, body: l10n.aroundWorldInfoBody),
             const SizedBox(height: AppSpacing.lg),
-            _CountryField(
-              label: l10n.aroundWorldFromLabel,
-              country: _from,
-              onTap: () => _pickCountry(origin: true),
-            ),
+            _countryField(l10n.aroundWorldFromLabel, _from, origin: true),
             const SizedBox(height: AppSpacing.md),
-            _CountryField(
-              label: l10n.aroundWorldToLabel,
-              country: _to,
-              onTap: () => _pickCountry(origin: false),
-            ),
+            _countryField(l10n.aroundWorldToLabel, _to, origin: false),
             const SizedBox(height: AppSpacing.lg),
             Text(l10n.aroundWorldWhoLabel, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: AppSpacing.sm),
@@ -262,6 +257,20 @@ class _TravelGuidePageState extends State<TravelGuidePage> {
       ),
     );
   }
+
+  Widget _countryField(String label, TravelCountry? country, {required bool origin}) {
+    return AppField(
+      label: label,
+      child: PickerField(
+        text: country == null
+            ? context.l10n.aroundWorldCountryHint
+            : '${country.flag}  ${country.name}',
+        placeholder: country == null,
+        onTap: () => _pickCountry(origin: origin),
+        trailing: const Icon(Icons.search, color: AppColors.mutedText),
+      ),
+    );
+  }
 }
 
 class _NoticeBox extends StatelessWidget {
@@ -312,49 +321,3 @@ class _InfoTile extends StatelessWidget {
   }
 }
 
-class _CountryField extends StatelessWidget {
-  const _CountryField({required this.label, required this.country, required this.onTap});
-
-  final String label;
-  final TravelCountry? country;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surfaceElevated,
-      borderRadius: BorderRadius.circular(AppRadii.medium),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.medium),
-            border: Border.all(color: AppColors.borderStrong, width: 1.5),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(label, style: AppTextStyles.caption),
-                    const SizedBox(height: 2),
-                    Text(
-                      country == null ? context.l10n.aroundWorldCountryHint : '${country!.flag}  ${country!.name}',
-                      style: AppTextStyles.body.copyWith(
-                        color: country == null ? AppColors.mutedText : AppColors.text,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.search, color: AppColors.mutedText),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
