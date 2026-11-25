@@ -40,6 +40,11 @@ void main() {
       'RouteRestoration.instance.forget()',
       'ReminderPostponementStore.instance.clear()',
       'forgetExactAlarmAsk()',
+      // The answer at the first chat, the AI provider's notice included.
+      'ChatNotice.clear()',
+      'ShortNoticeStore.instance.clear()',
+      // A dictation still listening.
+      'SystemDictation.instance.cancel()',
     ]) {
       expect(handler, contains(reset), reason: reset);
     }

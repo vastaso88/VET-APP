@@ -34,8 +34,7 @@ Future<void> _open(WidgetTester tester, {required bool serverConfigured}) async 
 }
 
 void main() {
-  // The first-use notice is not what these tests are about.
-  setUp(() => SharedPreferences.setMockInitialValues({'vet_app.short_notice.chat_ai': true}));
+  setUp(() => SharedPreferences.setMockInitialValues({}));
 
   testWidgets('with a server, an unknown conversation is "not found", with the way back',
       (tester) async {

@@ -21,7 +21,7 @@ enum PermissionPurpose {
   /// The ongoing notification of a walk in progress.
   walkNotifications,
 
-  /// Dictating chat messages.
+  /// Dictating chat messages (the phone's speech recognition).
   microphone,
 
   /// The phone's own camera app, through the system picker: no permission is
@@ -126,7 +126,7 @@ Future<bool> explainPermission(
 }
 
 /// [explainPermission] for code with no BuildContext of its own (the position
-/// service, the voice recorder): uses the app's navigator. When there is no
+/// service): uses the app's navigator. When there is no
 /// navigator to show it on the flow just goes on - an explanation must never
 /// be what blocks a request.
 Future<bool> explainPermissionGlobally(

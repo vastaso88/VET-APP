@@ -26,7 +26,7 @@ the owner decides again. The regulatory session gave its opinion on
 substance, two points to fix in a v5 (purpose and recipients).
 
 v5 (2026-11-10, to ship only with the switch to Anthropic): the recipients
-are named (Anthropic, and Groq when Anthropic cannot answer), the transfer
+are named (Anthropic, and a reserve when Anthropic cannot answer), the transfer
 to the United States and its safeguards are stated, the removal of
 identifying data before sending is described with its limit, and the
 purpose includes the summary for the vet. The United States are true
@@ -34,6 +34,13 @@ because every request to Anthropic carries inference_geo="us"
 (anthropic_llm_client.INFERENCE_GEO). A decision under v1-v4 counts as no
 decision: every owner decides again, once. Text from
 docs/compliance/03_consenso_cartella_clinica.md, "Che cosa dirà la v5".
+
+v6 (2026-11-25, owner decision: the reserve provider is gone): Anthropic is
+the only recipient, and the text says that it belongs to a US company (the
+counterpart is the Irish company of the group) instead of calling it one.
+The recipients are fewer, but the version says which text the owner saw:
+a decision under v1-v5 counts as no decision, once. Text from
+docs/compliance/03_consenso_cartella_clinica.md, "Che cosa dirà la v6".
 
 Bump CURRENT_VERSION whenever the wording changes materially, so
 `MedicalRecordConsentRecord.version` keeps meaning "the text the owner
@@ -47,10 +54,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from packages.core.domain.consent.models import ConsentRecord
 
-CURRENT_VERSION = "v5"
+CURRENT_VERSION = "v6"
 
-# Copied verbatim into the app, in medical_record_consent_card.dart
-# (`_approvedConsentText`): a test checks that the two match.
+# Copied verbatim into the app (`petsConsentFullText` in app_it.arb, shown by
+# medical_record_consent_card.dart): a test checks that the two match.
 CONSENT_TEXT_IT = (
     "Per darti un consiglio più preciso, l'assistente può leggere la "
     "cartella clinica del tuo animale. Quando fai una domanda può leggere "
@@ -62,12 +69,12 @@ CONSENT_TEXT_IT = (
     " nella scheda dell'animale e i promemoria attivi, terapie comprese. Se"
     " chiedi di spiegare un esame, può leggere i documenti che lo "
     "riguardano, al massimo due. Di un documento molto lungo legge solo "
-    "l'inizio. Ciò che legge viene inviato ai fornitori esterni di "
-    "intelligenza artificiale che scrivono la risposta: Anthropic e, quando"
-    " Anthropic non può rispondere, Groq. Sono società statunitensi e "
-    "trattano i dati negli Stati Uniti, fuori dall'Unione europea: l'invio "
-    "è vincolato da un contratto e protetto dalle garanzie che la legge "
-    "europea prevede per questi trasferimenti. Prima dell'invio togliamo "
+    "l'inizio. Ciò che legge viene inviato a un fornitore esterno di "
+    "intelligenza artificiale che scrive la risposta: Anthropic. Fa capo a "
+    "una società statunitense e tratta i dati negli Stati Uniti, fuori "
+    "dall'Unione europea: l'invio è vincolato da un contratto e protetto "
+    "dalle garanzie che la legge europea prevede per questi trasferimenti. "
+    "Prima dell'invio togliamo "
     "nomi, recapiti e altri dati che ti identificano, ma non possiamo "
     "riconoscerli tutti. Quokka lo usa solo per risponderti e per preparare"
     " il riepilogo per il veterinario che puoi chiedere. Puoi revocare il "
@@ -84,9 +91,9 @@ INLINE_QUESTION_IT = (
     "consiglio più preciso? Leggerò le tre voci più recenti, compreso il "
     "testo dei documenti allegati, le malattie pregresse ancora in corso, "
     "le note della scheda e i promemoria attivi, terapie comprese, e le "
-    "invierò ai servizi di intelligenza artificiale che scrivono la "
-    "risposta: Anthropic e, di riserva, Groq, con server negli Stati Uniti."
-    " Puoi cambiare idea in qualsiasi momento dalla scheda di {pet_name}."
+    "invierò al servizio di intelligenza artificiale che scrive la "
+    "risposta: Anthropic, con server negli Stati Uniti. Puoi cambiare idea "
+    "in qualsiasi momento dalla scheda di {pet_name}."
 )
 
 
@@ -95,9 +102,10 @@ def effective_decision(record: ConsentRecord | None) -> bool | None:
     when it was taken under an earlier text (v1 promised a selection the
     code never made; v2 did not mention the categories and the ongoing
     illnesses; v3 did not mention the profile notes and the reminders; v4
-    did not name the providers and the transfer to the United States),
-    so the owner sees the current wording
-    and decides again. Only a decision under CURRENT_VERSION is a decision."""
+    did not name the providers and the transfer to the United States; v5
+    named a reserve provider that is gone), so the owner sees the current
+    wording and decides again. Only a decision under CURRENT_VERSION is a
+    decision."""
     if record is None or record.version != CURRENT_VERSION:
         return None
     return record.granted

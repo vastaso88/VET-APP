@@ -1,11 +1,11 @@
 {
   "ui:petsConsentFullText": {
-    "source": "0d0ac9fef59c01e0858aca461c956728188079d5362c234269393588701e7df3",
+    "source": "cd306129eccc2220b17856dbae1bf547b736a1b65859b59cbaafa6a825ff1538",
     "targets": {
-      "en": "9cf3aafa175c8df4516d5264c0e00cd8821b52651201b288ff6d741a2be37805",
-      "es": "d82a22fcdbdab6951b2aeed224e37236021dfa243f03e198815e85a70d1b9644",
-      "de": "dd07ac427c9722152d3252f29dee9f1792998423be667439948f9ccdde7cf406",
-      "fr": "1daf797d024464e3e3885e08d61968436c30fc0f742ffa5c335307e160b414fd"
+      "en": "8fc261c8f98547e51def6edd9902556ee932790fa5309d62cb5bd28b5704bc79",
+      "es": "3d4dfc100e11a596b3dbc30d5d2d0d455f6d8c7c1e1b49bf8a2f662026f76108",
+      "de": "f34fb49b9240587748169f008b71a25e08212075a521309730a50320398ea1ed",
+      "fr": "ec514817b33474f5d67647537b8a6f77a28b28c1d9d8e3934cf03b6959758da0"
     }
   },
   "ui:appTitle": {
@@ -810,12 +810,12 @@
     }
   },
   "ui:authLegalPreparingNotice": {
-    "source": "91b856aeb342587f01c6fba8d316b8b2a0417aade6938f568af8f81b332eba06",
+    "source": "50db9814074c6b8bb7c144918217ba4d96c03e4796248d22a894e712219d94c5",
     "targets": {
-      "en": "8f932240aa6a2aba44a22c76c3b20a88a5c2894a2ba9ee0a64962cb8ef705fbc",
-      "es": "28b0430e652186a9af58f72ee8445908b6368f4bbe04fd49c016e0ae278e1578",
-      "de": "6545c27a160840507486ddf387dd923a0365defcdaab8f8399d6c45acc98f102",
-      "fr": "0457a4d74221a943ea2ebd680434fddd661248569ac8c9f8fe5179ca89c10eab"
+      "en": "c464960c1b7fd8cd69b3943d63bbe8fee480a430a1c7a5639d09641122109b9b",
+      "es": "068f0daa1cf1d9bf53164d1053755d643b7e49d36205680316889a97fa7aff57",
+      "de": "3a8f84d240db990034e5a6eaee3f6ed28a57c52d29bb7a94dc00f629122fa770",
+      "fr": "b990b3a62fe5a1459aae49e5d8118e28698b4bf6a71cd310890a3fbf0a057734"
     }
   },
   "ui:authHubTitle": {
@@ -1908,12 +1908,12 @@
     }
   },
   "ui:chatVoiceMessageTooltip": {
-    "source": "9aabdf020ec6c65ce44e9d7db9f29f16f808722e313c16d95e7866497b414ea7",
+    "source": "9ff580037ed6b0ce60ffd38d0d43d3ef538ad337b266234632b03baf200cf47c",
     "targets": {
-      "en": "06a0f569f7f94ca9459a9337fb529538659cf1ece3c4e34ab71099fbe052ae80",
-      "es": "10d0fa9c6a9308c8c9203bc15d1dcbcd59dfa64be5649ca5832132c93749b86f",
-      "de": "a0e1486206b12473ed5412edd19eca943e88a1f01a7f8fd518306e3371d7b362",
-      "fr": "a9ecd5a8f0169aeff3f1bdcec681b10f2017bf4f1b6f84cea69037b396b02cb0"
+      "en": "9ac7618890326a14d4c01a0eb2858dd3062c8a4a71c09af7bd8525082034b860",
+      "es": "71e303e96c2f0184b774904f59bc561c68ae1a68534da439747aa9c319bf2d78",
+      "de": "55559739331ad893acbdaa3c225a8da0bc9c938d825b10d129cb688f9cbaf76c",
+      "fr": "ee71fc1139a7256adfe153ba591415335af6fad06e0b6949474218c8ec991f3c"
     }
   },
   "ui:chatMicPermissionNeeded": {
@@ -16326,12 +16326,12 @@
     }
   },
   "ui:permMicrophoneWhy": {
-    "source": "0687b3dbce2e7a1e29f58257e65e23c903f62d361a6737f3b53f23100b1d61c2",
+    "source": "b03a114260faef69d2ca5fbb51250dbf08dc01bb56c1ff29d8d9418f39bbdaa0",
     "targets": {
-      "en": "8ac9d6de6638439ea8f0ffc783e895ff7305a3e6e00276f1d721d2d633be867f",
-      "es": "8b357fe846fe8b74e293f2508e7f841e3eaab09b2c227ebd75a68edf2ea8cffa",
-      "de": "5b6cef7adc92a24014a562d79c1b8fb1097bc8a49484a122cf26a61e1c705c2a",
-      "fr": "ebded0aab2b54e9bab0a7d2ea135bad71caa3574547745fa69956445f35f46ed"
+      "en": "1a8f4d32988f2395e34055cba8d2f413c3fd43b64985592a6bedb226cd92a444",
+      "es": "f1dae0e504fbe2ef2db9c255725f5eaf64645c04b2f0c9a13f649f69a473dd79",
+      "de": "6e13675bba88d1ebf73be9fd7e57d627c769cb45219a7475aa0e357a6309a7cc",
+      "fr": "25ae7475a10e641812d0e1188bc99f4a219e3cd9347849b77d27af4264e7ae4e"
     }
   },
   "ui:permMicrophoneRefuse": {
@@ -17073,12 +17073,12 @@
     }
   },
   "backend:consent_request": {
-    "source": "d4cb702f96b6fc69dce5a62ed0f2a8f80f479311459fdfdc868799886202b59f",
+    "source": "8989856f3ce805ab0f00aefc79813690dbd6327ca78a509401de2f385730a607",
     "targets": {
-      "en": "04c5ad9ee892a9ac1ad0a97abdccf56917b8d29073ffda565826f0753151f38f",
-      "es": "b851b26f2493238c769ac5037d8349f24444c2d0fa827f177701bb9db773a1e7",
-      "de": "ff80ef5a660d67993576f981bd349dbc3409eba0817630c42c192a46835b0358",
-      "fr": "e7cc4c06361b8fa8eaaf9bd84baa5aaafae67ae846c843989ed559332af7749f"
+      "en": "10ffa81e11091dae2a89d4de1e87dd426d530b8e8badfde1bedf333b0bf61f15",
+      "es": "602d5348724c9a4e19de1dbdbfca97f0358007fc002d39e8ec74d44603a43c43",
+      "de": "f85b2af67ddba35b75410d6bba13dae87befa058be5e545d18b7aeeb42b1a3cc",
+      "fr": "3aad82934beed20759debc03673d028df44fc2b8b4cabd98b05f4c3a95f740c7"
     }
   },
   "android:dog_walks_widget_description": {
@@ -21912,6 +21912,42 @@
       "es": "3b73b7c99f186e6ad50a7a39cfd4dd2932c0342b141e9e2cb032aeef5a1a2cdf",
       "de": "95b52acdd29e455a0617fac6b44a8cd7f4f65f4234f242ed672d506b504e8a90",
       "fr": "f13b6f35abf200c12a243e85c44b0c8103cb3fe384c42699fc35036446b55a28"
+    }
+  },
+  "ui:firstChatTitle": {
+    "source": "c7d808351596ec37b41e40ba345baebbb18a893975ff40b50c88089eb3d60ae3",
+    "targets": {
+      "en": "a7da8984de6c31a94faf2376380a91594269e1c7d0f42125a8eeca5d130bd519",
+      "es": "7dff96409a02c46d6a5ac9a9341528eb7035d399b2caa62bdf1aee31dc376403",
+      "de": "5b8476d6174884b48580852db1133219088d164dceacf16dfa35a2329fe4a60e",
+      "fr": "c2b365012300012fce3285c708d4a90f808baa99eba9763be7944c155ca1bd1e"
+    }
+  },
+  "ui:firstChatBody": {
+    "source": "d66e7c3538c57fc658a7dc416b4d58b3860099555a305742220bb15bf547b28a",
+    "targets": {
+      "en": "4b812da4053c07bb2f8428872b70c67b0b37991c89f5e900ec87e7addd5a9a43",
+      "es": "e0f3479f6ff087d07d7405f1fb53f3152ef06669d94ec441a7f8fb741dbe7155",
+      "de": "4f38d82c00000ddd77e900d518c5c24a646c129eb909b1bd1cae6ff68182df1c",
+      "fr": "298bf0ec26a7fc3dbda164977d3b835212533db98f054c0be9edbda805b43faa"
+    }
+  },
+  "ui:firstChatAccept": {
+    "source": "73bb7f768f75dcdd9205a42868dae4e45a29fffcd25a173bb2493db4228b311b",
+    "targets": {
+      "en": "05a2460a68aa02bad0a648dff532cae0da7dda4d461050082196bccfd4259410",
+      "es": "c0cd62f49ce25915d01d0a020ea99bda47ab984d4badacd7d9f5e01250827fff",
+      "de": "968f3e973ea94518d868e63effacf02fce93caba5cb142e8d4b1143e34dffb03",
+      "fr": "013657c24a5c29182d4c86c06f548d553256cbfecb92d47f09eae5d0afcea83e"
+    }
+  },
+  "ui:firstChatPrivacyLink": {
+    "source": "201d455f38296a791d6d6dac679eac745b92296f7761f550981f04c440748f3d",
+    "targets": {
+      "en": "ae07f02de7efb8f22a1820cc079ca87dd1c36348914971b648a5206aa62689e1",
+      "es": "2f3606e9453358fe1c25ea3f719e672b3a81fd109e3ae2e6aa6cd2223278e840",
+      "de": "292d17f501533430f8cd15f625c51940cd04e4ede69eb48b487f5bca878db181",
+      "fr": "782bd79a6786c78038648d368415c0e9a1fdc10f88e8cecdf5d7d8d30f336c75"
     }
   }
 }

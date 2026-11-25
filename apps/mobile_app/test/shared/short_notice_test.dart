@@ -4,10 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vet_app_mobile/l10n/app_localizations.dart';
 import 'package:vet_app_mobile/shared/widgets/short_notice.dart';
 
-bool? _answer;
-
 Future<void> _open(WidgetTester tester, ShortNotice notice) async {
-  _answer = null;
   await tester.pumpWidget(
     MaterialApp(
       locale: const Locale('it'),
@@ -17,7 +14,7 @@ Future<void> _open(WidgetTester tester, ShortNotice notice) async {
         builder: (context) => Scaffold(
           body: ElevatedButton(
             key: const ValueKey('go'),
-            onPressed: () async => _answer = await showShortNoticeOnce(context, notice),
+            onPressed: () => showShortNoticeOnce(context, notice),
             child: const Text('vai'),
           ),
         ),
@@ -39,11 +36,9 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('short-notice-ok')));
     await tester.pumpAndSettle();
-    expect(_answer, isTrue);
 
     await _open(tester, ShortNotice.firstWalk);
     expect(find.textContaining('ultime 3 passeggiate'), findsNothing);
-    expect(_answer, isTrue);
   });
 
   testWidgets('each activity has its own notice', (tester) async {
@@ -51,36 +46,15 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('short-notice-ok')));
     await tester.pumpAndSettle();
 
-    await _open(tester, ShortNotice.chatAi);
-    expect(find.textContaining('intelligenza artificiale'), findsOneWidget);
+    await _open(tester, ShortNotice.firstWalk);
+    expect(find.textContaining('ultime 3 passeggiate'), findsOneWidget);
   });
 
-  testWidgets('the photo and voice notice can be cancelled and then comes back', (tester) async {
-    await _open(tester, ShortNotice.chatMedia);
-    expect(find.text('Continua'), findsOneWidget);
-    expect(find.text('Annulla'), findsOneWidget);
-    expect(find.text('Informativa'), findsNothing);
-
-    await tester.tap(find.byKey(const ValueKey('short-notice-cancel')));
-    await tester.pumpAndSettle();
-    expect(_answer, isFalse);
-
-    await _open(tester, ShortNotice.chatMedia);
-    await tester.tap(find.byKey(const ValueKey('short-notice-ok')));
-    await tester.pumpAndSettle();
-    expect(_answer, isTrue);
-  });
-
-  testWidgets('the photo notice speaks of the photo, not of voice, and is separate from the voice one',
-      (tester) async {
-    await _open(tester, ShortNotice.chatMedia);
-    await tester.tap(find.byKey(const ValueKey('short-notice-ok')));
-    await tester.pumpAndSettle();
-
-    await _open(tester, ShortNotice.chatPhoto);
-    expect(find.textContaining('La foto resta nel tuo account'), findsOneWidget);
-    expect(find.textContaining('La voce'), findsNothing);
-    expect(find.text('Continua'), findsOneWidget);
+  test('the chat has no short notice of its own any more: its screen says it all', () {
+    expect(
+      ShortNotice.values.map((notice) => notice.id),
+      ['record_document', 'first_walk', 'marketplace'],
+    );
   });
 
   testWidgets('the Mercatino notice links to the Terms, not to the privacy notice', (tester) async {
@@ -91,12 +65,12 @@ void main() {
   });
 
   testWidgets('signing out empties what was acknowledged', (tester) async {
-    await _open(tester, ShortNotice.chatAi);
+    await _open(tester, ShortNotice.firstWalk);
     await tester.tap(find.byKey(const ValueKey('short-notice-ok')));
     await tester.pumpAndSettle();
-    expect(await ShortNoticeStore.instance.wasSeen(ShortNotice.chatAi), isTrue);
+    expect(await ShortNoticeStore.instance.wasSeen(ShortNotice.firstWalk), isTrue);
 
     await ShortNoticeStore.instance.clear();
-    expect(await ShortNoticeStore.instance.wasSeen(ShortNotice.chatAi), isFalse);
+    expect(await ShortNoticeStore.instance.wasSeen(ShortNotice.firstWalk), isFalse);
   });
 }

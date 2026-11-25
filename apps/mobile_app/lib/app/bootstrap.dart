@@ -18,6 +18,7 @@ import '../shared/errors/app_auth_error.dart';
 import '../features/billing/data/billing_demo_store.dart';
 import '../features/billing/data/store_billing_controller.dart';
 import '../features/chat/data/chat_demo_store.dart';
+import '../features/chat/data/system_dictation.dart';
 import '../features/dog_walks/data/active_walk_recovery_store.dart';
 import '../features/dog_walks/data/walk_home_widget.dart';
 import '../features/location/data/location_preference_store.dart';
@@ -130,6 +131,8 @@ Future<void> bootstrap({Future<void> Function()? afterSupabaseReady}) async {
           PetDemoStore.instance.reset();
           // The chats held in memory (and any read still in flight) go too.
           ChatDemoStore.instance.reset();
+          // A dictation still listening: the microphone closes, its words are dropped.
+          unawaited(SystemDictation.instance.cancel());
           // What was postponed ("Rimanda"); its notifications go with all the others
           // (NotificationScheduler clears them when the account signs out).
           unawaited(ReminderPostponementStore.instance.clear());
@@ -140,6 +143,7 @@ Future<void> bootstrap({Future<void> Function()? afterSupabaseReady}) async {
           MarketplaceUnreadStore.instance.reset();
           unawaited(AgeStore.instance.reset());
           unawaited(SignUpConsents.clear());
+          // The answer at the first chat, the AI provider's notice included.
           unawaited(ChatNotice.clear());
           BillingDemoStore.instance.reset();
           StoreBillingController.instance.reset();

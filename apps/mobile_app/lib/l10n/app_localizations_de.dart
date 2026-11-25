@@ -10,7 +10,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get petsConsentFullText =>
-      'Um Ihnen genauer raten zu können, darf der Assistent die Krankenakte Ihres Tieres lesen. Wenn Sie eine Frage stellen, kann er die drei neuesten Einträge lesen, mit Titel, Kategorie (Besuch, Untersuchung, Impfung, Therapie oder Dokument), Datum des Ereignisses, Beschreibung und Text der angehängten Dokumente, auch wenn sie nichts mit der Frage zu tun haben. Er kann außerdem frühere Erkrankungen lesen, die noch andauern, mit Name und Beginndatum, höchstens fünf. Zudem liest er die Notizen, die Sie im Tierprofil geschrieben haben, und die aktiven Erinnerungen, Therapien eingeschlossen. Wenn Sie um die Erklärung einer Untersuchung bitten, kann er die dazugehörigen Dokumente lesen, höchstens zwei. Von einem sehr langen Dokument liest er nur den Anfang. Was er liest, wird an die externen Anbieter für künstliche Intelligenz gesendet, die die Antwort verfassen: Anthropic und, wenn Anthropic nicht antworten kann, Groq. Es sind US-amerikanische Unternehmen, die die Daten in den Vereinigten Staaten verarbeiten, außerhalb der Europäischen Union: Die Übermittlung ist an einen Vertrag gebunden und durch die Garantien geschützt, die das europäische Recht für solche Übermittlungen vorsieht. Vor dem Versand entfernen wir Namen, Kontaktdaten und andere Daten, die Sie identifizieren, können aber nicht alle erkennen. Quokka verwendet es nur, um Ihnen zu antworten und die Zusammenfassung für die Tierarztpraxis zu erstellen, die Sie anfordern können. Sie können die Einwilligung jederzeit im Tierprofil oder in den Einstellungen widerrufen: Der Widerruf gilt für alle folgenden Anfragen.';
+      'Um Ihnen genauer raten zu können, darf der Assistent die Krankenakte Ihres Tieres lesen. Wenn Sie eine Frage stellen, kann er die drei neuesten Einträge lesen, mit Titel, Kategorie (Besuch, Untersuchung, Impfung, Therapie oder Dokument), Datum des Ereignisses, Beschreibung und Text der angehängten Dokumente, auch wenn sie nichts mit der Frage zu tun haben. Er kann außerdem frühere Erkrankungen lesen, die noch andauern, mit Name und Beginndatum, höchstens fünf. Zudem liest er die Notizen, die Sie im Tierprofil geschrieben haben, und die aktiven Erinnerungen, Therapien eingeschlossen. Wenn Sie um die Erklärung einer Untersuchung bitten, kann er die dazugehörigen Dokumente lesen, höchstens zwei. Von einem sehr langen Dokument liest er nur den Anfang. Was er liest, wird an einen externen Anbieter für künstliche Intelligenz gesendet, der die Antwort verfasst: Anthropic. Er gehört zu einem US-amerikanischen Unternehmen und verarbeitet die Daten in den Vereinigten Staaten, außerhalb der Europäischen Union: Die Übermittlung ist an einen Vertrag gebunden und durch die Garantien geschützt, die das europäische Recht für solche Übermittlungen vorsieht. Vor dem Versand entfernen wir Namen, Kontaktdaten und andere Daten, die Sie identifizieren, können aber nicht alle erkennen. Quokka verwendet es nur, um Ihnen zu antworten und die Zusammenfassung für die Tierarztpraxis zu erstellen, die Sie anfordern können. Sie können die Einwilligung jederzeit im Tierprofil oder in den Einstellungen widerrufen: Der Widerruf gilt für alle folgenden Anfragen.';
 
   @override
   String get appTitle => 'Quokka';
@@ -312,7 +312,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get authLegalPreparingNotice =>
-      'Der vollständige Text der Datenschutzerklärung wird gerade fertiggestellt und ist hier bald verfügbar, mit der Möglichkeit zum Herunterladen. Vorab in Kürze: Ein Teil Ihrer Daten (Fragen, Anhänge und Sprachnachrichten) wird an Anbieter künstlicher Intelligenz gesendet, die Daten in den Vereinigten Staaten verarbeiten. Über Einstellungen → Kontakt können Sie Auskunft, Berichtigung, Löschung oder eine Kopie Ihrer Daten verlangen. Sie können Ihre Daten außerdem selbst herunterladen (Einstellungen → Konto → Meine Daten herunterladen) oder Ihr Konto löschen. Außerdem können Sie sich bei der Datenschutzaufsichtsbehörde Ihres Landes beschweren (in Italien: der Garante).';
+      'Der vollständige Text der Datenschutzerklärung wird gerade fertiggestellt und ist hier bald verfügbar, mit der Möglichkeit zum Herunterladen. Vorab in Kürze: Ein Teil Ihrer Daten (Fragen und Text der angehängten Dokumente) wird an Anbieter künstlicher Intelligenz gesendet, die Daten in den Vereinigten Staaten verarbeiten. Über Einstellungen → Kontakt können Sie Auskunft, Berichtigung, Löschung oder eine Kopie Ihrer Daten verlangen. Sie können Ihre Daten außerdem selbst herunterladen (Einstellungen → Konto → Meine Daten herunterladen) oder Ihr Konto löschen. Außerdem können Sie sich bei der Datenschutzaufsichtsbehörde Ihres Landes beschweren (in Italien: der Garante).';
 
   @override
   String get authHubTitle => 'Quokka: Ihr Tier verstehen';
@@ -854,7 +854,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get chatStopRecordingTooltip => 'Beenden und transkribieren';
 
   @override
-  String get chatVoiceMessageTooltip => 'Sprachnachricht';
+  String get chatVoiceMessageTooltip => 'Nachricht diktieren';
 
   @override
   String get chatMicPermissionNeeded =>
@@ -863,14 +863,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get chatMicStartFailed =>
       'Ich kann das Mikrofon nicht starten. Versuchen Sie es erneut.';
-
-  @override
-  String get chatRecordingFailed =>
-      'Die Aufnahme hat nicht geklappt. Versuchen Sie es erneut.';
-
-  @override
-  String get chatRecordingReadFailed =>
-      'Ich konnte die Aufnahme nicht lesen. Versuchen Sie es erneut.';
 
   @override
   String get chatPhotoAnalyzing => 'Das Foto wird hochgeladen...';
@@ -6877,18 +6869,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get noticePolicy => 'Datenschutzerklärung';
 
   @override
-  String get noticeChatAi =>
-      'Eine künstliche Intelligenz antwortet und kann sich irren. Ihre Fragen, bereinigt um die persönlichen Daten, die wir erkennen, gehen an unsere KI-Anbieter (Anthropic und, wenn Anthropic nicht antworten kann, Groq), mit Servern in den USA. Quokka ist nicht für Notfälle zuständig: Wenden Sie sich in einem Notfall sofort an eine Tierärztin oder einen Tierarzt, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Warten Sie nicht auf die Antwort der App.';
-
-  @override
-  String get noticeChatMedia =>
-      'Ihre Sprachaufnahme geht an einen externen Dienst (heute Groq, in den USA), der sie transkribiert. Der Filter, der persönliche Daten entfernt, arbeitet mit Text, nicht mit Audio: Nennen Sie Ihren Namen, Ihre Adresse und Ihre Mikrochipnummer lieber nicht.';
-
-  @override
-  String get noticeChatPhoto =>
-      'Das Foto bleibt in Ihrem Konto. Wenn die Fotoanalyse aktiviert ist, geht es an einen externen Dienst (heute Groq, in den USA), der es beschreibt. Der Filter, der persönliche Daten entfernt, arbeitet mit Text, nicht mit Bildern: Halten Sie Namen, Adressen oder Mikrochipnummern lieber nicht ins Bild.';
-
-  @override
   String get noticeRecordDocument =>
       'Das Dokument bleibt in Ihrem Konto. Der Assistent liest es nur, wenn Sie das Lesen der Krankenakte dieses Tieres eingeschaltet haben.';
 
@@ -7397,7 +7377,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get permMicrophoneWhy =>
-      'Das Mikrofon dient zum Diktieren von Chat-Nachrichten: Sie sprechen, Quokka schreibt für Sie. Die Aufnahme wird an einen Transkriptionsdienst gesendet, um in Text umgewandelt zu werden, und nicht auf Ihrem Telefon gespeichert.';
+      'Das Mikrofon dient zum Diktieren von Chat-Nachrichten: Sie sprechen, und die Spracherkennung Ihres Telefons wandelt Ihre Worte in Text um. Bei Quokka kommt nur der Text an, nie die Audioaufnahme. Die Spracherkennung übernimmt das System Ihres Telefons (Google oder Apple), das dafür nach seinen eigenen Regeln eigene Server nutzen kann.';
 
   @override
   String get permMicrophoneRefuse =>
@@ -8244,7 +8224,17 @@ class AppLocalizationsDe extends AppLocalizations {
       'Quokka ist nicht für Notfälle zuständig: Wenden Sie sich in einem Notfall sofort an eine Tierärztin oder einen Tierarzt, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Warten Sie nicht auf die Antwort der App.';
 
   @override
-  String get emergencyNoticeTitle => 'Quokka ist nicht für Notfälle zuständig';
+  String get firstChatTitle => 'Vor Ihrem ersten Chat';
+
+  @override
+  String get firstChatBody =>
+      'Eine künstliche Intelligenz antwortet Ihnen und kann sich irren. Ihre Fragen, bereinigt um die persönlichen Daten, die wir erkennen, gehen an Anthropic, unseren KI-Anbieter, mit Servern in den USA: Einzelheiten stehen in der Datenschutzerklärung. Quokka ist nicht für Notfälle zuständig: Wenden Sie sich in einem Notfall sofort an eine Tierärztin oder einen Tierarzt, an den Rettungsdienst oder an eine Beratungsstelle in Ihrem Land. Warten Sie nicht auf die Antwort der App.';
+
+  @override
+  String get firstChatAccept => 'Zustimmen und Chat beginnen';
+
+  @override
+  String get firstChatPrivacyLink => 'Datenschutzerklärung lesen';
 
   @override
   String get emergencyNoticeCheckbox =>

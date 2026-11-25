@@ -6,6 +6,7 @@ import 'package:vet_app_mobile/features/account_consents/application/chat_notice
 import 'package:vet_app_mobile/features/account_consents/data/account_consents_remote_data_source.dart';
 import 'package:vet_app_mobile/features/account_consents/domain/account_consent_models.dart';
 import 'package:vet_app_mobile/features/account_consents/presentation/pages/emergency_notice_gate_page.dart';
+import 'package:vet_app_mobile/features/auth/presentation/pages/legal_text_page.dart';
 import 'package:vet_app_mobile/l10n/l10n.dart';
 import 'package:vet_app_mobile/shared/errors/app_network_error.dart';
 import 'package:vet_app_mobile/shared/types/result.dart';
@@ -97,6 +98,12 @@ Future<bool?> Function() _pump(WidgetTester tester, _Backend backend) {
   };
 }
 
+/// The screen of the AI provider accepted on this phone (see ChatNotice).
+const _provider = 'vet_app.chat_ai_provider';
+
+Future<bool> _providerSeen() async =>
+    (await SharedPreferences.getInstance()).getBool(_provider) ?? false;
+
 Future<void> _accept(WidgetTester tester) async {
   await tester.tap(find.byType(CheckboxListTile));
   await tester.pump();
@@ -106,6 +113,8 @@ Future<void> _accept(WidgetTester tester) async {
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
+  // What one test found out about the server must not stop the next from asking it.
+  tearDown(ChatNotice.clear);
 
   testWidgets('the first chat asks, once, and the answer is recorded', (tester) async {
     final backend = _Backend();
@@ -115,6 +124,7 @@ void main() {
     expect(find.byType(EmergencyNoticeGatePage), findsOneWidget);
     await _accept(tester);
     expect(backend.set, [_notice]);
+    expect(await _providerSeen(), isTrue);
     expect(find.byType(EmergencyNoticeGatePage), findsNothing);
 
     // The second chat: no question, no wait for the server (a check may run behind it).
@@ -123,9 +133,110 @@ void main() {
     expect(backend.declared, ['v1']);
   });
 
-  testWidgets('accepted on another phone: not asked again', (tester) async {
-    expect(await _pump(tester, _Backend(accepted: 'v1'))(), isTrue);
-    expect(find.byType(EmergencyNoticeGatePage), findsNothing);
+  group('the AI provider: everybody sees the screen once', () {
+    testWidgets('who had accepted on this phone sees it, nothing is recorded again',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({'vet_app.chat_notice_accepted': 'v1'});
+      final backend = _Backend(accepted: 'v1');
+      final open = _pump(tester, backend);
+      await open();
+      expect(find.byType(EmergencyNoticeGatePage), findsOneWidget);
+      // The server has nothing to say about it: shown without waiting for it.
+      expect(backend.fetches, 0);
+      await _accept(tester);
+      expect(backend.set, isEmpty);
+
+      expect(await open(), isTrue);
+      expect(find.byType(EmergencyNoticeGatePage), findsNothing);
+    });
+
+    testWidgets('who had accepted with no network sees it, and the acceptance still waits',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'vet_app.chat_notice_accepted': 'v1',
+        'vet_app.chat_notice_pending_version': 'v1',
+      });
+      final backend = _Backend(offline: true);
+      final open = _pump(tester, backend);
+      await open();
+      await _accept(tester);
+      expect(await open(), isTrue);
+      expect(find.byType(EmergencyNoticeGatePage), findsNothing);
+
+      backend.offline = false;
+      await ChatNotice.submitPending(backend);
+      expect(backend.declared, ['v1']);
+    });
+
+    testWidgets('who had accepted on another phone sees it once, nothing is recorded again',
+        (tester) async {
+      final backend = _Backend(accepted: 'v1');
+      final open = _pump(tester, backend);
+      await open();
+      expect(find.byType(EmergencyNoticeGatePage), findsOneWidget);
+      await _accept(tester);
+      expect(backend.set, isEmpty);
+
+      expect(await open(), isTrue);
+      expect(find.byType(EmergencyNoticeGatePage), findsNothing);
+    });
+
+    testWidgets('"Non accetto" closes the chat and takes nothing back', (tester) async {
+      SharedPreferences.setMockInitialValues({'vet_app.chat_notice_accepted': 'v1'});
+      final backend = _Backend(accepted: 'v1');
+      final open = _pump(tester, backend);
+      await open();
+      await tester.tap(find.text('Non accetto'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Il resto dell'), findsOneWidget);
+      expect(backend.set, isEmpty);
+      expect(await _providerSeen(), isFalse);
+      final preferences = await SharedPreferences.getInstance();
+      expect(preferences.getString('vet_app.chat_notice_accepted'), 'v1');
+      // Asked again at the next chat.
+      await open();
+      expect(find.byType(EmergencyNoticeGatePage), findsOneWidget);
+    });
+
+    testWidgets('seen here and accepted on another phone: nothing to ask', (tester) async {
+      SharedPreferences.setMockInitialValues({_provider: true});
+      expect(await _pump(tester, _Backend(accepted: 'v1'))(), isTrue);
+      expect(find.byType(EmergencyNoticeGatePage), findsNothing);
+    });
+
+    testWidgets('a server out of reach shows it all the same and the chat opens', (tester) async {
+      final backend = _Backend(offline: true);
+      final open = _pump(tester, backend);
+      await open();
+      await _accept(tester);
+      expect(await open(), isTrue);
+    });
+
+    testWidgets('a newer text accepted on this phone is shown again as the server words it',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({'vet_app.chat_notice_accepted': 'v2'});
+      final backend = _Backend(version: 'v2', text: 'testo nuovo del server', accepted: 'v2');
+      final open = _pump(tester, backend);
+      await open();
+      expect(find.textContaining('testo nuovo del server'), findsOneWidget);
+      await _accept(tester);
+      expect(backend.set, isEmpty);
+      expect(await open(), isTrue);
+    });
+
+    testWidgets('signing out forgets it, a refused version does not', (tester) async {
+      final backend = _Backend();
+      final open = _pump(tester, backend);
+      await open();
+      await _accept(tester);
+      backend.version = 'v2';
+      await ChatNotice.submitPending(backend);
+      expect(await _providerSeen(), isTrue);
+
+      await ChatNotice.clear();
+      expect(await _providerSeen(), isFalse);
+    });
   });
 
   testWidgets('an older version of the text is asked again', (tester) async {
@@ -152,7 +263,11 @@ void main() {
     final open = _pump(tester, backend);
     await open();
 
-    expect(find.text('testo nuovo del server'), findsOneWidget);
+    // In the place of the app's own text, next to who answers: not a word of the old one.
+    final shown = tester.widget<Text>(find.textContaining('testo nuovo del server')).data!;
+    expect(shown, startsWith("Ti risponde un'intelligenza artificiale"));
+    expect(shown, endsWith('nell\'informativa. testo nuovo del server'));
+    expect(find.textContaining('Non aspettare la risposta'), findsNothing);
     await _accept(tester);
     expect(backend.declared, ['v2']);
   });
@@ -167,7 +282,7 @@ void main() {
       ..text = 'secondo testo';
     await _accept(tester);
 
-    expect(find.text('secondo testo'), findsOneWidget);
+    expect(find.textContaining('secondo testo'), findsOneWidget);
     await _accept(tester);
     expect(backend.declared, ['v2']);
   });
@@ -245,17 +360,29 @@ void main() {
       );
     }
 
-    testWidgets('title, short text in view, box NOT pre-ticked, Continue off', (tester) async {
+    testWidgets('title, texts in view, box NOT pre-ticked, "Accetto" off', (tester) async {
       await page(tester);
-      expect(find.text('Quokka non gestisce le urgenze'), findsOneWidget);
-      // The short version is on the page itself, not behind a link.
+      expect(find.text('Prima della tua prima chat'), findsOneWidget);
+      // Who answers and where the questions go, and the short version of the emergencies: on
+      // the page itself, not behind a link.
+      expect(find.textContaining('Anthropic, il nostro fornitore di IA'), findsOneWidget);
       expect(find.textContaining('Non aspettare la risposta dell'), findsOneWidget);
       expect(tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value, isFalse);
+      expect(find.text('Accetto e inizio la chat'), findsOneWidget);
       expect(tester.widget<FilledButton>(find.byType(FilledButton)).onPressed, isNull);
       expect(find.text('Leggi il testo completo nei Termini di Servizio'), findsOneWidget);
     });
 
-    testWidgets('"Non accetto" is as big as "Continua"', (tester) async {
+    testWidgets('"Leggi l\'informativa" opens the privacy notice', (tester) async {
+      await page(tester);
+      await tester.tap(find.text("Leggi l'informativa"));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      final legal = tester.widget<LegalTextPage>(find.byType(LegalTextPage));
+      expect(legal.consentKey, AccountConsentKeys.privacyPolicy);
+    });
+
+    testWidgets('"Non accetto" is as big as "Accetto e inizio la chat"', (tester) async {
       await page(tester);
       expect(
         tester.getSize(find.byType(OutlinedButton)),

@@ -10,7 +10,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get petsConsentFullText =>
-      'To give you more precise advice, the assistant can read your pet\'s medical records. When you ask a question, it can read the three most recent entries, with title, category (visit, test, vaccine, therapy or document), event date, description and the text of attached documents, even if they are not related to your question. It can also read earlier conditions that are still ongoing, with the name and start date, up to five. It also reads the notes you wrote on your pet\'s profile and the active reminders, therapies included. If you ask it to explain a test, it can read the documents related to it, up to two. For a very long document it reads only the beginning. What it reads is sent to the external artificial intelligence providers that write the answer: Anthropic and, when Anthropic cannot answer, Groq. They are US companies and process the data in the United States, outside the European Union: the transfer is bound by a contract and protected by the safeguards that European law provides for these transfers. Before sending, we remove names, contact details and other data that identify you, but we cannot recognize all of them. Quokka uses it only to answer you and to prepare the summary for the vet that you can request. You can withdraw your consent at any time from your pet\'s profile or from Settings: this applies to subsequent requests.';
+      'To give you more precise advice, the assistant can read your pet\'s medical records. When you ask a question, it can read the three most recent entries, with title, category (visit, test, vaccine, therapy or document), event date, description and the text of attached documents, even if they are not related to your question. It can also read earlier conditions that are still ongoing, with the name and start date, up to five. It also reads the notes you wrote on your pet\'s profile and the active reminders, therapies included. If you ask it to explain a test, it can read the documents related to it, up to two. For a very long document it reads only the beginning. What it reads is sent to an external artificial intelligence provider that writes the answer: Anthropic. It belongs to a US company and processes the data in the United States, outside the European Union: the transfer is bound by a contract and protected by the safeguards that European law provides for these transfers. Before sending, we remove names, contact details and other data that identify you, but we cannot recognize all of them. Quokka uses it only to answer you and to prepare the summary for the vet that you can request. You can withdraw your consent at any time from your pet\'s profile or from Settings: this applies to subsequent requests.';
 
   @override
   String get appTitle => 'Quokka';
@@ -310,7 +310,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authLegalPreparingNotice =>
-      'The full privacy policy is being completed and will be available here soon, with a download option. In the meantime, in short: part of your data (questions, attachments and voice messages) is sent to artificial intelligence providers that process data in the United States. You can ask for access, correction, deletion or a copy of your data from Settings → Contact us, download it from Settings → Account → Download my data, or delete your account. You can also lodge a complaint with the data protection authority of your country (in Italy, the Garante).';
+      'The full privacy policy is being completed and will be available here soon, with a download option. In the meantime, in short: part of your data (questions and the text of attached documents) is sent to artificial intelligence providers that process data in the United States. You can ask for access, correction, deletion or a copy of your data from Settings → Contact us, download it from Settings → Account → Download my data, or delete your account. You can also lodge a complaint with the data protection authority of your country (in Italy, the Garante).';
 
   @override
   String get authHubTitle => 'Quokka: understand your pet';
@@ -846,20 +846,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatStopRecordingTooltip => 'Stop and transcribe';
 
   @override
-  String get chatVoiceMessageTooltip => 'Voice message';
+  String get chatVoiceMessageTooltip => 'Dictate a message';
 
   @override
   String get chatMicPermissionNeeded => 'Microphone permission is required.';
 
   @override
   String get chatMicStartFailed => 'I can\'t start the microphone. Try again.';
-
-  @override
-  String get chatRecordingFailed => 'The recording failed. Try again.';
-
-  @override
-  String get chatRecordingReadFailed =>
-      'The recording could not be read. Try again.';
 
   @override
   String get chatPhotoAnalyzing => 'Uploading the photo…';
@@ -6806,18 +6799,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noticePolicy => 'Privacy policy';
 
   @override
-  String get noticeChatAi =>
-      'An artificial intelligence answers and can be wrong. Your questions, cleaned of the personal data we recognize, go to our AI providers (Anthropic and, when Anthropic cannot answer, Groq), with servers in the United States. Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a helpline in your country right away. Do not wait for the app\'s reply.';
-
-  @override
-  String get noticeChatMedia =>
-      'Your voice goes to an external service (today Groq, in the United States) that transcribes it. The filter that removes personal data works on text, not on voice: avoid saying your name, address and microchip number.';
-
-  @override
-  String get noticeChatPhoto =>
-      'The photo stays in your account. When photo analysis is on, it goes to an external service (today Groq, in the United States) that describes it. The filter that removes personal data works on text, not on images: avoid showing names, addresses or microchip numbers.';
-
-  @override
   String get noticeRecordDocument =>
       'The document stays in your account. The assistant reads it only if you have turned on reading of this pet\'s medical record.';
 
@@ -7321,7 +7302,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get permMicrophoneWhy =>
-      'The microphone lets you dictate chat messages: you speak and Quokka writes them for you. The recording is sent to a transcription service to be turned into text and is not kept on your phone.';
+      'The microphone lets you dictate chat messages: you speak and your phone\'s speech recognition turns your words into text. Quokka receives only the text, never the audio. Speech recognition is done by your phone\'s system (Google or Apple), which may use its own servers under its own rules.';
 
   @override
   String get permMicrophoneRefuse =>
@@ -8162,7 +8143,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a helpline in your country right away. Do not wait for the app\'s reply.';
 
   @override
-  String get emergencyNoticeTitle => 'Quokka does not handle emergencies';
+  String get firstChatTitle => 'Before your first chat';
+
+  @override
+  String get firstChatBody =>
+      'An artificial intelligence answers you and can be wrong. Your questions, cleaned of the personal data we recognize, go to Anthropic, our AI provider, with servers in the United States: the details are in the privacy policy. Quokka does not handle emergencies: in an emergency, contact a vet, the emergency services or a helpline in your country right away. Do not wait for the app\'s reply.';
+
+  @override
+  String get firstChatAccept => 'Accept and start the chat';
+
+  @override
+  String get firstChatPrivacyLink => 'Read the privacy policy';
 
   @override
   String get emergencyNoticeCheckbox =>

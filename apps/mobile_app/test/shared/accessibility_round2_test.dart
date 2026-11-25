@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:record/record.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vet_app_mobile/features/chat/domain/chat_models.dart';
 import 'package:vet_app_mobile/features/chat/presentation/widgets/chat_composer.dart';
@@ -12,10 +11,7 @@ import 'package:vet_app_mobile/l10n/app_localizations.dart';
 import 'package:vet_app_mobile/shared/widgets/min_tap_target.dart';
 import 'package:vet_app_mobile/shared/widgets/pet_loader.dart';
 
-class _FakeRecorder extends Fake implements AudioRecorder {
-  @override
-  Future<void> dispose() async {}
-}
+import '../features/chat/widgets/fake_dictation.dart';
 
 Widget _app(Widget child) => MaterialApp(
       locale: const Locale('it'),
@@ -34,9 +30,10 @@ void main() {
       await tester.pumpWidget(_app(ChatComposer(
         hintText: 'Scrivi',
         petName: 'Rex',
-        recorder: _FakeRecorder(),
+        dictation: FakeDictation(),
         onSend: (text, {attachmentId, attachmentImageBytes}) {},
       )));
+      await tester.pump();
 
       expect(find.byTooltip('Invia il messaggio'), findsOneWidget);
       final send = find.widgetWithIcon(IconButton, Icons.arrow_upward_rounded);
@@ -50,7 +47,7 @@ void main() {
       expect(tester.getSize(painted), const Size(40, 40));
 
       // The "+" and the microphone too.
-      for (final name in ['Aggiungi una foto', 'Messaggio vocale']) {
+      for (final name in ['Aggiungi una foto', 'Detta il messaggio']) {
         final button = find.ancestor(of: find.byTooltip(name), matching: find.byType(IconButton));
         final box = tester.getSize(find.ancestor(of: button, matching: find.byType(Padding)).first);
         expect(box.shortestSide, greaterThanOrEqualTo(48), reason: name);

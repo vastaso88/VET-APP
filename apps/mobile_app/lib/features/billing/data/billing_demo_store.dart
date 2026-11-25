@@ -17,7 +17,8 @@ class BillingDemoStore extends ChangeNotifier {
   static final BillingDemoStore instance = BillingDemoStore._();
 
   /// What every plan shares. Each line maps to a real backend route (pets,
-  /// chat + chat attachments + speech_to_text, reminders, local_services).
+  /// chat + chat attachments, reminders, local_services), except the dictation, done by
+  /// the phone.
   /// What changes from plan to plan is the four limits, see
   /// [limitFeaturesFor].
   static const List<PlanFeature> includedInAllPlans = [

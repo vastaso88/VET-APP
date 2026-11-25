@@ -1,80 +1,48 @@
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:async';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:record/record.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:vet_app_mobile/features/chat/data/speech_to_text_remote_data_source.dart';
 import 'package:vet_app_mobile/features/chat/presentation/widgets/chat_composer.dart';
-import 'package:vet_app_mobile/shared/types/result.dart';
 
-/// Build 28: while recording it must be obvious the app is listening, and
-/// while transcribing that it is working.
-class _FakeRecorder extends Fake implements AudioRecorder {
-  _FakeRecorder({this.returnsFile = false});
+import 'fake_dictation.dart';
 
-  /// Whether stop() hands back the recording (then the composer goes on
-  /// to transcribe it) or nothing (straight back to idle).
-  final bool returnsFile;
-  String? startedPath;
-
-  @override
-  Future<bool> hasPermission({bool request = true}) async => true;
-
-  @override
-  Future<void> start(RecordConfig config, {required String path}) async {
-    startedPath = path;
-  }
-
-  @override
-  Future<String?> stop() async => returnsFile ? startedPath : null;
-
-  @override
-  Future<void> dispose() async {}
-}
-
-class _PendingSpeechToText implements SpeechToTextRemoteDataSource {
-  final completer = Completer<Result<String>>();
-
-  @override
-  Future<Result<String>> transcribe({required Uint8List audioBytes, required String fileName}) =>
-      completer.future;
-}
-
-Future<void> _pump(
+/// Build 28: while listening it must be obvious that the app is listening, and
+/// after that that it is working.
+Future<FakeDictation> _pump(
   WidgetTester tester, {
   String? editingText,
   VoidCallback? onCancel,
-  bool recorderReturnsFile = false,
-}) {
-  return tester.pumpWidget(
+}) async {
+  final dictation = FakeDictation();
+  await tester.pumpWidget(
     MaterialApp(
       home: Scaffold(
         body: ChatComposer(
           hintText: 'Scrivi',
           petName: 'Rex',
-          recorder: _FakeRecorder(returnsFile: recorderReturnsFile),
-          speechToText: _PendingSpeechToText(),
-          recordingPathProvider: () async => '/tmp/chat-voice-test.m4a',
+          dictation: dictation,
           editingText: editingText,
           onCancelEditing: onCancel,
         ),
       ),
     ),
   );
+  await tester.pump();
+  return dictation;
+}
+
+Future<void> _tapMic(WidgetTester tester) async {
+  await tester.tap(find.byIcon(Icons.mic_none_rounded));
+  await tester.pump();
+  await tester.pump();
 }
 
 void main() {
-  // The first-photo/voice notice is not what these tests are about.
-  setUp(() => SharedPreferences.setMockInitialValues({'vet_app.short_notice.chat_media': true}));
+  setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('while recording it says it is listening and counts the time', (tester) async {
+  testWidgets('while listening it says so and counts the time', (tester) async {
     await _pump(tester);
-
-    await tester.tap(find.byIcon(Icons.mic_none_rounded));
-    await tester.pump();
+    await _tapMic(tester);
 
     expect(find.text(ChatComposer.listeningText), findsOneWidget);
     expect(find.text('0:00'), findsOneWidget);
@@ -86,33 +54,42 @@ void main() {
     expect(find.text('1:07'), findsOneWidget);
   });
 
-  testWidgets('tapping the listening banner stops the recording', (tester) async {
-    await _pump(tester);
-    await tester.tap(find.byIcon(Icons.mic_none_rounded));
-    await tester.pump();
+  testWidgets('tapping the listening banner stops the dictation', (tester) async {
+    final dictation = await _pump(tester);
+    await _tapMic(tester);
 
     await tester.tap(find.text(ChatComposer.listeningText));
     await tester.pump();
 
+    expect(dictation.stopped, isTrue);
     expect(find.text(ChatComposer.listeningText), findsNothing);
-    // The fake recorder returns no file: straight back to idle.
+    dictation.hear('ciao');
+    await tester.pump();
     expect(find.byIcon(Icons.mic_none_rounded), findsOneWidget);
   });
 
   testWidgets('after stopping it says it is transcribing, and the timer stops', (tester) async {
-    await _pump(tester, recorderReturnsFile: true);
-    await tester.tap(find.byIcon(Icons.mic_none_rounded));
-    await tester.pump();
+    await _pump(tester);
+    await _tapMic(tester);
     await tester.pump(const Duration(seconds: 3));
 
     await tester.tap(find.byIcon(Icons.stop_circle_rounded));
     await tester.pump();
 
-    // Reading the clip is real file I/O, which never completes under the
-    // test clock: the composer stays in "transcribing", which is the point.
     expect(find.text(ChatComposer.transcribingText), findsOneWidget);
     expect(find.text(ChatComposer.listeningText), findsNothing);
     expect(find.text('0:03'), findsNothing);
+  });
+
+  testWidgets('a silence the phone decided ends the listening on screen too', (tester) async {
+    final dictation = await _pump(tester);
+    await _tapMic(tester);
+
+    dictation.close();
+    await tester.pump();
+
+    expect(find.text(ChatComposer.listeningText), findsNothing);
+    expect(find.text(ChatComposer.transcribingText), findsOneWidget);
   });
 
   testWidgets('editing puts the text in the field and can be cancelled', (tester) async {

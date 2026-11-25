@@ -1,17 +1,10 @@
-import '../../../../shared/widgets/short_notice.dart';
 import 'dart:async';
-import 'dart:io' show File;
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
-
-import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
-import 'package:record/record.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
@@ -22,9 +15,10 @@ import '../../../../shared/permissions/permission_explainer.dart';
 import '../../../settings/data/layout_settings_store.dart';
 import '../../data/chat_demo_store.dart';
 import '../../data/chat_remote_data_source.dart' show chatMaxMessageLength;
-import '../../data/speech_to_text_remote_data_source.dart';
+import '../../data/system_dictation.dart';
 
-enum _VoiceState { idle, recording, transcribing }
+/// [transcribing]: the microphone is closed, the last words are on their way.
+enum _VoiceState { idle, listening, transcribing }
 
 class ChatComposer extends StatefulWidget {
   const ChatComposer({
@@ -33,9 +27,7 @@ class ChatComposer extends StatefulWidget {
     required this.petName,
     this.petId,
     this.onSend,
-    this.speechToText,
-    this.recorder,
-    this.recordingPathProvider,
+    this.dictation,
     this.editingText,
     this.onCancelEditing,
     this.allowEmptySend = false,
@@ -52,11 +44,10 @@ class ChatComposer extends StatefulWidget {
   /// [attachmentId] is only set once the photo finished uploading and being
   /// analyzed server-side — see [ChatDemoStore.uploadAttachment].
   final void Function(String text, {String? attachmentId, Uint8List? attachmentImageBytes})? onSend;
-  final SpeechToTextRemoteDataSource? speechToText;
 
-  /// Overridable so tests can drive the dictation flow without a microphone.
-  final AudioRecorder? recorder;
-  final Future<String> Function()? recordingPathProvider;
+  /// The speech recognition of the phone or of the browser. Overridable so tests can drive
+  /// the dictation without a microphone.
+  final Dictation? dictation;
 
   /// The text of a sent message being edited: when it changes from null, it
   /// is put in the field and the composer shows it is editing. Sending then
@@ -84,17 +75,19 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
 
-  /// Drives the pulsing dot and stop button while recording (build 28: it
+  /// Drives the pulsing dot and stop button while listening (build 28: it
   /// was not clear the microphone was listening).
-  late final AnimationController _pulse = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 900),
-  );
+  late final AnimationController _pulse;
   Timer? _elapsedTimer;
   int _elapsedSeconds = 0;
-  late final AudioRecorder _recorder = widget.recorder ?? AudioRecorder();
-  late final SpeechToTextRemoteDataSource _speechToText =
-      widget.speechToText ?? HttpSpeechToTextRemoteDataSource();
+  late final Dictation _dictation = widget.dictation ?? SystemDictation.instance;
+  late final AppLifecycleListener _lifecycle;
+
+  /// No microphone button until the phone (or the browser) says it can recognise speech.
+  bool _dictationAvailable = false;
+
+  /// Between the tap on the microphone and the listening: explanation, permission.
+  bool _startingDictation = false;
 
   bool _hasText = false;
 
@@ -138,7 +131,14 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
+    // Here and not on first use: without a microphone button the first use would be dispose().
+    _pulse = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
     unawaited(_restoreDraft());
+    unawaited(_lookForDictation());
+    // The microphone closes when the app leaves the screen.
+    _lifecycle = AppLifecycleListener(onHide: () {
+      if (_voiceState == _VoiceState.listening) unawaited(_dictation.stop());
+    });
     _controller.addListener(_scheduleDraftSave);
     _controller.addListener(() {
       final hasText = _controller.text.trim().isNotEmpty;
@@ -172,11 +172,17 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
     _pulse.dispose();
     _focusNode.dispose();
     _controller.dispose();
-    _recorder.dispose();
+    _lifecycle.dispose();
+    if (_voiceState != _VoiceState.idle || _startingDictation) unawaited(_dictation.cancel());
     super.dispose();
   }
 
-  void _startRecordingFeedback() {
+  Future<void> _lookForDictation() async {
+    final available = await _dictation.isAvailable();
+    if (mounted && available) setState(() => _dictationAvailable = true);
+  }
+
+  void _startListeningFeedback() {
     _elapsedTimer?.cancel();
     _elapsedSeconds = 0;
     _elapsedTimer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -185,7 +191,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
     _pulse.repeat(reverse: true);
   }
 
-  void _stopRecordingFeedback() {
+  void _stopListeningFeedback() {
     _elapsedTimer?.cancel();
     _elapsedTimer = null;
     _pulse
@@ -200,7 +206,10 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final canSend = (_hasText || widget.allowEmptySend) && !_uploadingAttachment;
+    // Not while the voice is being turned into text: the words would land in the next message.
+    final canSend = (_hasText || widget.allowEmptySend) &&
+        !_uploadingAttachment &&
+        _voiceState == _VoiceState.idle;
     final isEditing = widget.editingText != null;
 
     return Container(
@@ -237,11 +246,11 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
             _EditingBanner(onCancel: _cancelEditing),
             const SizedBox(height: AppSpacing.sm),
           ],
-          if (_voiceState == _VoiceState.recording) ...[
-            _RecordingBanner(
+          if (_voiceState == _VoiceState.listening) ...[
+            _ListeningBanner(
               pulse: _pulse,
               elapsedSeconds: _elapsedSeconds,
-              onTap: _toggleRecording,
+              onTap: _toggleDictation,
             ),
             const SizedBox(height: AppSpacing.sm),
           ] else if (_voiceState == _VoiceState.transcribing) ...[
@@ -265,7 +274,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
                   height: 1.4,
                 ),
                 decoration: InputDecoration(
-                  hintText: _voiceState == _VoiceState.recording
+                  hintText: _voiceState == _VoiceState.listening
                       ? context.l10n.chatListeningHint
                       : _voiceState == _VoiceState.transcribing
                           ? context.l10n.chatTranscribingHint
@@ -312,20 +321,20 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
                     child: PetLoader.small(),
                   ),
                 )
-              else
+              else if (_dictationAvailable)
                 ScaleTransition(
                   scale: Tween<double>(begin: 1, end: 1.18).animate(
                     CurvedAnimation(parent: _pulse, curve: Curves.easeInOut),
                   ),
                   child: _ComposerIconButton(
-                    icon: _voiceState == _VoiceState.recording
+                    icon: _voiceState == _VoiceState.listening
                         ? Icons.stop_circle_rounded
                         : Icons.mic_none_rounded,
-                    tooltip: _voiceState == _VoiceState.recording
+                    tooltip: _voiceState == _VoiceState.listening
                         ? context.l10n.chatStopRecordingTooltip
                         : context.l10n.chatVoiceMessageTooltip,
-                    color: _voiceState == _VoiceState.recording ? AppColors.danger : null,
-                    onPressed: _toggleRecording,
+                    color: _voiceState == _VoiceState.listening ? AppColors.danger : null,
+                    onPressed: _toggleDictation,
                   ),
                 ),
               const SizedBox(width: AppSpacing.xs),
@@ -369,16 +378,13 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
   }
 
   Future<void> _pickAndUploadImage() async {
-    // First photo: the personal-data filter does not look at images.
-    if (!await showShortNoticeOnce(context, ShortNotice.chatPhoto)) return;
-    if (!mounted) return;
     final picked = await FilePicker.platform.pickFiles(
       type: FileType.image,
       withData: true,
     );
     final file = picked?.files.singleOrNull;
     final bytes = file?.bytes;
-    if (file == null || bytes == null) return;
+    if (file == null || bytes == null || !mounted) return;
 
     setState(() {
       _pendingImageBytes = bytes;
@@ -417,134 +423,107 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
     });
   }
 
-  Future<void> _toggleRecording() async {
-    if (_voiceState == _VoiceState.recording) {
-      await _stopAndTranscribe();
+  Future<void> _toggleDictation() async {
+    if (_voiceState == _VoiceState.listening) {
+      await _dictation.stop();
       return;
     }
-    if (_voiceState != _VoiceState.idle) return;
-    // First voice message: same notice as for the first photo.
-    if (!await showShortNoticeOnce(context, ShortNotice.chatMedia)) return;
-    if (!mounted) return;
-    final l10n = context.l10n;
-
-    var hasPermission = false;
+    if (_voiceState != _VoiceState.idle || _startingDictation) return;
+    _startingDictation = true;
     try {
-      hasPermission = await _recorder.hasPermission(request: false);
-      if (!hasPermission) {
-        // Before Android's own dialog: why the microphone, and what happens
-        // without it. "Non ora" asks nothing.
-        if (!mounted) return;
-        if (!await explainPermission(context, PermissionPurpose.microphone)) return;
-        hasPermission = await _recorder.hasPermission();
-      }
-    } catch (_) {
-      // Treated like a refusal: the message below is shown.
+      await _startDictation();
+    } finally {
+      _startingDictation = false;
     }
-    if (!hasPermission) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.chatMicPermissionNeeded)),
-      );
-      return;
-    }
-
-    try {
-      // `record` opens the file as given, and a bare name resolves against the
-      // process working directory (read-only "/" on Android): the recorder
-      // refused to start there. Native recordings go to a real temp file.
-      final path = await (widget.recordingPathProvider ?? _defaultRecordingPath)();
-      await _recorder.start(_recordConfig, path: path);
-    } catch (_) {
-      _showMessage(l10n.chatMicStartFailed);
-      return;
-    }
-    if (!mounted) return;
-    setState(() => _voiceState = _VoiceState.recording);
-    _startRecordingFeedback();
   }
 
-  /// Mono 16 kHz AAC (.m4a) is plenty for speech and keeps the upload small.
-  /// The web recorder picks its own container (webm), so keep its defaults.
-  static const _recordConfig = kIsWeb
-      ? RecordConfig()
-      : RecordConfig(
-          encoder: AudioEncoder.aacLc, sampleRate: 16000, numChannels: 1, bitRate: 64000);
+  Future<void> _startDictation() async {
+    final l10n = context.l10n;
+    bool? allowed = false;
+    try {
+      allowed = await _dictation.hasPermission();
+    } catch (_) {
+      // Not known to be allowed: it is explained and asked.
+    }
+    if (!mounted) return;
+    if (allowed != true) {
+      // Before the system's own dialog: why the microphone, and what happens without it.
+      // "Non ora" asks nothing. A browser does not say what was decided: explained once.
+      final proceed = await explainPermission(
+        context,
+        PermissionPurpose.microphone,
+        onlyFirstTime: allowed == null,
+      );
+      if (!proceed || !mounted) return;
+    }
+    final access = await _dictation.prepare();
+    if (!mounted) return;
+    switch (access) {
+      case DictationAccess.ready:
+        break;
+      case DictationAccess.refused:
+        _showMessage(l10n.chatMicPermissionNeeded);
+        return;
+      case DictationAccess.unavailable:
+        // No speech recognition on this phone after all: no button, no error.
+        setState(() => _dictationAvailable = false);
+        return;
+      case DictationAccess.failed:
+        _showMessage(l10n.chatMicStartFailed);
+        return;
+    }
+    setState(() => _voiceState = _VoiceState.listening);
+    _startListeningFeedback();
+    try {
+      await _dictation.start(
+        // The app's language, with its country when the owner picked one (en-AU).
+        languageTag: AppLocaleHolder.current.toLanguageTag(),
+        onClosed: () {
+          if (!mounted) return;
+          _stopListeningFeedback();
+          setState(() => _voiceState = _VoiceState.transcribing);
+        },
+        onDone: _onDictated,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      _stopListeningFeedback();
+      setState(() => _voiceState = _VoiceState.idle);
+      _showMessage(l10n.chatMicStartFailed);
+    }
+  }
 
-  static Future<String> _defaultRecordingPath() async {
-    if (kIsWeb) return 'chat-voice-message.webm';
-    final directory = await getTemporaryDirectory();
-    return '${directory.path}/chat-voice-${DateTime.now().millisecondsSinceEpoch}.m4a';
+  /// The words join what is already written; the owner reads them again and sends.
+  void _onDictated(DictationResult result) {
+    if (!mounted) return;
+    _stopListeningFeedback();
+    setState(() => _voiceState = _VoiceState.idle);
+    final l10n = context.l10n;
+    if (result.text.isEmpty) {
+      _showMessage(switch (result.problem) {
+        DictationProblem.permission => l10n.chatMicPermissionNeeded,
+        DictationProblem.microphone => l10n.chatMicStartFailed,
+        _ => l10n.chatErrorTranscribe,
+      });
+      return;
+    }
+    final current = _controller.text;
+    final joined = current.trim().isEmpty
+        ? result.text
+        : '${current.trimRight()} ${result.text}';
+    // Set directly, so the field's length limit has to be applied here.
+    final merged = joined.length > chatMaxMessageLength
+        ? joined.substring(0, chatMaxMessageLength)
+        : joined;
+    _controller.value = TextEditingValue(
+      text: merged,
+      selection: TextSelection.collapsed(offset: merged.length),
+    );
   }
 
   void _showMessage(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Future<void> _stopAndTranscribe() async {
-    final l10n = context.l10n;
-    _stopRecordingFeedback();
-    String? path;
-    try {
-      path = await _recorder.stop();
-    } catch (_) {
-      if (mounted) setState(() => _voiceState = _VoiceState.idle);
-      _showMessage(l10n.chatRecordingFailed);
-      return;
-    }
-    if (!mounted) return;
-    setState(() => _voiceState = _VoiceState.transcribing);
-
-    if (path == null) {
-      setState(() => _voiceState = _VoiceState.idle);
-      return;
-    }
-
-    try {
-      // On web `stop()` returns a `blob:` URL for the recording; http can
-      // fetch it directly (the blob lives in this same page's origin). On
-      // Android/iOS it is a plain file path.
-      final audioBytes =
-          kIsWeb ? (await http.get(Uri.parse(path))).bodyBytes : await File(path).readAsBytes();
-      final result = await _speechToText.transcribe(
-        audioBytes: audioBytes,
-        fileName: kIsWeb ? 'chat-voice-message.webm' : 'chat-voice-message.m4a',
-      );
-      if (!mounted) return;
-      result.fold(
-        onSuccess: (text) {
-          final transcribed = text.trim();
-          if (transcribed.isEmpty) return;
-          final current = _controller.text;
-          final joined = current.trim().isEmpty ? transcribed : '$current $transcribed';
-          // Set directly, so the field's length limit has to be applied here.
-          final merged = joined.length > chatMaxMessageLength
-              ? joined.substring(0, chatMaxMessageLength)
-              : joined;
-          _controller.value = TextEditingValue(
-            text: merged,
-            selection: TextSelection.collapsed(offset: merged.length),
-          );
-        },
-        onFailure: (error) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
-        },
-      );
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.chatRecordingReadFailed)),
-      );
-    } finally {
-      if (!kIsWeb) {
-        // The clip is only needed for the transcription.
-        try {
-          await File(path).delete();
-        } catch (_) {}
-      }
-      if (mounted) setState(() => _voiceState = _VoiceState.idle);
-    }
   }
 }
 
@@ -603,10 +582,10 @@ class _PendingAttachmentChip extends StatelessWidget {
   }
 }
 
-/// While recording: a pulsing dot, what is happening, how long it has been.
-/// Tapping it stops the recording, like the stop button.
-class _RecordingBanner extends StatelessWidget {
-  const _RecordingBanner({
+/// While listening: a pulsing dot, what is happening, how long it has been.
+/// Tapping it stops the dictation, like the stop button.
+class _ListeningBanner extends StatelessWidget {
+  const _ListeningBanner({
     required this.pulse,
     required this.elapsedSeconds,
     required this.onTap,

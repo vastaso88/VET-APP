@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:record/record.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:vet_app_mobile/app/launch/warm_start_store.dart';
 import 'package:vet_app_mobile/features/chat/presentation/widgets/chat_composer.dart';
 
-class _FakeRecorder extends Fake implements AudioRecorder {
-  @override
-  Future<void> dispose() async {}
-}
+import 'fake_dictation.dart';
 
 Future<void> _pump(WidgetTester tester, {String? draftKey, void Function(String, {String? attachmentId, dynamic attachmentImageBytes})? onSend}) {
   return tester.pumpWidget(
@@ -18,7 +14,7 @@ Future<void> _pump(WidgetTester tester, {String? draftKey, void Function(String,
         body: ChatComposer(
           hintText: 'Scrivi',
           petName: 'Rex',
-          recorder: _FakeRecorder(),
+          dictation: FakeDictation(),
           draftKey: draftKey,
           onSend: onSend == null ? null : (text, {attachmentId, attachmentImageBytes}) => onSend(text),
         ),

@@ -10,12 +10,19 @@ import '../data/account_consents_remote_data_source.dart';
 import '../domain/account_consent_models.dart';
 import '../presentation/pages/emergency_notice_gate_page.dart';
 
-/// The acknowledgement that Quokka does not handle emergencies, asked once, when the first
-/// chat is opened (owner decision of 24 November 2026): it is a condition of the CHAT only.
-/// The rest of the app never waits for it, and a server that does not know it (or its version)
-/// yet, or that cannot be reached, never keeps the owner out of the app or of the chat: the
-/// acceptance stays on the phone, with the version of the text that was shown, and is sent
-/// again later.
+/// The one screen of the first chat (owner decisions of 24 and 25 November 2026). It holds two
+/// things:
+///
+/// * the acknowledgement that Quokka does not handle emergencies, with its own box, recorded on
+///   the server with the version of the text that was shown;
+/// * who answers: an AI, and the provider the questions go to. A notice without a version, kept
+///   on this phone only ([_providerKey]): everybody sees the screen once, also who had already
+///   acknowledged the emergencies (on this phone or on another one).
+///
+/// It is a condition of the CHAT only. The rest of the app never waits for it, and a server that
+/// does not know the acknowledgement (or its version) yet, or that cannot be reached, never keeps
+/// the owner out of the app or of the chat: the acceptance stays on the phone, with the version
+/// of the text that was shown, and is sent again later.
 class ChatNotice {
   const ChatNotice._();
 
@@ -28,13 +35,24 @@ class ChatNotice {
 
   static const _pendingKeyBuild44 = 'vet_app.chat_notice_pending';
 
+  /// The screen that names the AI provider was accepted on this phone. Another provider is
+  /// another key: the screen then comes back once to everybody.
+  static const _providerKey = 'vet_app.chat_ai_provider';
+
   static DateTime? _lastRecheck;
 
   /// The longest the chat waits for the server before going on.
   static const serverWait = Duration(seconds: 6);
 
-  /// True when the chat may be used: accepted before (here or on another phone) or now. With
+  /// True when the chat may be used: the screen was accepted on this phone, before or now. With
   /// no server (the demo) there is nothing to ask.
+  ///
+  /// Emergencies acknowledged here and provider seen: nothing is shown, nothing is waited for.
+  /// Otherwise the screen is shown; what its "Accetto" does depends on the emergencies:
+  ///
+  /// * already acknowledged, here or on the server, for the text on the screen: nothing is sent
+  ///   again, only the provider is marked as seen;
+  /// * else: the acceptance is recorded with the version shown, now or later.
   static Future<bool> ensure(
     BuildContext context, {
     AccountConsentsRemoteDataSource? dataSource,
@@ -42,41 +60,37 @@ class ChatNotice {
     if (dataSource == null && !const AppRuntimeConfigLoader().load().hasApiBaseUrl) return true;
     final source = dataSource ?? HttpAccountConsentsRemoteDataSource();
     final here = await _acceptedHere();
-    if (here != null) {
-      // Accepted on this phone: no wait. A newer text on the server is found out behind the
-      // chat, at most once an hour.
-      final now = DateTime.now();
-      final last = _lastRecheck;
-      if (last == null || now.difference(last) > const Duration(hours: 1)) {
-        _lastRecheck = now;
-        unawaited(_recheckCatalog(source, here));
-      }
+    final providerSeen = await _providerSeen();
+    if (here != null && providerSeen) {
+      _recheckBehind(source, here);
       return true;
     }
     if (!context.mounted) return false;
-    final snapshot = await _read(source);
+    // Acknowledged on this phone, with the text this app shows: only the provider is new, no
+    // need to wait for the server.
+    final snapshot =
+        here == AccountConsentKeys.emergencyNoticeVersion ? null : await _read(source);
     if (!context.mounted) return false;
-    if (snapshot != null && acceptedOnServer(snapshot)) {
-      await _remember(
-        snapshot.decisions[AccountConsentKeys.emergencyNotice]?.version ??
-            AccountConsentKeys.emergencyNoticeVersion,
-        pending: false,
-      );
-      return true;
-    }
-    return _askAndRecord(context, source, snapshot?.catalog[AccountConsentKeys.emergencyNotice]);
+    final entry = snapshot?.catalog[AccountConsentKeys.emergencyNotice];
+    final onServer = snapshot != null && acceptedOnServer(snapshot)
+        ? snapshot.decisions[AccountConsentKeys.emergencyNotice]?.version
+        : null;
+    if (onServer != null && onServer != here) await _remember(onServer, pending: false);
+    if (onServer != null && providerSeen) return true;
+    if (!context.mounted) return false;
+    // With a server that could not be read, what was acknowledged here still counts.
+    final acknowledged =
+        onServer != null || (here != null && (entry == null || entry.version == here));
+    if (!acknowledged) return _askAndRecord(context, source, entry);
+    if (!await _ask(context, entry)) return false;
+    await _rememberProvider();
+    if (here != null && snapshot == null) _recheckBehind(source, here);
+    return true;
   }
 
-  /// Shows the text (the catalog's when it is newer than the app's own, else the app's) and
-  /// records the answer with the version shown. A refused version is asked once more with the
-  /// text the server holds now; if that cannot be shown the acceptance waits on the phone.
-  static Future<bool> _askAndRecord(
-    BuildContext context,
-    AccountConsentsRemoteDataSource source,
-    ConsentCatalogEntry? entry, {
-    bool mayRetry = true,
-  }) async {
-    final version = entry?.version ?? AccountConsentKeys.emergencyNoticeVersion;
+  /// Shows the screen, with the emergencies' text of the catalog when it is newer than the app's
+  /// own. False, and said so, when it was not accepted: only the chat closes.
+  static Future<bool> _ask(BuildContext context, ConsentCatalogEntry? entry) async {
     final newerText = entry != null && entry.version != AccountConsentKeys.emergencyNoticeVersion
         ? entry.text
         : null;
@@ -86,12 +100,25 @@ class ChatNotice {
         builder: (_) => EmergencyNoticeGatePage(catalogText: newerText),
       ),
     );
-    if (accepted != true) {
-      AppRouter.scaffoldMessengerKey.currentState?.showSnackBar(
-        SnackBar(content: Text(appL10n.emergencyNoticeDeclineTitle)),
-      );
-      return false;
-    }
+    if (accepted == true) return true;
+    AppRouter.scaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(content: Text(appL10n.emergencyNoticeDeclineTitle)),
+    );
+    return false;
+  }
+
+  /// Shows the screen and records the answer with the version shown. A refused version is asked
+  /// once more with the text the server holds now; if that cannot be shown the acceptance waits
+  /// on the phone.
+  static Future<bool> _askAndRecord(
+    BuildContext context,
+    AccountConsentsRemoteDataSource source,
+    ConsentCatalogEntry? entry, {
+    bool mayRetry = true,
+  }) async {
+    final version = entry?.version ?? AccountConsentKeys.emergencyNoticeVersion;
+    if (!await _ask(context, entry)) return false;
+    await _rememberProvider();
     await _remember(version, pending: true);
     final outcome = await _send(source, version).timeout(serverWait, onTimeout: () => _Sent.later);
     if (outcome == _Sent.refused && mayRetry && context.mounted) {
@@ -151,6 +178,16 @@ class ChatNotice {
     }
   }
 
+  /// Accepted on this phone: a newer text on the server is found out behind the chat, at most
+  /// once an hour.
+  static void _recheckBehind(AccountConsentsRemoteDataSource source, String accepted) {
+    final now = DateTime.now();
+    final last = _lastRecheck;
+    if (last != null && now.difference(last) <= const Duration(hours: 1)) return;
+    _lastRecheck = now;
+    unawaited(_recheckCatalog(source, accepted));
+  }
+
   /// Accepted on this phone and the server holds a different text now: the next chat asks again.
   static Future<void> _recheckCatalog(
     AccountConsentsRemoteDataSource source,
@@ -160,8 +197,14 @@ class ChatNotice {
     if (entry != null && entry.version != accepted) await _forget();
   }
 
-  /// Sign-out: nothing of this account stays.
-  static Future<void> clear() => _forget();
+  /// Sign-out: nothing of this account stays, the provider's notice included.
+  static Future<void> clear() async {
+    await _forget();
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      await preferences.remove(_providerKey);
+    } catch (_) {}
+  }
 
   static Future<void> _forget() async {
     _lastRecheck = null;
@@ -193,6 +236,23 @@ class ChatNotice {
     } catch (_) {
       return null;
     }
+  }
+
+  static Future<bool> _providerSeen() async {
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      return preferences.getBool(_providerKey) ?? false;
+    } catch (_) {
+      // Unreadable: better to say it once more than to skip it.
+      return false;
+    }
+  }
+
+  static Future<void> _rememberProvider() async {
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      await preferences.setBool(_providerKey, true);
+    } catch (_) {}
   }
 
   static Future<void> _remember(String version, {required bool pending}) async {

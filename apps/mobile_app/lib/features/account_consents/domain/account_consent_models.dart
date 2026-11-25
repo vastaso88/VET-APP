@@ -22,7 +22,7 @@ class AccountConsentKeys {
   /// it with `CURRENT_VERSIONS` when the app's own wording changes (a test compares the two).
   static const shownVersions = {
     termsOfService: 'v2',
-    privacyPolicy: 'v3',
+    privacyPolicy: 'v4',
     emergencyNotice: emergencyNoticeVersion,
   };
 

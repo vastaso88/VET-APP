@@ -17,6 +17,12 @@
          Google Play reserves it to alarm-clock and calendar apps.
          See docs/compliance/05_permessi_dispositivo_os.md. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- Dictation in the chat (lib/features/chat/data/system_dictation.dart): the
+         phone's own speech recognition listens, Quokka gets only the text. Until
+         2026-11-25 the plugin of the voice recorder declared it. The speech
+         plugin's Bluetooth permissions are not declared nor asked.
+         See docs/compliance/05_permessi_dispositivo_os.md. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Foreground-only location — Località in Impostazioni, passeggiate, attività locali.
          See docs/compliance/05_permessi_dispositivo_os.md. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -160,6 +166,11 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Dictation in the chat: without it Android 11+ hides the phone's
+             speech recognition from the app. -->
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
         </intent>
     </queries>
 </manifest>

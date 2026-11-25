@@ -107,7 +107,7 @@ abstract class AppLocalizations {
   /// No description provided for @petsConsentFullText.
   ///
   /// In it, this message translates to:
-  /// **'Per darti un consiglio più preciso, l\'assistente può leggere la cartella clinica del tuo animale. Quando fai una domanda può leggere le tre voci più recenti, con titolo, categoria (visita, esame, vaccino, terapia o documento), data dell\'evento, descrizione e testo dei documenti allegati, anche se non c\'entrano con la domanda. Può leggere anche le malattie pregresse ancora in corso, con il nome e la data di inizio, al massimo cinque. Legge anche le note che hai scritto nella scheda dell\'animale e i promemoria attivi, terapie comprese. Se chiedi di spiegare un esame, può leggere i documenti che lo riguardano, al massimo due. Di un documento molto lungo legge solo l\'inizio. Ciò che legge viene inviato ai fornitori esterni di intelligenza artificiale che scrivono la risposta: Anthropic e, quando Anthropic non può rispondere, Groq. Sono società statunitensi e trattano i dati negli Stati Uniti, fuori dall\'Unione europea: l\'invio è vincolato da un contratto e protetto dalle garanzie che la legge europea prevede per questi trasferimenti. Prima dell\'invio togliamo nomi, recapiti e altri dati che ti identificano, ma non possiamo riconoscerli tutti. Quokka lo usa solo per risponderti e per preparare il riepilogo per il veterinario che puoi chiedere. Puoi revocare il consenso in qualsiasi momento dalla scheda dell\'animale o dalle Impostazioni: vale per le richieste successive.'**
+  /// **'Per darti un consiglio più preciso, l\'assistente può leggere la cartella clinica del tuo animale. Quando fai una domanda può leggere le tre voci più recenti, con titolo, categoria (visita, esame, vaccino, terapia o documento), data dell\'evento, descrizione e testo dei documenti allegati, anche se non c\'entrano con la domanda. Può leggere anche le malattie pregresse ancora in corso, con il nome e la data di inizio, al massimo cinque. Legge anche le note che hai scritto nella scheda dell\'animale e i promemoria attivi, terapie comprese. Se chiedi di spiegare un esame, può leggere i documenti che lo riguardano, al massimo due. Di un documento molto lungo legge solo l\'inizio. Ciò che legge viene inviato a un fornitore esterno di intelligenza artificiale che scrive la risposta: Anthropic. Fa capo a una società statunitense e tratta i dati negli Stati Uniti, fuori dall\'Unione europea: l\'invio è vincolato da un contratto e protetto dalle garanzie che la legge europea prevede per questi trasferimenti. Prima dell\'invio togliamo nomi, recapiti e altri dati che ti identificano, ma non possiamo riconoscerli tutti. Quokka lo usa solo per risponderti e per preparare il riepilogo per il veterinario che puoi chiedere. Puoi revocare il consenso in qualsiasi momento dalla scheda dell\'animale o dalle Impostazioni: vale per le richieste successive.'**
   String get petsConsentFullText;
 
   /// No description provided for @appTitle.
@@ -671,7 +671,7 @@ abstract class AppLocalizations {
   /// No description provided for @authLegalPreparingNotice.
   ///
   /// In it, this message translates to:
-  /// **'Il testo completo dell\'informativa è in fase di completamento e sarà qui a breve, con la possibilità di scaricarlo. Intanto, in sintesi: una parte dei dati (domande, allegati e messaggi vocali) viene inviata a fornitori di intelligenza artificiale che trattano i dati negli Stati Uniti. Puoi chiedere accesso, correzione, cancellazione o una copia dei tuoi dati da Impostazioni → Contattaci, scaricarli da Impostazioni → Account → Scarica i miei dati o eliminare l\'account. Puoi anche proporre reclamo all\'autorità per la protezione dei dati personali del tuo paese (in Italia, il Garante).'**
+  /// **'Il testo completo dell\'informativa è in fase di completamento e sarà qui a breve, con la possibilità di scaricarlo. Intanto, in sintesi: una parte dei dati (domande e testo dei documenti allegati) viene inviata a fornitori di intelligenza artificiale che trattano i dati negli Stati Uniti. Puoi chiedere accesso, correzione, cancellazione o una copia dei tuoi dati da Impostazioni → Contattaci, scaricarli da Impostazioni → Account → Scarica i miei dati o eliminare l\'account. Puoi anche proporre reclamo all\'autorità per la protezione dei dati personali del tuo paese (in Italia, il Garante).'**
   String get authLegalPreparingNotice;
 
   /// No description provided for @authHubTitle.
@@ -1511,7 +1511,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatVoiceMessageTooltip.
   ///
   /// In it, this message translates to:
-  /// **'Messaggio vocale'**
+  /// **'Detta il messaggio'**
   String get chatVoiceMessageTooltip;
 
   /// No description provided for @chatMicPermissionNeeded.
@@ -1525,18 +1525,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Non riesco ad avviare il microfono. Riprova.'**
   String get chatMicStartFailed;
-
-  /// No description provided for @chatRecordingFailed.
-  ///
-  /// In it, this message translates to:
-  /// **'La registrazione non è andata a buon fine. Riprova.'**
-  String get chatRecordingFailed;
-
-  /// No description provided for @chatRecordingReadFailed.
-  ///
-  /// In it, this message translates to:
-  /// **'Non sono riuscito a leggere la registrazione. Riprova.'**
-  String get chatRecordingReadFailed;
 
   /// No description provided for @chatPhotoAnalyzing.
   ///
@@ -11378,24 +11366,6 @@ abstract class AppLocalizations {
   /// **'Informativa'**
   String get noticePolicy;
 
-  /// No description provided for @noticeChatAi.
-  ///
-  /// In it, this message translates to:
-  /// **'Risponde un\'intelligenza artificiale e può sbagliare. Le tue domande, ripulite dai dati personali che riconosciamo, vanno ai nostri fornitori di IA (Anthropic e, quando Anthropic non può rispondere, Groq), con server negli Stati Uniti. Quokka non gestisce le urgenze: in emergenza rivolgiti subito a un veterinario, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Non aspettare la risposta dell\'app.'**
-  String get noticeChatAi;
-
-  /// No description provided for @noticeChatMedia.
-  ///
-  /// In it, this message translates to:
-  /// **'La voce va a un servizio esterno (oggi Groq, negli Stati Uniti) che la trascrive. Il filtro che toglie i dati personali lavora sul testo, non sulla voce: evita di dire nome, indirizzo e numero di microchip.'**
-  String get noticeChatMedia;
-
-  /// No description provided for @noticeChatPhoto.
-  ///
-  /// In it, this message translates to:
-  /// **'La foto resta nel tuo account. Quando l\'analisi delle foto è attiva, va a un servizio esterno (oggi Groq, negli Stati Uniti) che la descrive. Il filtro che toglie i dati personali lavora sul testo, non sulle immagini: evita di inquadrare nomi, indirizzi o numeri di microchip.'**
-  String get noticeChatPhoto;
-
   /// No description provided for @noticeRecordDocument.
   ///
   /// In it, this message translates to:
@@ -12251,7 +12221,7 @@ abstract class AppLocalizations {
   /// No description provided for @permMicrophoneWhy.
   ///
   /// In it, this message translates to:
-  /// **'Il microfono serve per dettare i messaggi nella chat: parli e Quokka li scrive per te. La registrazione viene inviata a un servizio di trascrizione per diventare testo e non resta salvata sul telefono.'**
+  /// **'Il microfono serve per dettare i messaggi nella chat: parli e il riconoscimento vocale del tuo telefono li trasforma in testo. A Quokka arriva solo il testo, mai l\'audio. Il riconoscimento vocale lo fa il sistema del telefono (Google o Apple), che può usare i suoi server secondo le sue regole.'**
   String get permMicrophoneWhy;
 
   /// No description provided for @permMicrophoneRefuse.
@@ -13622,11 +13592,29 @@ abstract class AppLocalizations {
   /// **'Quokka non gestisce le urgenze: in emergenza rivolgiti subito a un veterinario, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Non aspettare la risposta dell\'app.'**
   String get emergencyNoticeShort;
 
-  /// No description provided for @emergencyNoticeTitle.
+  /// No description provided for @firstChatTitle.
   ///
   /// In it, this message translates to:
-  /// **'Quokka non gestisce le urgenze'**
-  String get emergencyNoticeTitle;
+  /// **'Prima della tua prima chat'**
+  String get firstChatTitle;
+
+  /// No description provided for @firstChatBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Ti risponde un\'intelligenza artificiale e può sbagliare. Le tue domande, ripulite dai dati personali che riconosciamo, vanno ad Anthropic, il nostro fornitore di IA, con server negli Stati Uniti: i dettagli sono nell\'informativa. Quokka non gestisce le urgenze: in emergenza rivolgiti subito a un veterinario, ai servizi di emergenza o a un servizio di ascolto del tuo Paese. Non aspettare la risposta dell\'app.'**
+  String get firstChatBody;
+
+  /// No description provided for @firstChatAccept.
+  ///
+  /// In it, this message translates to:
+  /// **'Accetto e inizio la chat'**
+  String get firstChatAccept;
+
+  /// No description provided for @firstChatPrivacyLink.
+  ///
+  /// In it, this message translates to:
+  /// **'Leggi l\'informativa'**
+  String get firstChatPrivacyLink;
 
   /// No description provided for @emergencyNoticeCheckbox.
   ///

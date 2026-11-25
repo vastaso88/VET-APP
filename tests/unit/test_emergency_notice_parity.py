@@ -75,9 +75,13 @@ def test_the_clause_is_in_the_terms_summary_in_every_language(lang: str) -> None
 
 
 @pytest.mark.parametrize("lang", LANGUAGES)
-def test_the_chat_info_carries_the_short_version(lang: str) -> None:
+def test_the_screen_of_the_first_chat_ends_with_the_short_version(lang: str) -> None:
+    # The text the version pins is on the one screen of the first chat, word for word; and
+    # the app puts a newer one of the server in its place (emergency_notice_gate_page.dart).
     served = CONSENT_TEXTS_BY_LANGUAGE[lang][AccountConsentType.EMERGENCY_NOTICE]
-    assert _arb(lang)["noticeChatAi"].endswith(served)
+    body = _arb(lang)["firstChatBody"]
+    assert body.endswith(served) and body.count(served) == 1
+    assert "Anthropic" in body
 
 
 @pytest.mark.parametrize("lang", LANGUAGES)
@@ -86,7 +90,7 @@ def test_the_new_texts_hold_no_phone_number(lang: str) -> None:
     texts = [
         value
         for key, value in _arb(lang).items()
-        if key.startswith(("emergencyNotice", "chatFixedLine", "consentGate"))
+        if key.startswith(("emergencyNotice", "firstChat", "chatFixedLine", "consentGate"))
         and isinstance(value, str)
     ]
     texts += [

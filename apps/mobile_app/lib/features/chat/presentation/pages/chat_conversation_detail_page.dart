@@ -1,6 +1,5 @@
 import '../../../pets/presentation/widgets/medical_record_consent_card.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
-import '../../../../shared/widgets/short_notice.dart';
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -51,7 +50,7 @@ class ChatConversationDetailPage extends StatefulWidget {
   /// sample conversation stands in. Overridable for tests.
   final bool? serverConfigured;
 
-  /// Asks, once, that Quokka does not handle emergencies; overridable for tests.
+  /// The one screen of the first chat (the AI provider, the emergencies); overridable for tests.
   final Future<bool> Function(BuildContext context) noticeGate;
 
   @override
@@ -108,8 +107,6 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
     }
     setState(() => _noticeAccepted = true);
     _store.openConversation(widget.conversationId, fallback: widget.initialConversation);
-    // First opening of the chat: an AI answers, and where the questions go.
-    unawaited(showShortNoticeOnce(context, ShortNotice.chatAi));
   }
 
   @override

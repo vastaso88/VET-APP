@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.speech.SpeechRecognizer
 import es.antonborri.home_widget.HomeWidgetLaunchIntent
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -90,11 +91,24 @@ class MainActivity : FlutterActivity() {
             result.success(moveTaskToBack(true))
           } else if (call.method == "openNotificationSettings") {
             result.success(openNotificationSettings())
+          } else if (call.method == "speechRecognitionAvailable") {
+            result.success(speechRecognitionAvailable())
           } else {
             result.notImplemented()
           }
         }
   }
+
+  /**
+   * Whether this phone has a speech recognition service: without one the chat
+   * shows no microphone (system_dictation.dart). Asks for no permission.
+   */
+  private fun speechRecognitionAvailable(): Boolean =
+      try {
+        SpeechRecognizer.isRecognitionAvailable(this)
+      } catch (_: Exception) {
+        false
+      }
 
   /**
    * Opens this app's notification settings page (Android 8+), where the owner

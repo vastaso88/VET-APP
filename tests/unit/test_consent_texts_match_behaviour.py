@@ -20,7 +20,10 @@ from packages.core.application.services.medical_record_context_retriever import 
 from packages.core.domain.consent.account_consent_text import (
     CONSENT_TEXT_IT as ACCOUNT_CONSENT_TEXT_IT,
 )
-from packages.core.domain.consent.account_consent_text import CURRENT_VERSIONS
+from packages.core.domain.consent.account_consent_text import (
+    CONSENT_TEXTS_BY_LANGUAGE,
+    CURRENT_VERSIONS,
+)
 from packages.core.domain.consent.models import AccountConsentType, ConsentRecord
 from packages.core.domain.medical_record.consent_text import (
     CONSENT_TEXT_IT,
@@ -106,8 +109,8 @@ def test_medical_record_wording_states_the_categories_dates_and_ongoing_conditio
 
 
 def test_a_decision_taken_under_the_previous_wording_no_longer_counts() -> None:
-    assert CURRENT_VERSION == "v5"
-    for earlier in ("v1", "v2", "v3", "v4"):
+    assert CURRENT_VERSION == "v6"
+    for earlier in ("v1", "v2", "v3", "v4", "v5"):
         assert effective_decision(ConsentRecord(granted=True, version=earlier)) is None
         assert effective_decision(ConsentRecord(granted=False, version=earlier)) is None
     assert effective_decision(ConsentRecord(granted=True, version=CURRENT_VERSION)) is True
@@ -134,16 +137,19 @@ def test_v4_names_the_profile_notes_and_the_reminders_in_every_language() -> Non
         assert question_words in translate("consent_request", lang, pet_name="X"), lang
 
 
-def test_v5_names_anthropic_and_the_united_states_in_every_language() -> None:
-    # v5 (2026-11-10): the providers by name, the US transfer, the summary
-    # for the vet; and the region the client really asks for.
+def test_v6_names_anthropic_alone_and_the_united_states_in_every_language() -> None:
+    # v5 (2026-11-10): the provider by name, the US transfer, the summary for
+    # the vet; and the region the client really asks for. v6 (2026-11-25): no
+    # other provider, and a company that belongs to a US one.
     from packages.core.domain.localization import translate
     from packages.shared.config.settings import Settings
 
     assert Settings().anthropic_inference_geo == "us"
     for text in (CONSENT_TEXT_IT, INLINE_QUESTION_IT):
-        assert "Anthropic" in text and "Groq" in text
+        assert "Anthropic" in text and "Groq" not in text
         assert "Stati Uniti" in text
+        assert "di riserva" not in text and "quando Anthropic non può" not in text
+    assert "Fa capo a una società statunitense" in CONSENT_TEXT_IT
     assert "riepilogo per il veterinario" in CONSENT_TEXT_IT
     assert "togliamo nomi, recapiti" in CONSENT_TEXT_IT
     l10n = _CONSENT_CARD.parents[4] / "l10n"
@@ -157,8 +163,37 @@ def test_v5_names_anthropic_and_the_united_states_in_every_language() -> None:
         card = json.loads((l10n / f"app_{lang}.arb").read_text(encoding="utf-8"))
         question = translate("consent_request", lang, pet_name="X")
         for text in (card["petsConsentFullText"], question):
-            assert "Anthropic" in text and "Groq" in text, lang
+            assert "Anthropic" in text and "Groq" not in text, lang
             assert country in text, lang
+
+
+def test_no_text_of_the_app_names_a_provider_that_is_gone() -> None:
+    l10n = _CONSENT_CARD.parents[4] / "l10n"
+    for lang in ("it", "en", "es", "de", "fr"):
+        texts = json.loads((l10n / f"app_{lang}.arb").read_text(encoding="utf-8"))
+        named = [key for key, text in texts.items() if "groq" in str(text).lower()]
+        assert named == [], lang
+
+
+def test_v4_of_the_privacy_summary_says_what_goes_to_the_provider_in_every_language() -> None:
+    # v4 (2026-11-25): the phone turns the voice into text, and of an attachment
+    # only the text of a document is sent. The sentence over the full notice,
+    # in the app, says the same.
+    assert CURRENT_VERSIONS[AccountConsentType.PRIVACY_POLICY] == "v4"
+    l10n = _CONSENT_CARD.parents[4] / "l10n"
+    for lang, sent, gone in (
+        ("it", "(domande e testo dei documenti allegati)", "vocal"),
+        ("en", "(questions and the text of attached documents)", "voice"),
+        ("es", "(preguntas y texto de los documentos adjuntos)", "mensajes de voz"),
+        ("de", "(Fragen und Text der angehängten Dokumente)", "Sprachnachricht"),
+        ("fr", "(questions et texte des documents joints)", "vocaux"),
+    ):
+        card = json.loads((l10n / f"app_{lang}.arb").read_text(encoding="utf-8"))
+        for text in (
+            CONSENT_TEXTS_BY_LANGUAGE[lang][AccountConsentType.PRIVACY_POLICY],
+            card["authLegalPreparingNotice"],
+        ):
+            assert sent in text and gone not in text, lang
 
 
 def test_medical_record_wording_names_the_external_ai_provider_as_recipient() -> None:
