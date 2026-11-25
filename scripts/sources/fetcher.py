@@ -215,6 +215,7 @@ class Fetcher:
     sleep: Callable[[float], None] = time.sleep
     opener: urllib.request.OpenerDirector | None = None
     requests_made: int = 0
+    last_headers: dict[str, str] = field(default_factory=dict)  # intestazioni dell'ultima risposta
     _last: dict[str, float] = field(default_factory=dict)
     _robots: dict[str, RobotsInfo] = field(default_factory=dict)
     _stopped: dict[str, str] = field(default_factory=dict)
@@ -370,10 +371,14 @@ class Fetcher:
             with self.opener.open(req, timeout=45) as resp:
                 status = resp.status
                 ctype = resp.headers.get("Content-Type", "")
+                self.last_headers = {k.lower(): v for k, v in resp.headers.items()}
                 body = resp.read(MAX_BYTES)
         except urllib.error.HTTPError as err:
             status = err.code
             ctype = err.headers.get("Content-Type", "") if err.headers else ""
+            self.last_headers = (
+                {k.lower(): v for k, v in err.headers.items()} if err.headers else {}
+            )
             location = err.headers.get("Location", "") if err.headers else ""
             body = err.read(20_000) if err.fp else b""
         except Exception as err:  # rete, timeout: una sola prova, nessuna riprova

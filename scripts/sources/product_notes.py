@@ -138,6 +138,21 @@ def spec_problems(spec: dict[str, Any], hosts: dict[str, Any]) -> list[str]:
     return out
 
 
+def reservation_signals(headers: dict[str, str], body: str) -> list[str]:
+    """Riserva sull'estrazione di testi e dati (tdm-reservation, Content-Signal): stop, host a R."""
+    out: list[str] = []
+    if headers.get("tdm-reservation", "").strip() == "1":
+        out.append("intestazione tdm-reservation: 1")
+    signal = headers.get("content-signal", "").lower().replace(" ", "")
+    if "ai-input=no" in signal or "search=no" in signal:
+        out.append(f"intestazione Content-Signal: {signal}")
+    if re.search(r"<meta[^>]+name=.tdm-reservation.[^>]+content=.1", body, re.IGNORECASE):
+        out.append("meta tdm-reservation: 1")
+    if re.search(r"<meta[^>]+name=.content-signal.[^>]+ai-input=no", body, re.IGNORECASE):
+        out.append("meta Content-Signal ai-input=no")
+    return out
+
+
 def page_problems(spec: dict[str, Any], page_text: str) -> list[str]:
     """Perché la pagina letta non regge la nota."""
     out: list[str] = []
@@ -194,6 +209,9 @@ def make_note(
         return f"LIMITE: al massimo {MAX_PER_HOST_PER_NIGHT} pagine per ente a notte", None
     page = fetcher.get(spec["source_url"])
     text = f"{page.text}\n{page.full_text}"
+    reserved = reservation_signals(fetcher.last_headers, page.body.decode("utf-8", "replace"))
+    if reserved:
+        return "STOP_RISERVA: " + "; ".join(reserved) + " (l'host torna R)", None
     if page.status != 200:
         return f"PAGINA_NON_LETTA: risposta {page.status}", None
     problems = page_problems(spec, text)

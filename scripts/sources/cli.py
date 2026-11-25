@@ -27,6 +27,7 @@ import os
 import sys
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from scripts.sources import independence, licenses, pipeline, product_notes, second_read
 from scripts.sources.fetcher import Blocked, CapReached, Fetcher
@@ -191,6 +192,15 @@ def main(argv: list[str]) -> None:
                 outcome, _ = product_notes.make_note(fetcher, spec, hosts, out_dir)
             except (Blocked, CapReached) as err:
                 outcome = f"FERMATO: {err}"
+            if outcome.startswith("STOP_RISERVA"):  # riserva TDM: l'ente torna R
+                bare = (urlparse(spec["source_url"]).hostname or "").removeprefix("www.")
+                for key in hosts:
+                    if key.removeprefix("www.") == bare:
+                        hosts[key]["uso"] = "no"
+                        hosts[key]["nota"] = "Riserva TDM trovata alla prima pagina: " + outcome
+                (DATA / "host_prodotti.json").write_text(
+                    json.dumps(hosts, ensure_ascii=False, indent=2) + "\n", "utf-8"
+                )
             print(spec.get("id", "?"), outcome, flush=True)
     elif cmd == "scarta":
         Store(DATA / "fonti.json").discard(rest[0], " ".join(rest[1:]) or "non pertinente")

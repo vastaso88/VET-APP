@@ -59,3 +59,10 @@ def test_source_line_follows_the_normativa_wording() -> None:
     assert line.endswith("fatti riassunti da Quokka. Etichetta per il mercato: Stati Uniti.")
     dated = P.source_line(_spec(scheda_data="2026-03-01", versione="2"), "2026-11-25")
     assert "scheda del 2026-03-01 (versione 2)" in dated
+
+
+def test_reservation_signals_stop_the_host() -> None:
+    assert P.reservation_signals({"tdm-reservation": "1"}, "")
+    assert P.reservation_signals({"content-signal": "ai-train=no, ai-input=no"}, "")
+    assert P.reservation_signals({}, '<meta name="tdm-reservation" content="1">')
+    assert not P.reservation_signals({"content-type": "text/html"}, "<p>ok</p>")
