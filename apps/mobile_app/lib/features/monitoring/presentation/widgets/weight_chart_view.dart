@@ -180,7 +180,7 @@ class WeightChartView extends StatelessWidget {
               touchTooltipData: LineTouchTooltipData(
                 fitInsideHorizontally: true,
                 fitInsideVertically: true,
-                getTooltipColor: (_) => AppColors.primaryStrong,
+                getTooltipColor: (_) => AppColors.primary,
                 getTooltipItems: (spots) => [
                   for (final spot in spots)
                     spot.barIndex == bars.length - 1

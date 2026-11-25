@@ -1448,6 +1448,96 @@ abstract class AppLocalizations {
   /// **'Scrivi cosa osservi o cosa vuoi capire.'**
   String get chatNewConversationPrompt;
 
+  /// No description provided for @chatExampleBored.
+  ///
+  /// In it, this message translates to:
+  /// **'Come capisco se {pet} si annoia?'**
+  String chatExampleBored(String pet);
+
+  /// No description provided for @chatExampleLeash.
+  ///
+  /// In it, this message translates to:
+  /// **'Perché {pet} tira al guinzaglio?'**
+  String chatExampleLeash(String pet);
+
+  /// No description provided for @chatExampleDuties.
+  ///
+  /// In it, this message translates to:
+  /// **'Quali sono i miei doveri verso {pet}?'**
+  String chatExampleDuties(String pet);
+
+  /// No description provided for @chatExampleScratching.
+  ///
+  /// In it, this message translates to:
+  /// **'Perché {pet} graffia il divano?'**
+  String chatExampleScratching(String pet);
+
+  /// No description provided for @chatExamplePlayIndoors.
+  ///
+  /// In it, this message translates to:
+  /// **'Come posso far giocare {pet} in casa?'**
+  String chatExamplePlayIndoors(String pet);
+
+  /// No description provided for @chatExampleLitterBox.
+  ///
+  /// In it, this message translates to:
+  /// **'Dove conviene mettere la lettiera?'**
+  String get chatExampleLitterBox;
+
+  /// No description provided for @chatExampleThumping.
+  ///
+  /// In it, this message translates to:
+  /// **'Perché {pet} batte le zampe a terra?'**
+  String chatExampleThumping(String pet);
+
+  /// No description provided for @chatExampleSpace.
+  ///
+  /// In it, this message translates to:
+  /// **'Di quanto spazio ha bisogno {pet}?'**
+  String chatExampleSpace(String pet);
+
+  /// No description provided for @chatExampleTrust.
+  ///
+  /// In it, this message translates to:
+  /// **'Come conquisto la fiducia di {pet}?'**
+  String chatExampleTrust(String pet);
+
+  /// No description provided for @chatExampleSounds.
+  ///
+  /// In it, this message translates to:
+  /// **'Che cosa vuole dirmi {pet} con i suoi versi?'**
+  String chatExampleSounds(String pet);
+
+  /// No description provided for @chatExampleHiding.
+  ///
+  /// In it, this message translates to:
+  /// **'Perché {pet} si nasconde spesso?'**
+  String chatExampleHiding(String pet);
+
+  /// No description provided for @chatExampleHabitat.
+  ///
+  /// In it, this message translates to:
+  /// **'Come capisco se l\'ambiente è adatto a {pet}?'**
+  String chatExampleHabitat(String pet);
+
+  /// No description provided for @chatExampleTankWater.
+  ///
+  /// In it, this message translates to:
+  /// **'Ogni quanto cambio l\'acqua dell\'acquario?'**
+  String get chatExampleTankWater;
+
+  /// No description provided for @chatExampleTankMates.
+  ///
+  /// In it, this message translates to:
+  /// **'Quali pesci possono vivere insieme?'**
+  String get chatExampleTankMates;
+
+  /// No description provided for @chatExampleTankPlants.
+  ///
+  /// In it, this message translates to:
+  /// **'Quali piante scelgo per l\'acquario?'**
+  String get chatExampleTankPlants;
+
   /// No description provided for @chatTypingText.
   ///
   /// In it, this message translates to:

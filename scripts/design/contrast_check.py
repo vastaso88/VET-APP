@@ -22,7 +22,6 @@ TOKENS = ROOT / "apps/mobile_app/lib/design_system/tokens/app_colors.dart"
 PALETTE_ALT = {
     # Same neutrals and sage secondary; the 10% accent is terracotta.
     "primary": "AA4730",
-    "primaryStrong": "8A3623",
     "primarySoft": "F9E8E2",
     "onPrimary": "FFFFFF",
 }
@@ -64,11 +63,11 @@ PAIRS: list[tuple[str, str, float, str]] = [
     ("mutedText", "surface", 4.5, "hints and captions on a card"),
     ("mutedText", "surfaceElevated", 4.5, "hints on white inputs"),
     ("onPrimary", "primary", 4.5, "label of a primary button"),
-    ("onPrimary", "primaryStrong", 4.5, "label of a dark button"),
     ("primary", "background", 4.5, "links and active text on the page"),
     ("primary", "surface", 4.5, "links and active text on a card"),
     ("primary", "secondarySoft", 4.5, "accent text on a soft panel"),
-    ("primaryStrong", "secondarySoft", 4.5, "chip label on a soft panel"),
+    ("primary", "surfaceElevated", 4.5, "label of an outlined button"),
+    ("secondary", "surfaceElevated", 3.0, "outline of a button"),
     ("secondaryStrong", "secondarySoft", 4.5, "text on a soft panel"),
     ("secondaryStrong", "background", 4.5, "section titles on the page"),
     ("secondary", "background", 3.0, "decorative icons and bars"),

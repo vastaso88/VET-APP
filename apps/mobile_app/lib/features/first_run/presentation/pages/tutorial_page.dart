@@ -106,10 +106,6 @@ class _TutorialPageState extends State<TutorialPage> {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: _next,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
-                  ),
                   child: Text(isLast ? context.l10n.firstRunTutorialStart : context.l10n.commonNext),
                 ),
               ),

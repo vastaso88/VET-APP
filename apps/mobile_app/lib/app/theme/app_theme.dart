@@ -1,9 +1,11 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 
 import '../../design_system/tokens/app_colors.dart';
 import '../../design_system/tokens/app_radii.dart';
 import '../../design_system/tokens/app_spacing.dart';
 import '../../design_system/tokens/app_text_styles.dart';
+import 'slide_page_transitions_builder.dart';
 
 class AppTheme {
   static ThemeData light() {
@@ -21,7 +23,7 @@ class AppTheme {
       ).copyWith(
         brightness: Brightness.light,
         primaryContainer: AppColors.primarySoft,
-        onPrimaryContainer: AppColors.primaryStrong,
+        onPrimaryContainer: AppColors.primary,
         secondaryContainer: AppColors.secondarySoft,
         onSecondaryContainer: AppColors.secondaryStrong,
         tertiary: AppColors.info,
@@ -45,7 +47,34 @@ class AppTheme {
       dividerColor: AppColors.border,
     );
 
+    // The one look of the main action, whichever button widget a page uses.
+    final mainButton = FilledButton.styleFrom(
+      backgroundColor: AppColors.primary,
+      foregroundColor: AppColors.onPrimary,
+      minimumSize: const Size.fromHeight(52),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.md,
+      ),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.large),
+      ),
+      textStyle: AppTextStyles.button,
+    );
+
     return base.copyWith(
+      // Apple's own slide (with its swipe back) stays on Apple devices.
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: SlidePageTransitionsBuilder(),
+          TargetPlatform.fuchsia: SlidePageTransitionsBuilder(),
+          TargetPlatform.linux: SlidePageTransitionsBuilder(),
+          TargetPlatform.windows: SlidePageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
@@ -88,28 +117,25 @@ class AppTheme {
         labelMedium: AppTextStyles.caption,
         labelSmall: AppTextStyles.caption,
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryStrong,
-          foregroundColor: AppColors.onPrimary,
-          minimumSize: const Size.fromHeight(54),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: AppSpacing.md,
-          ),
-          elevation: 0,
-          shadowColor: AppColors.shadow,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadii.large),
-          ),
-          textStyle: AppTextStyles.button,
+      elevatedButtonTheme: ElevatedButtonThemeData(style: mainButton),
+      filledButtonTheme: FilledButtonThemeData(style: mainButton),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
+        elevation: 0,
+        focusElevation: 0,
+        hoverElevation: 0,
+        highlightElevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.large),
         ),
+        extendedTextStyle: AppTextStyles.button,
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(52),
-          foregroundColor: AppColors.primaryStrong,
-          side: const BorderSide(color: AppColors.borderStrong),
+          foregroundColor: AppColors.primary,
+          side: const BorderSide(color: AppColors.secondary),
           backgroundColor: AppColors.surfaceElevated,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadii.large),
@@ -117,22 +143,6 @@ class AppTheme {
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.lg,
             vertical: AppSpacing.md,
-          ),
-          textStyle: AppTextStyles.button,
-        ),
-      ),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.onPrimary,
-          minimumSize: const Size.fromHeight(52),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: AppSpacing.md,
-          ),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadii.large),
           ),
           textStyle: AppTextStyles.button,
         ),
@@ -186,13 +196,13 @@ class AppTheme {
         backgroundColor: AppColors.secondarySoft,
         disabledColor: AppColors.secondarySoft,
         selectedColor: AppColors.primary,
-        secondarySelectedColor: AppColors.primaryStrong,
+        secondarySelectedColor: AppColors.primary,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.sm,
         ),
         labelStyle: AppTextStyles.caption.copyWith(
-          color: AppColors.primaryStrong,
+          color: AppColors.primary,
         ),
         // Selected chips fill with `selectedColor` (dark primary), so their
         // label and checkmark must be the light on-primary tone.

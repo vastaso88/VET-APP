@@ -7,6 +7,7 @@ import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/min_tap_target.dart';
 import '../../../dog_walks/data/walk_home_widget.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/pet_format.dart';
@@ -81,7 +82,7 @@ class _PetsListPageState extends State<PetsListPage> {
           onPressed: () => _openCreate(context),
           icon: const Icon(Icons.add_rounded),
           color: AppColors.onPrimary,
-          style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
+          style: IconButton.styleFrom(backgroundColor: AppColors.primary),
         ),
       ],
       body: switch (state) {
@@ -191,7 +192,7 @@ class _PetsListContent extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sm),
         Expanded(
           child: pets.isEmpty
               ? Column(
@@ -387,22 +388,25 @@ class _SpeciesChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.pill),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-          decoration: BoxDecoration(
-            color: selected ? AppColors.primaryStrong : AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadii.pill),
-            border: Border.all(color: selected ? AppColors.primaryStrong : AppColors.border),
-          ),
-          child: Text(
-            label,
-            style: AppTextStyles.caption.copyWith(
-              color: selected ? AppColors.onPrimary : AppColors.secondaryText,
+    return MinTapTarget(
+      onTap: onTap,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: selected ? AppColors.primary : AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadii.pill),
+              border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+            ),
+            child: Text(
+              label,
+              style: AppTextStyles.caption.copyWith(
+                color: selected ? AppColors.onPrimary : AppColors.secondaryText,
+              ),
             ),
           ),
         ),

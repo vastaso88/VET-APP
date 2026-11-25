@@ -76,10 +76,6 @@ class _NotificationPermissionPageState extends State<NotificationPermissionPage>
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: _requesting ? null : _requestPermission,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
-                  ),
                   child: _requesting
                       ? const SizedBox(
                           width: 20,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../design_system/atoms/outline_icon_button.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
@@ -22,13 +23,16 @@ class PetsScaffold extends StatelessWidget {
   final VoidCallback? onBack;
   final Widget body;
 
-  /// Replaces the default paw+"Pet" pill — pass a [PetAvatar] on pages tied
-  /// to one real pet (detail/edit) so the header shows its actual photo or
-  /// initial instead of a generic icon.
+  /// Beside the back arrow: pass a [PetAvatar] on pages tied to one real pet
+  /// (detail/edit) so the header shows its actual photo or initial.
   final Widget? badge;
 
   @override
   Widget build(BuildContext context) {
+    final titleText =
+        Text(title, style: AppTextStyles.heading, maxLines: 2, overflow: TextOverflow.ellipsis);
+    // A root page (no back arrow, no pet): the title and the action share a row.
+    final titleInRow = onBack == null && badge == null;
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -52,24 +56,22 @@ class PetsScaffold extends StatelessWidget {
                 Row(
                   children: [
                     if (onBack != null) ...[
-                      IconButton(
+                      OutlineIconButton(
                         tooltip: context.l10n.commonBack,
                         onPressed: onBack,
-                        icon: const Icon(Icons.arrow_back_rounded),
-                        color: AppColors.onPrimary,
-                        style: IconButton.styleFrom(
-                          backgroundColor: AppColors.primaryStrong,
-                        ),
+                        icon: Icons.arrow_back_rounded,
                       ),
                       const SizedBox(width: AppSpacing.sm),
                     ],
-                    badge ?? _defaultBadge(context),
-                    const Spacer(),
+                    if (badge != null) badge!,
+                    if (titleInRow) Expanded(child: titleText) else const Spacer(),
                     if (actions != null) ...actions!,
                   ],
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                Text(title, style: AppTextStyles.heading, maxLines: 2, overflow: TextOverflow.ellipsis),
+                if (!titleInRow) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  titleText,
+                ],
                 if (subtitle != null) ...[
                   const SizedBox(height: AppSpacing.xs),
                   Text(subtitle!, style: AppTextStyles.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
@@ -80,32 +82,6 @@ class PetsScaffold extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _defaultBadge(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.pets, size: 14, color: AppColors.secondaryStrong),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            context.l10n.petsScaffoldBadge,
-            style: const TextStyle(
-              color: AppColors.onPrimary,
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.4,
-            ),
-          ),
-        ],
       ),
     );
   }

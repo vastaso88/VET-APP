@@ -465,7 +465,10 @@ class _PetProfileFormState extends State<PetProfileForm> {
     return TextFormField(
       controller: _nameController,
       textInputAction: TextInputAction.next,
-      decoration: _inputDecoration(context.l10n.petsFormNameLabel, context.l10n.petsFormNameHint),
+      decoration: _inputDecoration(context.l10n.petsFormNameLabel, context.l10n.petsFormNameHint)
+          .copyWith(helperText: widget.stepped ? ' ' : null),
+      // "Prosegui" becomes the full button once there is a name.
+      onChanged: (_) => setState(() {}),
       validator: (value) {
         if ((value ?? '').trim().isEmpty) {
           return context.l10n.petsFormNameError;
@@ -595,7 +598,11 @@ class _PetProfileFormState extends State<PetProfileForm> {
         borderRadius: BorderRadius.circular(18),
         child: InputDecorator(
           decoration: _inputDecoration(petBreedFieldLabel(context.l10n, _species), '')
-              .copyWith(errorText: field.errorText),
+              .copyWith(
+            errorText: field.errorText,
+            // The place of the error is kept: nothing jumps when it comes.
+            helperText: widget.stepped ? ' ' : null,
+          ),
           child: Row(
             children: [
               Expanded(
@@ -953,7 +960,15 @@ class _PetProfileFormState extends State<PetProfileForm> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
+                  // It always answers (and says what is missing): only full when ready.
                   onPressed: _submitting ? null : _next,
+                  style: _stepComplete
+                      ? null
+                      : ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.surfaceElevated,
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(color: AppColors.secondary),
+                        ),
                   child: _submitting
                       ? const PetLoader.small(color: AppColors.onPrimary)
                       : Row(
@@ -1078,6 +1093,16 @@ class _PetProfileFormState extends State<PetProfileForm> {
     setState(() => _step = step);
     if (_scrollController.hasClients) _scrollController.jumpTo(0);
   }
+
+  /// Whether the visible step has everything it cannot do without.
+  bool get _stepComplete => switch (_step) {
+        0 => _species != null &&
+            _breedError() == null &&
+            !(_otherBreed && _otherBreedController.text.trim().isEmpty) &&
+            !(_isAquariumProfile && _aquariumStock.isEmpty),
+        1 => _nameController.text.trim().isNotEmpty,
+        _ => true,
+      };
 
   /// Validates the visible step, then moves on (or saves, on the last step).
   void _next() {
@@ -1467,7 +1492,7 @@ class _FishKindCard extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Row(
               children: [
-                Icon(icon, color: selected ? AppColors.primaryStrong : AppColors.mutedText),
+                Icon(icon, color: selected ? AppColors.primary : AppColors.mutedText),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(

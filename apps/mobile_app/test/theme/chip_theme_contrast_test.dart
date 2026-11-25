@@ -28,7 +28,7 @@ void main() {
     final chip = AppTheme.light().chipTheme;
     final label = chip.secondaryLabelStyle!.color!;
     expect(label.computeLuminance(), greaterThan(0.5));
-    expect(label, isNot(AppColors.primaryStrong));
+    expect(label, isNot(AppColors.primary));
   });
 
   testWidgets('unselected chip label meets WCAG AA against its background', (tester) async {

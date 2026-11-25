@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vet_app_mobile/app/launch/route_restoration.dart';
 import 'package:vet_app_mobile/features/pets/domain/pet_models.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/pet_detail_page.dart';
+import 'package:vet_app_mobile/features/pets/presentation/widgets/pet_tab_bar.dart';
 import 'package:vet_app_mobile/l10n/l10n.dart';
 
 PetProfile _pet() => const PetProfile(
@@ -63,7 +64,7 @@ void main() {
     // After the "restart" the same page opens straight on that card.
     await tester.pumpWidget(const SizedBox());
     await openPage(1);
-    final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-    expect(tabBar.controller!.index, 1);
+    final tabBar = tester.widget<PetTabBar>(find.byType(PetTabBar));
+    expect(tabBar.controller.index, 1);
   });
 }

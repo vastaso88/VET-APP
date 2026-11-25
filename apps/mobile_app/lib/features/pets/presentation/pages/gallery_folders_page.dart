@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../../../design_system/atoms/outline_icon_button.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -53,13 +54,10 @@ class _GalleryFoldersPageState extends State<GalleryFoldersPage> {
                   AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.md),
               child: Row(
                 children: [
-                  IconButton(
+                  OutlineIconButton(
                     tooltip: context.l10n.commonBack,
                     onPressed: () => Navigator.of(context).maybePop(),
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    color: AppColors.onPrimary,
-                    style: IconButton.styleFrom(
-                        backgroundColor: AppColors.primaryStrong),
+                    icon: Icons.arrow_back_rounded,
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(

@@ -377,7 +377,7 @@ class _CurrentPlanCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.primaryStrong,
+        color: AppColors.primary,
         borderRadius: BorderRadius.circular(AppRadii.large),
       ),
       child: Row(

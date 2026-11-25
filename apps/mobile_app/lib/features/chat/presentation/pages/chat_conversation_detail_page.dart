@@ -12,14 +12,17 @@ import '../../../../shared/widgets/pet_loader.dart';
 
 
 import '../../../../design_system/tokens/app_colors.dart';
+import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../account_consents/application/chat_notice.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
+import '../../../pets/presentation/widgets/pet_avatar.dart';
 import '../../data/chat_demo_store.dart';
 import '../../data/chat_seed_data.dart';
 import '../../domain/chat_models.dart';
+import '../example_questions.dart';
 import '../widgets/chat_fixed_line.dart';
 import '../widgets/chat_composer.dart';
 import '../widgets/chat_conversation_menu.dart';
@@ -60,6 +63,9 @@ class ChatConversationDetailPage extends StatefulWidget {
 class _ChatConversationDetailPageState extends State<ChatConversationDetailPage> {
   final ChatDemoStore _store = ChatDemoStore.instance;
   final ScrollController _scrollController = ScrollController();
+
+  /// What is in the writing field: an example question is written here too.
+  final TextEditingController _composerController = TextEditingController();
 
   bool _isSending = false;
 
@@ -111,6 +117,7 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
   @override
   void dispose() {
     _scrollController.dispose();
+    _composerController.dispose();
     super.dispose();
   }
 
@@ -198,6 +205,7 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
                           isSending: _isSending,
                           onSendMessage: _onComposerSend,
                           scrollController: _scrollController,
+                          composerController: _composerController,
                           editingMessage: _editingMessage,
                           onRequestEdit: _showMessageActions,
                           onNotHelpful: (message) =>
@@ -418,7 +426,9 @@ class _Header extends StatelessWidget {
           tooltip: context.l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const Icon(Icons.arrow_back_rounded),
-          visualDensity: VisualDensity.compact,
+          // Not compact: a compact button answers to 40 px only.
+          visualDensity: VisualDensity.standard,
+          style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.padded),
         ),
         const SizedBox(width: AppSpacing.xs),
         Expanded(
@@ -467,6 +477,7 @@ class _SuccessConversationView extends StatelessWidget {
     required this.isSending,
     required this.onSendMessage,
     required this.scrollController,
+    required this.composerController,
     required this.editingMessage,
     required this.onRequestEdit,
     required this.onNotHelpful,
@@ -478,6 +489,7 @@ class _SuccessConversationView extends StatelessWidget {
   final void Function(String text, {String? attachmentId, Uint8List? attachmentImageBytes})
       onSendMessage;
   final ScrollController scrollController;
+  final TextEditingController composerController;
   final ChatMessage? editingMessage;
   final void Function(ChatMessage message) onRequestEdit;
 
@@ -492,8 +504,8 @@ class _SuccessConversationView extends StatelessWidget {
         final totalItems = conversation.messages.length + (isSending ? 1 : 0);
         // A pet in Ricordi: its past chats stay to reread, nothing new is
         // written (the backend refuses it too: pet_in_memories).
-        final inMemories =
-            _petOfConversation(conversation)?.isMemorial ?? false;
+        final pet = _petOfConversation(conversation);
+        final inMemories = pet?.isMemorial ?? false;
         final state = context
             .findAncestorStateOfType<_ChatConversationDetailPageState>();
         state?._scheduleScrollIfNeeded(totalItems);
@@ -514,7 +526,12 @@ class _SuccessConversationView extends StatelessWidget {
                         )
                       : const Center(child: PetLoader()))
                   : totalItems == 0
-                  ? _NewConversationPlaceholder(petName: conversation.petName)
+                  ? _NewConversationPlaceholder(
+                      petName: conversation.petName,
+                      pet: pet,
+                      // In Ricordi there is no field to write in.
+                      field: inMemories ? null : composerController,
+                    )
                   : ListView.separated(
                       controller: scrollController,
                       padding: const EdgeInsets.fromLTRB(
@@ -586,6 +603,7 @@ class _SuccessConversationView extends StatelessWidget {
                           petId: conversation.petId,
                           onSend: onSendMessage,
                           draftKey: conversation.backendConversationId ?? conversation.id,
+                          controller: composerController,
                           editingText: editingMessage?.text,
                           onCancelEditing: onCancelEditing,
                           // An edited message keeps its photo; the text may go.
@@ -603,32 +621,44 @@ class _SuccessConversationView extends StatelessWidget {
   }
 }
 
+/// The empty chat: whose it is and three questions to start from. A tap writes
+/// the question in the field; the owner reads it again and sends it.
 class _NewConversationPlaceholder extends StatelessWidget {
-  const _NewConversationPlaceholder({required this.petName});
+  const _NewConversationPlaceholder({required this.petName, this.pet, this.field});
 
   final String petName;
+  final PetProfile? pet;
+
+  /// Where a question is written; null when nothing can be written.
+  final TextEditingController? field;
 
   @override
   Widget build(BuildContext context) {
+    final pet = this.pet;
+    final field = this.field;
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      // Scrolls when the keyboard or a large text leaves little room.
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: AppColors.secondarySoft,
-                borderRadius: BorderRadius.circular(18),
+            if (pet != null)
+              PetRingAvatar(pet: pet, size: 72)
+            else
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.secondarySoft,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Icon(
+                  Icons.chat_bubble_outline_rounded,
+                  color: AppColors.primary,
+                  size: 26,
+                ),
               ),
-              child: const Icon(
-                Icons.chat_bubble_outline_rounded,
-                color: AppColors.primary,
-                size: 26,
-              ),
-            ),
             const SizedBox(height: AppSpacing.md),
             Text(
               context.l10n.chatNewConversationOnPet(petName),
@@ -649,7 +679,95 @@ class _NewConversationPlaceholder extends StatelessWidget {
                 height: 1.4,
               ),
             ),
+            if (field != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              _ExampleQuestions(
+                questions: exampleQuestionsFor(context.l10n, petName: petName, pet: pet),
+                field: field,
+              ),
+            ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Out of the way as soon as the owner writes something of their own.
+class _ExampleQuestions extends StatelessWidget {
+  const _ExampleQuestions({required this.questions, required this.field});
+
+  final List<String> questions;
+  final TextEditingController field;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: field,
+      builder: (context, value, _) {
+        final text = value.text.trim();
+        if (text.isNotEmpty && !questions.contains(text)) return const SizedBox.shrink();
+        return Column(
+          children: [
+            for (final question in questions)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.sm),
+                child: _ExampleQuestion(
+                  question: question,
+                  onTap: () => field.value = TextEditingValue(
+                    text: question,
+                    selection: TextSelection.collapsed(offset: question.length),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ExampleQuestion extends StatelessWidget {
+  const _ExampleQuestion({required this.question, required this.onTap});
+
+  final String question;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadii.medium),
+      side: const BorderSide(color: AppColors.secondary),
+    );
+    return Semantics(
+      button: true,
+      child: Material(
+        color: AppColors.surfaceElevated,
+        shape: shape,
+        child: InkWell(
+          customBorder: shape,
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.sm,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      question,
+                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  const Icon(Icons.north_west_rounded, size: 18, color: AppColors.primary),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

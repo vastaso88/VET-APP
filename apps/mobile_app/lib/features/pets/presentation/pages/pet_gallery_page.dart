@@ -344,8 +344,6 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
               child: FloatingActionButton.extended(
                 heroTag: 'pet-gallery-add',
                 onPressed: _busy || _capture.busy ? null : _showAddSheet,
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
                 icon: const Icon(Icons.add_a_photo_outlined),
                 label: Text(context.l10n.commonAdd),
               ),

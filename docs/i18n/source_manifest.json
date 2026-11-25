@@ -22030,5 +22030,140 @@
       "de": "c8492b482932a889fe0eb1cee3665f8a4212f0df7f526b7ad7100aa90a5d1355",
       "fr": "9605d31971bf90f82102103d02b042627142f31be28220797bd6e73aa53855a0"
     }
+  },
+  "ui:chatExampleBored": {
+    "source": "663ee5e286185c5c0c64e4b842d956b076535c640f404852cfc7a40da0e85356",
+    "targets": {
+      "en": "b5dd6b8ddb88c616d748e646fd1e5d18a1b81deb69d8aaf0beea12e2c87119c1",
+      "es": "a359790194ddd483620ef664e9238a7f0fb3dc73babb042246bb33e97242384b",
+      "de": "c5756de0c356957d0d834e4ca48384e61711cc73a0c6ccdab77a9028d1ddf4f7",
+      "fr": "678e4eeaeecc25ec40d5f6e02b72440b09d4487931164772a9a1c3b6481bea94"
+    }
+  },
+  "ui:chatExampleLeash": {
+    "source": "3d92ab5642367e6884ce6ca0b5b5d04ae68fe6adf9ef52aad3dd2066347d5e07",
+    "targets": {
+      "en": "2f460f12b8eb85504e2bef72a53a7f8c7d587d398034e0c3b0b6220ded01e6f0",
+      "es": "60942a347fb17f3e3ad6e92c4c91f26f501f33c9bcfa31f0c429580e50e7dd9b",
+      "de": "0f7e70dd79490ffed28ab3fc8ac4f638a0d9587d8ed9a41143c064a8269e0676",
+      "fr": "9719fb61e212d3773a113ecd2121300e3e7c2473782d5350d5eb931e4f434f8d"
+    }
+  },
+  "ui:chatExampleDuties": {
+    "source": "f511f701dc55f527feaeda61caf892942b2ca738a2e964fcddfc30b4f89b67a6",
+    "targets": {
+      "en": "a11ac940f584777a03aacec60943c5ac72ac0f228ab5c0653ad5d19a2749f735",
+      "es": "c9743e12f55a2e399a0bf5c376dc6f9c6c4a37640f7df47e752d39dde660d981",
+      "de": "8603ec889c90535997b41d6aa82f6360cf6c7a5b285b639f4294669c374713c4",
+      "fr": "c26333663116532208fd71f6713d1f18e1af9cedd3512149ef1291df49499fd8"
+    }
+  },
+  "ui:chatExampleScratching": {
+    "source": "78966273bcc43046e63e6cacfc7595d5e8cae39741596daa2e2c2adba7fa0bd1",
+    "targets": {
+      "en": "feefaae8d1ce99fe0eaaff35c00a5fb64ab11690da8a531da17c6d2942fb2ef7",
+      "es": "0302d7b8ace468de39f101b947d4ef047a7d552ba5dd9723dd01f81142abb4eb",
+      "de": "139673c1b2fc754f3faa145d7af9e308fb2b4b3b34023e32fc10bc84f49fc015",
+      "fr": "716fa57e10969ede5bb58433b05bc71c7d5f46ee730a06dd4a3da5f71d9c37e2"
+    }
+  },
+  "ui:chatExamplePlayIndoors": {
+    "source": "e00603c06e6a490d4eb8d1e6b79e54aa19d94fbb63a8d124dc1e25161ec84385",
+    "targets": {
+      "en": "25669a1511fc0dad039cfb8ebce77f8c5240718c37a4790f186522b37b8474d7",
+      "es": "1504bedb6c9b0e29f19aed2698df5e1c28ee5923439ef099818ccb0ac4ba85a3",
+      "de": "2bea75eeb76ad74fdcaa620b31e8dfa9e5246d8c4d26b58b7910487764b07608",
+      "fr": "178519475b3ce44b8fff7cf01685e5f66877606e5cbb1910a33248a146237435"
+    }
+  },
+  "ui:chatExampleLitterBox": {
+    "source": "b24d6a34e3920c8a2ea294e96b04a5f8deb5f9d4b6839f4f70882eef2d3cb3d4",
+    "targets": {
+      "en": "ce39d80f6febd36c15c3bcb1b6c8b6cc56e6be55e6f2e23b5235325cf0b23b39",
+      "es": "c45afdd7ffc4667501614046ca4ac3ecfb89f3c000bfbfbdfd3b8070d781ff05",
+      "de": "501396006433a9b2b041ef0bbf3163673fd7ba38b07fa04497bc8fe6b976ae37",
+      "fr": "eb4f7956fbd51c1c039dfdd6957861a8783382c6d73d8067d3a27edf40e58eec"
+    }
+  },
+  "ui:chatExampleThumping": {
+    "source": "6d609f478bee0d8e1d2530e926ae2b68f9be8bb21706203fd7377c8e0a567634",
+    "targets": {
+      "en": "0d7f1429a4a26c20fd64efaeebec6f46fe2931455f8775e9b6d4c76be41493ef",
+      "es": "cee524f2c2b9936e285b6e19ac2ea8180cce3fc79a42d6f8bd249ac5ac0ca011",
+      "de": "16ac6cdb5d1a6eea1b4c030177d12561cc558346a4797679dd49f0cc334957fb",
+      "fr": "3aec2c705a4e2f290789c25cdbafecf039c9339821b71a37994e89e00b73495a"
+    }
+  },
+  "ui:chatExampleSpace": {
+    "source": "fa87a53f77d4aa9fcc0fc4b65e634ca1a1d21ad44dc6a77794befacb2fa28f12",
+    "targets": {
+      "en": "ce5105779a89e5896c47bf3f92126591ae0159dab2353a2e3af0e082d8e701bd",
+      "es": "4df7bfd7d5f05c7c86cf9d71ff855625cfea94964f825346343aa7e8c2b631ec",
+      "de": "181a27acbc2f56ef45b1006972914d33c612160b50f7a0f18e9585475525f97e",
+      "fr": "ccf319ff7c81232a29b7755793d2692824c54bbed3eafb35739d7e50fbc7faa2"
+    }
+  },
+  "ui:chatExampleTrust": {
+    "source": "d87633086ade1c9c0edaf12ca7cd634b4d6f0ca3c4622e7f131a4ac0300dc490",
+    "targets": {
+      "en": "259743a45f7ff3b4bde5f10aeaee5dcb82253b29103621cad97a6b6183148c3e",
+      "es": "345f4d8d40c09ef2c021e0e49e72c981af8b16a8a061e25e371a9d22839984c7",
+      "de": "ad6e6bf87292713ca6d2c06824f9ed1b9b1019faff88289213de4259d84115f9",
+      "fr": "cbcb2415a803316a129d01422fd093d2ea245cedb3adc8bb7ca4a507e25e357d"
+    }
+  },
+  "ui:chatExampleSounds": {
+    "source": "f58fcd9a7f3f90a9823031988b242e4ab62a0831ce5371327a22a70bbef23d05",
+    "targets": {
+      "en": "dba3142b857a0095eada69938def81e0b05adcf969c7f665a87c54cfe4fc1997",
+      "es": "8ba618794b66c41002c5b88a0dc23054f4d7709584d8793b1466e1b5d0e18554",
+      "de": "a8390779809fa565ff2d635b5eaf29ea8925edbf4cd2815db57a2bb53f30cd46",
+      "fr": "44215b7f653c48771aacc244838d24526d236bdc3e82a51463ee3baa8715fa4e"
+    }
+  },
+  "ui:chatExampleHiding": {
+    "source": "6153eb3819dd7e938c3c7deacbed9d592bcc9963068399011b58c30782ee0502",
+    "targets": {
+      "en": "383f6486297dbc49f3e7f0dd230aa0d1d7cf644da3e506e999ca717fb81d620d",
+      "es": "256179aec87022711ae413fc05e742cafb0583d26278701f5fbae658b2534bbc",
+      "de": "b575dccb3add35e84292d3bf8d60f6d46803f4ecad674c3c62210e452b8baa94",
+      "fr": "f5436577a967a1f8e9b914c2ce2d6eef3e16d7f7955e966f648bed10a9cec3f8"
+    }
+  },
+  "ui:chatExampleHabitat": {
+    "source": "e5bd0a3629b20ac1e75ed115b3100fa37b194c3f89b4e36ed5c1420efa961a48",
+    "targets": {
+      "en": "dc86474657fc7afe4a2b661aa023efd77eb4e369a36e1c2f6505aae454b74ad9",
+      "es": "a944063b0d9ff06e1410063b1d198e8e3a4350460df716aba6ffae33587e6fd2",
+      "de": "bf16515df37d89414ab50dfc1f9465ea2c29b4e6a56e27dc29bc27fdad1cce83",
+      "fr": "5ba22835bb4745551194df0673f663c5a520940e0d9d94ccc13d7179326eec4b"
+    }
+  },
+  "ui:chatExampleTankWater": {
+    "source": "d7bccc699efcbd127556e992fe3a3def7b0d4a47a1bb06a6d60e1bbd3cad16c7",
+    "targets": {
+      "en": "766f4fd9981977865cd35d56e8af7dc55551999442959994d5d36a024c5b2d96",
+      "es": "5f7ae9fd455b73d38debf4783bf47d2c7bcf7f4da3087e49528c6cf6e1106596",
+      "de": "f1fc06332e83e527172156d00a0a866cf8eb74b9fbb9496cfa1159a788419d96",
+      "fr": "6322a535335aee1866c9862b5c9d33c513b543e5b7f17f270d75211a915a9304"
+    }
+  },
+  "ui:chatExampleTankMates": {
+    "source": "1f114cd9a1547e02da94be6acdd2dac9d6dc585cb7b578d3efeb49386ebdcee6",
+    "targets": {
+      "en": "643fd273ff96c8e763bfc9daee24ca1748a9de70435d46bde9a0aa714fa8f3a6",
+      "es": "8c8a35908bbec9c4e558b958a5accc6c557264efb214bbec6073c80a0108c0ab",
+      "de": "bd22be98c420806d6823c5383a1cb8025a3c85be23043285757e6335cde7e3c9",
+      "fr": "e502a47472360ed5d9e52cba260ff232fecdefe2ec62941377ad0330aefc418f"
+    }
+  },
+  "ui:chatExampleTankPlants": {
+    "source": "445c1c6f7a39b909bf209843c503983d5e40fd16aeb039e8d46cf99e7961189a",
+    "targets": {
+      "en": "af5e90ad8b225730cec421e95ff495c7590fa3dfedb13c43301ca41f1be4f3b4",
+      "es": "17712fae91786f2293d4cee550dfa1450ce25a18e1c35db35ff5bd91afb85e1d",
+      "de": "33296475323f81a549c65cd99fdbbbf195180b4fb94466f4c48358e4c3de42f6",
+      "fr": "1a4c46109c73191d03a9da766f62c72662bd3d6b293ada33e50139449c55b957"
+    }
   }
 }

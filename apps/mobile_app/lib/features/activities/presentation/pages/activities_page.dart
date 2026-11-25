@@ -221,7 +221,7 @@ class _ActivityRow extends StatelessWidget {
                             child: Text(
                               badge!,
                               style: AppTextStyles.caption.copyWith(
-                                color: AppColors.primaryStrong,
+                                color: AppColors.primary,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

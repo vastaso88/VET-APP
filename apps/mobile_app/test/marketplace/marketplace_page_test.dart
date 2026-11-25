@@ -256,8 +256,8 @@ void main() {
     expect(find.text('Pallina vicina'), findsNothing);
     expect(find.text('Gioco lontano'), findsNothing);
     expect(find.textContaining('Imposta la tua posizione'), findsOneWidget);
-    final chip = tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '10 km'));
-    expect(chip.onSelected, isNull);
+    // Nothing to measure from: the distances are not there, rather than pale.
+    expect(find.widgetWithText(ChoiceChip, '10 km'), findsNothing);
 
     // The button leads straight to Impostazioni → Località.
     HomeShellNavigation.consumeLocationScroll();

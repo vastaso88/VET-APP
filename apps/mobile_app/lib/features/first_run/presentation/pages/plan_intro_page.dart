@@ -168,7 +168,7 @@ class _TestPeriodView extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: AppColors.primaryStrong,
+                color: AppColors.primary,
                 borderRadius: BorderRadius.circular(AppRadii.large),
               ),
               child: Column(
@@ -201,9 +201,7 @@ class _TestPeriodView extends StatelessWidget {
                       onPressed: () => Navigator.of(context).pop(),
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.onPrimary,
-                        foregroundColor: AppColors.primaryStrong,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadii.pill)),
+                        foregroundColor: AppColors.primary,
                       ),
                       child: Text(context.l10n.commonContinue),
                     ),
@@ -230,7 +228,7 @@ class _TrialCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.primaryStrong,
+        color: AppColors.primary,
         borderRadius: BorderRadius.circular(AppRadii.large),
       ),
       child: Column(
@@ -262,8 +260,7 @@ class _TrialCard extends StatelessWidget {
               onPressed: isLoading ? null : onStart,
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.onPrimary,
-                foregroundColor: AppColors.primaryStrong,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
+                foregroundColor: AppColors.primary,
               ),
               child: Text(context.l10n.firstRunTrialStartButton),
             ),

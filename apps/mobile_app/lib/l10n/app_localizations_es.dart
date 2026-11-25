@@ -817,6 +817,73 @@ class AppLocalizationsEs extends AppLocalizations {
       'Escribe lo que observas o lo que quieres entender.';
 
   @override
+  String chatExampleBored(String pet) {
+    return '¿Cómo sé si $pet se aburre?';
+  }
+
+  @override
+  String chatExampleLeash(String pet) {
+    return '¿Por qué $pet tira de la correa?';
+  }
+
+  @override
+  String chatExampleDuties(String pet) {
+    return '¿Cuáles son mis deberes con $pet?';
+  }
+
+  @override
+  String chatExampleScratching(String pet) {
+    return '¿Por qué $pet araña el sofá?';
+  }
+
+  @override
+  String chatExamplePlayIndoors(String pet) {
+    return '¿Cómo puedo hacer que $pet juegue en casa?';
+  }
+
+  @override
+  String get chatExampleLitterBox => '¿Dónde conviene poner el arenero?';
+
+  @override
+  String chatExampleThumping(String pet) {
+    return '¿Por qué $pet golpea el suelo con las patas?';
+  }
+
+  @override
+  String chatExampleSpace(String pet) {
+    return '¿Cuánto espacio necesita $pet?';
+  }
+
+  @override
+  String chatExampleTrust(String pet) {
+    return '¿Cómo me gano la confianza de $pet?';
+  }
+
+  @override
+  String chatExampleSounds(String pet) {
+    return '¿Qué me quiere decir $pet con sus sonidos?';
+  }
+
+  @override
+  String chatExampleHiding(String pet) {
+    return '¿Por qué $pet se esconde a menudo?';
+  }
+
+  @override
+  String chatExampleHabitat(String pet) {
+    return '¿Cómo sé si el entorno es adecuado para $pet?';
+  }
+
+  @override
+  String get chatExampleTankWater => '¿Cada cuánto cambio el agua del acuario?';
+
+  @override
+  String get chatExampleTankMates => '¿Qué peces pueden vivir juntos?';
+
+  @override
+  String get chatExampleTankPlants => '¿Qué plantas elijo para el acuario?';
+
+  @override
   String get chatTypingText => 'Escribiendo una respuesta…';
 
   @override

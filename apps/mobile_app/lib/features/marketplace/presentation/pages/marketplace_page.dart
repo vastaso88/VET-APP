@@ -301,12 +301,13 @@ class _MarketplacePageState extends State<MarketplacePage> {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                   ],
-                  _DistanceFilterRow(
-                    selected: _filter.maxDistanceKm,
-                    enabled: data.referenceLocation != null,
-                    onSelected: _selectRadius,
-                    onOther: _askOtherRadius,
-                  ),
+                  // Without a position there is nothing to measure from.
+                  if (data.referenceLocation != null)
+                    _DistanceFilterRow(
+                      selected: _filter.maxDistanceKm,
+                      onSelected: _selectRadius,
+                      onOther: _askOtherRadius,
+                    ),
                   const SizedBox(height: AppSpacing.lg),
                   if (data.referenceLocation == null)
                     Padding(
@@ -511,13 +512,11 @@ class _SpeciesFilterRow extends StatelessWidget {
 class _DistanceFilterRow extends StatelessWidget {
   const _DistanceFilterRow({
     required this.selected,
-    required this.enabled,
     required this.onSelected,
     required this.onOther,
   });
 
   final double selected;
-  final bool enabled;
   final ValueChanged<double> onSelected;
   final VoidCallback onOther;
 
@@ -528,13 +527,9 @@ class _DistanceFilterRow extends StatelessWidget {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: Icon(
-              Icons.near_me_outlined,
-              size: 18,
-              color: enabled ? AppColors.secondaryText : AppColors.mutedText,
-            ),
+          const Padding(
+            padding: EdgeInsets.only(right: AppSpacing.sm),
+            child: Icon(Icons.near_me_outlined, size: 18, color: AppColors.secondaryText),
           ),
           ...marketplaceRadiusOptionsKm.map(
             (km) => Padding(
@@ -544,7 +539,7 @@ class _DistanceFilterRow extends StatelessWidget {
                 key: ValueKey('marketplace-radius-${km.round()}'),
                 label: Text(listingDistanceFilterLabel(km)),
                 selected: selected == km,
-                onSelected: enabled ? (_) => onSelected(km) : null,
+                onSelected: (_) => onSelected(km),
               ),
             ),
           ),
@@ -561,7 +556,7 @@ class _DistanceFilterRow extends StatelessWidget {
                     ),
             ),
             selected: !marketplaceRadiusOptionsKm.contains(selected),
-            onSelected: enabled ? (_) => onOther() : null,
+            onSelected: (_) => onOther(),
           ),
         ],
       ),

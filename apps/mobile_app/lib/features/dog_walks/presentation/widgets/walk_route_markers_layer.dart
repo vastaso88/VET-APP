@@ -22,7 +22,7 @@ MarkerLayer buildWalkRouteMarkersLayer(WalkRouteMarkers markers, {bool compact =
         for (final pause in markers.pausePoints)
           _dot(pause, AppColors.warning, 11),
         if (markers.start != null) _dot(markers.start!, AppColors.success, 16),
-        if (markers.finish != null) _dot(markers.finish!, AppColors.primaryStrong, 16, icon: Icons.flag_rounded),
+        if (markers.finish != null) _dot(markers.finish!, AppColors.primary, 16, icon: Icons.flag_rounded),
       ],
     );
   }
@@ -47,7 +47,7 @@ MarkerLayer buildWalkRouteMarkersLayer(WalkRouteMarkers markers, {bool compact =
           point: latlong.LatLng(markers.finish!.latitude, markers.finish!.longitude),
           width: 28,
           height: 28,
-          child: const Icon(Icons.sports_score_rounded, color: AppColors.primaryStrong, size: 28),
+          child: const Icon(Icons.sports_score_rounded, color: AppColors.primary, size: 28),
         ),
     ],
   );

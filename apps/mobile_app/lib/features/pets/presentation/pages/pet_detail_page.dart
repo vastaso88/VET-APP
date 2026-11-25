@@ -6,6 +6,7 @@ import '../../../settings/data/unit_settings_store.dart';
 import '../../../settings/domain/unit_conversion.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 
+import '../../../../design_system/atoms/outline_icon_button.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -44,6 +45,7 @@ import '../../../chat/presentation/widgets/chat_conversation_menu.dart';
 import '../../../../app/launch/route_restoration.dart';
 import '../../../notifications/presentation/notifications_off_banner.dart';
 import '../widgets/pet_avatar.dart';
+import '../widgets/pet_tab_bar.dart';
 import '../widgets/pets_scaffold.dart';
 import '../widgets/pets_state_views.dart';
 import 'pet_data_page.dart';
@@ -133,7 +135,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
               size: 36,
             ),
       actions: [
-        IconButton(
+        OutlineIconButton(
           tooltip: context.l10n.petsDetailGalleryTooltip,
           onPressed: pet == null
               ? null
@@ -142,16 +144,12 @@ class _PetDetailPageState extends State<PetDetailPage> {
                       builder: (_) => PetGalleryPage(pet: pet),
                     ),
                   ),
-          icon: const Icon(Icons.photo_library_outlined),
-          color: AppColors.onPrimary,
-          style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
+          icon: Icons.photo_library_outlined,
         ),
-        IconButton(
+        OutlineIconButton(
           tooltip: context.l10n.commonEdit,
           onPressed: pet == null ? null : () => _openEdit(context, pet),
-          icon: const Icon(Icons.edit_outlined),
-          color: AppColors.onPrimary,
-          style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
+          icon: Icons.edit_outlined,
         ),
       ],
       body: switch (widget.state) {
@@ -214,19 +212,6 @@ String petHeaderSubtitle(PetProfile pet, {DateTime? now}) {
     if (age != null) age,
   ];
   return parts.join(' · ');
-}
-
-/// One tab title, always at the same readable size: the bar scrolls sideways
-/// when the titles do not all fit, instead of shrinking each one differently.
-class PetTabLabel extends StatelessWidget {
-  const PetTabLabel(this.label, {super.key});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tab(child: Text(label, maxLines: 1, softWrap: false));
-  }
 }
 
 class _PetDetailContent extends StatefulWidget {
@@ -329,28 +314,15 @@ class _PetDetailContentState extends State<_PetDetailContent>
           _AquariumStockCard(stock: widget.pet.aquariumStock),
           const SizedBox(height: AppSpacing.md),
         ],
-        TabBar(
+        // Tab order and count: the restored tab is saved by index.
+        PetTabBar(
           controller: _tabController,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.mutedText,
-          indicatorColor: AppColors.primary,
-          labelStyle:
-              AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
-          unselectedLabelStyle: AppTextStyles.bodySmall,
-          // Scrollable from the left, every title at the same size (owner
-          // report, build 34: some titles came out much smaller than others).
-          // The TabBar scrolls the selected tab into view by itself. Tab order
-          // and count are unchanged: the restored tab is saved by index.
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
-          labelPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          tabs: [
-            PetTabLabel(context.l10n.petsDetailTabReminders),
-            PetTabLabel(context.l10n.petsDetailTabChat),
-            PetTabLabel(context.l10n.petsDetailTabRecords),
-            if (_showsMonitoring)
-              PetTabLabel(context.l10n.petsDetailTabMonitoring),
-            if (_showsWalks) PetTabLabel(context.l10n.petsDetailTabWalks),
+          labels: [
+            context.l10n.petsDetailTabReminders,
+            context.l10n.petsDetailTabChat,
+            context.l10n.petsDetailTabRecords,
+            if (_showsMonitoring) context.l10n.petsDetailTabMonitoring,
+            if (_showsWalks) context.l10n.petsDetailTabWalks,
           ],
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1308,7 +1280,7 @@ class _WalkCard extends StatelessWidget {
                             child: Text(
                               recordLabel!,
                               style: AppTextStyles.caption
-                                  .copyWith(color: AppColors.primaryStrong, fontWeight: FontWeight.w700),
+                                  .copyWith(color: AppColors.primary, fontWeight: FontWeight.w700),
                             ),
                           ),
                           const SizedBox(height: 4),

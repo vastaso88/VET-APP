@@ -366,7 +366,7 @@ class _VideoTile extends StatelessWidget {
     return Semantics(
       label: context.l10n.petsMediaVideoSemantics,
       child: ColoredBox(
-        color: AppColors.primaryStrong,
+        color: AppColors.primary,
         child: Stack(
           children: [
             const Center(

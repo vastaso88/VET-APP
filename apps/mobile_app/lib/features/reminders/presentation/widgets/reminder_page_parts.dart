@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../../design_system/atoms/outline_icon_button.dart';
 import '../../../../../design_system/tokens/app_colors.dart';
 import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
@@ -110,13 +111,10 @@ class _Header extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  IconButton(
+                  OutlineIconButton(
                     tooltip: context.l10n.commonBack,
                     onPressed: () => Navigator.of(context).maybePop(),
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    color: AppColors.onPrimary,
-                    style: IconButton.styleFrom(
-                        backgroundColor: AppColors.primaryStrong),
+                    icon: Icons.arrow_back_rounded,
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   if (pet != null)
@@ -167,7 +165,7 @@ class _BrandPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.notifications_active_outlined,
-              size: 14, color: AppColors.secondaryStrong),
+              size: 14, color: AppColors.onPrimary),
           const SizedBox(width: AppSpacing.sm),
           Flexible(
             child: Text(

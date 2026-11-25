@@ -40,7 +40,6 @@ class AppColors {
 
   // --- 10% accent: petrol teal --------------------------------------------
   static const primary = Color(0xFF2E686A);
-  static const primaryStrong = Color(0xFF214E50);
   static const primarySoft = Color(0xFFDCEBEA);
   static const onPrimary = Color(0xFFF9F6F0);
 

@@ -30,6 +30,7 @@ import '../../features/account/application/account_session_guard.dart';
 import '../../features/account_consents/application/consent_gate.dart';
 import '../router/app_router.dart';
 import '../launch/route_restoration.dart';
+import 'shell_bottom_bar.dart';
 
 class HomeShellPage extends StatefulWidget {
   const HomeShellPage({super.key, this.initialIndex = 0});
@@ -310,10 +311,8 @@ class _HomeShellPageState extends State<HomeShellPage> {
               return const SizedBox.shrink();
             }
 
-            return NavigationBar(
-              height: 76,
-              backgroundColor: AppColors.surfaceElevated,
-              indicatorColor: AppColors.secondarySoft,
+            return ShellBottomBar(
+              width: constraints.maxWidth,
               selectedIndex: _currentIndex,
               onDestinationSelected: _handleDestinationSelected,
               destinations: _bottomDestinations,

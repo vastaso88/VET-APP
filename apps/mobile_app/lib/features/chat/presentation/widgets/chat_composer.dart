@@ -32,6 +32,7 @@ class ChatComposer extends StatefulWidget {
     this.onCancelEditing,
     this.allowEmptySend = false,
     this.draftKey,
+    this.controller,
   });
 
   final String hintText;
@@ -63,6 +64,10 @@ class ChatComposer extends StatefulWidget {
   /// app being killed in the background (saved on this phone, put back here).
   final String? draftKey;
 
+  /// The text of the field, when the page writes in it too (the example
+  /// questions of an empty chat); the page then disposes it.
+  final TextEditingController? controller;
+
   static String get listeningText => appL10n.chatListeningText;
   static String get transcribingText => appL10n.chatTranscribingText;
   static String get editingLabel => appL10n.chatEditingLabel;
@@ -72,7 +77,7 @@ class ChatComposer extends StatefulWidget {
 }
 
 class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderStateMixin {
-  final TextEditingController _controller = TextEditingController();
+  late final TextEditingController _controller = widget.controller ?? TextEditingController();
   final FocusNode _focusNode = FocusNode();
 
   /// Drives the pulsing dot and stop button while listening (build 28: it
@@ -140,16 +145,18 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
       if (_voiceState == _VoiceState.listening) unawaited(_dictation.stop());
     });
     _controller.addListener(_scheduleDraftSave);
-    _controller.addListener(() {
-      final hasText = _controller.text.trim().isNotEmpty;
-      final atLimit = _controller.text.length >= chatMaxMessageLength;
-      if (hasText != _hasText || atLimit != _atLimit) {
-        setState(() {
-          _hasText = hasText;
-          _atLimit = atLimit;
-        });
-      }
-    });
+    _controller.addListener(_onTextChanged);
+  }
+
+  void _onTextChanged() {
+    final hasText = _controller.text.trim().isNotEmpty;
+    final atLimit = _controller.text.length >= chatMaxMessageLength;
+    if (hasText != _hasText || atLimit != _atLimit) {
+      setState(() {
+        _hasText = hasText;
+        _atLimit = atLimit;
+      });
+    }
   }
 
   @override
@@ -171,7 +178,9 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
     _elapsedTimer?.cancel();
     _pulse.dispose();
     _focusNode.dispose();
-    _controller.dispose();
+    _controller.removeListener(_scheduleDraftSave);
+    _controller.removeListener(_onTextChanged);
+    if (widget.controller == null) _controller.dispose();
     _lifecycle.dispose();
     if (_voiceState != _VoiceState.idle || _startingDictation) unawaited(_dictation.cancel());
     super.dispose();
@@ -338,6 +347,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
                   fixedSize: const Size(40, 40),
                   minimumSize: const Size(40, 40),
                   tapTargetSize: MaterialTapTargetSize.padded,
+                  visualDensity: VisualDensity.standard,
                   backgroundColor: canSend ? AppColors.primary : AppColors.border,
                   disabledBackgroundColor: AppColors.border,
                   foregroundColor: AppColors.onPrimary,
@@ -721,7 +731,8 @@ class _ComposerIconButton extends StatelessWidget {
       onPressed: onPressed,
       tooltip: tooltip,
       icon: Icon(icon, color: color ?? AppColors.secondaryText, size: 22),
-      visualDensity: VisualDensity.compact,
+      // Not compact: a compact button answers to 40 px only.
+      visualDensity: VisualDensity.standard,
       constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
       // 40 px visible, 48 px to touch.
       style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.padded),

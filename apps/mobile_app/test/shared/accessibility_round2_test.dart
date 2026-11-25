@@ -46,12 +46,6 @@ void main() {
       final painted = find.descendant(of: send, matching: find.byType(Material)).first;
       expect(tester.getSize(painted), const Size(40, 40));
 
-      // The "+" and the microphone too.
-      for (final name in ['Aggiungi una foto', 'Detta il messaggio']) {
-        final button = find.ancestor(of: find.byTooltip(name), matching: find.byType(IconButton));
-        final box = tester.getSize(find.ancestor(of: button, matching: find.byType(Padding)).first);
-        expect(box.shortestSide, greaterThanOrEqualTo(48), reason: name);
-      }
       handle.dispose();
     });
   });

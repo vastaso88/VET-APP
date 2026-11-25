@@ -112,7 +112,7 @@ class ActivityChartView extends StatelessWidget {
               touchTooltipData: BarTouchTooltipData(
                 fitInsideHorizontally: true,
                 fitInsideVertically: true,
-                getTooltipColor: (_) => AppColors.primaryStrong,
+                getTooltipColor: (_) => AppColors.primary,
                 getTooltipItem: (group, groupIndex, rod, rodIndex) {
                   final week = weeks[groupIndex];
                   final value = metric == ActivityMetric.distance

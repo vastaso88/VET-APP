@@ -64,11 +64,6 @@ class AddFirstPetPromptPage extends StatelessWidget {
                     width: double.infinity,
                     child: FilledButton(
                       onPressed: () => _addPet(context),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadii.pill)),
-                      ),
                       child: Text(context.l10n.firstRunAddPetNow),
                     ),
                   ),

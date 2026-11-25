@@ -65,7 +65,7 @@ class WalkMiniMap extends StatelessWidget {
                       for (final point in segment)
                         latlong.LatLng(point.coordinates.latitude, point.coordinates.longitude),
                     ],
-                    color: AppColors.primaryStrong,
+                    color: AppColors.primary,
                     strokeWidth: 5,
                     borderColor: AppColors.onMedia,
                     borderStrokeWidth: 2.5,

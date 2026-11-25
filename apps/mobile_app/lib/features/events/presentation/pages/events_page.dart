@@ -13,6 +13,7 @@ import '../../domain/event_filter.dart';
 import '../event_labels.dart';
 import 'submit_event_page.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/min_tap_target.dart';
 
 typedef EventLinkLauncher = Future<void> Function(Uri url);
 
@@ -241,13 +242,15 @@ class _EventsPageState extends State<EventsPage> {
                       const SizedBox(height: AppSpacing.md),
                     ],
                   const SizedBox(height: AppSpacing.sm),
+                  // An empty page is one centred block; under a list it stays on the left.
                   Text(
                     context.l10n.eventsDisclaimer,
                     style: AppTextStyles.caption,
+                    textAlign: visible.isEmpty ? TextAlign.center : TextAlign.start,
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Align(
-                    alignment: Alignment.centerLeft,
+                    alignment: visible.isEmpty ? Alignment.center : Alignment.centerLeft,
                     child: TextButton.icon(
                       onPressed: _openSuggest,
                       icon: const Icon(Icons.add_circle_outline_rounded),
@@ -304,8 +307,8 @@ class _FilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
+      // The pills' own 48 px to touch already keep the rows apart.
       spacing: AppSpacing.sm,
-      runSpacing: AppSpacing.sm,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         _FilterChip(icon: Icons.event_outlined, label: dateLabel, active: datesActive, onTap: onPickDates),
@@ -329,30 +332,34 @@ class _FilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = active ? AppColors.onPrimary : AppColors.text;
-    return Material(
-      color: active ? AppColors.primary : AppColors.surface,
-      borderRadius: BorderRadius.circular(AppRadii.pill),
-      child: InkWell(
+    return MinTapTarget(
+      onTap: onTap,
+      child: Material(
+        color: active ? AppColors.primary : AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadii.pill),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.pill),
-            border: Border.all(color: active ? AppColors.primary : AppColors.border),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 16, color: foreground),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: AppTextStyles.bodySmall.copyWith(color: foreground, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(width: 2),
-              Icon(Icons.arrow_drop_down_rounded, size: 18, color: foreground),
-            ],
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppRadii.pill),
+              border: Border.all(color: active ? AppColors.primary : AppColors.border),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 16, color: foreground),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style:
+                      AppTextStyles.bodySmall.copyWith(color: foreground, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(width: 2),
+                Icon(Icons.arrow_drop_down_rounded, size: 18, color: foreground),
+              ],
+            ),
           ),
         ),
       ),
@@ -499,7 +506,7 @@ class _Pill extends StatelessWidget {
       foreground = AppColors.danger;
     } else if (emphasized) {
       background = AppColors.secondarySoft;
-      foreground = AppColors.primaryStrong;
+      foreground = AppColors.primary;
     } else {
       background = AppColors.background;
       foreground = AppColors.secondaryText;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../design_system/atoms/outline_icon_button.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -168,12 +169,10 @@ class _PetDataPageState extends State<PetDataPage> {
       // (docs/product/17_ricordi_animali.md).
       actions: [
         if (!pet.isMemorial)
-          IconButton(
+          OutlineIconButton(
             tooltip: t.commonEdit,
             onPressed: _edit,
-            icon: const Icon(Icons.edit_outlined),
-            color: AppColors.onPrimary,
-            style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
+            icon: Icons.edit_outlined,
           ),
       ],
       body: SingleChildScrollView(

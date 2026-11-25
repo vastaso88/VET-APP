@@ -7,6 +7,8 @@ import 'package:vet_app_mobile/features/events/data/events_repository.dart';
 import 'package:vet_app_mobile/features/events/domain/event_entry.dart';
 import 'package:vet_app_mobile/features/events/presentation/event_labels.dart';
 import 'package:vet_app_mobile/features/events/presentation/pages/events_page.dart';
+import 'package:vet_app_mobile/l10n/l10n.dart';
+import 'package:vet_app_mobile/shared/widgets/min_tap_target.dart';
 import 'package:vet_app_mobile/shared/widgets/pet_loader.dart';
 
 class _FakeRepository extends EventsRepository {
@@ -72,6 +74,28 @@ Future<void> _pump(
 void main() {
   setUpAll(() async {
     await initializeDateFormatting('it_IT');
+  });
+
+  testWidgets('with no event the notes and the way to suggest one are all centred',
+      (tester) async {
+    await _pump(tester, _FakeRepository((_, __) async => const EventsLoadResult(events: [])));
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(EventsPage));
+    for (final note in [context.l10n.eventsCountryOnlyNote, context.l10n.eventsDisclaimer]) {
+      expect(tester.widget<Text>(find.text(note)).textAlign, TextAlign.center, reason: note);
+    }
+    final button = tester.getCenter(find.text(context.l10n.eventsSuggestAction));
+    expect((button.dx - 400).abs(), lessThan(30), reason: 'centred on an 800 px page');
+  });
+
+  testWidgets('the filters answer on 48 px', (tester) async {
+    await _pump(tester, _FakeRepository((_, __) async => const EventsLoadResult(events: [])));
+    await tester.pumpAndSettle();
+    for (final target in tester.widgetList(find.byType(MinTapTarget))) {
+      expect(tester.getSize(find.byWidget(target)).height, greaterThanOrEqualTo(48));
+    }
+    expect(find.byType(MinTapTarget), findsNWidgets(3));
   });
 
   testWidgets('shows the PetLoader while loading, then the events', (tester) async {

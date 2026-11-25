@@ -380,6 +380,98 @@
     }
   },
   "chatNewConversationPrompt": "Écrivez ce que vous observez ou ce que vous voulez comprendre.",
+  "chatExampleBored": "Comment savoir si {pet} s'ennuie ?",
+  "@chatExampleBored": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleLeash": "Pourquoi {pet} tire sur la laisse ?",
+  "@chatExampleLeash": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleDuties": "Quelles sont mes obligations envers {pet} ?",
+  "@chatExampleDuties": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleScratching": "Pourquoi {pet} griffe le canapé ?",
+  "@chatExampleScratching": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExamplePlayIndoors": "Comment faire jouer {pet} à la maison ?",
+  "@chatExamplePlayIndoors": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleLitterBox": "Où vaut-il mieux placer la litière ?",
+  "chatExampleThumping": "Pourquoi {pet} tape le sol avec ses pattes ?",
+  "@chatExampleThumping": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleSpace": "De combien d'espace a besoin {pet} ?",
+  "@chatExampleSpace": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleTrust": "Comment gagner la confiance de {pet} ?",
+  "@chatExampleTrust": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleSounds": "Que veut me dire {pet} avec ses vocalisations ?",
+  "@chatExampleSounds": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleHiding": "Pourquoi {pet} se cache souvent ?",
+  "@chatExampleHiding": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleHabitat": "Comment savoir si l'environnement convient à {pet} ?",
+  "@chatExampleHabitat": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleTankWater": "À quelle fréquence changer l'eau de l'aquarium ?",
+  "chatExampleTankMates": "Quels poissons peuvent vivre ensemble ?",
+  "chatExampleTankPlants": "Quelles plantes choisir pour l'aquarium ?",
   "chatTypingText": "Rédige une réponse...",
   "chatTypingSlowText": "Cela prend plus de temps que d'habitude, la réponse arrive dans un instant...",
   "chatDefaultTitle": "Chat avec {pet}",

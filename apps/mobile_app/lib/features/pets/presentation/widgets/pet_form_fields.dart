@@ -129,19 +129,19 @@ class PetSpeciesChips extends FormField<String> {
                       ),
                   ],
                 ),
-                if (state.hasError)
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      top: AppSpacing.xs,
-                      left: AppSpacing.xs,
-                    ),
-                    child: Text(
-                      state.errorText!,
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.danger,
-                      ),
+                // The place of the error is kept: nothing jumps when it comes.
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: AppSpacing.xs,
+                    left: AppSpacing.xs,
+                  ),
+                  child: Text(
+                    state.errorText ?? ' ',
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.danger,
                     ),
                   ),
+                ),
               ],
             );
           },
@@ -179,10 +179,10 @@ class _SpeciesChoiceChip extends StatelessWidget {
               vertical: AppSpacing.sm,
             ),
             decoration: BoxDecoration(
-              color: selected ? AppColors.primaryStrong : AppColors.surface,
+              color: selected ? AppColors.primary : AppColors.surface,
               borderRadius: BorderRadius.circular(AppRadii.pill),
               border: Border.all(
-                color: selected ? AppColors.primaryStrong : AppColors.border,
+                color: selected ? AppColors.primary : AppColors.border,
               ),
             ),
             child: Row(
@@ -239,10 +239,11 @@ class PetTwoWayToggle extends StatelessWidget {
         ],
         selected: {secondSelected},
         onSelectionChanged: (selection) => onChanged(selection.first),
-        style: ButtonStyle(
-          textStyle: WidgetStatePropertyAll(
-            AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
-          ),
+        // Chosen looks the same as in the chips.
+        style: SegmentedButton.styleFrom(
+          selectedBackgroundColor: AppColors.primary,
+          selectedForegroundColor: AppColors.onPrimary,
+          textStyle: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
         ),
       ),
     );

@@ -380,6 +380,98 @@
     }
   },
   "chatNewConversationPrompt": "Write what you're seeing or what you want to understand.",
+  "chatExampleBored": "How can I tell if {pet} is bored?",
+  "@chatExampleBored": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleLeash": "Why does {pet} pull on the leash?",
+  "@chatExampleLeash": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleDuties": "What are my duties towards {pet}?",
+  "@chatExampleDuties": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleScratching": "Why does {pet} scratch the sofa?",
+  "@chatExampleScratching": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExamplePlayIndoors": "How can I get {pet} to play indoors?",
+  "@chatExamplePlayIndoors": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleLitterBox": "Where is the best place for the litter box?",
+  "chatExampleThumping": "Why does {pet} thump the ground?",
+  "@chatExampleThumping": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleSpace": "How much space does {pet} need?",
+  "@chatExampleSpace": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleTrust": "How do I earn {pet}'s trust?",
+  "@chatExampleTrust": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleSounds": "What is {pet} telling me with those sounds?",
+  "@chatExampleSounds": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleHiding": "Why does {pet} often hide?",
+  "@chatExampleHiding": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleHabitat": "How can I tell if the surroundings suit {pet}?",
+  "@chatExampleHabitat": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatExampleTankWater": "How often should I change the aquarium water?",
+  "chatExampleTankMates": "Which fish can live together?",
+  "chatExampleTankPlants": "Which plants should I choose for the aquarium?",
   "chatTypingText": "Writing a response…",
   "chatTypingSlowText": "This is taking longer than usual. Your reply will arrive shortly...",
   "chatDefaultTitle": "Chat with {pet}",

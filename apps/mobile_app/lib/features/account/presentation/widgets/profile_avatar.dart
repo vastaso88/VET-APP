@@ -60,7 +60,7 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
       width: widget.size,
       height: widget.size,
       clipBehavior: Clip.antiAlias,
-      decoration: const BoxDecoration(color: AppColors.primaryStrong, shape: BoxShape.circle),
+      decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
       alignment: Alignment.center,
       child: photo != null
           ? Image.memory(photo, width: widget.size, height: widget.size, fit: BoxFit.cover)

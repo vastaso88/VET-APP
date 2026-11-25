@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vet_app_mobile/app/theme/app_theme.dart';
+import 'package:vet_app_mobile/design_system/tokens/app_colors.dart';
 import 'package:vet_app_mobile/features/pets/data/pet_demo_store.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/pet_create_page.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/pets_list_page.dart';
@@ -85,7 +86,52 @@ Future<void> _pickFromSheet(WidgetTester tester, String openLabel, String entry)
   await _searchAndPick(tester, entry);
 }
 
+Color? _nextGround(WidgetTester tester) => tester
+    .widget<Material>(
+      find
+          .descendant(
+            of: find.widgetWithText(ElevatedButton, 'Prosegui'),
+            matching: find.byType(Material),
+          )
+          .first,
+    )
+    .color;
+
 void main() {
+  testWidgets('"Prosegui" is only outlined until the step has what it asks for', (tester) async {
+    await _openWizard(tester);
+    expect(_nextGround(tester), AppColors.surfaceElevated);
+
+    // It still answers, says what is missing and stays where it is.
+    final before = tester.getTopLeft(find.text('Prosegui'));
+    await _tapNext(tester);
+    expect(find.text('Che animale è?'), findsOneWidget);
+    expect(tester.getTopLeft(find.text('Prosegui')), before, reason: 'the error has its own place');
+
+    await tester.tap(find.text('Cane'));
+    await tester.pumpAndSettle();
+    expect(_nextGround(tester), AppColors.surfaceElevated, reason: 'the breed is missing');
+    final withBreed = tester.getTopLeft(find.text('Prosegui'));
+    await _tapNext(tester);
+    expect(tester.getTopLeft(find.text('Prosegui')), withBreed);
+
+    await tester.tap(find.text('Meticcio'));
+    await tester.pumpAndSettle();
+    expect(_nextGround(tester), AppColors.primary);
+
+    await _tapNext(tester);
+    expect(_nextGround(tester), AppColors.surfaceElevated, reason: 'the name is missing');
+    await tester.enterText(_nameField(), 'Thor');
+    await tester.pumpAndSettle();
+    expect(_nextGround(tester), AppColors.primary);
+  });
+
+  testWidgets('the page for a new animal has no "Pet" pill', (tester) async {
+    await _openWizard(tester);
+    expect(find.text('Pet'), findsNothing);
+    expect(find.byTooltip('Indietro'), findsOneWidget);
+  });
+
   testWidgets('the creation flow has four steps, species first, then "Profilo creato!"',
       (tester) async {
     await _openWizard(tester);

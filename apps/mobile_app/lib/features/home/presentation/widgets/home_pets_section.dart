@@ -216,7 +216,7 @@ class _AddCard extends StatelessWidget {
                       color: AppColors.secondarySoft,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.add_rounded, color: AppColors.primaryStrong),
+                    child: const Icon(Icons.add_rounded, color: AppColors.primary),
                   ),
                   const SizedBox(height: 6),
                   // One word in a narrow card ("Hinzufügen"): it shrinks a little
