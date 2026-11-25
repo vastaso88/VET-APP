@@ -43,6 +43,25 @@ e-mail o id dell'altro.
 24. **Segnalare un annuncio: consentito a tutti**, anche senza piano; senza piano non si può
     fare altro (niente conversazioni nuove: 402).
 
+## Decisione del proprietario (2026-11-25)
+
+25. **Contatti e codici nei messaggi: un avviso, mai un blocco. Caratteri nascosti: si tolgono**
+    (F27).
+
+Scelte di realizzazione (proposta, non decisioni del proprietario):
+
+- L'avviso compare mentre si scrive, prima dell'invio, e sotto l'ultimo messaggio della
+  conversazione che ha un contatto o un codice, scritto o ricevuto. Contatti: telefono, e-mail,
+  link, profilo social. Codici: di verifica, PIN, password, CVV, anche solo chiesti. Carte e IBAN
+  contano come numeri; date, orari, prezzi e CAP no.
+- Regole fisse nel server (`domain/marketplace/message_text.py`), le stesse nell'app
+  (`message_caution.dart`), casi comuni in `tests/fixtures/marketplace_message_caution_cases.json`.
+  Niente è salvato e niente va a un fornitore: la risposta porta solo `caution`, sì o no.
+- Il server toglie larghezza zero, direzione del testo, controlli e riempitivi vuoti prima di
+  salvare e prima di mostrare, anche al team e anche nei messaggi già salvati. Quello che si vede
+  non cambia: gli emoji restano interi e `<b>` resta testo. Un messaggio di soli caratteri nascosti
+  è vuoto (400). L'esportazione dei propri dati riporta il testo come è salvato.
+
 ## Regole
 
 | Regola | Dove |
@@ -55,6 +74,7 @@ e-mail o id dell'altro.
 | Chi non partecipa riceve 404, come per un id inesistente; un blocco subito appare come conversazione chiusa | servizio; test «utente B» in `tests/integration/test_marketplace_messages_api.py` |
 | Avviso fisso in testa alla conversazione, anche prima del primo messaggio: Quokka non è parte dell'accordo, contatti sotto la propria responsabilità, non pagare in anticipo, il team può leggere una conversazione segnalata | `widgets/messages_safety_notice.dart` |
 | Il testo non va nei log né verso provider esterni e non è mai interpretato come HTML o link | backend e `marketplace_conversation_page.dart` |
+| Caratteri nascosti tolti prima di salvare e di mostrare; contatto o codice → `caution` nel messaggio, mai un rifiuto | `domain/marketplace/message_text.py`; `_clean`, `_message_view` e `detail` nel servizio |
 | Nessuna conversazione nuova con un venditore che non potrebbe rispondere (senza piano o tenuto fuori dal team); la risposta è identica a quella per un annuncio non disponibile | `_can_start` nel servizio; `owner_can_write_on_marketplace` in `container.py` |
 | Chi è tenuto fuori dal team riceve 403 `marketplace_restricted` (motivo e data) su pubblicazione, modifica e messaggi; l'altra persona vede solo «conversazione chiusa» | `raise_if_restricted`, `dependencies/marketplace.py` |
 

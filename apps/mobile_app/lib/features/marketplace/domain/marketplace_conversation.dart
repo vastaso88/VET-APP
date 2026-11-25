@@ -54,6 +54,7 @@ class MarketplaceMessage {
     required this.body,
     required this.mine,
     required this.createdAt,
+    this.caution = false,
   });
 
   factory MarketplaceMessage.fromJson(Map<String, dynamic> json) {
@@ -62,6 +63,7 @@ class MarketplaceMessage {
       body: json['body'] as String? ?? '',
       mine: json['mine'] == true,
       createdAt: DateTime.parse(json['created_at'] as String),
+      caution: json['caution'] == true,
     );
   }
 
@@ -69,6 +71,10 @@ class MarketplaceMessage {
   final String body;
   final bool mine;
   final DateTime createdAt;
+
+  /// The text carries a contact or a code: a reminder goes with it. An older
+  /// backend does not say it.
+  final bool caution;
 }
 
 class ConversationThread {

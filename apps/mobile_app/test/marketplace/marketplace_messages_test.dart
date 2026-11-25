@@ -67,11 +67,18 @@ Map<String, dynamic> _conversation({
       'last_message_at': '2026-11-07T10:00:00+00:00',
     };
 
-Map<String, dynamic> _message(String body, {bool mine = true, String id = 'm1'}) => {
+Map<String, dynamic> _message(
+  String body, {
+  bool mine = true,
+  String id = 'm1',
+  bool? caution,
+}) =>
+    {
       'id': id,
       'body': body,
       'mine': mine,
       'created_at': '2026-11-07T10:00:00+00:00',
+      if (caution != null) 'caution': caution,
     };
 
 http.Response _json(Object body, [int status = 200]) => http.Response(
@@ -297,6 +304,74 @@ void main() {
 
       expect(find.text(markup), findsOneWidget);
       expect(backend.calls, contains('POST /marketplace/conversations/c1/read'));
+    });
+
+    testWidgets('a contact or a code brings a reminder while writing, and the message goes',
+        (tester) async {
+      const reminder = ValueKey('marketplace-messages-caution-writing');
+      final backend = _Backend((request) => request.method == 'POST'
+          ? _json({
+              'conversation': _conversation(),
+              'message': _message('Il codice: 482913', caution: true),
+            })
+          : _json({'conversation': _conversation(), 'messages': const <Object>[]}));
+      await tester.pumpWidget(
+        _app(
+          MarketplaceConversationPage(
+            conversationId: 'c1',
+            listingTitle: 'Trasportino',
+            repository: backend.repository(),
+          ),
+        ),
+      );
+      await _settle(tester);
+      final field = find.byKey(const ValueKey('marketplace-messages-field'));
+
+      await tester.enterText(field, 'Ci vediamo il 25/11/2026 alle 10:30');
+      await tester.pump();
+      expect(find.byKey(reminder), findsNothing);
+
+      await tester.enterText(field, 'Il codice: 482913');
+      await tester.pump();
+      expect(find.byKey(reminder), findsOneWidget);
+      expect(find.textContaining('Non mandare codici di verifica, password o dati di pagamento'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('marketplace-messages-send')));
+      await _settle(tester);
+      expect(backend.calls, contains('POST /marketplace/conversations/c1/messages'));
+      expect(find.text('Il codice: 482913'), findsOneWidget);
+      expect(find.byKey(reminder), findsNothing);
+      expect(find.byKey(const ValueKey('marketplace-messages-caution-sent')), findsOneWidget);
+    });
+
+    testWidgets('the latest message received with a contact has the reminder under it, once',
+        (tester) async {
+      final backend = _Backend((_) => _json({
+            'conversation': _conversation(),
+            'messages': [
+              _message('Scrivi a mario@example.com', mine: false, id: 'm1', caution: true),
+              _message('Mandami il codice', mine: false, id: 'm2', caution: true),
+              _message('Ciao', mine: false, id: 'm3', caution: false),
+              // A backend from before says nothing about it.
+              _message('Ciao ancora', mine: false, id: 'm4'),
+            ],
+          }));
+      await tester.pumpWidget(
+        _app(
+          MarketplaceConversationPage(
+            conversationId: 'c1',
+            listingTitle: 'Trasportino',
+            repository: backend.repository(),
+          ),
+        ),
+      );
+      await _settle(tester);
+
+      final notice = find.byKey(const ValueKey('marketplace-messages-caution-sent'));
+      expect(notice, findsOneWidget);
+      final top = tester.getTopLeft(notice).dy;
+      expect(top, greaterThan(tester.getTopLeft(find.text('Mandami il codice')).dy));
+      expect(top, lessThan(tester.getTopLeft(find.text('Ciao')).dy));
     });
 
     testWidgets('a closed conversation stays readable and has no field', (tester) async {

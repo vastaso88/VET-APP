@@ -912,10 +912,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'This summary is automatically generated and is not a diagnosis. Consult your veterinarian for clinical decisions.';
 
   @override
-  String get chatOwnHealthNotice =>
-      'Do not write details about your own health here: we only talk about your animal.';
-
-  @override
   String get chatSummaryEmpty => 'No summary available.';
 
   @override
@@ -7369,6 +7365,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Quokka puts two private individuals in touch and is not a party to the sale: the agreement, payment and delivery concern only you and the other person. We do not check ads, items or people and are not responsible for them. If you exchange contact details, you do so at your own risk: do not pay in advance to someone you do not know. If the conversation is reported, the Quokka team can read it.';
 
   @override
+  String get marketplaceMessagesCaution =>
+      'Do not send verification codes, passwords or payment details. Quokka is not a party to the agreement and does not protect payments.';
+
+  @override
   String get marketplaceMessagesHint => 'Write a message';
 
   @override
@@ -8168,7 +8168,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatFixedLine =>
-      'Answers come from an AI, which can make mistakes. It does not replace the vet and does not handle emergencies: if in doubt, call the vet.';
+      'Answers come from an AI, which can make mistakes. It does not replace the vet and does not handle emergencies: if in doubt, call the vet. Do not write details about your own health.';
 
   @override
   String get authRegisterCheckEmailTitle => 'Check your email';

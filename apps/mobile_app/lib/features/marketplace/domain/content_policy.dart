@@ -29,8 +29,13 @@ final _web = RegExp(
 /// social handle.
 bool containsContactDetails(String? text) {
   if (text == null || text.isEmpty) return false;
-  return _email.hasMatch(text) ||
-      _handle.hasMatch(text) ||
-      _web.hasMatch(text) ||
-      _phone.hasMatch(text);
+  return containsAddress(text) || _phone.hasMatch(text);
 }
+
+/// An e-mail, a web address or a social handle.
+bool containsAddress(String text) =>
+    _email.hasMatch(text) || _handle.hasMatch(text) || _web.hasMatch(text);
+
+/// Every row of digits long enough to be a phone number.
+Iterable<String> phoneCandidates(String text) =>
+    _phone.allMatches(text).map((match) => match.group(0)!);

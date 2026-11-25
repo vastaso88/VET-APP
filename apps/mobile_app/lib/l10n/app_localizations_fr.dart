@@ -921,10 +921,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ce résumé est généré automatiquement et ne constitue pas un diagnostic. Pour toute décision clinique, consultez le vétérinaire.';
 
   @override
-  String get chatOwnHealthNotice =>
-      'N\'écrivez pas ici d\'informations sur votre propre santé : nous parlons seulement de votre animal.';
-
-  @override
   String get chatSummaryEmpty => 'Aucun résumé disponible.';
 
   @override
@@ -7387,7 +7383,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get permMicrophoneWhy =>
-      'Le microphone sert à dicter les messages du chat : vous parlez et la reconnaissance vocale de votre téléphone les transforme en texte. Quokka ne reçoit que le texte, jamais l\'audio. La reconnaissance vocale est assurée par le système de votre téléphone (Google ou Apple), qui peut utiliser ses propres serveurs selon ses propres règles.';
+      'Le microphone sert à dicter les messages de la conversation : vous parlez et la reconnaissance vocale de votre téléphone les transforme en texte. Quokka ne reçoit que le texte, jamais l\'audio. La reconnaissance vocale est assurée par le système de votre téléphone (Google ou Apple), qui peut utiliser ses propres serveurs selon ses propres règles.';
 
   @override
   String get permMicrophoneRefuse =>
@@ -7456,6 +7452,10 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get marketplaceMessagesSafetyNotice =>
       'Quokka met en relation deux particuliers et n\'est pas partie à la vente : l\'accord, le paiement et la remise ne concernent que vous et l\'autre personne. Nous ne vérifions ni les annonces, ni les objets, ni les personnes, et n\'en répondons pas. Si vous échangez vos coordonnées, c\'est sous votre responsabilité : ne payez pas à l\'avance quelqu\'un que vous ne connaissez pas. Si la conversation est signalée, l\'équipe de Quokka peut la lire.';
+
+  @override
+  String get marketplaceMessagesCaution =>
+      'N\'envoyez ni codes de vérification, ni mots de passe, ni données de paiement. Quokka n\'est pas partie à l\'accord et ne protège pas les paiements.';
 
   @override
   String get marketplaceMessagesHint => 'Écrire un message';
@@ -8264,7 +8264,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get chatFixedLine =>
-      'C\'est une IA qui répond, et elle peut se tromper. Elle ne remplace pas le vétérinaire et ne gère pas les urgences : dans le doute, appelez-le.';
+      'C\'est une IA qui répond, et elle peut se tromper. Elle ne remplace pas le vétérinaire et ne gère pas les urgences : dans le doute, appelez-le. N\'écrivez pas d\'informations sur votre propre santé.';
 
   @override
   String get authRegisterCheckEmailTitle => 'Vérifiez votre e-mail';

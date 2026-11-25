@@ -13,7 +13,7 @@ import 'package:vet_app_mobile/l10n/l10n.dart';
 /// answers and can be wrong and that the app does not handle emergencies.
 void main() {
   const line = "Risponde un'IA e può sbagliare. Non sostituisce il veterinario e non gestisce "
-      'le urgenze: nel dubbio, chiamalo.';
+      'le urgenze: nel dubbio, chiamalo. Non scrivere dati sulla tua salute.';
 
   testWidgets('the fixed line sits under the writing field', (tester) async {
     await tester.binding.setSurfaceSize(const Size(400, 1400));
@@ -35,6 +35,12 @@ void main() {
     final composerBottom = tester.getBottomLeft(find.byType(ChatComposer)).dy;
     final lineTop = tester.getTopLeft(find.byType(ChatFixedLine)).dy;
     expect(lineTop, greaterThanOrEqualTo(composerBottom));
+
+    // Still there while the owner types: not about the person's own health (Anthropic's rules
+    // for products minors may use, docs/compliance/08 point 57).
+    await tester.enterText(find.byType(TextField), 'ho mal di testa');
+    await tester.pump();
+    expect(find.textContaining('dati sulla tua salute'), findsOneWidget);
   });
 
   testWidgets('where there is no writing field there is no line under it', (tester) async {

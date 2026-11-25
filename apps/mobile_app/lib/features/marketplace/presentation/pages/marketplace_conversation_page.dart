@@ -14,6 +14,7 @@ import '../../../billing/data/billing_demo_store.dart';
 import '../../data/marketplace_messages_repository.dart';
 import '../../data/marketplace_unread_store.dart';
 import '../../domain/marketplace_conversation.dart';
+import '../../domain/message_caution.dart';
 import '../widgets/messages_safety_notice.dart';
 import 'marketplace_info_page.dart';
 
@@ -307,6 +308,8 @@ class _MarketplaceConversationPageState extends State<MarketplaceConversationPag
       );
     }
     final reversed = _messages.reversed.toList();
+    // One reminder, under the latest message that needs it, whoever wrote it.
+    final cautionAt = reversed.indexWhere((message) => message.caution);
     return Column(
       children: [
         Expanded(
@@ -323,7 +326,19 @@ class _MarketplaceConversationPageState extends State<MarketplaceConversationPag
                   child: MessagesSafetyNotice(),
                 );
               }
-              return _MessageBubble(message: reversed[index]);
+              final bubble = _MessageBubble(message: reversed[index]);
+              if (index != cautionAt) return bubble;
+              return Column(
+                children: [
+                  bubble,
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: MessageCautionNotice(
+                      key: ValueKey('marketplace-messages-caution-sent'),
+                    ),
+                  ),
+                ],
+              );
             },
           ),
         ),
@@ -358,29 +373,45 @@ class _MarketplaceConversationPageState extends State<MarketplaceConversationPag
         AppSpacing.sm,
         AppSpacing.sm,
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: TextField(
-              key: const ValueKey('marketplace-messages-field'),
-              controller: _controller,
-              minLines: 1,
-              maxLines: 4,
-              maxLength: _maxMessageLength,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                hintText: context.l10n.marketplaceMessagesHint,
-                counterText: '',
-              ),
-            ),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _controller,
+            builder: (context, value, _) => messageNeedsCaution(value.text)
+                ? const Padding(
+                    padding: EdgeInsets.only(bottom: AppSpacing.xs),
+                    child: MessageCautionNotice(
+                      key: ValueKey('marketplace-messages-caution-writing'),
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ),
-          IconButton(
-            key: const ValueKey('marketplace-messages-send'),
-            tooltip: context.l10n.marketplaceMessagesSend,
-            onPressed: _busy ? null : _send,
-            color: AppColors.primary,
-            icon: const Icon(Icons.send_rounded),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: TextField(
+                  key: const ValueKey('marketplace-messages-field'),
+                  controller: _controller,
+                  minLines: 1,
+                  maxLines: 4,
+                  maxLength: _maxMessageLength,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: InputDecoration(
+                    hintText: context.l10n.marketplaceMessagesHint,
+                    counterText: '',
+                  ),
+                ),
+              ),
+              IconButton(
+                key: const ValueKey('marketplace-messages-send'),
+                tooltip: context.l10n.marketplaceMessagesSend,
+                onPressed: _busy ? null : _send,
+                color: AppColors.primary,
+                icon: const Icon(Icons.send_rounded),
+              ),
+            ],
           ),
         ],
       ),

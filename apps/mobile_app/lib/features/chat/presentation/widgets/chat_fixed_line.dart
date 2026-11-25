@@ -4,7 +4,8 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../l10n/l10n.dart';
 
 /// The fixed line under the writing field (docs/compliance/22 §2): an AI answers and
-/// can be wrong, it does not replace the vet, the app does not handle emergencies. The
+/// can be wrong, it does not replace the vet, the app does not handle emergencies, and
+/// nobody writes about their own health (docs/compliance/08 point 57, art. 9 GDPR). The
 /// only notice of the conversation (the first chat has its own screen; every answer says
 /// "Generato da IA"): always there, never dismissed, and at the top of what is exported.
 class ChatFixedLine extends StatelessWidget {

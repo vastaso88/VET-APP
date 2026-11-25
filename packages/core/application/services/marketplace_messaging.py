@@ -13,7 +13,10 @@ so the rules do not depend on the app:
   plan, or kept out by the team): the refusal looks like any other unavailable
   ad, so whether someone pays is never revealed;
 * someone the team kept out of the Mercatino reads but does not write, and is
-  told why ([MarketplaceRestrictedError]).
+  told why ([MarketplaceRestrictedError]);
+* what nobody can see in a text is taken out before saving and before showing it,
+  and a message with a contact or a code says so (`caution`), never blocked: see
+  domain/marketplace/message_text.py.
 """
 
 from collections.abc import Callable
@@ -29,6 +32,7 @@ from packages.core.application.ports.marketplace_messaging_repository import (
 )
 from packages.core.domain.localization import translate
 from packages.core.domain.localized_errors import LocalizedValidationError
+from packages.core.domain.marketplace.message_text import clean_message_text, needs_caution
 from packages.core.domain.marketplace.messaging import (
     CONVERSATIONS_LIST_LIMIT,
     KEPT_AFTER_DECISION_DAYS,
@@ -81,6 +85,8 @@ class MessageView(BaseModel):
     body: str
     mine: bool
     created_at: datetime
+    # The text carries a contact or a code: the app adds a reminder. Computed, not kept.
+    caution: bool = False
 
 
 class ThreadView(BaseModel):
@@ -279,7 +285,7 @@ class MarketplaceMessagingService:
 
     @staticmethod
     def _clean(text: str) -> str:
-        body = text.strip()
+        body = clean_message_text(text)
         if not body:
             raise LocalizedValidationError("marketplace_message_empty", detail="message is empty")
         if len(body) > MESSAGE_MAX_LENGTH:
@@ -403,11 +409,13 @@ class MarketplaceMessagingService:
 
     @staticmethod
     def _message_view(message: MarketplaceMessage, user_id: str) -> MessageView:
+        body = clean_message_text(message.body)
         return MessageView(
             id=message.id,
-            body=message.body,
+            body=body,
             mine=message.sender_id == user_id,
             created_at=message.created_at,
+            caution=needs_caution(body),
         )
 
 
@@ -478,7 +486,7 @@ class MarketplaceMessagingModerationService:
             "messages": [
                 {
                     "id": message.id,
-                    "body": message.body,
+                    "body": clean_message_text(message.body),
                     "created_at": message.created_at.isoformat(),
                     "role": conversation.role_of(message.sender_id) if conversation else None,
                 }

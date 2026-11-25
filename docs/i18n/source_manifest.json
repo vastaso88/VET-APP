@@ -16331,7 +16331,7 @@
       "en": "1a8f4d32988f2395e34055cba8d2f413c3fd43b64985592a6bedb226cd92a444",
       "es": "f1dae0e504fbe2ef2db9c255725f5eaf64645c04b2f0c9a13f649f69a473dd79",
       "de": "6e13675bba88d1ebf73be9fd7e57d627c769cb45219a7475aa0e357a6309a7cc",
-      "fr": "25ae7475a10e641812d0e1188bc99f4a219e3cd9347849b77d27af4264e7ae4e"
+      "fr": "68e4d5ac184d320094ba001be2571ea39897797bdc67d1ecc694a6803957b444"
     }
   },
   "ui:permMicrophoneRefuse": {
@@ -20979,12 +20979,12 @@
     }
   },
   "ui:chatFixedLine": {
-    "source": "0148ad73b48ef778653ec8a66f94e7647e03584983adf97d5bf5d4c45f5e9c9b",
+    "source": "4a6095706a4fe909e22155d1f367197df2c805694a815eb5ffbeee7fe3da0eb4",
     "targets": {
-      "en": "821a952ecd7f26c6b14b56bb99dcf702cb4ae2efacfb4eae948a8f512154aceb",
-      "es": "3199a4ebd3e8c9a95a30db21f6704ba0b497cf358b1eecd5712eda3b9feb3679",
-      "de": "294bbf7f3ea2885dc563e94189e91c2d7366e977dcfb31bfc2ab9787694590f5",
-      "fr": "89506c9d73581d03d8dd304e1f9f952876a80cd4844bc6ad6299692403c14763"
+      "en": "fa1e6c91ef35ed94f064aa34e2eee6bf9f77514bd4139e0941900fc4c8c1b280",
+      "es": "970f4ca2ab0b44b5e849df7f020b24de7d5fd0ebe4d1890da1d96417668553fe",
+      "de": "07a0d08d447617c0e631ac2f3d8eb4ba6479233093b0194fb1c1eaa9824ca7dd",
+      "fr": "f10ff87a4907f57bd8e34cfe856e7f6daee8e464770acd01a2ba14f36c0306f2"
     }
   },
   "ui:marketplaceContentFoodTitle": {
@@ -21948,6 +21948,15 @@
       "es": "2f3606e9453358fe1c25ea3f719e672b3a81fd109e3ae2e6aa6cd2223278e840",
       "de": "292d17f501533430f8cd15f625c51940cd04e4ede69eb48b487f5bca878db181",
       "fr": "782bd79a6786c78038648d368415c0e9a1fdc10f88e8cecdf5d7d8d30f336c75"
+    }
+  },
+  "ui:marketplaceMessagesCaution": {
+    "source": "996ab2db47379db8a92f4872c0f34b41a53a019149485fae65cf1ac0654c76c1",
+    "targets": {
+      "en": "a53a557e991ef79f60d74b907e55b4deeff6610d69d3830654ac17a5405d1f7f",
+      "es": "6ef24dcd3741ba26813e20bf5590c9a56a6de4e7e97d9f6bc23583300f17549c",
+      "de": "ff080a7b29553a0bf06847a6ce0b863add4da5c69ee0d932d66d835a20dbc2c2",
+      "fr": "d798de67910e28d9e5f389576c15ef13c3c31478283c4dd0f4488cd6c7bba0c8"
     }
   }
 }

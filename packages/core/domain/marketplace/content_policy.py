@@ -55,14 +55,19 @@ _WEB = re.compile(
 def contains_contact_details(*texts: str | None) -> bool:
     """True when any text carries a phone number, an e-mail, a web address or
     a social handle."""
-    for text in texts:
-        if not text:
-            continue
-        if _EMAIL.search(text) or _HANDLE.search(text) or _WEB.search(text):
-            return True
-        if _PHONE.search(text):
-            return True
-    return False
+    return any(contains_address(text) or _PHONE.search(text) for text in texts if text)
+
+
+def contains_address(text: str) -> bool:
+    """An e-mail, a web address or a social handle."""
+    if "@" in text and (_EMAIL.search(text) or _HANDLE.search(text)):
+        return True
+    return ("." in text or "://" in text) and bool(_WEB.search(text))
+
+
+def phone_candidates(text: str) -> list[str]:
+    """Every row of digits long enough to be a phone number."""
+    return [match.group() for match in _PHONE.finditer(text)]
 
 
 # Normalised whole words (lowercase, no accents), it/en/es/de/fr. Generic

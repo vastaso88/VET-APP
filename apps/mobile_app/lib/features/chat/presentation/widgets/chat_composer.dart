@@ -293,15 +293,6 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
               style: const TextStyle(color: AppColors.danger, fontSize: 12),
             ),
           ],
-          // Next to where the owner types, always (Anthropic's rules for
-          // products minors may use, docs/compliance/08 point 57): the chat
-          // is about the animal, not the person's own health.
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            context.l10n.chatOwnHealthNotice,
-            key: const ValueKey('chat-own-health-notice'),
-            style: const TextStyle(color: AppColors.secondaryText, fontSize: 11, height: 1.3),
-          ),
           const SizedBox(height: AppSpacing.sm),
           Row(
             children: [

@@ -918,10 +918,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Este resumen se genera automáticamente y no es un diagnóstico. Consulta al veterinario para decisiones clínicas.';
 
   @override
-  String get chatOwnHealthNotice =>
-      'No escribas aquí datos sobre tu salud: aquí hablamos solo de tu animal.';
-
-  @override
   String get chatSummaryEmpty => 'No hay resumen disponible.';
 
   @override
@@ -7419,6 +7415,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Quokka pone en contacto a dos particulares y no es parte de la compraventa: el acuerdo, el pago y la entrega solo conciernen a ti y a la otra persona. No revisamos anuncios, objetos ni personas, y no respondemos de ellos. Si intercambias datos de contacto, lo haces bajo tu responsabilidad: no pagues por adelantado a quien no conoces. Si la conversación se denuncia, el equipo de Quokka puede leerla.';
 
   @override
+  String get marketplaceMessagesCaution =>
+      'No envíes códigos de verificación, contraseñas ni datos de pago. Quokka no es parte del acuerdo y no protege los pagos.';
+
+  @override
   String get marketplaceMessagesHint => 'Escribe un mensaje';
 
   @override
@@ -8220,7 +8220,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get chatFixedLine =>
-      'Responde una IA y puede equivocarse. No sustituye al veterinario ni gestiona urgencias: ante la duda, llámalo.';
+      'Responde una IA y puede equivocarse. No sustituye al veterinario ni gestiona urgencias: ante la duda, llámalo. No escribas datos sobre tu salud.';
 
   @override
   String get authRegisterCheckEmailTitle => 'Revisa tu correo';

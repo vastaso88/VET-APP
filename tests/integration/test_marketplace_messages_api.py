@@ -4,6 +4,7 @@ service role, so these checks are the only protection."""
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable, Iterator
 from datetime import timedelta
 from uuid import uuid4
@@ -17,7 +18,7 @@ from packages.core.application.ports.auth_provider import AuthenticatedUser
 from packages.core.application.services.export_account_data import ExportAccountDataInput
 from packages.core.domain.common.entity import utc_now
 from packages.core.domain.geo.models import Coordinates
-from packages.core.domain.marketplace.messaging import MESSAGE_MAX_LENGTH
+from packages.core.domain.marketplace.messaging import MESSAGE_MAX_LENGTH, MarketplaceMessage
 from packages.core.domain.marketplace.models import ListingStatus, MarketplaceListing
 from packages.core.domain.subscription.limits import MAX_NEW_MARKETPLACE_CONVERSATIONS_PER_DAY
 from packages.core.domain.subscription.models import Subscription
@@ -646,3 +647,149 @@ def test_messages_are_throttled_through_both_doors_with_one_count(
     )
     assert other_door.status_code == 429
     assert "Retry-After" in other_door.headers
+
+
+# -- hidden characters, contacts and codes (F27) --------------------------
+
+
+def test_a_contact_or_a_code_passes_with_a_caution(client: TestClient, act_as: SwitchUser) -> None:
+    buyer, seller, _ = _people()
+    act_as(buyer)
+    first = client.post(
+        f"/marketplace/listings/{_ad(seller)}/conversations",
+        json={"text": "Scrivimi a mario@example.com"},
+    )
+    assert first.status_code == 200
+    conversation_id = first.json()["conversation"]["id"]
+    url = f"/marketplace/conversations/{conversation_id}"
+    assert first.json()["message"]["caution"] is True
+
+    act_as(seller)
+    code = client.post(f"{url}/messages", json={"text": "Mandami il codice di verifica"})
+    plain = client.post(f"{url}/messages", json={"text": "Va bene il 25/11/2026 alle 10:30?"})
+    assert (code.status_code, code.json()["message"]["caution"]) == (200, True)
+    assert (plain.status_code, plain.json()["message"]["caution"]) == (200, False)
+
+    # The one who reads is warned too, with a yes or no and nothing else.
+    act_as(buyer)
+    messages = client.get(url).json()["messages"]
+    assert [(m["body"], m["mine"], m["caution"]) for m in messages] == [
+        ("Scrivimi a mario@example.com", True, True),
+        ("Mandami il codice di verifica", False, True),
+        ("Va bene il 25/11/2026 alle 10:30?", False, False),
+    ]
+    assert set(messages[0]) == {"id", "body", "mine", "created_at", "caution"}
+
+
+def test_hidden_characters_are_taken_out_before_saving(
+    client: TestClient, act_as: SwitchUser
+) -> None:
+    buyer, seller, _ = _people()
+    listing_id = _ad(seller)
+    act_as(buyer)
+    hidden = "Ci\u200bao \u202e<b>io</b>\u202c\x00\x07 \U0001f468\u200d\U0001f469"
+    clean = "Ciao <b>io</b> \U0001f468\u200d\U0001f469"
+    first = client.post(f"/marketplace/listings/{listing_id}/conversations", json={"text": hidden})
+    conversation_id = first.json()["conversation"]["id"]
+    again = client.post(
+        f"/marketplace/conversations/{conversation_id}/messages", json={"text": hidden}
+    )
+
+    assert first.json()["message"]["body"] == again.json()["message"]["body"] == clean
+    repository = get_container().marketplace_messaging_repository
+    assert [m.body for m in repository.list_messages(conversation_id, 10)] == [clean, clean]
+
+
+def test_a_message_of_hidden_characters_only_is_empty(
+    client: TestClient, act_as: SwitchUser
+) -> None:
+    buyer, seller, _ = _people()
+    listing_id = _ad(seller)
+    act_as(buyer)
+    url = f"/marketplace/listings/{listing_id}/conversations"
+    assert client.post(url, json={"text": "\u200b\u2060 \u202e"}).status_code == 400
+    repository = get_container().marketplace_messaging_repository
+    assert repository.find_conversation(listing_id, buyer) is None, "no conversation, no slot used"
+
+    conversation_id = _open(client, act_as, buyer, listing_id)
+    sent = client.post(
+        f"/marketplace/conversations/{conversation_id}/messages", json={"text": "\ufeff\u3164"}
+    )
+    assert sent.status_code == 400
+    assert len(repository.list_messages(conversation_id, 10)) == 1
+
+
+def test_an_older_message_is_cleaned_when_it_is_shown(
+    client: TestClient, act_as: SwitchUser, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    buyer, seller, stranger = _people()
+    conversation_id = _open(client, act_as, buyer, _ad(seller))
+    repository = get_container().marketplace_messaging_repository
+    repository.add_message(
+        MarketplaceMessage(
+            conversation_id=conversation_id,
+            sender_id=buyer,
+            body="Il nu\u200bmero \u202e\u00e8 333\u200b1234567",
+        )
+    )
+    url = f"/marketplace/conversations/{conversation_id}"
+    act_as(seller)
+    shown = client.get(url).json()["messages"][-1]
+    assert (shown["body"], shown["caution"]) == ("Il numero \u00e8 3331234567", True)
+
+    # User B: the same answer as for a conversation that does not exist.
+    act_as(stranger)
+    for response in (
+        client.get(url),
+        client.post(f"{url}/messages", json={"text": "333 1234567"}),
+    ):
+        assert response.status_code == 404
+        assert "caution" not in response.text and "3331234567" not in response.text
+
+    # The team reads it clean too, and only the team.
+    act_as(seller)
+    client.post(f"{url}/report", json={"reason": "scam"})
+    report = repository.find_report(conversation_id, seller)
+    assert report is not None
+    detail_url = f"/admin/moderation/marketplace_messages/{report.id}"
+    monkeypatch.setattr(
+        "apps.api.routes.admin_common._configured_admin_emails",
+        lambda: frozenset({"admin-1@example.com"}),
+    )
+    for person in (stranger, seller):
+        act_as(person)
+        assert client.get(detail_url).status_code == 403
+    act_as("admin-1")
+    detail = client.get(detail_url).json()["item"]
+    assert detail["messages"][-1]["body"] == "Il numero \u00e8 3331234567"
+
+
+def test_the_text_of_a_message_is_never_logged_nor_given_back_in_a_refusal(
+    client: TestClient, act_as: SwitchUser, caplog: pytest.LogCaptureFixture
+) -> None:
+    buyer, seller, _ = _people()
+    listing_id = _ad(seller)
+    secret = "codice 482913 mario@example.com"
+    with caplog.at_level(logging.DEBUG):
+        conversation_id = _open(client, act_as, buyer, listing_id)
+        url = f"/marketplace/conversations/{conversation_id}"
+        assert client.post(f"{url}/messages", json={"text": secret}).status_code == 200
+        assert client.get(url).status_code == 200
+        too_long = client.post(f"{url}/messages", json={"text": secret * 100})
+        missing = client.post("/marketplace/conversations/nope/messages", json={"text": secret})
+    assert (too_long.status_code, missing.status_code) == (422, 404)
+    assert "482913" not in too_long.text + missing.text
+    assert "482913" not in caplog.text and "mario@example.com" not in caplog.text
+
+
+def test_half_a_surrogate_pair_is_not_an_error_of_the_server(
+    client: TestClient, act_as: SwitchUser
+) -> None:
+    buyer, seller, _ = _people()
+    conversation_id = _open(client, act_as, buyer, _ad(seller))
+    response = client.post(
+        f"/marketplace/conversations/{conversation_id}/messages",
+        content=b'{"text": "ci\\ud800ao"}',
+        headers={"content-type": "application/json"},
+    )
+    assert response.status_code in (200, 422)

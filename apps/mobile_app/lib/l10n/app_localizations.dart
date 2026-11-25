@@ -1634,12 +1634,6 @@ abstract class AppLocalizations {
   /// **'Questo riassunto è generato automaticamente e non è una diagnosi. Per decisioni cliniche consulta il veterinario.'**
   String get chatSummaryDisclaimer;
 
-  /// No description provided for @chatOwnHealthNotice.
-  ///
-  /// In it, this message translates to:
-  /// **'Non scrivere qui dati sulla tua salute: parliamo solo del tuo animale.'**
-  String get chatOwnHealthNotice;
-
   /// No description provided for @chatSummaryEmpty.
   ///
   /// In it, this message translates to:
@@ -12320,6 +12314,12 @@ abstract class AppLocalizations {
   /// **'Quokka mette in contatto due privati e non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e l\'altra persona. Non verifichiamo annunci, oggetti o persone e non ne rispondiamo. Se scambi i tuoi contatti, lo fai sotto la tua responsabilità: non pagare in anticipo a chi non conosci. Se la conversazione viene segnalata, il team di Quokka può leggerla.'**
   String get marketplaceMessagesSafetyNotice;
 
+  /// No description provided for @marketplaceMessagesCaution.
+  ///
+  /// In it, this message translates to:
+  /// **'Non mandare codici di verifica, password o dati di pagamento. Quokka non è parte dell\'accordo e non protegge i pagamenti.'**
+  String get marketplaceMessagesCaution;
+
   /// No description provided for @marketplaceMessagesHint.
   ///
   /// In it, this message translates to:
@@ -13637,7 +13637,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatFixedLine.
   ///
   /// In it, this message translates to:
-  /// **'Risponde un\'IA e può sbagliare. Non sostituisce il veterinario e non gestisce le urgenze: nel dubbio, chiamalo.'**
+  /// **'Risponde un\'IA e può sbagliare. Non sostituisce il veterinario e non gestisce le urgenze: nel dubbio, chiamalo. Non scrivere dati sulla tua salute.'**
   String get chatFixedLine;
 
   /// No description provided for @authRegisterCheckEmailTitle.
