@@ -159,6 +159,14 @@ def test_local_services_places_flow(monkeypatch: pytest.MonkeyPatch) -> None:
     assert empty.json()["context"]["coverage_level"] == "live"
 
     monkeypatch.setattr(get_container().settings, "radar_live_search_enabled", True)
+    # Switched on but no server configured: still off (no public server by default).
+    still_empty = client.get(
+        "/local-services/places", params={"latitude": 45.4642, "longitude": 9.19}
+    )
+    assert still_empty.json()["places"] == []
+    monkeypatch.setattr(
+        get_container().settings, "overpass_base_url", "https://overpass.example/api/interpreter"
+    )
     response = client.get("/local-services/places", params={"latitude": 45.4642, "longitude": 9.19})
 
     assert response.status_code == 200

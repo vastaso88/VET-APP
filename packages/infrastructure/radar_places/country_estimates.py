@@ -8,6 +8,12 @@ minutes, Overture in 3 minutes 11 seconds. The other countries scale that
 by population, area and how well each source covers the country; every
 figure is an estimate, good to about +/-50%, and the first `--dry-run` of
 each country replaces it with a measurement.
+
+Overture was measured on 2026-11-26 (release 2026-11-18.0, dry runs) for
+Germany, France, Spain, the United Kingdom and Australia: places after the
+filters and minutes of download (`overture_measured`). Their MB are still
+places x the Italian row size. OSM is not measured for them: OSM imports
+are paused (docs/maps/COUNTRIES.md §2).
 """
 
 from dataclasses import dataclass
@@ -37,6 +43,8 @@ class CountryEstimate:
     overture_minutes: tuple[int, int]
     osm_minutes: tuple[int, int]
     measured: bool = False
+    # Overture places and minutes come from a dry run, OSM is still estimated.
+    overture_measured: bool = False
 
     @property
     def overture_mb(self) -> float:
@@ -55,11 +63,11 @@ class CountryEstimate:
 # not closed, duplicates merged), not raw rows.
 COUNTRY_ESTIMATES: dict[str, CountryEstimate] = {
     "IT": CountryEstimate("IT", 15_831, 8_069, (3, 4), (10, 15), measured=True),
-    "DE": CountryEstimate("DE", 30_000, 38_000, (2, 4), (12, 20)),
-    "FR": CountryEstimate("FR", 26_000, 22_000, (3, 5), (10, 18)),
-    "ES": CountryEstimate("ES", 20_000, 12_000, (3, 5), (12, 20)),
-    "GB": CountryEstimate("GB", 28_000, 22_000, (2, 4), (10, 30)),
-    "AU": CountryEstimate("AU", 11_000, 12_000, (6, 12), (8, 20)),
+    "DE": CountryEstimate("DE", 19_558, 38_000, (10, 10), (12, 20), overture_measured=True),
+    "FR": CountryEstimate("FR", 13_509, 22_000, (11, 11), (10, 18), overture_measured=True),
+    "ES": CountryEstimate("ES", 11_042, 12_000, (19, 19), (12, 20), overture_measured=True),
+    "GB": CountryEstimate("GB", 31_763, 22_000, (6, 6), (10, 30), overture_measured=True),
+    "AU": CountryEstimate("AU", 8_314, 12_000, (2, 2), (8, 20), overture_measured=True),
     "US": CountryEstimate("US", 130_000, 90_000, (20, 45), (45, 150)),
 }
 

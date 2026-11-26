@@ -33,7 +33,7 @@ import csv
 import sys
 from pathlib import Path
 
-from common import build_client  # type: ignore[import-not-found]
+from common import add_allow_production, build_client  # type: ignore[import-not-found]
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
@@ -87,12 +87,13 @@ def _rows(client: object, table: str) -> list[dict[str, object]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    add_allow_production(parser)
     parser.add_argument("--all-with-website", action="store_true")
     parser.add_argument("--city", action="append", default=[], help="limit to these towns")
     parser.add_argument("--out", default=".local/radar/exotic_candidates.csv")
     args = parser.parse_args()
 
-    client = build_client()
+    client = build_client(allow_production=args.allow_production)
     towns = {town.strip().lower() for town in args.city if town.strip()}
     selected: list[dict[str, str]] = []
     for table, source_of in (

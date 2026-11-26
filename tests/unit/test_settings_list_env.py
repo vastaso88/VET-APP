@@ -94,7 +94,8 @@ def test_defaults_are_unchanged() -> None:
         # Shelters reportable as missing from 2026-10-07 (owner's decision).
         "shelter",
     ]
-    assert len(settings.overpass_fallback_urls) == 2
+    # No public Overpass server by default since 2026-11-26.
+    assert settings.overpass_fallback_urls == []
 
 
 def test_values_passed_as_python_lists_are_untouched() -> None:

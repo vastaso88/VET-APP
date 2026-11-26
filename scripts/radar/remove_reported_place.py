@@ -25,7 +25,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from common import build_client, now_iso  # type: ignore[import-not-found]
+from common import add_allow_production, build_client, now_iso  # type: ignore[import-not-found]
 
 REASON_CODES = {
     "not_public": "non è un luogo pubblico o aperto al pubblico",
@@ -40,6 +40,7 @@ USER_SOURCE_NAME = "vetapp_users"
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    add_allow_production(parser)
     parser.add_argument("--report-id", help="id of a user report (place reported as missing)")
     parser.add_argument("--source", help="source of an imported place, e.g. overture")
     parser.add_argument("--source-id", help="the source's own id of that place")
@@ -65,7 +66,7 @@ def main() -> int:
         parser.error("indica --report-id oppure --source insieme a --source-id")
 
     reason = f"{args.reason_code}: {args.reason}".rstrip(": ")
-    client = build_client()
+    client = build_client(allow_production=args.allow_production)
     if by_report:
         found = (
             client.table("radar_user_reports")

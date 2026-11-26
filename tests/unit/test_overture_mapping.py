@@ -43,7 +43,7 @@ def test_category_match_is_exact() -> None:
     # "carpet_store" contains "pet_store": a substring match would import
     # every carpet shop in the country.
     assert overture_row_to_place(_row(category="carpet_store"), release="r") is None
-    assert overture_row_to_place(_row(category="dog_park"), release="r") is None
+    assert overture_row_to_place(_row(category="hot_dog_restaurant"), release="r") is None
     groomer = overture_row_to_place(_row(category="pet_groomer"), release="r")
     assert groomer is not None and groomer.place_type == "grooming"
 
@@ -132,3 +132,35 @@ def test_shelters_adoption_and_rescue_services_become_shelters() -> None:
     } == {"shelter"}
     # A "Canile ..." filed as a veterinarian is a shelter.
     assert place_type_for("veterinary", "Canile Esempio") == "shelter"
+
+
+def test_categories_added_on_2026_11_26() -> None:
+    from packages.infrastructure.radar_places.overture_mapping import OVERTURE_CATEGORIES
+
+    park = overture_row_to_place(
+        _row(category="dog_park", name="Hundeauslaufplatz Beispiel"), release="r"
+    )
+    assert park is not None and park.place_type == "dog_park" and park.species == ["dog"]
+    hospice = overture_row_to_place(_row(category="pet_hospice", name="Example"), release="r")
+    assert hospice is not None and hospice.place_type == "veterinary"
+    # Generic "pet service": the name decides when it states one kind.
+    groomer = overture_row_to_place(
+        _row(category="animal_or_pet_service", name="Example Dog Grooming"), release="r"
+    )
+    assert groomer is not None and groomer.place_type == "grooming"
+    plain = overture_row_to_place(_row(category="pet_care_service", name="Example"), release="r")
+    assert plain is not None and plain.place_type == "pet_sitting"
+    # Never promoted to veterinarian by the name alone.
+    vetlike = overture_row_to_place(
+        _row(category="animal_or_pet_service", name="Example Veterinary Clinic"), release="r"
+    )
+    assert vetlike is not None and vetlike.place_type == "pet_sitting"
+    # Still out: no radar kind fits, or the owner decided so.
+    for category in (
+        "pet_cemetery_and_crematorium_service",
+        "holistic_animal_care",
+        "pet_insurance",
+        "horse_boarding",
+        "horse_riding",
+    ):
+        assert category not in OVERTURE_CATEGORIES

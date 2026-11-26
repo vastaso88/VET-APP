@@ -6,6 +6,7 @@ never inside the API: they hold the service-role key and take minutes.
 
 from __future__ import annotations
 
+import argparse
 import os
 import sys
 from datetime import UTC, datetime
@@ -44,6 +45,11 @@ _use_system_certificates()
 
 BATCH_SIZE = 500
 
+# The production Supabase project. The radar scripts refuse to talk to it
+# unless the person running them says so with --allow-production: a local
+# .env points to production by default (docs/collaudo/00_metodo.md).
+PRODUCTION_SUPABASE_REF = "ywbuzgwbkrmkukkpysbz"
+
 # Bounding box of Italy, islands included. Stored with a completed
 # Italian import in `data_sources`, where the API looked for it before the
 # per-country table (`radar_country_coverage`) existed: other countries must
@@ -78,10 +84,30 @@ def now_iso() -> str:
     return datetime.now(UTC).isoformat()
 
 
-def build_client() -> Client:
+def add_allow_production(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--allow-production",
+        action="store_true",
+        help="needed to read or write the production Supabase project",
+    )
+
+
+def check_production_target(url: str, *, allow_production: bool) -> None:
+    """Exits before anything is sent when `url` is the production project
+    and --allow-production was not given."""
+    if PRODUCTION_SUPABASE_REF in url.lower() and not allow_production:
+        sys.exit(
+            "SUPABASE_URL è il progetto di produzione: mi fermo. Per il gemello di collaudo "
+            "imposta SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY con i suoi valori; per la "
+            "produzione, solo se deciso, aggiungi --allow-production."
+        )
+
+
+def build_client(*, allow_production: bool = False) -> Client:
     """Service-role client from SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY
     (environment or the local .env). Exits with a plain message when they
-    are missing rather than failing deep inside the first request."""
+    are missing rather than failing deep inside the first request, and
+    refuses the production project without `allow_production`."""
     _load_dotenv()
     url = os.environ.get("SUPABASE_URL", "").strip()
     key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").strip()
@@ -90,6 +116,7 @@ def build_client() -> Client:
             "Mancano SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY: impostale nel file .env "
             "(o come variabili d'ambiente) e rilancia. In alternativa usa --dry-run."
         )
+    check_production_target(url, allow_production=allow_production)
     from supabase import create_client
 
     return create_client(url, key)

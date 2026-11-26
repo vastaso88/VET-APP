@@ -18,6 +18,7 @@ from typing import Any
 from urllib.request import Request, urlopen
 
 from common import (  # type: ignore[import-not-found]
+    add_allow_production,
     build_client,
     delete_rows_not_imported_at,
     load_excluded_ids,
@@ -51,10 +52,11 @@ def download(dataset: MunicipalDataset) -> list[dict[str, Any]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    add_allow_production(parser)
     parser.add_argument("--dry-run", action="store_true", help="count only, write nothing")
     args = parser.parse_args()
 
-    client = None if args.dry_run else build_client()
+    client = None if args.dry_run else build_client(allow_production=args.allow_production)
     imported_at = now_iso()
     for dataset in MUNICIPAL_DATASETS:
         records = download(dataset)

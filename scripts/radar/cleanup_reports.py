@@ -18,7 +18,7 @@ import os
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from common import build_client  # type: ignore[import-not-found]
+from common import add_allow_production, build_client  # type: ignore[import-not-found]
 
 PENDING_MAX_AGE = timedelta(days=90)
 IDENTITY_RETENTION = timedelta(days=365)
@@ -26,10 +26,11 @@ IDENTITY_RETENTION = timedelta(days=365)
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    add_allow_production(parser)
     parser.add_argument("--dry-run", action="store_true", help="count only, change nothing")
     args = parser.parse_args()
 
-    client = build_client()
+    client = build_client(allow_production=args.allow_production)
     now = datetime.now(UTC)
 
     stale = (

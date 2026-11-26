@@ -17,7 +17,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from common import build_client  # type: ignore[import-not-found]
+from common import add_allow_production, build_client  # type: ignore[import-not-found]
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
@@ -48,10 +48,11 @@ def person_ids(client: object, table: str) -> list[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    add_allow_production(parser)
     parser.add_argument("--dry-run", action="store_true", help="count only, change nothing")
     args = parser.parse_args()
 
-    client = build_client()
+    client = build_client(allow_production=args.allow_production)
     total = 0
     for table in TABLES:
         ids = person_ids(client, table)

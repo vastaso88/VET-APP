@@ -1,11 +1,14 @@
 name: Radar places import
 
-# Refreshes the radar's offline catalog (Overture Maps + OpenStreetMap for
-# Italy) in Supabase. Needs two repository secrets, set by the owner in
+# Refreshes the radar's offline catalog (Overture Maps for Italy) in
+# Supabase. The OpenStreetMap step is paused (see below); the Italian OSM
+# rows already stored stay as they are. Needs two repository secrets, set by the owner in
 # Settings -> Secrets and variables -> Actions:
 #   RADAR_SUPABASE_URL                 e.g. https://<project-ref>.supabase.co
 #   RADAR_SUPABASE_SERVICE_ROLE_KEY    the project's secret (service-role) key
 # Without them the job stops at the first step and writes nothing.
+# The scripts refuse the production project unless --allow-production is
+# given: this job is the decided monthly refresh, so it passes it.
 
 on:
   schedule:
@@ -43,17 +46,14 @@ jobs:
       - name: Install dependencies
         run: uv sync
       - name: Import Overture places
-        run: uv run --with duckdb python scripts/radar/import_overture_places.py
-      - name: Import OpenStreetMap places
-        # Exit code 3 means "out of time, run me again": what was
-        # downloaded is kept on disk, so each attempt only adds to it.
-        run: |
-          for attempt in 1 2 3 4; do
-            uv run python scripts/radar/import_osm_places.py && exit 0
-            [ $? -eq 3 ] || exit 1
-          done
-          exit 1
+        run: uv run --with duckdb python scripts/radar/import_overture_places.py --allow-production
+      # OpenStreetMap step paused since 2026-11-26: no public Overpass server
+      # is in use for imports (the main one's robots.txt does not allow
+      # programs on /api/). It comes back only with a permitted data source,
+      # passed explicitly with --server. Existing OSM rows are not touched.
+      # - name: Import OpenStreetMap places
+      #   run: uv run python scripts/radar/import_osm_places.py --server <URL> --allow-production
       - name: Import municipal dog parks
-        run: uv run python scripts/radar/import_municipal_dog_parks.py
+        run: uv run python scripts/radar/import_municipal_dog_parks.py --allow-production
       - name: Apply report retention
-        run: uv run python scripts/radar/cleanup_reports.py
+        run: uv run python scripts/radar/cleanup_reports.py --allow-production

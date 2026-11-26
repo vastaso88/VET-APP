@@ -19,22 +19,35 @@ and reused for 24 hours, so a failed write does not mean downloading the
 country again. `--list-categories` prints the pet-looking categories a
 country has in the release, to check that the mapping in
 overture_mapping.py misses none; it writes nothing.
+
+Every request is written to `.local/radar/requests.log` (time, name,
+address, outcome; no content): the release catalogue read, and for each
+DuckDB query one line per file, method and answer, with the number of
+requests (DuckDB reads a Parquet file in many ranged requests). DuckDB
+names itself `QuokkaImport/1.0` like the rest of the script, does not
+retry, and a 403 or 429 stops the host for good (`host_fermati.json`,
+exit code 4). `--cache-dir` moves caches and log elsewhere (e.g. the main
+checkout's `.local/radar` when running from a worktree).
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import time
 from collections import Counter
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 from common import (  # type: ignore[import-not-found]
     ROOT_DIR,
+    add_allow_production,
     build_client,
     delete_rows_not_imported_at,
     legacy_bounds_for,
@@ -45,6 +58,13 @@ from common import (  # type: ignore[import-not-found]
     save_source,
     sum_country_counts,
     upsert_rows,
+)
+from request_log import (  # type: ignore[import-not-found]
+    LOG_NAME,
+    STOP_STATUSES,
+    HostStoppedError,
+    HostTurns,
+    log_request,
 )
 
 from packages.core.domain.geo.countries import RadarCountry  # noqa: E402
@@ -60,29 +80,142 @@ from packages.infrastructure.radar_places.overture_mapping import (  # noqa: E40
 STAC_CATALOG_URL = "https://stac.overturemaps.org/catalog.json"
 USER_AGENT = "QuokkaImport/1.0 (+https://quokkapet.net; import periodico)"
 LICENSE_DIR = ROOT_DIR / "docs" / "licenses"
-CACHE_DIR = ROOT_DIR / ".local" / "radar" / "overture"
+LOCAL_DIR = ROOT_DIR / ".local" / "radar"
+CACHE_DIR = LOCAL_DIR / "overture"
+# The bucket's own regional endpoint, so the host DuckDB talks to is known
+# (and was checked) in advance.
+S3_REGION = "us-west-2"
+S3_ENDPOINT = f"s3.{S3_REGION}.amazonaws.com"
+S3_HOST = f"overturemaps-{S3_REGION}.{S3_ENDPOINT}"
+HTTP_TIMEOUT_SECONDS = 120
+DUCKDB_THREADS = 4
 DEFAULT_CACHE_HOURS = 24
 ATTRIBUTION = "© Overture Maps Foundation — Places"
 
 
+def _refuse_stopped(host: str) -> None:
+    if reason := HostTurns(LOCAL_DIR).stopped_reason(host):
+        raise HostStoppedError(host, reason)
+
+
 def latest_release() -> str:
+    host = urlsplit(STAC_CATALOG_URL).netloc
+    turns = HostTurns(LOCAL_DIR)
+    _refuse_stopped(host)
+    time.sleep(turns.seconds_to_wait(host))
+    started = now_iso()
+    outcome: object
     catalog = Request(STAC_CATALOG_URL, headers={"User-Agent": USER_AGENT})
-    with urlopen(catalog, timeout=30) as response:
-        return str(json.load(response)["latest"])
+    try:
+        with urlopen(catalog, timeout=30) as response:
+            outcome = response.status
+            latest = str(json.load(response)["latest"])
+    except HTTPError as exc:
+        outcome = exc.code
+        raise
+    except (URLError, TimeoutError, OSError) as exc:
+        outcome = f"errore {type(exc).__name__}"
+        raise
+    finally:
+        turns.record(host)
+        log_request(
+            LOCAL_DIR / LOG_NAME,
+            user_agent=USER_AGENT,
+            url=STAC_CATALOG_URL,
+            outcome=outcome,
+            started=started,
+        )
+        if isinstance(outcome, int) and outcome in STOP_STATUSES:
+            turns.stop(host, f"HTTP {outcome}")
+            raise HostStoppedError(host, f"HTTP {outcome}")
+    return latest
 
 
 def _connect() -> Any:
     import duckdb
 
+    _refuse_stopped(S3_HOST)
     connection = duckdb.connect()
-    connection.execute("INSTALL httpfs; LOAD httpfs; SET s3_region='us-west-2';")
+    # INSTALL is a no-op when the extension is already there.
+    connection.execute("INSTALL httpfs; LOAD httpfs;")
+    connection.execute(
+        f"SET s3_region='{S3_REGION}'; SET s3_endpoint='{S3_ENDPOINT}'; SET http_retries=0;"
+        # No retry (a 429 must not be asked again): a longer timeout and fewer
+        # parallel reads instead, so a slow line does not abort the query.
+        f" SET http_timeout={HTTP_TIMEOUT_SECONDS}; SET threads={DUCKDB_THREADS};"
+    )
+    # Replaces DuckDB's own User-Agent on every request, s3:// paths included.
+    quoted_agent = "'" + USER_AGENT.replace("'", "") + "'"
+    connection.execute(
+        "CREATE SECRET quokka_agent "
+        f"(TYPE http, EXTRA_HTTP_HEADERS MAP {{'User-Agent': {quoted_agent}}})"
+    )
+    connection.execute("CALL enable_logging('HTTP')")
     return connection
 
 
+def _status_code(status: object) -> int | None:
+    """DuckDB writes an answer as e.g. 'PartialContent_206'."""
+    found = re.search(r"(\d{3})$", str(status or ""))
+    return int(found.group(1)) if found else None
+
+
+def log_duckdb_requests(connection: Any) -> None:
+    """Writes what DuckDB asked during the query: one line per file, method
+    and answer, with how many requests (ranged reads of one file are many).
+    A 403 or 429 stops the host."""
+    found = connection.execute(
+        "SELECT request.type, request.url, response.status, epoch(request.start_time) "
+        "FROM duckdb_logs_parsed('HTTP')"
+    ).fetchall()
+    groups: dict[tuple[str, str, object], list[float]] = {}
+    for method, url, status, started in found:
+        code = _status_code(status)
+        outcome: object = code if code is not None else "errore"
+        groups.setdefault((str(method), str(url), outcome), []).append(float(started or 0))
+    stopping: set[str] = set()
+    for (method, url, outcome), starts in groups.items():
+        log_request(
+            LOCAL_DIR / LOG_NAME,
+            user_agent=USER_AGENT,
+            url=url,
+            outcome=f"{method} {outcome}",
+            started=datetime.fromtimestamp(min(starts), UTC).isoformat(timespec="seconds"),
+            count=len(starts),
+        )
+        if isinstance(outcome, int) and outcome in STOP_STATUSES:
+            stopping.add(urlsplit(url).netloc)
+    for host in stopping:
+        HostTurns(LOCAL_DIR).stop(host, "HTTP 403/429 da DuckDB")
+    if stopping:
+        raise HostStoppedError(", ".join(sorted(stopping)), "HTTP 403/429")
+
+
+def _run_logged(sql: str) -> tuple[list[str], list[tuple[Any, ...]]]:
+    connection = _connect()
+    started = now_iso()
+    try:
+        cursor = connection.execute(sql)
+        columns = [description[0] for description in cursor.description]
+        return columns, cursor.fetchall()
+    except Exception as exc:
+        # A request that fails in the network (timeout) may leave no line in
+        # DuckDB's own log: the failed query gets one of its own.
+        log_request(
+            LOCAL_DIR / LOG_NAME,
+            user_agent=USER_AGENT,
+            url=f"https://{S3_HOST}/",
+            outcome=f"query interrotta: {type(exc).__name__}",
+            started=started,
+        )
+        raise
+    finally:
+        log_duckdb_requests(connection)
+
+
 def fetch_rows(release: str, country: RadarCountry) -> list[dict[str, Any]]:
-    cursor = _connect().execute(build_overture_query(release, country))
-    columns = [description[0] for description in cursor.description]
-    return [dict(zip(columns, row, strict=True)) for row in cursor.fetchall()]
+    columns, found = _run_logged(build_overture_query(release, country))
+    return [dict(zip(columns, row, strict=True)) for row in found]
 
 
 def list_categories(release: str, country: RadarCountry) -> list[tuple[str, int]]:
@@ -94,7 +227,7 @@ def list_categories(release: str, country: RadarCountry) -> list[tuple[str, int]
         f"AND bbox.ymin BETWEEN {box.min_latitude} AND {box.max_latitude})"
         for box in country.bounds
     )
-    cursor = _connect().execute(
+    _, found = _run_logged(
         f"""
         SELECT taxonomy.primary AS category, count(*) AS places
         FROM read_parquet(
@@ -107,7 +240,7 @@ def list_categories(release: str, country: RadarCountry) -> list[tuple[str, int]
         GROUP BY 1 ORDER BY 2 DESC
         """
     )
-    return [(str(name), int(count)) for name, count in cursor.fetchall()]
+    return [(str(name), int(count)) for name, count in found]
 
 
 def load_cached_rows(release: str, country: RadarCountry, max_age: timedelta) -> Any:
@@ -164,6 +297,7 @@ def write_license_manifest(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    add_allow_production(parser)
     parser.add_argument("--release", help="Overture release (default: the latest)")
     parser.add_argument("--country", default="IT", help="ISO code of the country (default IT)")
     parser.add_argument("--min-confidence", type=float, default=DEFAULT_MIN_CONFIDENCE)
@@ -179,9 +313,27 @@ def main() -> int:
     )
     parser.add_argument("--dry-run", action="store_true", help="count only, write nothing")
     parser.add_argument("--output", type=Path, help="also save the places as JSON (inspection)")
+    parser.add_argument(
+        "--cache-dir", type=Path, help="folder for cache and request log (default .local/radar)"
+    )
     args = parser.parse_args()
 
     country = parse_country(args.country)
+    global LOCAL_DIR, CACHE_DIR
+    if args.cache_dir:
+        LOCAL_DIR, CACHE_DIR = args.cache_dir, args.cache_dir / "overture"
+    try:
+        return _run(args, country)
+    except HostStoppedError as exc:
+        print(
+            f"Host fermato: {exc.host} ({exc.reason}). Non va richiesto di nuovo finché una "
+            "persona non decide: avvisare l'Orchestratore.",
+            file=sys.stderr,
+        )
+        return 4
+
+
+def _run(args: argparse.Namespace, country: RadarCountry) -> int:
     release = args.release or latest_release()
     if args.list_categories:
         print(f"Overture release {release}, {country.name}: categorie simili a pet/veterinari")
@@ -203,7 +355,7 @@ def main() -> int:
     else:
         print(f"Overture release {release}, {country.name}: {len(rows)} righe già scaricate")
 
-    client = None if args.dry_run else build_client()
+    client = None if args.dry_run else build_client(allow_production=args.allow_production)
     excluded = load_excluded_ids(client, OVERTURE_SOURCE_NAME) if client else frozenset()
     places = overture_rows_to_places(
         rows, release=release, min_confidence=args.min_confidence, excluded_source_ids=excluded

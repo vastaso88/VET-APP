@@ -473,6 +473,9 @@ def test_every_country_has_an_estimate_and_the_total_is_stated() -> None:
     assert not any(
         estimate.measured for code, estimate in COUNTRY_ESTIMATES.items() if code != "IT"
     )
+    # Overture dry runs of 2026-11-26; OSM of those countries is still an estimate.
+    measured = {code for code, item in COUNTRY_ESTIMATES.items() if item.overture_measured}
+    assert measured == {"DE", "FR", "ES", "GB", "AU"}
     # Italy: ~9 MB per source (measured).
     assert COUNTRY_ESTIMATES["IT"].overture_mb == pytest.approx(9, abs=1)
     assert COUNTRY_ESTIMATES["IT"].osm_mb == pytest.approx(9, abs=1)
@@ -497,6 +500,7 @@ def test_osm_importer_lists_regions_and_dry_runs_from_the_cache(
 ) -> None:
     importer = _load_script("import_osm_places")
     monkeypatch.setattr(importer, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(importer, "LOCAL_DIR", tmp_path)
 
     monkeypatch.setattr(sys, "argv", ["import_osm_places.py", "--country", "DE", "--list-regions"])
     assert importer.main() == 0
@@ -531,6 +535,7 @@ def test_osm_importer_refuses_regions_of_another_country_and_empty_answers(
 ) -> None:
     importer = _load_script("import_osm_places")
     monkeypatch.setattr(importer, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(importer, "LOCAL_DIR", tmp_path)
 
     monkeypatch.setattr(
         sys, "argv", ["import_osm_places.py", "--country", "DE", "--regions", "IT-25"]
@@ -545,7 +550,11 @@ def test_osm_importer_refuses_regions_of_another_country_and_empty_answers(
     monkeypatch.setattr(
         sys,
         "argv",
-        ["import_osm_places.py", "--country", "DE", "--regions", "DE-HB", "--max-seconds", "1"],
+        [
+            "import_osm_places.py",
+            *("--country", "DE", "--regions", "DE-HB", "--max-seconds", "1"),
+            *("--server", "https://overpass.example/api/interpreter"),
+        ],
     )
     # An empty region from the cache is not trusted (wrong area code?): it is
     # asked again, and with no time budget the run stops cleanly to resume.

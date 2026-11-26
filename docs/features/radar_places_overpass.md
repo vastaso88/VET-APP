@@ -4,6 +4,8 @@ Pagina unica (`LocalEventsPage`, titolo "Vicino a me" dal 2026-10-04) che riunis
 
 Origine: il motore di ricerca su OpenStreetMap (`overpass_places_source.py`) è stato scritto da Roberto sul branch `roberto`. Cache per zona, API e schermata sono stati costruiti su `Francesco` il 2026-10-03. Parere legale: `docs/compliance/06_radar_mappe_sponsorizzazioni.md`.
 
+**Dal 2026-11-26**: nessun server Overpass è configurato (né per la ricerca in diretta né per gli import OSM, sospesi; le righe OSM italiane già salvate restano) e overpass-api.de non si usa: il suo robots.txt lo vieta ai programmi. Le parti sotto che descrivono quel server sono storiche. Dettagli in `docs/maps/COUNTRIES.md` §2.
+
 ## Da dove arrivano i dati (dal 2026-10-04)
 
 Il radar risponde dal nostro database. Due archivi aperti vengono importati periodicamente, fuori da Vercel, e uniti solo al momento della richiesta:

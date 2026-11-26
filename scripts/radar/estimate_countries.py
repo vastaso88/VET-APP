@@ -22,6 +22,12 @@ from packages.infrastructure.radar_places.country_estimates import (  # noqa: E4
 )
 
 
+def _span(minutes: tuple[int, int]) -> str:
+    """A measured time as one number (6), an estimate as a range (10-18)."""
+    low, high = minutes
+    return str(low) if low == high else f"{low}-{high}"
+
+
 def main() -> int:
     # The flags are emoji: the Windows console default (cp1252) cannot print them.
     sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
@@ -33,13 +39,19 @@ def main() -> int:
     for country in RADAR_COUNTRIES:
         estimate = estimate_for(country)
         low, high = overpass_requests(country)
-        note = " (misurato)" if estimate.measured else ""
+        note = (
+            " (misurato)"
+            if estimate.measured
+            else " (Overture misurato)"
+            if estimate.overture_measured
+            else ""
+        )
         print(
             f"| {country.flag} {country.code}{note} | {len(country.regions)} "
             f"| {estimate.overture_places:,} | {estimate.osm_places:,} "
             f"| {estimate.overture_mb:.0f} | {estimate.osm_mb:.0f} | {estimate.total_mb:.0f} "
-            f"| {estimate.overture_minutes[0]}-{estimate.overture_minutes[1]} "
-            f"| {estimate.osm_minutes[0]}-{estimate.osm_minutes[1]} | {low}-{high} |"
+            f"| {_span(estimate.overture_minutes)} "
+            f"| {_span(estimate.osm_minutes)} | {low}-{high} |"
         )
     total = total_database_mb()
     print(

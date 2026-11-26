@@ -156,9 +156,11 @@ class OverpassRadarPlacesSource:
         answer 429/504 under load, so one busy server must not make the
         whole radar unavailable. Bounded by one overall time budget so a
         slow chain cannot outlive the client's own timeout."""
+        if not self._settings.overpass_urls:
+            raise ProviderError("No Overpass server is configured.")
         deadline = time.monotonic() + _TOTAL_TIME_BUDGET_SECONDS
         last_error: ProviderError | None = None
-        for url in (self._settings.overpass_base_url, *self._settings.overpass_fallback_urls):
+        for url in self._settings.overpass_urls:
             for wait_seconds in (0.0, *_RATE_LIMIT_WAITS_SECONDS):
                 # 429 means "your slot frees up in a few seconds": waiting
                 # on the same server beats moving to a slower mirror.

@@ -8,6 +8,7 @@ from typing import Annotated, Any, Literal
 from pydantic import BeforeValidator, Field, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
+from packages.shared.config.external_hosts import forbidden_reason
 from packages.shared.http_identity import USER_AGENT
 
 _logger = logging.getLogger(__name__)
@@ -366,17 +367,13 @@ class Settings(BaseSettings):
     )
     radar_search_radius_km: float = Field(default=50.0, gt=0, alias="RADAR_SEARCH_RADIUS_KM")
     radar_freshness_ttl_hours: int = Field(default=168, gt=0, alias="RADAR_FRESHNESS_TTL_HOURS")
-    overpass_base_url: str = Field(
-        default="https://overpass-api.de/api/interpreter", alias="OVERPASS_BASE_URL"
-    )
+    # No Overpass server by default: no public instance is in use (the
+    # best known one, overpass-api.de, forbids /api/ to programs in its
+    # robots.txt and is refused below). With no server configured the live
+    # search stays off whatever RADAR_LIVE_SEARCH_ENABLED says.
+    overpass_base_url: str = Field(default="", alias="OVERPASS_BASE_URL")
     # Tried in order when the main interpreter is overloaded (429/504).
-    overpass_fallback_urls: StringList = Field(
-        default=[
-            "https://overpass.private.coffee/api/interpreter",
-            "https://overpass.kumi.systems/api/interpreter",
-        ],
-        alias="OVERPASS_FALLBACK_URLS",
-    )
+    overpass_fallback_urls: StringList = Field(default=[], alias="OVERPASS_FALLBACK_URLS")
     overpass_timeout_seconds: int = Field(
         default=40, ge=5, le=180, alias="OVERPASS_TIMEOUT_SECONDS"
     )
@@ -550,8 +547,32 @@ class Settings(BaseSettings):
             raise ValueError("RADAR_PLACES_PROVIDER must be openstreetmap_overpass")
         if self.radar_search_radius_km > self.overpass_max_radius_km:
             raise ValueError("RADAR_SEARCH_RADIUS_KM must not exceed OVERPASS_MAX_RADIUS_KM")
+        # Refused, not fatal: a leftover variable on a deploy must not stop
+        # the whole backend (the ADMIN_EMAILS lesson); the server is never used.
+        refused = [url for url in self._configured_overpass_urls() if forbidden_reason(url)]
+        if refused:
+            _logger.warning(
+                "settings: Overpass servers not allowed, ignored: %s",
+                ", ".join(f"{url} ({forbidden_reason(url)})" for url in refused),
+            )
 
         return self
+
+    def _configured_overpass_urls(self) -> tuple[str, ...]:
+        urls = (self.overpass_base_url, *self.overpass_fallback_urls)
+        return tuple(url.strip() for url in urls if url.strip())
+
+    @property
+    def overpass_urls(self) -> tuple[str, ...]:
+        """The Overpass servers to use, main one first: empty by default, and
+        a server on a forbidden host (packages/shared/config/external_hosts.py)
+        is never among them."""
+        return tuple(url for url in self._configured_overpass_urls() if not forbidden_reason(url))
+
+    @property
+    def radar_live_search_active(self) -> bool:
+        """Live search runs only when switched on AND a server is configured."""
+        return self.radar_live_search_enabled and bool(self.overpass_urls)
 
     @staticmethod
     def _require_fields(context: str, values: dict[str, str]) -> None:

@@ -19,13 +19,23 @@ from packages.core.domain.radar_places.models import OVERTURE_SOURCE_NAME, Radar
 from packages.core.domain.radar_places.person_names import is_person_only
 
 # Overture `taxonomy.primary` -> radar place type. Exact matches only: a
-# substring match on "pet_store" also catches "carpet_store". Dog parks
-# are left to OpenStreetMap, which knows ten times as many.
+# substring match on "pet_store" also catches "carpet_store".
+#
+# Added 2026-11-26 (Orchestrator, after `--list-categories` on DE, FR, ES,
+# GB, AU): dog parks (OSM imports are paused, Overture's are deduplicated
+# against OSM ones already stored), hospices (end-of-life care, veterinary),
+# and the two generic "pet service" categories, whose kind comes from the
+# name when it states one (see place_type_for). Left out because no radar
+# kind fits and a wrong label would mislead: pet cemeteries and crematoria,
+# holistic care (no evidence base, not a veterinarian), physical therapy,
+# transport, photography, insurance, animal cafes; horse categories stay
+# out by the owner's decision (2026-11-25).
 OVERTURE_CATEGORIES: dict[str, str] = {
     "veterinarian": "veterinary",
     "veterinary_care": "veterinary",
     "emergency_pet_hospital": "veterinary",
     "animal_hospital": "veterinary",
+    "pet_hospice": "veterinary",
     "pet_groomer": "grooming",
     "pet_store": "shop",
     "aquatic_pet_store": "shop",
@@ -39,7 +49,14 @@ OVERTURE_CATEGORIES: dict[str, str] = {
     "animal_shelter": "shelter",
     "pet_adoption": "shelter",
     "animal_rescue_service": "shelter",
+    "dog_park": "dog_park",
+    "animal_or_pet_service": "pet_sitting",
+    "pet_care_service": "pet_sitting",
 }
+
+# Catch-all categories: the type above is only the fallback, a name that
+# plainly states one kind of business (a groomer, a shop, ...) wins.
+GENERIC_SERVICE_CATEGORIES = frozenset({"animal_or_pet_service", "pet_care_service"})
 
 # Below this Overture's own confidence the sample held mislabelled
 # entries (a trade fair filed as a veterinarian, bare personal names).
@@ -48,12 +65,13 @@ DEFAULT_MIN_CONFIDENCE = 0.7
 OVERTURE_DEFAULT_LICENSE = "CDLA-Permissive-2.0"
 
 
-def place_type_for(category_type: str, name: str) -> str:
+def place_type_for(category_type: str, name: str, *, generic: bool = False) -> str:
     """The radar type of an Overture place: its category's, unless the
-    category says veterinarian and the name plainly says another kind of
-    business (and nothing veterinary), in the language of any supported
-    country (see radar_places/labels.py)."""
-    if category_type != "veterinary":
+    category says veterinarian (or is a generic "pet service" one) and the
+    name plainly says another kind of business (and nothing veterinary), in
+    the language of any supported country (see radar_places/labels.py). A
+    generic service is never promoted to veterinarian by its name alone."""
+    if category_type != "veterinary" and not generic:
         return category_type
     plain = fold(name)
     if VETERINARY_NAME_HINTS.search(plain):
@@ -106,12 +124,17 @@ def overture_row_to_place(
 ) -> RadarPlace | None:
     """None for anything not worth showing: unknown category, low
     confidence, closed, or without a name or position."""
-    category_type = OVERTURE_CATEGORIES.get(str(row.get("category") or ""))
+    category = str(row.get("category") or "")
+    category_type = OVERTURE_CATEGORIES.get(category)
     name = _text(row.get("name"))
     # Only facilities, never a person (possibly at a home address).
     if name is not None and is_person_only(name):
         return None
-    place_type = place_type_for(category_type, name) if category_type and name else None
+    place_type = (
+        place_type_for(category_type, name, generic=category in GENERIC_SERVICE_CATEGORIES)
+        if category_type and name
+        else None
+    )
     latitude, longitude = row.get("latitude"), row.get("longitude")
     confidence = row.get("confidence")
     if (

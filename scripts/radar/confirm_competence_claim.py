@@ -34,7 +34,7 @@ import uuid
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from common import build_client, now_iso  # type: ignore[import-not-found]
+from common import add_allow_production, build_client, now_iso  # type: ignore[import-not-found]
 
 GROUPS = ("reptile_amphibian", "bird", "small_mammal", "fish", "other")
 EVIDENCE_LABELS = {"website": "sito della struttura", "sign": "insegna", "other": "altro"}
@@ -146,6 +146,7 @@ def _import_checked(client: object, path: Path, *, dry_run: bool) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    add_allow_production(parser)
     parser.add_argument("--list", action="store_true", help="list the pending claims")
     parser.add_argument("--claim-id")
     parser.add_argument("--evidence-url", help="the practice's own page that states it")
@@ -161,7 +162,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    client = build_client()
+    client = build_client(allow_production=args.allow_production)
     if args.import_checked:
         return _import_checked(client, Path(args.import_checked), dry_run=args.dry_run)
     if args.list:
