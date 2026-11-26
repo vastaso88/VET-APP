@@ -80,11 +80,17 @@ Dopo lo spostamento: `primary` 163 → 112 usi (restano controlli, selezione, li
 
 ## Tema scuro
 
-Oggi l'app **non ha un tema scuro**: esiste solo `AppTheme.light()` e i token sono costanti `const`
-usate in centinaia di punti, quindi non cambiano a runtime. Con i colori tutti in un solo file, un tema
-scuro diventa un lavoro a sé (token resi dipendenti dal tema); non l'ho incluso in questa proposta.
+L'app segue l'impostazione chiaro/scuro del telefono (E6, 26/11/2026). I ruoli sono gli stessi;
+i valori sono due serie, `AppPalette.light` e `AppPalette.dark` (tabella del direttore artistico,
+giro 1 §7), e `AppColors.x` legge quella in uso. Restano uguali nei due temi: il fondo petrolio del
+logo (`brandDeep`/`brandPaper`), i colori sopra foto, video e mappe (`onMedia`, `scrim`, `AppColors.map`
+per ciò che si disegna sulle mappe, che restano chiare). Il colore d'identità di un animale e le
+categorie del radar si salvano come prima; in scuro si disegnano con `shown()`, appena più chiari dove
+il contrasto sul fondo scuro non arrivava a 3:1. Contrasti: `scripts/design/contrast_check.py`
+(sezioni DARK THEME). Un test (`test/theme/dark_theme_test.dart`) impedisce di scrivere un colore
+fisso fuori dai file dove serve e di tenere un colore in un campo.
 
 ## Come cambiare un colore in futuro
 
 Un punto solo: `app_colors.dart`. Se un colore nuovo serve, va aggiunto lì col suo ruolo
-(60, 30, 10, stato, media, categoria) e poi usato per nome.
+(60, 30, 10, stato, media, categoria), con il valore chiaro e quello scuro, e poi usato per nome.
