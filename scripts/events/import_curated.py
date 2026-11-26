@@ -11,6 +11,10 @@ project rules (packages/infrastructure/events/curated_events.py) and upserts the
 by `slug`. Nothing is written if even one event is invalid: fix the file and run
 again. To take an event off the app set its "status" to "rejected" in the file
 (rows are never deleted by this script).
+
+An event without "latitude"/"longitude" gets those of its town from the tables in
+scripts/events/gazetteer/ (built by build_gazetteer.py; one line per event says what was
+found). Coordinates written in the file always win.
 """
 
 from __future__ import annotations
@@ -34,6 +38,10 @@ from packages.infrastructure.events.curated_events import (  # noqa: E402
     load_curated_events,
     with_the_same_columns,
 )
+from packages.infrastructure.events.gazetteer import (  # noqa: E402
+    fill_missing_places,
+    load_gazetteer,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 # `data/` is git-ignored (private working notes); `scripts/events/curated/` is
@@ -42,6 +50,7 @@ DEFAULT_DIRECTORIES = [
     REPO_ROOT / "data" / "events" / "curated",
     Path(__file__).resolve().parent / "curated",
 ]
+DEFAULT_GAZETTEER = Path(__file__).resolve().parent / "gazetteer"
 
 
 def main() -> int:
@@ -60,6 +69,12 @@ def main() -> int:
         "--allow-examples",
         action="store_true",
         help="allow scripts/events/examples (FICTIONAL events, test database only)",
+    )
+    parser.add_argument(
+        "--gazetteer",
+        type=Path,
+        default=DEFAULT_GAZETTEER,
+        help="directory of the town tables <COUNTRY>.tsv (default: scripts/events/gazetteer)",
     )
     args = parser.parse_args()
 
@@ -82,6 +97,16 @@ def main() -> int:
             file=sys.stderr,
         )
         return 1
+
+    gazetteer = load_gazetteer(args.gazetteer)
+    if not len(gazetteer):
+        print(
+            f"Nessuna tabella dei comuni in {args.gazetteer}: coordinate solo dai file "
+            "(vedi scripts/events/build_gazetteer.py)."
+        )
+    events, notes = fill_missing_places(events, gazetteer)
+    for note in notes:
+        print(f"COORD   {note}")
 
     by_status = Counter(event.status for event in events)
     print(f"{len(events)} eventi validi in {len(directories)} cartelle ({dict(by_status)}).")
