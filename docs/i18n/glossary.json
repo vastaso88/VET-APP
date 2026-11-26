@@ -10,7 +10,6 @@
       "de": "Monitoring",
       "fr": "Suivi",
       "keys": [
-        "monitoringTitle",
         "petsDetailTabMonitoring"
       ],
       "note": "Pagina di peso, corporatura, curva di crescita e attività del cane. In tedesco resta 'Monitoring' per non confonderlo con 'Verlauf' (= Storico)."
@@ -69,7 +68,6 @@
       "de": "In meiner Nähe",
       "fr": "Près de chez moi",
       "keys": [
-        "homeNearbyTitle",
         "localEventsTitle",
         "activitiesNearbyTitle"
       ],

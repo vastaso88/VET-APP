@@ -21,9 +21,7 @@
   "commonYes": "Sí",
   "commonNo": "No",
   "commonLoading": "Cargando…",
-  "commonDone": "Hecho",
   "commonContinue": "Continuar",
-  "commonSearch": "Buscar",
   "commonShare": "Compartir",
   "languagePickerTitle": "Elige tu idioma",
   "languagePickerSubtitle": "Puedes cambiarlo cuando quieras en Ajustes.",
@@ -940,7 +938,6 @@
   "medicalTimelineCompleted": "Completado",
   "medicalTimelineReadyToSend": "Listo para enviar",
   "medicalTimelineAvailable": "Disponible",
-  "medicalUploadTitle": "Subir documento",
   "medicalUploadForPet": "Para {petName} · PDF, JPG o PNG",
   "@medicalUploadForPet": {
     "placeholders": {
@@ -964,83 +961,6 @@
   },
   "medicalUploadFailedDefaultReason": "Comprueba la conexión e inténtalo de nuevo.",
   "medicalUploadSaveLocalOnly": "Guardar solo en el teléfono",
-  "medicalUploadDemoSubtitle": "Sube un PDF, JPG o PNG y completa los metadatos.",
-  "medicalUploadDemoAction": "Detalle",
-  "medicalUploadDemoCardBody": "Subido correctamente y listo para revisar los metadatos.",
-  "medicalListTitle": "Informes",
-  "medicalListSubtitle": "Informes, notas y adjuntos de Moka en un archivo claro.",
-  "medicalListSyncTitle": "Sincronización de informes",
-  "medicalListSyncBody": "Recuperando documentos y metadatos de Supabase o de la fuente de demostración.",
-  "medicalListLoadErrorTitle": "No se pudo cargar el archivo",
-  "medicalListLoadErrorBody": "Comprueba la conexión y reintenta, o continúa con la demostración.",
-  "medicalListEmptyTitle": "Aún no hay documentos",
-  "medicalListEmptyBody": "Sube el primer informe para empezar tu archivo documental.",
-  "medicalListUploadFirst": "Subir el primer archivo",
-  "medicalListSummaryAllTitle": "{count} documentos activos",
-  "@medicalListSummaryAllTitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "medicalListSummaryPetTitle": "{count} documentos de {petName}",
-  "@medicalListSummaryPetTitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      },
-      "petName": {
-        "type": "String"
-      }
-    }
-  },
-  "medicalListSummaryAllBody": "1 informe listo para compartir, 1 prueba para revisar y 1 nota archivada.",
-  "medicalListSummaryPetBody": "Filtros activos en el perfil de {petName}. Abre los documentos útiles sin distracciones.",
-  "@medicalListSummaryPetBody": {
-    "placeholders": {
-      "petName": {
-        "type": "String"
-      }
-    }
-  },
-  "medicalListNextActionTitle": "Próxima acción",
-  "medicalListNextActionAllBody": "Abre el informe de vacunación de Moka y compártelo con Francesco.",
-  "medicalListNextActionPetBody": "Comparte el último documento de {petName} y conserva la nota en su perfil.",
-  "@medicalListNextActionPetBody": {
-    "placeholders": {
-      "petName": {
-        "type": "String"
-      }
-    }
-  },
-  "medicalListEmptyPetTitle": "No hay documentos para {petName}",
-  "@medicalListEmptyPetTitle": {
-    "placeholders": {
-      "petName": {
-        "type": "String"
-      }
-    }
-  },
-  "medicalListEmptyPetBody": "Cambia el filtro o sube un documento nuevo para esta mascota.",
-  "medicalListRemoveFilter": "Quitar filtro",
-  "medicalFilterAll": "Todos ({count})",
-  "@medicalFilterAll": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "medicalMetaType": "Tipo",
-  "medicalMetaDate": "Fecha",
-  "medicalMetaSource": "Fuente",
-  "medicalMetaFormat": "Formato",
-  "medicalStatePreviewPill": "Estado de vista previa",
-  "medicalStateLoadingPill": "Carga",
-  "medicalChecklistFormat": "Formato de archivo compatible",
-  "medicalChecklistMetadata": "Metadatos extraídos",
-  "medicalChecklistLinkedPet": "Vinculado a la mascota activa",
   "homeGreeting": "Buenos días",
   "homeAskQuokka": "Pregunta a Quokka",
   "homeAgendaTitle": "Tu calendario",
@@ -1057,8 +977,6 @@
   "homeNewsSubtitle": "Noticias del mundo de las mascotas seleccionadas para ti.",
   "homeNewsUnavailable": "Las noticias no están disponibles ahora. Inténtalo más tarde.",
   "homeNewsMore": "Descubrir más noticias",
-  "homeNearbyTitle": "Cerca de mí",
-  "homeSectionLoading": "Cargando…",
   "shellTabHome": "Inicio",
   "shellTabPets": "Animales",
   "shellTabActivities": "Actividades",
@@ -1180,9 +1098,6 @@
   "petsHabitatAviary": "Aviario",
   "petsHabitatGeneric": "Hábitat",
   "petsCreateTitle": "Crear un perfil de mascota",
-  "petsCreateLoading": "Preparando el formulario de creación…",
-  "petsCreateErrorTitle": "Formulario de creación no disponible",
-  "petsCreateErrorDefault": "Ahora mismo no se puede crear un nuevo perfil de mascota.",
   "petsCreateFormTitle": "Nuevo perfil",
   "petsCreateSubmit": "Guardar perfil",
   "petsCreateUnsyncedSnack": "El perfil se ha guardado en el teléfono, pero no en el servidor. Ábrelo desde la lista y toca Reintentar.",
@@ -1194,9 +1109,6 @@
       }
     }
   },
-  "petsEditLoading": "Cargando el formulario de edición…",
-  "petsEditErrorTitle": "Edición no disponible",
-  "petsEditErrorDefault": "No se puede abrir este perfil para editarlo.",
   "petsEditFormTitle": "Borrador del perfil",
   "petsEditSubmit": "Guardar cambios",
   "petsEditUnsyncedSnack": "Los cambios se han guardado en el teléfono, pero no en el servidor. Abre el perfil y toca Reintentar.",
@@ -1243,7 +1155,6 @@
   "petsFormOtherBreedHint": "Ej. cruce de caniche",
   "petsFormOtherSpeciesLabel": "¿Qué especie?",
   "petsFormOtherSpeciesHint": "Ej. nombre común o científico",
-  "petsFormDogSizeLabel": "Tamaño (opcional)",
   "petsFormDogSizeHint": "Selecciona un tamaño",
   "petsFormBirthDateLabel": "Fecha de nacimiento",
   "petsFormBirthDateHint": "dd/mm/aaaa",
@@ -1251,7 +1162,6 @@
   "petsFormBirthDateInvalid": "Fecha no válida (dd/mm/aaaa).",
   "petsFormBirthDateFuture": "La fecha de nacimiento no puede estar en el futuro.",
   "petsFormSexLabel": "Sexo",
-  "petsFormSexHint": "Seleccionar",
   "petsFormSexUnknown": "Desconocido",
   "petsFormWeightLabelKg": "Peso (opcional, kg)",
   "petsFormWeightLabelLb": "Peso (opcional, lb)",
@@ -1282,9 +1192,6 @@
   "petsFormHabitatEquipmentHint": "Filtro, iluminación, calentador, plantas, lámpara UVB, perchas…",
   "petsDetailTitleFallback": "Detalles de la mascota",
   "petsDetailGalleryTooltip": "Galería de fotos",
-  "petsDetailLoading": "Cargando los detalles…",
-  "petsDetailErrorTitle": "Detalles no disponibles",
-  "petsDetailErrorDefault": "Este perfil de mascota no está disponible ahora.",
   "petsDetailBackToList": "Volver a la lista",
   "petsDetailEmptyTitle": "Ninguna mascota seleccionada",
   "petsDetailEmptySubtitle": "Elige un perfil de la lista para ver detalles, chats e informes.",
@@ -1346,31 +1253,7 @@
   "petsDetailChatLimitOk": "Entendido",
   "petsDetailRecordsSendTitle": "Enviar archivo",
   "petsDetailRecordsSendSubtitle": "Elige un documento para enviarlo por correo, WhatsApp u otra aplicación.",
-  "petsDetailRecordShareText": "📄 {title}\n{source} · {date}\n\nCompartido desde Quokka",
-  "@petsDetailRecordShareText": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      },
-      "source": {
-        "type": "String"
-      },
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "petsDetailShareUnavailable": "La función de compartir no está disponible en este dispositivo.",
-  "petsDetailRecordsUpload": "Subir archivo",
   "petsDetailRecordsSend": "Enviar",
-  "petsDetailRecordsEmpty": "Aún no hay documentos para {petName}.",
-  "@petsDetailRecordsEmpty": {
-    "placeholders": {
-      "petName": {
-        "type": "String"
-      }
-    }
-  },
   "petsDetailRecordsLoadError": "No se pueden leer los informes. Comprueba la conexión e inténtalo de nuevo.",
   "petsDetailSelectedCount": "{count, plural, =1{1 seleccionado} other{{count} seleccionados}}",
   "@petsDetailSelectedCount": {
@@ -1444,9 +1327,6 @@
   },
   "petsDetailUnsyncedBanner": "Sin sincronizar: los cambios solo están en este teléfono.",
   "petsDetailUnsyncedRetryFailed": "El servidor sigue sin estar disponible. Inténtalo más tarde.",
-  "petsScaffoldBadge": "Mascota",
-  "petsLoadingDefaultLabel": "Cargando mascotas…",
-  "petsLoadingSubtitle": "Espera un momento mientras preparamos la pantalla.",
   "petsDemoDeleteFailed": "No pude eliminar el perfil. Inténtalo de nuevo.",
   "petsDemoNewProfileNote": "Perfil recién creado, listo para la próxima visita.",
   "petsDemoNextVisitToPlan": "Por programar",
@@ -1470,8 +1350,6 @@
   "petsValueDogSizeLarge": "Grande",
   "petsValueDogSizeGiant": "Gigante",
   "petsListTitle": "Animales",
-  "petsListLoading": "Cargando la lista de mascotas…",
-  "petsListErrorTitle": "Mascotas no disponibles",
   "petsListErrorDefault": "Ahora mismo no se pueden cargar los perfiles de mascotas.",
   "petsListEmptyTitle": "Aún no hay mascotas",
   "petsListEmptySubtitle": "Crea el primer perfil: cuanto más completo, mejores serán mis respuestas.",
@@ -2654,33 +2532,6 @@
   "petNewsCategoryFish": "Pez",
   "petNewsCategoryOther": "Otro",
   "petNewsCategoryGeneral": "General",
-  "profileLogoutDialogTitle": "Cerrar sesión",
-  "profileLogoutDialogBody": "¿Quieres cerrar la sesión de esta cuenta?",
-  "profileGuestName": "Invitado",
-  "profileNoActiveSession": "No hay una sesión activa",
-  "profileSummaryBody": "Perfil del propietario vinculado a {pets} y listo para la app web adaptable.",
-  "profilePetCount": "{count} mascotas",
-  "profileContactsTitle": "Contactos",
-  "profileEmailLabel": "Correo electrónico",
-  "profilePhoneLabel": "Teléfono",
-  "profilePhoneNotSet": "No especificado",
-  "profileCityLabel": "Ciudad",
-  "profileCityNotSet": "No especificada",
-  "profileEveningThemeTitle": "Tema nocturno",
-  "profileEveningThemeBody": "Vista previa de una paleta más suave para la noche.",
-  "profileAccountStatusTitle": "Estado de la cuenta",
-  "profileSessionLabel": "Sesión",
-  "profileSessionActive": "Activa",
-  "profilePrivacyLabel": "Privacidad",
-  "profilePrivacyUpdated": "Actualizada",
-  "profileSupportLabel": "Asistencia",
-  "profileSupportAvailable": "Disponible",
-  "profileSettingsButton": "Ajustes",
-  "profileLogoutButton": "Cerrar sesión",
-  "profileTitle": "Perfil",
-  "profileIntro": "Datos del propietario, preferencias y detalles de cuenta en un solo lugar para la app web adaptable.",
-  "profileRoadmapTitle": "Próximos pasos",
-  "profileRoadmapBody": "Aquí podemos ampliar consentimientos, preferencias y vínculos de cuenta sin cambiar el flujo web.",
   "activitiesTitle": "Actividades",
   "activitiesSubtitle": "Todo lo relacionado con la vida con tus mascotas.",
   "activitiesNewsSubtitle": "Curiosidades y actualidad sobre animales domésticos.",
@@ -2789,32 +2640,14 @@
       }
     }
   },
-  "@profileSummaryBody": {
-    "placeholders": {
-      "pets": {
-        "type": "String"
-      }
-    }
-  },
-  "@profilePetCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "remindersTitle": "Recordatorios",
   "remindersSubtitle": "Vacunas, tratamientos y visitas que debes controlar.",
-  "remindersCreateButton": "Crear",
   "remindersChoosePet": "¿Para qué animal?",
   "remindersNeedPetFirst": "Añade primero un animal: cada recordatorio está vinculado a uno de ellos.",
   "remindersLoadingTitle": "Cargando recordatorios",
-  "remindersLoadingBody": "Leyendo fechas, repeticiones y notas del responsable.",
-  "remindersSyncErrorLabel": "Error de sincronización",
   "remindersSyncErrorTitle": "No se pudieron sincronizar los recordatorios.",
   "remindersSyncErrorBody": "La fuente de demostración sigue disponible. Reintenta cuando vuelva la conexión.",
   "remindersEmptyLabel": "Sin recordatorios",
-  "remindersEmptyTitle": "La lista de recordatorios está vacía.",
   "remindersEmptyBody": "Crea el primer recordatorio de vacuna o tratamiento para llevarlo todo al día.",
   "remindersNoMatchForFilters": "Ningún recordatorio coincide con estos filtros.",
   "remindersFilterAll": "Todos",
@@ -2894,7 +2727,6 @@
   "remindersOneDayMore": "Un día más",
   "remindersNotFoundTitle": "Recordatorio no encontrado",
   "remindersNotFoundSubtitle": "Este recordatorio ya no está disponible.",
-  "remindersNotFoundLabel": "No encontrado",
   "remindersNotFoundPanelTitle": "No hay recordatorios para mostrar.",
   "remindersNotFoundBody": "Puede que se haya eliminado o que aún no esté sincronizado.",
   "remindersBackToList": "Volver a la lista",
@@ -2905,8 +2737,6 @@
   "remindersSummaryPet": "Animal",
   "remindersSummaryStatus": "Estado",
   "remindersDeleteButton": "Eliminar recordatorio",
-  "remindersLoadingLabel": "Carga",
-  "remindersWait": "Espera",
   "remindersCreateTitle": "Crear recordatorio",
   "remindersCreateTitleForPet": "Nuevo recordatorio para {petName}",
   "remindersCreateSubtitle": "Elige el tipo, la fecha y los detalles.",
@@ -3522,7 +3352,6 @@
   "accountProfileFirstName": "Nombre",
   "accountProfileLastName": "Apellidos",
   "accountProfilePhone": "Teléfono (opcional)",
-  "accountProfilePhoneHint": "+34 612 345 678",
   "accountProfileFirstNameRequired": "Introduce tu nombre.",
   "accountProfileLastNameRequired": "Introduce tus apellidos.",
   "accountProfilePhoneInvalid": "Número de teléfono no válido.",
@@ -3586,7 +3415,6 @@
   "petsFormColorLabel": "Color",
   "petsFormColorHint": "Ej. verde, amarillo",
   "petsFormBodyConditionLabel": "Condición corporal",
-  "petsFormBodyConditionHint": "Selecciona la condición corporal",
   "petsFormActivityLabel": "Actividad",
   "petsFormActivityHint": "Selecciona la actividad",
   "petsFormDogSizeLabelShort": "Tamaño",
@@ -3635,7 +3463,6 @@
   "petsDataAddMicrochip": "Añadir microchip",
   "petsDataWeightLabel": "Peso",
   "petsDataSummarySterilized": "esterilizado",
-  "monitoringTitle": "Seguimiento",
   "petsDetailTabMonitoring": "Seguimiento",
   "monitoringBcsGuideTitle": "Valora la condición corporal",
   "monitoringBcsGuideIntro": "El peso por sí solo no basta para saber si un animal está delgado o con sobrepeso: hay que tocarlo y observarlo. Sigue los tres pasos y elige la descripción que más se parezca a {petName}.",
@@ -3839,7 +3666,6 @@
     }
   },
   "monitoringGrowthChange": "Cambiar",
-  "monitoringGrowthPromptTitle": "Mostrar el área de referencia",
   "monitoringGrowthPromptBody": "Para comparar a {petName} con cachorros sanos hace falta el peso que tendrá de adulto: elige el rango más probable (raza, padres, veterinario).",
   "@monitoringGrowthPromptBody": {
     "placeholders": {
@@ -4054,7 +3880,6 @@
     }
   },
   "petsConsentProposalActivate": "Activar",
-  "petsConsentProposalLater": "Más tarde",
   "marketplaceRulesTitle": "Reglas del mercadillo",
   "marketplaceRulesAccept": "He leído y acepto las reglas del mercadillo",
   "noticeMarketplace": "El mercadillo de segunda mano es solo para mayores de edad y pone en contacto a dos particulares: Quokka no es parte de la compraventa, no verifica anuncios ni personas y no responde de ellos. Las conversaciones son privadas: nuestro equipo solo las lee si una de las dos personas las denuncia.",
@@ -4204,7 +4029,6 @@
   "medAttachAdd": "Añadir archivo",
   "medAttachChange": "Cambiar archivo",
   "medEditDetailsTitle": "Editar detalles",
-  "medTitleRequired": "Escribe un título o adjunta un archivo.",
   "medDateInvalid": "Fecha no válida (dd/mm/aaaa).",
   "medDatePlaceholder": "dd/mm/aaaa",
   "medSuggestHint": "Por el título parece: {category}. ¿Quieres clasificarlo así?",
@@ -4282,7 +4106,6 @@
   "reminderCatOther": "Otro",
   "remindersFormCategory": "Categoría",
   "remindersFormSubtype": "Tipo",
-  "remindersFormSubtypeNone": "Ninguno",
   "remindersDoneTitle": "¿Hecho?",
   "remindersDoneRecordHint": "Regístralo en el historial de {pet}.",
   "@remindersDoneRecordHint": {
@@ -4549,8 +4372,6 @@
   "accountRestoreDeleteNow": "Eliminar ahora",
   "accountRestoreDeleteNowBody": "Borramos la cuenta y tus datos ahora mismo, sin posibilidad de recuperarlos. Quedan algunos datos, por ejemplo las facturas, que la ley nos obliga a conservar, y un código, sin tu nombre ni tu correo, que prueba la eliminación. Después podrás registrarte de nuevo con el mismo correo.",
   "authRegisterEmailInUseRecoverHint": "Si la eliminaste hace poco y el periodo de espera no ha terminado, usa «Recuperar cuenta»: puedes cancelar la eliminación o eliminarla ahora para empezar de nuevo.",
-  "accountDeleteOptionTitle": "Eliminar la cuenta",
-  "accountDeleteOptionBody": "La desactivamos de inmediato. Durante un tiempo puedes cambiar de opinión iniciando sesión con el mismo correo; después eliminamos tus datos. Quedan algunos datos, por ejemplo las facturas, que la ley nos obliga a conservar, y un código, sin tu nombre ni tu correo, que prueba la eliminación.",
   "consentGateTitle": "Antes de continuar",
   "consentGateBody": "Para usar Quokka necesitas aceptar los Términos del servicio y la Política de privacidad en su versión actual. Puedes leerlos antes de aceptar.",
   "consentGateContinue": "Aceptar y continuar",
@@ -4651,7 +4472,6 @@
   "storeBillingRefunded": "Suscripción reembolsada o revocada",
   "storeBillingPaymentIssue": "Problema de pago: actualiza el método de pago en la tienda",
   "storeBillingTrialDaysLeft": "Prueba gratuita: quedan {days} días",
-  "storeBillingRestoreDone": "Restauración completada.",
   "storeBillingPricesFromStore": "Los precios, la moneda y los impuestos son los que indica la tienda para tu país. La suscripción se renueva automáticamente hasta que la canceles en la tienda.",
   "renewMonthly": "{price} al mes (impuestos según la tienda de tu país). El plan se renueva automáticamente cada mes, el {date}, hasta que lo canceles.",
   "renewYearly": "{price} al año (impuestos según la tienda de tu país). El plan se renueva automáticamente cada año, el {date}, hasta que lo canceles.",

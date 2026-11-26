@@ -21,9 +21,7 @@
   "commonYes": "Oui",
   "commonNo": "Non",
   "commonLoading": "Chargement…",
-  "commonDone": "Terminé",
   "commonContinue": "Continuer",
-  "commonSearch": "Rechercher",
   "commonShare": "Partager",
   "languagePickerTitle": "Choisissez votre langue",
   "languagePickerSubtitle": "Vous pourrez la changer à tout moment dans les Paramètres.",
@@ -940,7 +938,6 @@
   "medicalTimelineCompleted": "Terminé",
   "medicalTimelineReadyToSend": "Prêt à envoyer",
   "medicalTimelineAvailable": "Disponible",
-  "medicalUploadTitle": "Charger un document",
   "medicalUploadForPet": "Pour {petName} · PDF, JPG ou PNG",
   "@medicalUploadForPet": {
     "placeholders": {
@@ -964,83 +961,6 @@
   },
   "medicalUploadFailedDefaultReason": "Vérifiez votre connexion et réessayez.",
   "medicalUploadSaveLocalOnly": "Enregistrer uniquement sur le téléphone",
-  "medicalUploadDemoSubtitle": "Chargez un PDF, JPG ou PNG et complétez les métadonnées.",
-  "medicalUploadDemoAction": "Détail",
-  "medicalUploadDemoCardBody": "Chargé avec succès et prêt pour la vérification des métadonnées.",
-  "medicalListTitle": "Comptes rendus",
-  "medicalListSubtitle": "Comptes rendus, notes et pièces jointes de Moka dans des archives claires.",
-  "medicalListSyncTitle": "Synchronisation des comptes rendus",
-  "medicalListSyncBody": "Je récupère les documents et les métadonnées depuis Supabase ou la source de démonstration.",
-  "medicalListLoadErrorTitle": "Impossible de charger les archives",
-  "medicalListLoadErrorBody": "Réessayez après avoir vérifié la connexion ou continuez avec le mode démo.",
-  "medicalListEmptyTitle": "Aucun document pour l'instant",
-  "medicalListEmptyBody": "Chargez le premier compte rendu pour constituer les archives de documents.",
-  "medicalListUploadFirst": "Charger le premier fichier",
-  "medicalListSummaryAllTitle": "{count} documents actifs",
-  "@medicalListSummaryAllTitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "medicalListSummaryPetTitle": "{count} documents de {petName}",
-  "@medicalListSummaryPetTitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      },
-      "petName": {
-        "type": "String"
-      }
-    }
-  },
-  "medicalListSummaryAllBody": "1 compte rendu prêt à partager, 1 examen à revoir et 1 note archivée.",
-  "medicalListSummaryPetBody": "Filtres actifs sur le profil de {petName}. Ouvrez les documents les plus utiles sans fouillis.",
-  "@medicalListSummaryPetBody": {
-    "placeholders": {
-      "petName": {
-        "type": "String"
-      }
-    }
-  },
-  "medicalListNextActionTitle": "Prochaine action",
-  "medicalListNextActionAllBody": "Ouvrez le compte rendu de vaccination de Moka et partagez-le avec Francesco.",
-  "medicalListNextActionPetBody": "Partagez le document le plus récent de {petName} et conservez la note dans le profil.",
-  "@medicalListNextActionPetBody": {
-    "placeholders": {
-      "petName": {
-        "type": "String"
-      }
-    }
-  },
-  "medicalListEmptyPetTitle": "Aucun document pour {petName}",
-  "@medicalListEmptyPetTitle": {
-    "placeholders": {
-      "petName": {
-        "type": "String"
-      }
-    }
-  },
-  "medicalListEmptyPetBody": "Changez de filtre ou chargez un nouveau document pour cet animal.",
-  "medicalListRemoveFilter": "Retirer le filtre",
-  "medicalFilterAll": "Tous ({count})",
-  "@medicalFilterAll": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "medicalMetaType": "Type",
-  "medicalMetaDate": "Date",
-  "medicalMetaSource": "Source",
-  "medicalMetaFormat": "Format",
-  "medicalStatePreviewPill": "Aperçu",
-  "medicalStateLoadingPill": "Chargement",
-  "medicalChecklistFormat": "Format de fichier pris en charge",
-  "medicalChecklistMetadata": "Métadonnées extraites",
-  "medicalChecklistLinkedPet": "Lié à l'animal actif",
   "homeGreeting": "Bonjour",
   "homeAskQuokka": "Demandez à Quokka",
   "homeAgendaTitle": "Votre calendrier",
@@ -1057,8 +977,6 @@
   "homeNewsSubtitle": "Des actualités du monde des animaux, choisies pour vous.",
   "homeNewsUnavailable": "Actualités indisponibles pour le moment. Réessayez plus tard.",
   "homeNewsMore": "Découvrir d'autres actualités",
-  "homeNearbyTitle": "Près de chez moi",
-  "homeSectionLoading": "Chargement...",
   "shellTabHome": "Accueil",
   "shellTabPets": "Animaux",
   "shellTabActivities": "Activités",
@@ -1180,9 +1098,6 @@
   "petsHabitatAviary": "Volière",
   "petsHabitatGeneric": "Habitat",
   "petsCreateTitle": "Créer un profil d'animal",
-  "petsCreateLoading": "Je prépare le formulaire de création...",
-  "petsCreateErrorTitle": "Formulaire de création indisponible",
-  "petsCreateErrorDefault": "Je n'arrive pas à créer un nouveau profil d'animal pour le moment.",
   "petsCreateFormTitle": "Nouveau profil",
   "petsCreateSubmit": "Enregistrer le profil",
   "petsCreateUnsyncedSnack": "Profil enregistré sur le téléphone mais pas sur le serveur. Ouvrez-le depuis la liste et touchez Réessayer.",
@@ -1194,9 +1109,6 @@
       }
     }
   },
-  "petsEditLoading": "Je charge le formulaire de modification...",
-  "petsEditErrorTitle": "Modification indisponible",
-  "petsEditErrorDefault": "Je n'arrive pas à ouvrir ce profil d'animal pour le modifier.",
   "petsEditFormTitle": "Brouillon du profil",
   "petsEditSubmit": "Enregistrer les modifications",
   "petsEditUnsyncedSnack": "Modifications enregistrées sur le téléphone mais pas sur le serveur. Ouvrez le profil et touchez Réessayer.",
@@ -1243,7 +1155,6 @@
   "petsFormOtherBreedHint": "Ex. croisé caniche",
   "petsFormOtherSpeciesLabel": "Quelle espèce ?",
   "petsFormOtherSpeciesHint": "Ex. nom courant ou scientifique",
-  "petsFormDogSizeLabel": "Taille (facultative)",
   "petsFormDogSizeHint": "Sélectionnez une taille",
   "petsFormBirthDateLabel": "Date de naissance",
   "petsFormBirthDateHint": "jj/mm/aaaa",
@@ -1251,7 +1162,6 @@
   "petsFormBirthDateInvalid": "Date non valide (jj/mm/aaaa).",
   "petsFormBirthDateFuture": "La date de naissance ne peut pas être dans le futur.",
   "petsFormSexLabel": "Sexe",
-  "petsFormSexHint": "Sélectionnez",
   "petsFormSexUnknown": "Inconnu",
   "petsFormWeightLabelKg": "Poids (facultatif, kg)",
   "petsFormWeightLabelLb": "Poids (facultatif, lb)",
@@ -1282,9 +1192,6 @@
   "petsFormHabitatEquipmentHint": "Filtre, éclairage, chauffage, plantes, lampe UVB, perchoirs...",
   "petsDetailTitleFallback": "Fiche de l'animal",
   "petsDetailGalleryTooltip": "Galerie photos",
-  "petsDetailLoading": "Je charge la fiche de l'animal...",
-  "petsDetailErrorTitle": "Fiche de l'animal indisponible",
-  "petsDetailErrorDefault": "Ce profil d'animal n'est pas disponible pour le moment.",
   "petsDetailBackToList": "Retour à la liste",
   "petsDetailEmptyTitle": "Aucun animal sélectionné",
   "petsDetailEmptySubtitle": "Choisissez un profil dans la liste pour voir les détails, les chats et les comptes rendus.",
@@ -1346,31 +1253,7 @@
   "petsDetailChatLimitOk": "J'ai compris",
   "petsDetailRecordsSendTitle": "Envoyer un fichier",
   "petsDetailRecordsSendSubtitle": "Choisissez un document à envoyer par e-mail, WhatsApp ou autre.",
-  "petsDetailRecordShareText": "📄 {title}\n{source} · {date}\n\nPartagé via Quokka",
-  "@petsDetailRecordShareText": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      },
-      "source": {
-        "type": "String"
-      },
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "petsDetailShareUnavailable": "Partage indisponible sur cet appareil.",
-  "petsDetailRecordsUpload": "Charger un fichier",
   "petsDetailRecordsSend": "Envoyer",
-  "petsDetailRecordsEmpty": "Aucun document pour {petName} pour l'instant.",
-  "@petsDetailRecordsEmpty": {
-    "placeholders": {
-      "petName": {
-        "type": "String"
-      }
-    }
-  },
   "petsDetailRecordsLoadError": "Je n'arrive pas à lire les comptes rendus. Vérifiez votre connexion et réessayez.",
   "petsDetailSelectedCount": "{count, plural, =1{{count} sélectionné} other{{count} sélectionnés}}",
   "@petsDetailSelectedCount": {
@@ -1444,9 +1327,6 @@
   },
   "petsDetailUnsyncedBanner": "Non synchronisé : les modifications ne sont que sur ce téléphone.",
   "petsDetailUnsyncedRetryFailed": "Toujours pas de liaison avec le serveur. Réessayez plus tard.",
-  "petsScaffoldBadge": "Animal",
-  "petsLoadingDefaultLabel": "Chargement de l'animal...",
-  "petsLoadingSubtitle": "Patientez un instant, nous préparons l'écran.",
   "petsDemoDeleteFailed": "Je n'ai pas pu supprimer le profil. Réessayez.",
   "petsDemoNewProfileNote": "Profil créé récemment, prêt pour la prochaine visite.",
   "petsDemoNextVisitToPlan": "À planifier",
@@ -1470,8 +1350,6 @@
   "petsValueDogSizeLarge": "Grande",
   "petsValueDogSizeGiant": "Géante",
   "petsListTitle": "Animaux",
-  "petsListLoading": "Je charge la liste des animaux...",
-  "petsListErrorTitle": "Animaux indisponibles",
   "petsListErrorDefault": "Je n'arrive pas à charger les profils d'animaux pour le moment.",
   "petsListEmptyTitle": "Aucun animal pour l'instant",
   "petsListEmptySubtitle": "Créez le premier profil : plus il est complet, meilleures sont mes réponses.",
@@ -2654,33 +2532,6 @@
   "petNewsCategoryFish": "Poisson",
   "petNewsCategoryOther": "Autre",
   "petNewsCategoryGeneral": "Général",
-  "profileLogoutDialogTitle": "Se déconnecter",
-  "profileLogoutDialogBody": "Voulez-vous vous déconnecter de ce compte ?",
-  "profileGuestName": "Invité",
-  "profileNoActiveSession": "Aucune session active",
-  "profileSummaryBody": "Profil de propriétaire lié à {pets} et prêt pour l'application web adaptative.",
-  "profilePetCount": "{count, plural, =1{{count} animal} other{{count} animaux}}",
-  "profileContactsTitle": "Contacts",
-  "profileEmailLabel": "E-mail",
-  "profilePhoneLabel": "Téléphone",
-  "profilePhoneNotSet": "Non renseigné",
-  "profileCityLabel": "Ville",
-  "profileCityNotSet": "Non renseignée",
-  "profileEveningThemeTitle": "Thème du soir",
-  "profileEveningThemeBody": "Aperçu d'une palette plus douce pour une utilisation en soirée.",
-  "profileAccountStatusTitle": "État du compte",
-  "profileSessionLabel": "Session",
-  "profileSessionActive": "Active",
-  "profilePrivacyLabel": "Confidentialité",
-  "profilePrivacyUpdated": "À jour",
-  "profileSupportLabel": "Assistance",
-  "profileSupportAvailable": "Disponible",
-  "profileSettingsButton": "Paramètres",
-  "profileLogoutButton": "Déconnexion",
-  "profileTitle": "Profil",
-  "profileIntro": "Données du propriétaire, préférences et détails du compte au même endroit pour l'application web adaptative.",
-  "profileRoadmapTitle": "Prochaines étapes",
-  "profileRoadmapBody": "Ici, nous pouvons faire évoluer les consentements, les préférences et la liaison du compte sans changer le flux web.",
   "activitiesTitle": "Activités",
   "activitiesSubtitle": "Tout ce qui tourne autour de la vie avec vos animaux.",
   "activitiesNewsSubtitle": "Anecdotes et actualités sur les animaux de compagnie.",
@@ -2789,32 +2640,14 @@
       }
     }
   },
-  "@profileSummaryBody": {
-    "placeholders": {
-      "pets": {
-        "type": "String"
-      }
-    }
-  },
-  "@profilePetCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "remindersTitle": "Rappels",
   "remindersSubtitle": "Vaccins, traitements et visites à garder à l'œil.",
-  "remindersCreateButton": "Créer",
   "remindersChoosePet": "Pour quel animal ?",
   "remindersNeedPetFirst": "Ajoutez d'abord un animal : chaque rappel est lié à l'un d'eux.",
   "remindersLoadingTitle": "Chargement des rappels",
-  "remindersLoadingBody": "Je lis les dates, les récurrences et les notes du propriétaire.",
-  "remindersSyncErrorLabel": "Erreur de synchro",
   "remindersSyncErrorTitle": "Échec de la synchronisation des rappels.",
   "remindersSyncErrorBody": "La source de démonstration reste disponible. Réessayez quand le réseau reviendra.",
   "remindersEmptyLabel": "Aucun rappel",
-  "remindersEmptyTitle": "La liste des rappels est vide.",
   "remindersEmptyBody": "Créez le premier rappel de vaccin ou de traitement pour rester à jour.",
   "remindersNoMatchForFilters": "Aucun rappel pour ces filtres.",
   "remindersFilterAll": "Tous",
@@ -2894,7 +2727,6 @@
   "remindersOneDayMore": "Un jour de plus",
   "remindersNotFoundTitle": "Rappel introuvable",
   "remindersNotFoundSubtitle": "Ce rappel n'est plus disponible.",
-  "remindersNotFoundLabel": "Introuvable",
   "remindersNotFoundPanelTitle": "Aucun rappel à afficher.",
   "remindersNotFoundBody": "Il a peut-être été supprimé ou n'est pas encore synchronisé.",
   "remindersBackToList": "Retour à la liste",
@@ -2905,8 +2737,6 @@
   "remindersSummaryPet": "Animal",
   "remindersSummaryStatus": "État",
   "remindersDeleteButton": "Supprimer le rappel",
-  "remindersLoadingLabel": "Chargement",
-  "remindersWait": "Patientez",
   "remindersCreateTitle": "Créer un rappel",
   "remindersCreateTitleForPet": "Nouveau rappel pour {petName}",
   "remindersCreateSubtitle": "Choisissez le type, la date et les détails.",
@@ -3522,7 +3352,6 @@
   "accountProfileFirstName": "Prénom",
   "accountProfileLastName": "Nom",
   "accountProfilePhone": "Téléphone (facultatif)",
-  "accountProfilePhoneHint": "+33 6 12 34 56 78",
   "accountProfileFirstNameRequired": "Saisissez votre prénom.",
   "accountProfileLastNameRequired": "Saisissez votre nom.",
   "accountProfilePhoneInvalid": "Numéro de téléphone non valide.",
@@ -3586,7 +3415,6 @@
   "petsFormColorLabel": "Couleur",
   "petsFormColorHint": "Ex. vert, jaune",
   "petsFormBodyConditionLabel": "Corpulence",
-  "petsFormBodyConditionHint": "Sélectionnez la corpulence",
   "petsFormActivityLabel": "Activité",
   "petsFormActivityHint": "Sélectionnez l'activité",
   "petsFormDogSizeLabelShort": "Taille",
@@ -3635,7 +3463,6 @@
   "petsDataAddMicrochip": "Ajouter la puce électronique",
   "petsDataWeightLabel": "Poids",
   "petsDataSummarySterilized": "stérilisé",
-  "monitoringTitle": "Suivi",
   "petsDetailTabMonitoring": "Suivi",
   "monitoringBcsGuideTitle": "Évaluer la corpulence",
   "monitoringBcsGuideIntro": "Le poids seul ne suffit pas à dire si un animal est maigre ou bien en chair : il faut le toucher et le regarder. Suivez les trois étapes et choisissez la description qui ressemble le plus à {petName}.",
@@ -3839,7 +3666,6 @@
     }
   },
   "monitoringGrowthChange": "Modifier",
-  "monitoringGrowthPromptTitle": "Afficher la zone de référence",
   "monitoringGrowthPromptBody": "Pour comparer {petName} à des chiots en bonne santé, il faut connaître son poids à l'âge adulte : choisissez la tranche la plus probable (race, parents, vétérinaire).",
   "@monitoringGrowthPromptBody": {
     "placeholders": {
@@ -4054,7 +3880,6 @@
     }
   },
   "petsConsentProposalActivate": "Activer",
-  "petsConsentProposalLater": "Plus tard",
   "marketplaceRulesTitle": "Règles du marché de l'occasion",
   "marketplaceRulesAccept": "J'ai lu et j'accepte les règles du marché de l'occasion",
   "noticeMarketplace": "Le marché de l'occasion est réservé aux personnes majeures et met en relation deux particuliers : Quokka n'est pas partie à la vente, ne vérifie ni les annonces ni les personnes et n'en répond pas. Les conversations sont privées : notre équipe ne les lit que si l'une des deux personnes les signale.",
@@ -4204,7 +4029,6 @@
   "medAttachAdd": "Ajouter un fichier",
   "medAttachChange": "Changer de fichier",
   "medEditDetailsTitle": "Modifier les détails",
-  "medTitleRequired": "Saisissez un titre ou joignez un fichier.",
   "medDateInvalid": "Date non valide (jj/mm/aaaa).",
   "medDatePlaceholder": "jj/mm/aaaa",
   "medSuggestHint": "D'après le titre, il s'agit de : {category}. Voulez-vous le classer ainsi ?",
@@ -4282,7 +4106,6 @@
   "reminderCatOther": "Autre",
   "remindersFormCategory": "Catégorie",
   "remindersFormSubtype": "Type",
-  "remindersFormSubtypeNone": "Aucun",
   "remindersDoneTitle": "Fait ?",
   "remindersDoneRecordHint": "Enregistrez-le dans l'historique de {pet}.",
   "@remindersDoneRecordHint": {
@@ -4549,8 +4372,6 @@
   "accountRestoreDeleteNow": "Supprimer tout de suite",
   "accountRestoreDeleteNowBody": "Nous supprimons le compte et vos données tout de suite, sans possibilité de récupération. Quelques données restent, par exemple les factures, que la loi nous oblige à conserver, et un code, sans votre nom ni votre e-mail, qui prouve la suppression. Ensuite, vous pourrez vous réinscrire avec la même adresse e-mail.",
   "authRegisterEmailInUseRecoverHint": "Si vous l'avez supprimé récemment et que le délai d'attente n'est pas écoulé, utilisez « Récupérer le compte » : vous pouvez annuler la suppression ou le supprimer tout de suite pour recommencer.",
-  "accountDeleteOptionTitle": "Supprimer le compte",
-  "accountDeleteOptionBody": "Nous le désactivons tout de suite. Pendant un certain temps, vous pouvez changer d'avis en vous connectant avec le même e-mail ; ensuite nous supprimons vos données. Quelques données restent, par exemple les factures, que la loi nous oblige à conserver, et un code, sans votre nom ni votre e-mail, qui prouve la suppression.",
   "consentGateTitle": "Avant de continuer",
   "consentGateBody": "Pour utiliser Quokka, vous devez accepter les Conditions d'utilisation et la Politique de confidentialité dans leur version actuelle. Vous pouvez les lire avant d'accepter.",
   "consentGateContinue": "Accepter et continuer",
@@ -4651,7 +4472,6 @@
   "storeBillingRefunded": "Abonnement remboursé ou révoqué",
   "storeBillingPaymentIssue": "Problème de paiement : mettez à jour le moyen de paiement dans la boutique",
   "storeBillingTrialDaysLeft": "Essai gratuit : {days} jours restants",
-  "storeBillingRestoreDone": "Restauration terminée.",
   "storeBillingPricesFromStore": "Les prix, la devise et les taxes sont ceux indiqués par la boutique pour votre pays. L’abonnement se renouvelle automatiquement jusqu’à ce que vous le résiliez dans la boutique.",
   "renewMonthly": "{price} par mois (taxes selon la boutique de votre pays). L'abonnement se renouvelle automatiquement chaque mois, le {date}, jusqu'à ce que vous le résiliez.",
   "renewYearly": "{price} par an (taxes selon la boutique de votre pays). L'abonnement se renouvelle automatiquement chaque année, le {date}, jusqu'à ce que vous le résiliez.",

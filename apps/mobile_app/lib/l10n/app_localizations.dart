@@ -230,23 +230,11 @@ abstract class AppLocalizations {
   /// **'Caricamento…'**
   String get commonLoading;
 
-  /// No description provided for @commonDone.
-  ///
-  /// In it, this message translates to:
-  /// **'Fatto'**
-  String get commonDone;
-
   /// No description provided for @commonContinue.
   ///
   /// In it, this message translates to:
   /// **'Continua'**
   String get commonContinue;
-
-  /// No description provided for @commonSearch.
-  ///
-  /// In it, this message translates to:
-  /// **'Cerca'**
-  String get commonSearch;
 
   /// No description provided for @commonShare.
   ///
@@ -3044,12 +3032,6 @@ abstract class AppLocalizations {
   /// **'Disponibile'**
   String get medicalTimelineAvailable;
 
-  /// No description provided for @medicalUploadTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Carica documento'**
-  String get medicalUploadTitle;
-
   /// No description provided for @medicalUploadForPet.
   ///
   /// In it, this message translates to:
@@ -3104,198 +3086,6 @@ abstract class AppLocalizations {
   /// **'Salva solo sul telefono'**
   String get medicalUploadSaveLocalOnly;
 
-  /// No description provided for @medicalUploadDemoSubtitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Carica PDF, JPG o PNG e completa i metadati.'**
-  String get medicalUploadDemoSubtitle;
-
-  /// No description provided for @medicalUploadDemoAction.
-  ///
-  /// In it, this message translates to:
-  /// **'Dettaglio'**
-  String get medicalUploadDemoAction;
-
-  /// No description provided for @medicalUploadDemoCardBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Caricato con successo e pronto per la revisione dei metadati.'**
-  String get medicalUploadDemoCardBody;
-
-  /// No description provided for @medicalListTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Referti'**
-  String get medicalListTitle;
-
-  /// No description provided for @medicalListSubtitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Referti, note e allegati di Moka in un archivio chiaro.'**
-  String get medicalListSubtitle;
-
-  /// No description provided for @medicalListSyncTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Sincronizzazione referti'**
-  String get medicalListSyncTitle;
-
-  /// No description provided for @medicalListSyncBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Sto recuperando documenti e metadati da Supabase o dalla sorgente demo.'**
-  String get medicalListSyncBody;
-
-  /// No description provided for @medicalListLoadErrorTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Impossibile caricare l\'archivio'**
-  String get medicalListLoadErrorTitle;
-
-  /// No description provided for @medicalListLoadErrorBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Riprova dopo aver controllato la connessione o continua con il fallback demo.'**
-  String get medicalListLoadErrorBody;
-
-  /// No description provided for @medicalListEmptyTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Nessun documento ancora'**
-  String get medicalListEmptyTitle;
-
-  /// No description provided for @medicalListEmptyBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Carica il primo referto per costruire l\'archivio documenti.'**
-  String get medicalListEmptyBody;
-
-  /// No description provided for @medicalListUploadFirst.
-  ///
-  /// In it, this message translates to:
-  /// **'Carica il primo file'**
-  String get medicalListUploadFirst;
-
-  /// No description provided for @medicalListSummaryAllTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'{count} documenti attivi'**
-  String medicalListSummaryAllTitle(int count);
-
-  /// No description provided for @medicalListSummaryPetTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'{count} documenti di {petName}'**
-  String medicalListSummaryPetTitle(int count, String petName);
-
-  /// No description provided for @medicalListSummaryAllBody.
-  ///
-  /// In it, this message translates to:
-  /// **'1 referto pronto da condividere, 1 esame da rivedere e 1 nota archiviata.'**
-  String get medicalListSummaryAllBody;
-
-  /// No description provided for @medicalListSummaryPetBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Filtri attivi sul profilo di {petName}. Apri i documenti più utili senza rumore.'**
-  String medicalListSummaryPetBody(String petName);
-
-  /// No description provided for @medicalListNextActionTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Prossima azione'**
-  String get medicalListNextActionTitle;
-
-  /// No description provided for @medicalListNextActionAllBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Apri il referto vaccinale di Moka e condividilo con Francesco.'**
-  String get medicalListNextActionAllBody;
-
-  /// No description provided for @medicalListNextActionPetBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Condividi il documento più recente di {petName} e conserva la nota nel profilo.'**
-  String medicalListNextActionPetBody(String petName);
-
-  /// No description provided for @medicalListEmptyPetTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Nessun documento per {petName}'**
-  String medicalListEmptyPetTitle(String petName);
-
-  /// No description provided for @medicalListEmptyPetBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Cambia filtro oppure carica un nuovo documento per questo pet.'**
-  String get medicalListEmptyPetBody;
-
-  /// No description provided for @medicalListRemoveFilter.
-  ///
-  /// In it, this message translates to:
-  /// **'Rimuovi filtro'**
-  String get medicalListRemoveFilter;
-
-  /// No description provided for @medicalFilterAll.
-  ///
-  /// In it, this message translates to:
-  /// **'Tutti ({count})'**
-  String medicalFilterAll(int count);
-
-  /// No description provided for @medicalMetaType.
-  ///
-  /// In it, this message translates to:
-  /// **'Tipo'**
-  String get medicalMetaType;
-
-  /// No description provided for @medicalMetaDate.
-  ///
-  /// In it, this message translates to:
-  /// **'Data'**
-  String get medicalMetaDate;
-
-  /// No description provided for @medicalMetaSource.
-  ///
-  /// In it, this message translates to:
-  /// **'Fonte'**
-  String get medicalMetaSource;
-
-  /// No description provided for @medicalMetaFormat.
-  ///
-  /// In it, this message translates to:
-  /// **'Formato'**
-  String get medicalMetaFormat;
-
-  /// No description provided for @medicalStatePreviewPill.
-  ///
-  /// In it, this message translates to:
-  /// **'Stato anteprima'**
-  String get medicalStatePreviewPill;
-
-  /// No description provided for @medicalStateLoadingPill.
-  ///
-  /// In it, this message translates to:
-  /// **'Caricamento'**
-  String get medicalStateLoadingPill;
-
-  /// No description provided for @medicalChecklistFormat.
-  ///
-  /// In it, this message translates to:
-  /// **'Formato file supportato'**
-  String get medicalChecklistFormat;
-
-  /// No description provided for @medicalChecklistMetadata.
-  ///
-  /// In it, this message translates to:
-  /// **'Metadati estratti'**
-  String get medicalChecklistMetadata;
-
-  /// No description provided for @medicalChecklistLinkedPet.
-  ///
-  /// In it, this message translates to:
-  /// **'Collegato al pet attivo'**
-  String get medicalChecklistLinkedPet;
-
   /// No description provided for @homeGreeting.
   ///
   /// In it, this message translates to:
@@ -3349,18 +3139,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Scopri altre notizie'**
   String get homeNewsMore;
-
-  /// No description provided for @homeNearbyTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Vicino a me'**
-  String get homeNearbyTitle;
-
-  /// No description provided for @homeSectionLoading.
-  ///
-  /// In it, this message translates to:
-  /// **'Caricamento...'**
-  String get homeSectionLoading;
 
   /// No description provided for @shellTabHome.
   ///
@@ -3632,24 +3410,6 @@ abstract class AppLocalizations {
   /// **'Crea un profilo pet'**
   String get petsCreateTitle;
 
-  /// No description provided for @petsCreateLoading.
-  ///
-  /// In it, this message translates to:
-  /// **'Preparo il form di creazione...'**
-  String get petsCreateLoading;
-
-  /// No description provided for @petsCreateErrorTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Form di creazione non disponibile'**
-  String get petsCreateErrorTitle;
-
-  /// No description provided for @petsCreateErrorDefault.
-  ///
-  /// In it, this message translates to:
-  /// **'Al momento non riesco a creare un nuovo profilo pet.'**
-  String get petsCreateErrorDefault;
-
   /// No description provided for @petsCreateFormTitle.
   ///
   /// In it, this message translates to:
@@ -3673,24 +3433,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Modifica {name}'**
   String petsEditTitle(String name);
-
-  /// No description provided for @petsEditLoading.
-  ///
-  /// In it, this message translates to:
-  /// **'Carico il form di modifica...'**
-  String get petsEditLoading;
-
-  /// No description provided for @petsEditErrorTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Modifica non disponibile'**
-  String get petsEditErrorTitle;
-
-  /// No description provided for @petsEditErrorDefault.
-  ///
-  /// In it, this message translates to:
-  /// **'Non riesco ad aprire questo profilo pet per la modifica.'**
-  String get petsEditErrorDefault;
 
   /// No description provided for @petsEditFormTitle.
   ///
@@ -3926,12 +3668,6 @@ abstract class AppLocalizations {
   /// **'Es. nome comune o scientifico'**
   String get petsFormOtherSpeciesHint;
 
-  /// No description provided for @petsFormDogSizeLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Taglia (facoltativa)'**
-  String get petsFormDogSizeLabel;
-
   /// No description provided for @petsFormDogSizeHint.
   ///
   /// In it, this message translates to:
@@ -3973,12 +3709,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Sesso'**
   String get petsFormSexLabel;
-
-  /// No description provided for @petsFormSexHint.
-  ///
-  /// In it, this message translates to:
-  /// **'Seleziona'**
-  String get petsFormSexHint;
 
   /// No description provided for @petsFormSexUnknown.
   ///
@@ -4160,24 +3890,6 @@ abstract class AppLocalizations {
   /// **'Galleria foto'**
   String get petsDetailGalleryTooltip;
 
-  /// No description provided for @petsDetailLoading.
-  ///
-  /// In it, this message translates to:
-  /// **'Carico il dettaglio pet...'**
-  String get petsDetailLoading;
-
-  /// No description provided for @petsDetailErrorTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Dettaglio pet non disponibile'**
-  String get petsDetailErrorTitle;
-
-  /// No description provided for @petsDetailErrorDefault.
-  ///
-  /// In it, this message translates to:
-  /// **'Questo profilo pet non e disponibile al momento.'**
-  String get petsDetailErrorDefault;
-
   /// No description provided for @petsDetailBackToList.
   ///
   /// In it, this message translates to:
@@ -4316,35 +4028,11 @@ abstract class AppLocalizations {
   /// **'Scegli un documento da inviare via email, WhatsApp e altro.'**
   String get petsDetailRecordsSendSubtitle;
 
-  /// No description provided for @petsDetailRecordShareText.
-  ///
-  /// In it, this message translates to:
-  /// **'📄 {title}\n{source} · {date}\n\nCondiviso da Quokka'**
-  String petsDetailRecordShareText(String title, String source, String date);
-
-  /// No description provided for @petsDetailShareUnavailable.
-  ///
-  /// In it, this message translates to:
-  /// **'Condivisione non disponibile su questo dispositivo.'**
-  String get petsDetailShareUnavailable;
-
-  /// No description provided for @petsDetailRecordsUpload.
-  ///
-  /// In it, this message translates to:
-  /// **'Carica file'**
-  String get petsDetailRecordsUpload;
-
   /// No description provided for @petsDetailRecordsSend.
   ///
   /// In it, this message translates to:
   /// **'Invia'**
   String get petsDetailRecordsSend;
-
-  /// No description provided for @petsDetailRecordsEmpty.
-  ///
-  /// In it, this message translates to:
-  /// **'Nessun documento ancora per {petName}.'**
-  String petsDetailRecordsEmpty(String petName);
 
   /// No description provided for @petsDetailRecordsLoadError.
   ///
@@ -4477,24 +4165,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Ancora nessun collegamento al server. Riprova più tardi.'**
   String get petsDetailUnsyncedRetryFailed;
-
-  /// No description provided for @petsScaffoldBadge.
-  ///
-  /// In it, this message translates to:
-  /// **'Pet'**
-  String get petsScaffoldBadge;
-
-  /// No description provided for @petsLoadingDefaultLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Caricamento pet...'**
-  String get petsLoadingDefaultLabel;
-
-  /// No description provided for @petsLoadingSubtitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Attendi un istante mentre prepariamo la schermata.'**
-  String get petsLoadingSubtitle;
 
   /// No description provided for @petsDemoDeleteFailed.
   ///
@@ -4633,18 +4303,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Animali'**
   String get petsListTitle;
-
-  /// No description provided for @petsListLoading.
-  ///
-  /// In it, this message translates to:
-  /// **'Carico la lista pet...'**
-  String get petsListLoading;
-
-  /// No description provided for @petsListErrorTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Pet non disponibili'**
-  String get petsListErrorTitle;
 
   /// No description provided for @petsListErrorDefault.
   ///
@@ -7316,168 +6974,6 @@ abstract class AppLocalizations {
   /// **'Generale'**
   String get petNewsCategoryGeneral;
 
-  /// No description provided for @profileLogoutDialogTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Esci'**
-  String get profileLogoutDialogTitle;
-
-  /// No description provided for @profileLogoutDialogBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Vuoi disconnetterti da questo account?'**
-  String get profileLogoutDialogBody;
-
-  /// No description provided for @profileGuestName.
-  ///
-  /// In it, this message translates to:
-  /// **'Ospite'**
-  String get profileGuestName;
-
-  /// No description provided for @profileNoActiveSession.
-  ///
-  /// In it, this message translates to:
-  /// **'Nessuna sessione attiva'**
-  String get profileNoActiveSession;
-
-  /// No description provided for @profileSummaryBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Profilo owner collegato a {pets} e pronto per la web app responsive.'**
-  String profileSummaryBody(String pets);
-
-  /// No description provided for @profilePetCount.
-  ///
-  /// In it, this message translates to:
-  /// **'{count} pet'**
-  String profilePetCount(int count);
-
-  /// No description provided for @profileContactsTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Contatti'**
-  String get profileContactsTitle;
-
-  /// No description provided for @profileEmailLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Email'**
-  String get profileEmailLabel;
-
-  /// No description provided for @profilePhoneLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Telefono'**
-  String get profilePhoneLabel;
-
-  /// No description provided for @profilePhoneNotSet.
-  ///
-  /// In it, this message translates to:
-  /// **'Non specificato'**
-  String get profilePhoneNotSet;
-
-  /// No description provided for @profileCityLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Città'**
-  String get profileCityLabel;
-
-  /// No description provided for @profileCityNotSet.
-  ///
-  /// In it, this message translates to:
-  /// **'Non specificata'**
-  String get profileCityNotSet;
-
-  /// No description provided for @profileEveningThemeTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Tema serale'**
-  String get profileEveningThemeTitle;
-
-  /// No description provided for @profileEveningThemeBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Anteprima di una palette più soft per l\'uso serale.'**
-  String get profileEveningThemeBody;
-
-  /// No description provided for @profileAccountStatusTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Stato account'**
-  String get profileAccountStatusTitle;
-
-  /// No description provided for @profileSessionLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Sessione'**
-  String get profileSessionLabel;
-
-  /// No description provided for @profileSessionActive.
-  ///
-  /// In it, this message translates to:
-  /// **'Attiva'**
-  String get profileSessionActive;
-
-  /// No description provided for @profilePrivacyLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Privacy'**
-  String get profilePrivacyLabel;
-
-  /// No description provided for @profilePrivacyUpdated.
-  ///
-  /// In it, this message translates to:
-  /// **'Aggiornata'**
-  String get profilePrivacyUpdated;
-
-  /// No description provided for @profileSupportLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Supporto'**
-  String get profileSupportLabel;
-
-  /// No description provided for @profileSupportAvailable.
-  ///
-  /// In it, this message translates to:
-  /// **'Disponibile'**
-  String get profileSupportAvailable;
-
-  /// No description provided for @profileSettingsButton.
-  ///
-  /// In it, this message translates to:
-  /// **'Impostazioni'**
-  String get profileSettingsButton;
-
-  /// No description provided for @profileLogoutButton.
-  ///
-  /// In it, this message translates to:
-  /// **'Logout'**
-  String get profileLogoutButton;
-
-  /// No description provided for @profileTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Profilo'**
-  String get profileTitle;
-
-  /// No description provided for @profileIntro.
-  ///
-  /// In it, this message translates to:
-  /// **'Dati owner, preferenze e dettagli account in un unico posto per la web app responsive.'**
-  String get profileIntro;
-
-  /// No description provided for @profileRoadmapTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Prossimi step'**
-  String get profileRoadmapTitle;
-
-  /// No description provided for @profileRoadmapBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Qui possiamo far evolvere consensi, preferenze e collegamento account senza cambiare il flusso web.'**
-  String get profileRoadmapBody;
-
   /// No description provided for @activitiesTitle.
   ///
   /// In it, this message translates to:
@@ -7580,12 +7076,6 @@ abstract class AppLocalizations {
   /// **'Vaccini, trattamenti e visite da tenere sotto controllo.'**
   String get remindersSubtitle;
 
-  /// No description provided for @remindersCreateButton.
-  ///
-  /// In it, this message translates to:
-  /// **'Crea'**
-  String get remindersCreateButton;
-
   /// No description provided for @remindersChoosePet.
   ///
   /// In it, this message translates to:
@@ -7604,18 +7094,6 @@ abstract class AppLocalizations {
   /// **'Caricamento promemoria'**
   String get remindersLoadingTitle;
 
-  /// No description provided for @remindersLoadingBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Sto leggendo date, ricorrenze e note del proprietario.'**
-  String get remindersLoadingBody;
-
-  /// No description provided for @remindersSyncErrorLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Errore sync'**
-  String get remindersSyncErrorLabel;
-
   /// No description provided for @remindersSyncErrorTitle.
   ///
   /// In it, this message translates to:
@@ -7633,12 +7111,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Nessun promemoria'**
   String get remindersEmptyLabel;
-
-  /// No description provided for @remindersEmptyTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'La lista dei promemoria e vuota.'**
-  String get remindersEmptyTitle;
 
   /// No description provided for @remindersEmptyBody.
   ///
@@ -7970,12 +7442,6 @@ abstract class AppLocalizations {
   /// **'Questo promemoria non è più disponibile.'**
   String get remindersNotFoundSubtitle;
 
-  /// No description provided for @remindersNotFoundLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Non trovato'**
-  String get remindersNotFoundLabel;
-
   /// No description provided for @remindersNotFoundPanelTitle.
   ///
   /// In it, this message translates to:
@@ -8035,18 +7501,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Elimina promemoria'**
   String get remindersDeleteButton;
-
-  /// No description provided for @remindersLoadingLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Caricamento'**
-  String get remindersLoadingLabel;
-
-  /// No description provided for @remindersWait.
-  ///
-  /// In it, this message translates to:
-  /// **'Attendi'**
-  String get remindersWait;
 
   /// No description provided for @remindersCreateTitle.
   ///
@@ -9854,12 +9308,6 @@ abstract class AppLocalizations {
   /// **'Telefono (facoltativo)'**
   String get accountProfilePhone;
 
-  /// No description provided for @accountProfilePhoneHint.
-  ///
-  /// In it, this message translates to:
-  /// **'+39 333 1234567'**
-  String get accountProfilePhoneHint;
-
   /// No description provided for @accountProfileFirstNameRequired.
   ///
   /// In it, this message translates to:
@@ -10154,12 +9602,6 @@ abstract class AppLocalizations {
   /// **'Corporatura'**
   String get petsFormBodyConditionLabel;
 
-  /// No description provided for @petsFormBodyConditionHint.
-  ///
-  /// In it, this message translates to:
-  /// **'Seleziona corporatura'**
-  String get petsFormBodyConditionHint;
-
   /// No description provided for @petsFormActivityLabel.
   ///
   /// In it, this message translates to:
@@ -10345,12 +9787,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'sterilizzato'**
   String get petsDataSummarySterilized;
-
-  /// No description provided for @monitoringTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Monitoraggio'**
-  String get monitoringTitle;
 
   /// No description provided for @petsDetailTabMonitoring.
   ///
@@ -10946,12 +10382,6 @@ abstract class AppLocalizations {
   /// **'Cambia'**
   String get monitoringGrowthChange;
 
-  /// No description provided for @monitoringGrowthPromptTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Mostra l\'area di riferimento'**
-  String get monitoringGrowthPromptTitle;
-
   /// No description provided for @monitoringGrowthPromptBody.
   ///
   /// In it, this message translates to:
@@ -11426,12 +10856,6 @@ abstract class AppLocalizations {
   /// **'Attiva'**
   String get petsConsentProposalActivate;
 
-  /// No description provided for @petsConsentProposalLater.
-  ///
-  /// In it, this message translates to:
-  /// **'Più tardi'**
-  String get petsConsentProposalLater;
-
   /// No description provided for @marketplaceRulesTitle.
   ///
   /// In it, this message translates to:
@@ -11846,12 +11270,6 @@ abstract class AppLocalizations {
   /// **'Modifica dettagli'**
   String get medEditDetailsTitle;
 
-  /// No description provided for @medTitleRequired.
-  ///
-  /// In it, this message translates to:
-  /// **'Scrivi un titolo o allega un file.'**
-  String get medTitleRequired;
-
   /// No description provided for @medDateInvalid.
   ///
   /// In it, this message translates to:
@@ -12043,12 +11461,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Tipo'**
   String get remindersFormSubtype;
-
-  /// No description provided for @remindersFormSubtypeNone.
-  ///
-  /// In it, this message translates to:
-  /// **'Nessuno'**
-  String get remindersFormSubtypeNone;
 
   /// No description provided for @remindersDoneTitle.
   ///
@@ -13274,18 +12686,6 @@ abstract class AppLocalizations {
   /// **'Se l\'hai eliminato da poco e il periodo di attesa non è finito, usa «Recupera account»: puoi annullare l\'eliminazione oppure eliminarlo subito per ricominciare.'**
   String get authRegisterEmailInUseRecoverHint;
 
-  /// No description provided for @accountDeleteOptionTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Elimina l\'account'**
-  String get accountDeleteOptionTitle;
-
-  /// No description provided for @accountDeleteOptionBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Lo disattiviamo subito. Per un periodo puoi cambiare idea accedendo con la stessa email; poi cancelliamo i tuoi dati. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua email, che prova la cancellazione.'**
-  String get accountDeleteOptionBody;
-
   /// No description provided for @consentGateTitle.
   ///
   /// In it, this message translates to:
@@ -13681,12 +13081,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Prova gratuita: {days} giorni rimasti'**
   String storeBillingTrialDaysLeft(String days);
-
-  /// No description provided for @storeBillingRestoreDone.
-  ///
-  /// In it, this message translates to:
-  /// **'Ripristino completato.'**
-  String get storeBillingRestoreDone;
 
   /// No description provided for @storeBillingPricesFromStore.
   ///

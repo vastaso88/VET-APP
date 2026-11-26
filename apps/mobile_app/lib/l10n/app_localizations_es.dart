@@ -73,13 +73,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonLoading => 'Cargando…';
 
   @override
-  String get commonDone => 'Hecho';
-
-  @override
   String get commonContinue => 'Continuar';
-
-  @override
-  String get commonSearch => 'Buscar';
 
   @override
   String get commonShare => 'Compartir';
@@ -1767,9 +1761,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get medicalTimelineAvailable => 'Disponible';
 
   @override
-  String get medicalUploadTitle => 'Subir documento';
-
-  @override
   String medicalUploadForPet(String petName) {
     return 'Para $petName · PDF, JPG o PNG';
   }
@@ -1802,123 +1793,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get medicalUploadSaveLocalOnly => 'Guardar solo en el teléfono';
 
   @override
-  String get medicalUploadDemoSubtitle =>
-      'Sube un PDF, JPG o PNG y completa los metadatos.';
-
-  @override
-  String get medicalUploadDemoAction => 'Detalle';
-
-  @override
-  String get medicalUploadDemoCardBody =>
-      'Subido correctamente y listo para revisar los metadatos.';
-
-  @override
-  String get medicalListTitle => 'Informes';
-
-  @override
-  String get medicalListSubtitle =>
-      'Informes, notas y adjuntos de Moka en un archivo claro.';
-
-  @override
-  String get medicalListSyncTitle => 'Sincronización de informes';
-
-  @override
-  String get medicalListSyncBody =>
-      'Recuperando documentos y metadatos de Supabase o de la fuente de demostración.';
-
-  @override
-  String get medicalListLoadErrorTitle => 'No se pudo cargar el archivo';
-
-  @override
-  String get medicalListLoadErrorBody =>
-      'Comprueba la conexión y reintenta, o continúa con la demostración.';
-
-  @override
-  String get medicalListEmptyTitle => 'Aún no hay documentos';
-
-  @override
-  String get medicalListEmptyBody =>
-      'Sube el primer informe para empezar tu archivo documental.';
-
-  @override
-  String get medicalListUploadFirst => 'Subir el primer archivo';
-
-  @override
-  String medicalListSummaryAllTitle(int count) {
-    return '$count documentos activos';
-  }
-
-  @override
-  String medicalListSummaryPetTitle(int count, String petName) {
-    return '$count documentos de $petName';
-  }
-
-  @override
-  String get medicalListSummaryAllBody =>
-      '1 informe listo para compartir, 1 prueba para revisar y 1 nota archivada.';
-
-  @override
-  String medicalListSummaryPetBody(String petName) {
-    return 'Filtros activos en el perfil de $petName. Abre los documentos útiles sin distracciones.';
-  }
-
-  @override
-  String get medicalListNextActionTitle => 'Próxima acción';
-
-  @override
-  String get medicalListNextActionAllBody =>
-      'Abre el informe de vacunación de Moka y compártelo con Francesco.';
-
-  @override
-  String medicalListNextActionPetBody(String petName) {
-    return 'Comparte el último documento de $petName y conserva la nota en su perfil.';
-  }
-
-  @override
-  String medicalListEmptyPetTitle(String petName) {
-    return 'No hay documentos para $petName';
-  }
-
-  @override
-  String get medicalListEmptyPetBody =>
-      'Cambia el filtro o sube un documento nuevo para esta mascota.';
-
-  @override
-  String get medicalListRemoveFilter => 'Quitar filtro';
-
-  @override
-  String medicalFilterAll(int count) {
-    return 'Todos ($count)';
-  }
-
-  @override
-  String get medicalMetaType => 'Tipo';
-
-  @override
-  String get medicalMetaDate => 'Fecha';
-
-  @override
-  String get medicalMetaSource => 'Fuente';
-
-  @override
-  String get medicalMetaFormat => 'Formato';
-
-  @override
-  String get medicalStatePreviewPill => 'Estado de vista previa';
-
-  @override
-  String get medicalStateLoadingPill => 'Carga';
-
-  @override
-  String get medicalChecklistFormat => 'Formato de archivo compatible';
-
-  @override
-  String get medicalChecklistMetadata => 'Metadatos extraídos';
-
-  @override
-  String get medicalChecklistLinkedPet => 'Vinculado a la mascota activa';
-
-  @override
   String get homeGreeting => 'Buenos días';
 
   @override
@@ -1949,12 +1823,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeNewsMore => 'Descubrir más noticias';
-
-  @override
-  String get homeNearbyTitle => 'Cerca de mí';
-
-  @override
-  String get homeSectionLoading => 'Cargando…';
 
   @override
   String get shellTabHome => 'Inicio';
@@ -2153,16 +2021,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get petsCreateTitle => 'Crear un perfil de mascota';
 
   @override
-  String get petsCreateLoading => 'Preparando el formulario de creación…';
-
-  @override
-  String get petsCreateErrorTitle => 'Formulario de creación no disponible';
-
-  @override
-  String get petsCreateErrorDefault =>
-      'Ahora mismo no se puede crear un nuevo perfil de mascota.';
-
-  @override
   String get petsCreateFormTitle => 'Nuevo perfil';
 
   @override
@@ -2176,16 +2034,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String petsEditTitle(String name) {
     return 'Editar $name';
   }
-
-  @override
-  String get petsEditLoading => 'Cargando el formulario de edición…';
-
-  @override
-  String get petsEditErrorTitle => 'Edición no disponible';
-
-  @override
-  String get petsEditErrorDefault =>
-      'No se puede abrir este perfil para editarlo.';
 
   @override
   String get petsEditFormTitle => 'Borrador del perfil';
@@ -2313,9 +2161,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get petsFormOtherSpeciesHint => 'Ej. nombre común o científico';
 
   @override
-  String get petsFormDogSizeLabel => 'Tamaño (opcional)';
-
-  @override
   String get petsFormDogSizeHint => 'Selecciona un tamaño';
 
   @override
@@ -2336,9 +2181,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get petsFormSexLabel => 'Sexo';
-
-  @override
-  String get petsFormSexHint => 'Seleccionar';
 
   @override
   String get petsFormSexUnknown => 'Desconocido';
@@ -2434,16 +2276,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get petsDetailGalleryTooltip => 'Galería de fotos';
 
   @override
-  String get petsDetailLoading => 'Cargando los detalles…';
-
-  @override
-  String get petsDetailErrorTitle => 'Detalles no disponibles';
-
-  @override
-  String get petsDetailErrorDefault =>
-      'Este perfil de mascota no está disponible ahora.';
-
-  @override
   String get petsDetailBackToList => 'Volver a la lista';
 
   @override
@@ -2525,24 +2357,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Elige un documento para enviarlo por correo, WhatsApp u otra aplicación.';
 
   @override
-  String petsDetailRecordShareText(String title, String source, String date) {
-    return '📄 $title\n$source · $date\n\nCompartido desde Quokka';
-  }
-
-  @override
-  String get petsDetailShareUnavailable =>
-      'La función de compartir no está disponible en este dispositivo.';
-
-  @override
-  String get petsDetailRecordsUpload => 'Subir archivo';
-
-  @override
   String get petsDetailRecordsSend => 'Enviar';
-
-  @override
-  String petsDetailRecordsEmpty(String petName) {
-    return 'Aún no hay documentos para $petName.';
-  }
 
   @override
   String get petsDetailRecordsLoadError =>
@@ -2633,16 +2448,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'El servidor sigue sin estar disponible. Inténtalo más tarde.';
 
   @override
-  String get petsScaffoldBadge => 'Mascota';
-
-  @override
-  String get petsLoadingDefaultLabel => 'Cargando mascotas…';
-
-  @override
-  String get petsLoadingSubtitle =>
-      'Espera un momento mientras preparamos la pantalla.';
-
-  @override
   String get petsDemoDeleteFailed =>
       'No pude eliminar el perfil. Inténtalo de nuevo.';
 
@@ -2712,12 +2517,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get petsListTitle => 'Animales';
-
-  @override
-  String get petsListLoading => 'Cargando la lista de mascotas…';
-
-  @override
-  String get petsListErrorTitle => 'Mascotas no disponibles';
 
   @override
   String get petsListErrorDefault =>
@@ -4459,95 +4258,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get petNewsCategoryGeneral => 'General';
 
   @override
-  String get profileLogoutDialogTitle => 'Cerrar sesión';
-
-  @override
-  String get profileLogoutDialogBody =>
-      '¿Quieres cerrar la sesión de esta cuenta?';
-
-  @override
-  String get profileGuestName => 'Invitado';
-
-  @override
-  String get profileNoActiveSession => 'No hay una sesión activa';
-
-  @override
-  String profileSummaryBody(String pets) {
-    return 'Perfil del propietario vinculado a $pets y listo para la app web adaptable.';
-  }
-
-  @override
-  String profilePetCount(int count) {
-    return '$count mascotas';
-  }
-
-  @override
-  String get profileContactsTitle => 'Contactos';
-
-  @override
-  String get profileEmailLabel => 'Correo electrónico';
-
-  @override
-  String get profilePhoneLabel => 'Teléfono';
-
-  @override
-  String get profilePhoneNotSet => 'No especificado';
-
-  @override
-  String get profileCityLabel => 'Ciudad';
-
-  @override
-  String get profileCityNotSet => 'No especificada';
-
-  @override
-  String get profileEveningThemeTitle => 'Tema nocturno';
-
-  @override
-  String get profileEveningThemeBody =>
-      'Vista previa de una paleta más suave para la noche.';
-
-  @override
-  String get profileAccountStatusTitle => 'Estado de la cuenta';
-
-  @override
-  String get profileSessionLabel => 'Sesión';
-
-  @override
-  String get profileSessionActive => 'Activa';
-
-  @override
-  String get profilePrivacyLabel => 'Privacidad';
-
-  @override
-  String get profilePrivacyUpdated => 'Actualizada';
-
-  @override
-  String get profileSupportLabel => 'Asistencia';
-
-  @override
-  String get profileSupportAvailable => 'Disponible';
-
-  @override
-  String get profileSettingsButton => 'Ajustes';
-
-  @override
-  String get profileLogoutButton => 'Cerrar sesión';
-
-  @override
-  String get profileTitle => 'Perfil';
-
-  @override
-  String get profileIntro =>
-      'Datos del propietario, preferencias y detalles de cuenta en un solo lugar para la app web adaptable.';
-
-  @override
-  String get profileRoadmapTitle => 'Próximos pasos';
-
-  @override
-  String get profileRoadmapBody =>
-      'Aquí podemos ampliar consentimientos, preferencias y vínculos de cuenta sin cambiar el flujo web.';
-
-  @override
   String get activitiesTitle => 'Actividades';
 
   @override
@@ -4608,9 +4318,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Vacunas, tratamientos y visitas que debes controlar.';
 
   @override
-  String get remindersCreateButton => 'Crear';
-
-  @override
   String get remindersChoosePet => '¿Para qué animal?';
 
   @override
@@ -4619,13 +4326,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get remindersLoadingTitle => 'Cargando recordatorios';
-
-  @override
-  String get remindersLoadingBody =>
-      'Leyendo fechas, repeticiones y notas del responsable.';
-
-  @override
-  String get remindersSyncErrorLabel => 'Error de sincronización';
 
   @override
   String get remindersSyncErrorTitle =>
@@ -4637,9 +4337,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get remindersEmptyLabel => 'Sin recordatorios';
-
-  @override
-  String get remindersEmptyTitle => 'La lista de recordatorios está vacía.';
 
   @override
   String get remindersEmptyBody =>
@@ -4826,9 +4523,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Este recordatorio ya no está disponible.';
 
   @override
-  String get remindersNotFoundLabel => 'No encontrado';
-
-  @override
   String get remindersNotFoundPanelTitle =>
       'No hay recordatorios para mostrar.';
 
@@ -4859,12 +4553,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get remindersDeleteButton => 'Eliminar recordatorio';
-
-  @override
-  String get remindersLoadingLabel => 'Carga';
-
-  @override
-  String get remindersWait => 'Espera';
 
   @override
   String get remindersCreateTitle => 'Crear recordatorio';
@@ -5936,9 +5624,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountProfilePhone => 'Teléfono (opcional)';
 
   @override
-  String get accountProfilePhoneHint => '+34 612 345 678';
-
-  @override
   String get accountProfileFirstNameRequired => 'Introduce tu nombre.';
 
   @override
@@ -6099,9 +5784,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get petsFormBodyConditionLabel => 'Condición corporal';
 
   @override
-  String get petsFormBodyConditionHint => 'Selecciona la condición corporal';
-
-  @override
   String get petsFormActivityLabel => 'Actividad';
 
   @override
@@ -6199,9 +5881,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get petsDataSummarySterilized => 'esterilizado';
-
-  @override
-  String get monitoringTitle => 'Seguimiento';
 
   @override
   String get petsDetailTabMonitoring => 'Seguimiento';
@@ -6587,9 +6266,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get monitoringGrowthChange => 'Cambiar';
 
   @override
-  String get monitoringGrowthPromptTitle => 'Mostrar el área de referencia';
-
-  @override
   String monitoringGrowthPromptBody(String petName) {
     return 'Para comparar a $petName con cachorros sanos hace falta el peso que tendrá de adulto: elige el rango más probable (raza, padres, veterinario).';
   }
@@ -6894,9 +6570,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get petsConsentProposalActivate => 'Activar';
 
   @override
-  String get petsConsentProposalLater => 'Más tarde';
-
-  @override
   String get marketplaceRulesTitle => 'Reglas del mercadillo';
 
   @override
@@ -7141,9 +6814,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get medEditDetailsTitle => 'Editar detalles';
 
   @override
-  String get medTitleRequired => 'Escribe un título o adjunta un archivo.';
-
-  @override
   String get medDateInvalid => 'Fecha no válida (dd/mm/aaaa).';
 
   @override
@@ -7255,9 +6925,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get remindersFormSubtype => 'Tipo';
-
-  @override
-  String get remindersFormSubtypeNone => 'Ninguno';
 
   @override
   String get remindersDoneTitle => '¿Hecho?';
@@ -8017,13 +7684,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Si la eliminaste hace poco y el periodo de espera no ha terminado, usa «Recuperar cuenta»: puedes cancelar la eliminación o eliminarla ahora para empezar de nuevo.';
 
   @override
-  String get accountDeleteOptionTitle => 'Eliminar la cuenta';
-
-  @override
-  String get accountDeleteOptionBody =>
-      'La desactivamos de inmediato. Durante un tiempo puedes cambiar de opinión iniciando sesión con el mismo correo; después eliminamos tus datos. Quedan algunos datos, por ejemplo las facturas, que la ley nos obliga a conservar, y un código, sin tu nombre ni tu correo, que prueba la eliminación.';
-
-  @override
   String get consentGateTitle => 'Antes de continuar';
 
   @override
@@ -8258,9 +7918,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String storeBillingTrialDaysLeft(String days) {
     return 'Prueba gratuita: quedan $days días';
   }
-
-  @override
-  String get storeBillingRestoreDone => 'Restauración completada.';
 
   @override
   String get storeBillingPricesFromStore =>
