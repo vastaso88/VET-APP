@@ -27,7 +27,7 @@ class ReminderMenuButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton<_Action>(
       tooltip: context.l10n.remindersMenuTooltip,
-      icon: const Icon(Icons.more_vert_rounded, color: AppColors.text),
+      icon: Icon(Icons.more_vert_rounded, color: AppColors.text),
       onSelected: (action) => _run(context, action),
       itemBuilder: (menuContext) => [
         PopupMenuItem(value: _Action.edit, child: Text(menuContext.l10n.commonEdit)),
@@ -40,7 +40,7 @@ class ReminderMenuButton extends StatelessWidget {
           value: _Action.delete,
           child: Text(
             menuContext.l10n.commonDelete,
-            style: const TextStyle(color: AppColors.danger),
+            style: TextStyle(color: AppColors.danger),
           ),
         ),
       ],

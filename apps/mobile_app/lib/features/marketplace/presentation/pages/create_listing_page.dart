@@ -806,7 +806,7 @@ class _LocationSection extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.shield_outlined, color: AppColors.secondaryStrong, size: 18),
+              Icon(Icons.shield_outlined, color: AppColors.secondaryStrong, size: 18),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(

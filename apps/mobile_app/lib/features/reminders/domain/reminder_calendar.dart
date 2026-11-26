@@ -106,7 +106,7 @@ class DayMark extends StatelessWidget {
         borderRadius: course ? BorderRadius.circular(height * 0.28) : null,
         color: AppColors.secondarySoft,
         border: Border.all(
-          color: counted ? AppColors.borderStrong : single!.color,
+          color: counted ? AppColors.borderStrong : AppIdentityColors.shown(single!.color),
           width: counted ? 1 : 2,
         ),
       ),

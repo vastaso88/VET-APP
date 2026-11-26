@@ -254,7 +254,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
                 },
               ),
             ListTile(
-              leading: const Icon(Icons.delete_outline, color: AppColors.danger),
+              leading: Icon(Icons.delete_outline, color: AppColors.danger),
               title: Text(photo.isVideo
                   ? context.l10n.petsMediaDeleteVideoAction
                   : context.l10n.petsMediaDeletePhotoAction),

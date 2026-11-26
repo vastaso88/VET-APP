@@ -391,7 +391,7 @@ class _ListingRow extends StatelessWidget {
                 ),
         ),
       ),
-      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+      trailing: Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
       onTap: onTap,
     );
   }
@@ -484,7 +484,7 @@ class _DistanceFilterRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return PillRow(
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.only(right: AppSpacing.sm),
           child: Icon(Icons.near_me_outlined, size: 18, color: AppColors.secondaryText),
         ),
@@ -616,7 +616,7 @@ class _RestrictionNotice extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.block_rounded, color: AppColors.dangerStrong, size: 20),
+          Icon(Icons.block_rounded, color: AppColors.dangerStrong, size: 20),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(

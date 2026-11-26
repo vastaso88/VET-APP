@@ -235,10 +235,10 @@ class PetSwitchTile extends StatelessWidget {
     // A Material (not a decorated Container): the tile paints its ink on the
     // nearest Material, which a coloured box in between would hide.
     return Material(
-      color: AppColors.onMedia,
+      color: AppColors.surfaceElevated,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.medium),
-        side: const BorderSide(color: AppColors.borderStrong, width: 1.5),
+        side: BorderSide(color: AppColors.borderStrong, width: 1.5),
       ),
       child: SwitchListTile(
         value: value,

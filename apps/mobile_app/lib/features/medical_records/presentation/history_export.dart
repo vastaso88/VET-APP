@@ -23,9 +23,11 @@ import 'record_category_labels.dart';
 /// for the PDF, by [historySymbolKey]. One that cannot be drawn is left out:
 /// the category name next to it says the same.
 Future<Map<String, Uint8List>> renderHistorySymbols({
-  Color color = AppColors.primary,
+  Color? color,
   int size = 64,
 }) async {
+  // The PDF is paper: its symbols keep the light accent in both themes.
+  color ??= AppPalette.light.primary;
   final icons = <String, IconData>{
     for (final category in RecordCategory.values) category.key: category.icon,
     'condition': conditionIcon,

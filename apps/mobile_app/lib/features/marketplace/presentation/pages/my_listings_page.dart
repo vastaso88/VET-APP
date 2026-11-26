@@ -120,7 +120,7 @@ class _MyListingsPageState extends State<MyListingsPage> {
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         itemCount: listings.length,
-        separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.border),
+        separatorBuilder: (_, __) => Divider(height: 1, color: AppColors.border),
         itemBuilder: (context, index) {
           final listing = listings[index];
           return Column(
@@ -142,7 +142,7 @@ class _MyListingsPageState extends State<MyListingsPage> {
                   ].join(' · '),
                   style: AppTextStyles.bodySmall,
                 ),
-                trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+                trailing: Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
               ),
               if (listing.removal case final removal?)
                 Padding(

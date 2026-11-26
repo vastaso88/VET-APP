@@ -152,13 +152,13 @@ class _EventsPageState extends State<EventsPage> {
               ),
               ListTile(
                 title: Text(allLabel),
-                trailing: selected == null ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
+                trailing: selected == null ? Icon(Icons.check_rounded, color: AppColors.primary) : null,
                 onTap: () => Navigator.of(sheetContext).pop(_Choice<T>.all()),
               ),
               for (final option in options)
                 ListTile(
                   title: Text(labelOf(option)),
-                  trailing: option == selected ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
+                  trailing: option == selected ? Icon(Icons.check_rounded, color: AppColors.primary) : null,
                   onTap: () => Navigator.of(sheetContext).pop(_Choice<T>.value(option)),
                 ),
             ],
@@ -453,7 +453,7 @@ class _EventCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.place_rounded, size: 18, color: AppColors.secondaryStrong),
+                Icon(Icons.place_rounded, size: 18, color: AppColors.secondaryStrong),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text.rich(
@@ -497,7 +497,7 @@ class _EventCard extends StatelessWidget {
                 ),
               ),
               if (url != null)
-                const Icon(Icons.open_in_new_rounded, size: 18, color: AppColors.mutedText),
+                Icon(Icons.open_in_new_rounded, size: 18, color: AppColors.mutedText),
             ],
           ),
           if (event.organizerName != null) ...[

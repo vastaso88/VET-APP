@@ -68,7 +68,7 @@ class _ClosedAccountPageState extends State<ClosedAccountPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(Icons.lock_outline_rounded, size: 40, color: AppColors.mutedText),
+            Icon(Icons.lock_outline_rounded, size: 40, color: AppColors.mutedText),
             const SizedBox(height: AppSpacing.md),
             Text(l10n.ageClosedBody, style: AppTextStyles.body.copyWith(color: AppColors.text)),
             const SizedBox(height: AppSpacing.xl),
@@ -91,7 +91,7 @@ class _ClosedAccountPageState extends State<ClosedAccountPage> {
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.danger,
-                side: const BorderSide(color: AppColors.danger),
+                side: BorderSide(color: AppColors.danger),
               ),
               child: Text(l10n.settingsAccountDelete),
             ),

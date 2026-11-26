@@ -27,7 +27,7 @@ class LimitedMarketplaceNotice extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.lock_outline_rounded,
+              Icon(Icons.lock_outline_rounded,
                   color: AppColors.info, size: 20),
               const SizedBox(width: AppSpacing.sm),
               Expanded(

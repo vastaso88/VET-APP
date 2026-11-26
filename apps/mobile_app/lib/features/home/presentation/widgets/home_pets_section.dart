@@ -198,11 +198,11 @@ class _AddCard extends StatelessWidget {
             Container(
               width: petRingAvatarExtent(context, _faceSize),
               height: petRingAvatarExtent(context, _faceSize),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.secondarySoft,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.add_rounded, color: AppColors.primary),
+              child: Icon(Icons.add_rounded, color: AppColors.primary),
             ),
             const SizedBox(height: 6),
             // One word in a narrow card ("Hinzufügen"): it shrinks a little

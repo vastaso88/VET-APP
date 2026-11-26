@@ -65,7 +65,7 @@ class WalkMiniMap extends StatelessWidget {
                       for (final point in segment)
                         latlong.LatLng(point.coordinates.latitude, point.coordinates.longitude),
                     ],
-                    color: AppColors.primary,
+                    color: AppColors.map.primary,
                     strokeWidth: 5,
                     borderColor: AppColors.onMedia,
                     borderStrokeWidth: 2.5,
@@ -82,10 +82,10 @@ class WalkMiniMap extends StatelessWidget {
                     point: latlong.LatLng(point.latitude, point.longitude),
                     width: 14,
                     height: 14,
-                    child: const DecoratedBox(
+                    child: DecoratedBox(
                       key: ValueKey('walk-mini-photo-dot'),
                       decoration: BoxDecoration(
-                        color: AppColors.secondaryStrong,
+                        color: AppColors.map.secondaryStrong,
                         shape: BoxShape.circle,
                         border: Border.fromBorderSide(BorderSide(color: AppColors.onMedia, width: 2)),
                       ),
@@ -99,13 +99,13 @@ class WalkMiniMap extends StatelessWidget {
           ),
           // The basemap's credit, kept to a tiny non-interactive line: the
           // stock attribution widgets are sized for full-screen maps.
-          const Align(
+          Align(
             alignment: Alignment.bottomRight,
             child: DecoratedBox(
               decoration: BoxDecoration(color: AppColors.onMediaMuted),
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                child: Text('© OpenStreetMap', style: TextStyle(fontSize: 12, color: AppColors.text)),
+                child: Text('© OpenStreetMap', style: TextStyle(fontSize: 12, color: AppColors.map.text)),
               ),
             ),
           ),
@@ -129,7 +129,7 @@ class WalkMapUnavailable extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.map_outlined, color: AppColors.mutedText, size: 28),
+          Icon(Icons.map_outlined, color: AppColors.mutedText, size: 28),
           const SizedBox(height: 4),
           Text(context.l10n.walksMapUnavailable, style: AppTextStyles.caption),
         ],

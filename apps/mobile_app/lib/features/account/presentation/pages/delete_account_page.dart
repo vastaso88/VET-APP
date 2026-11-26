@@ -143,7 +143,7 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.warning_amber_rounded, color: AppColors.danger),
+                      Icon(Icons.warning_amber_rounded, color: AppColors.danger),
                       const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(

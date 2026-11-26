@@ -110,8 +110,8 @@ class PetTabBar extends StatelessWidget {
             decoration: BoxDecoration(
               border: Border(
                 bottom: selected
-                    ? const BorderSide(color: AppColors.primary, width: 3)
-                    : const BorderSide(color: AppColors.border),
+                    ? BorderSide(color: AppColors.primary, width: 3)
+                    : BorderSide(color: AppColors.border),
               ),
             ),
             child: ConstrainedBox(

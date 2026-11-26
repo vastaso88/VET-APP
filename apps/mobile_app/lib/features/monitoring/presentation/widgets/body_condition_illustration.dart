@@ -23,6 +23,15 @@ class BodyConditionIllustration extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The painters read the theme's colours while painting: a switch between
+    // light and dark gives them new render objects, so they paint again.
+    return KeyedSubtree(
+      key: ValueKey(AppColors.palette.brightness),
+      child: _views(),
+    );
+  }
+
+  Widget _views() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [

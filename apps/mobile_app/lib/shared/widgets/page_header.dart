@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../design_system/atoms/outline_icon_button.dart';
+import '../../design_system/tokens/app_colors.dart';
 import '../../design_system/tokens/app_spacing.dart';
 import '../../design_system/tokens/app_text_styles.dart';
 import '../../l10n/l10n.dart';
@@ -73,12 +74,19 @@ class PageHeader extends StatelessWidget implements PreferredSizeWidget {
     final back = showBack ??
         (onBack != null || (ModalRoute.of(context)?.impliesAppBarDismissal ?? false));
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      // Dark icons in the phone's status bar, as over every light page.
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarBrightness: Brightness.light,
-        statusBarIconBrightness: Brightness.dark,
-      ),
+      // Icons in the phone's status bar that stand out from the page: dark
+      // over the light theme, light over the dark one.
+      value: AppColors.isDark
+          ? const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarBrightness: Brightness.dark,
+              statusBarIconBrightness: Brightness.light,
+            )
+          : const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarBrightness: Brightness.light,
+              statusBarIconBrightness: Brightness.dark,
+            ),
       child: SafeArea(
         bottom: false,
         child: Padding(

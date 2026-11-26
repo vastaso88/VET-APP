@@ -34,7 +34,8 @@ class QuokkaLogo extends StatelessWidget {
   }
 }
 
-/// The head as in the app icon: paper colour on a petrol tile, for light pages.
+/// The head as in the app icon: paper colour on a petrol tile, for light pages
+/// (in the dark theme with a paper frame around the tile).
 class QuokkaHeadTile extends StatelessWidget {
   const QuokkaHeadTile({super.key, this.size = 56});
 
@@ -50,6 +51,9 @@ class QuokkaHeadTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.brandDeep,
           borderRadius: BorderRadius.circular(size * 0.26),
+          // On the dark page the petrol tile would melt into the ground: a
+          // paper frame keeps the quokka on its own light-edged tile.
+          border: AppColors.isDark ? Border.all(color: AppColors.brandPaper, width: 3) : null,
         ),
         child: QuokkaLogo.headOnDark(size: size * 0.76),
       ),

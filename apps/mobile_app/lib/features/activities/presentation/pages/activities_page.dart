@@ -179,7 +179,7 @@ class _ActivityRow extends StatelessWidget {
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: AppColors.border)),
           ),
           child: Row(
@@ -236,7 +236,7 @@ class _ActivityRow extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+              Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
             ],
           ),
         ),

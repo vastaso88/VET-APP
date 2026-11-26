@@ -23,13 +23,16 @@ enum RadarCategory {
   breeder(Icons.pets, AppCategoryColors.breeder),
   other(Icons.place, AppCategoryColors.other);
 
-  const RadarCategory(this.icon, this.color);
+  const RadarCategory(this.icon, this.mapColor);
 
   final IconData icon;
 
-  /// Dark enough for a white icon on top (map markers) and for the icon
-  /// itself on the app's light surfaces.
-  final Color color;
+  /// On the map tiles (light in both themes): dark enough for a white icon
+  /// on top of a marker.
+  final Color mapColor;
+
+  /// The icon itself on the app's own grounds, in the theme in use.
+  Color get color => AppCategoryColors.shown(mapColor);
 
   /// Plural label, used for filters and the legend.
   String get label {
@@ -238,7 +241,7 @@ class RadarPendingMark extends StatelessWidget {
           fontSize: size * 0.62,
           height: 1,
           fontWeight: FontWeight.w800,
-          color: AppColors.text,
+          color: AppColors.onWarning,
         ),
       ),
     );

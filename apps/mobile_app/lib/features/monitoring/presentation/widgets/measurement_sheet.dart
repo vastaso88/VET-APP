@@ -239,7 +239,7 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
                   controller: _dateController,
                   validator: _validateDate,
                   onPick: _pickDate,
-                  pickIcon: const Icon(Icons.calendar_today_outlined,
+                  pickIcon: Icon(Icons.calendar_today_outlined,
                       size: 18, color: AppColors.primary),
                   style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
                   decoration: InputDecoration(hintText: l10n.remindersDatePlaceholder),

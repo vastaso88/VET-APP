@@ -185,7 +185,7 @@ class _BodyConditionGuideDialogState extends State<BodyConditionGuideDialog> {
                 ),
               ),
             ),
-            const Divider(height: 1, color: AppColors.border),
+            Divider(height: 1, color: AppColors.border),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
               child: Column(

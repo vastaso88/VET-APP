@@ -118,7 +118,7 @@ class _MapsDemoPageState extends State<MapsDemoPage> {
               message: activity.title,
               child: Icon(
                 activity.kind == LocalActivityKind.event ? Icons.event : Icons.medical_services,
-                color: AppColors.info,
+                color: AppColors.map.info,
               ),
             ),
           ),
@@ -135,7 +135,7 @@ class _MapsDemoPageState extends State<MapsDemoPage> {
             height: 36,
             child: Tooltip(
               message: '${listing.title} (posizione approssimata)',
-              child: const Icon(Icons.storefront, color: AppColors.warning),
+              child: Icon(Icons.storefront, color: AppColors.map.warning),
             ),
           ),
         )

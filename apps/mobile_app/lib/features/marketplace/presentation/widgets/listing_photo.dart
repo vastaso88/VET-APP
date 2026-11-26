@@ -27,7 +27,7 @@ class _NoPhoto extends StatelessWidget {
   const _NoPhoto();
 
   @override
-  Widget build(BuildContext context) => const ColoredBox(
+  Widget build(BuildContext context) => ColoredBox(
         color: AppColors.surface,
         child: Center(child: Icon(Icons.broken_image_outlined, color: AppColors.mutedText)),
       );

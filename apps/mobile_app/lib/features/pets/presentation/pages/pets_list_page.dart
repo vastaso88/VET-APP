@@ -178,7 +178,7 @@ class _PetsListContent extends StatelessWidget {
                 )
               : ListView.separated(
                   itemCount: pets.length + (memorialCount > 0 ? 1 : 0),
-                  separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.border),
+                  separatorBuilder: (_, __) => Divider(height: 1, color: AppColors.border),
                   itemBuilder: (context, index) {
                     if (index == pets.length) {
                       return Padding(
@@ -251,7 +251,7 @@ class MemoriesListRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.xs),
           child: Row(
             children: [
-              const Icon(Icons.auto_awesome_outlined, size: 20, color: AppColors.mutedText),
+              Icon(Icons.auto_awesome_outlined, size: 20, color: AppColors.mutedText),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
@@ -275,7 +275,7 @@ class MemoriesListRow extends StatelessWidget {
                 '$count',
                 style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
               ),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+              Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
             ],
           ),
         ),
@@ -323,7 +323,7 @@ class _PetRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.xs),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+              Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
             ],
           ),
         ),

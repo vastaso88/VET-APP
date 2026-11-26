@@ -190,23 +190,26 @@ class _DataActionRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
-    this.color = AppColors.text,
+    this.color,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final Color color;
+
+  /// The text colour when null.
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
+    final color = this.color ?? AppColors.text;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: AppColors.border)),
           ),
           child: Row(
@@ -219,7 +222,7 @@ class _DataActionRow extends StatelessWidget {
                   style: AppTextStyles.body.copyWith(color: color, fontWeight: FontWeight.w600),
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+              Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
             ],
           ),
         ),
@@ -245,7 +248,7 @@ class _EmergencyNote extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.local_hospital_outlined, color: AppColors.danger, size: 20),
+          Icon(Icons.local_hospital_outlined, color: AppColors.danger, size: 20),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(

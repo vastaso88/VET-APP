@@ -202,7 +202,7 @@ class _FolderCard extends StatelessWidget {
               top: _coverHeight * scale - side / 2,
               child: Container(
                 padding: const EdgeInsets.all(_faceEdge),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppColors.surfaceElevated,
                   shape: BoxShape.circle,
                 ),
@@ -252,8 +252,8 @@ class _FolderCard extends StatelessWidget {
             child: Container(
               width: 48,
               height: 48,
-              decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-              child: const Icon(Icons.add_rounded, size: 28, color: AppColors.onPrimary),
+              decoration: BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+              child: Icon(Icons.add_rounded, size: 28, color: AppColors.onPrimary),
             ),
           ),
           Padding(

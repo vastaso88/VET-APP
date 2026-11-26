@@ -1200,7 +1200,7 @@ class _ServiceRow extends StatelessWidget {
         formatDistance(entry.distanceMeters),
       ].join(' · '),
       leading: RadarCategoryBadge(category: entry.category, pending: pending),
-      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+      trailing: Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
       onTap: onTap,
     );
   }
@@ -1239,7 +1239,7 @@ class _ClinicRow extends StatelessWidget {
             ),
           IconButton(
             tooltip: context.l10n.localEventsDirectionsTooltip(entry.title),
-            icon: const Icon(Icons.directions_outlined, color: AppColors.secondaryStrong),
+            icon: Icon(Icons.directions_outlined, color: AppColors.secondaryStrong),
             onPressed: () => openDirections(entry.location),
           ),
         ],

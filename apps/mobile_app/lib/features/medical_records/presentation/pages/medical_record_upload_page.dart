@@ -477,7 +477,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                               ),
                               selectedColor: AppColors.primary,
                               backgroundColor: AppColors.surface,
-                              side: const BorderSide(color: AppColors.borderStrong),
+                              side: BorderSide(color: AppColors.borderStrong),
                               showCheckmark: false,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(
@@ -540,7 +540,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                           controller: _dateController,
                           validator: _validateDate,
                           onPick: _pickDate,
-                          pickIcon: const Icon(
+                          pickIcon: Icon(
                             Icons.calendar_today_outlined,
                             size: 18,
                             color: AppColors.secondaryStrong,
@@ -590,7 +590,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                 child: FilledButton(
                   onPressed: _canSave ? _save : null,
                   child: _saving
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 20,
                           height: 20,
                           child: PetLoader.small(color: AppColors.onPrimary),
@@ -640,7 +640,7 @@ class _SuggestionBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.lightbulb_outline_rounded,
             size: 18,
             color: AppColors.secondaryStrong,
@@ -681,7 +681,7 @@ class _PickArea extends StatelessWidget {
               color: AppColors.secondarySoft,
               borderRadius: BorderRadius.circular(AppRadii.medium),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.upload_file_outlined,
               size: 22,
               color: AppColors.secondaryStrong,
@@ -731,7 +731,7 @@ class _PickedFileCard extends StatelessWidget {
               color: AppColors.secondarySoft,
               borderRadius: BorderRadius.circular(AppRadii.medium),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.description_outlined,
               color: AppColors.primary,
             ),

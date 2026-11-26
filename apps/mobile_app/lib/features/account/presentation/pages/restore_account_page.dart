@@ -120,7 +120,7 @@ class _RestoreAccountPageState extends State<RestoreAccountPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(Icons.hourglass_bottom_rounded, size: 40, color: AppColors.mutedText),
+            Icon(Icons.hourglass_bottom_rounded, size: 40, color: AppColors.mutedText),
             const SizedBox(height: AppSpacing.md),
             Text(
               l10n.accountRestoreBody(date),

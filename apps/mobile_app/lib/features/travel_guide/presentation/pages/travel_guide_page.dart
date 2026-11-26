@@ -267,7 +267,7 @@ class _TravelGuidePageState extends State<TravelGuidePage> {
             : '${country.flag}  ${country.name}',
         placeholder: country == null,
         onTap: () => _pickCountry(origin: origin),
-        trailing: const Icon(Icons.search, color: AppColors.mutedText),
+        trailing: Icon(Icons.search, color: AppColors.mutedText),
       ),
     );
   }
@@ -290,7 +290,7 @@ class _NoticeBox extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline, color: AppColors.warningStrong, size: 20),
+          Icon(Icons.info_outline, color: AppColors.warningStrong, size: 20),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(text, style: AppTextStyles.bodySmall.copyWith(color: AppColors.text)),

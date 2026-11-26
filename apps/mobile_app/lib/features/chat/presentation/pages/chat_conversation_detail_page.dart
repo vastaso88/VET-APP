@@ -667,7 +667,7 @@ class _NewConversationPlaceholder extends StatelessWidget {
                   color: AppColors.secondarySoft,
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.chat_bubble_outline_rounded,
                   color: AppColors.primary,
                   size: 26,
@@ -677,7 +677,7 @@ class _NewConversationPlaceholder extends StatelessWidget {
             Text(
               context.l10n.chatNewConversationOnPet(petName),
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.text,
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
@@ -687,7 +687,7 @@ class _NewConversationPlaceholder extends StatelessWidget {
             Text(
               context.l10n.chatNewConversationPrompt,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.secondaryText,
                 fontSize: 14,
                 height: 1.4,
@@ -751,7 +751,7 @@ class _ExampleQuestion extends StatelessWidget {
   Widget build(BuildContext context) {
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppRadii.medium),
-      side: const BorderSide(color: AppColors.secondary),
+      side: BorderSide(color: AppColors.secondary),
     );
     return Semantics(
       button: true,
@@ -777,7 +777,7 @@ class _ExampleQuestion extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  const Icon(Icons.north_west_rounded, size: 18, color: AppColors.primary),
+                  Icon(Icons.north_west_rounded, size: 18, color: AppColors.primary),
                 ],
               ),
             ),
@@ -843,7 +843,7 @@ class _ChatTypingBubbleState extends State<ChatTypingBubble> {
             Flexible(
               child: Text(
                 _slow ? context.l10n.chatTypingSlowText : context.l10n.chatTypingText,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.secondaryText,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,

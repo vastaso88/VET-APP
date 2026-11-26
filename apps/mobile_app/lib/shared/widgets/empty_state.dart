@@ -118,7 +118,7 @@ class StateIcon extends StatelessWidget {
       width: EmptyState.figureSize,
       height: EmptyState.figureSize,
       alignment: Alignment.center,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.secondarySoft,
         shape: BoxShape.circle,
       ),

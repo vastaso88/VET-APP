@@ -22,6 +22,17 @@ def test_the_alternative_palette_meets_wcag_aa_too() -> None:
     assert not failed, failed
 
 
+def test_the_dark_theme_meets_wcag_aa() -> None:
+    dark = contrast_check.parse_tokens(dark=True)
+    failed = [row for row in contrast_check.evaluate(dark, contrast_check.DARK_PAIRS) if not row[5]]
+    failed += [row for row in contrast_check.evaluate_shown_on_dark(dark) if not row[5]]
+    assert not failed, failed
+
+
+def test_the_two_themes_name_the_same_colours() -> None:
+    assert contrast_check.parse_tokens().keys() == contrast_check.parse_tokens(dark=True).keys()
+
+
 def test_the_ratio_formula_matches_the_known_extremes() -> None:
     assert round(contrast_check.contrast("000000", "FFFFFF"), 1) == 21.0
     assert round(contrast_check.contrast("777777", "777777"), 1) == 1.0

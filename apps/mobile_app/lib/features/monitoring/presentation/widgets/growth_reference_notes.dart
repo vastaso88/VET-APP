@@ -65,7 +65,7 @@ Future<AdultSizeChoice?> showAdultSizeSheet(
                 contentPadding: EdgeInsets.zero,
                 title: Text(adultSizeLabel(sizeClass, system)),
                 trailing: sizeClass == current
-                    ? const Icon(Icons.check_rounded, color: AppColors.primary)
+                    ? Icon(Icons.check_rounded, color: AppColors.primary)
                     : null,
                 onTap: () =>
                     Navigator.of(context).pop(AdultSizeChoice(sizeClass)),

@@ -363,7 +363,7 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
                         width: double.infinity,
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.attach_file_rounded,
                               color: AppColors.secondaryStrong,
                             ),
@@ -425,7 +425,7 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
                         ? null
                         : _save,
                     child: _saving
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 20,
                             height: 20,
                             child: PetLoader.small(color: AppColors.onPrimary),
@@ -460,7 +460,7 @@ class _DateField extends StatelessWidget {
       controller: controller,
       validator: validator,
       onPick: onPick,
-      pickIcon: const Icon(
+      pickIcon: Icon(
         Icons.calendar_today_outlined,
         size: 18,
         color: AppColors.secondaryStrong,
@@ -495,7 +495,7 @@ class _StatusChip extends StatelessWidget {
       ),
       selectedColor: AppColors.primary,
       backgroundColor: AppColors.surface,
-      side: const BorderSide(color: AppColors.borderStrong),
+      side: BorderSide(color: AppColors.borderStrong),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),

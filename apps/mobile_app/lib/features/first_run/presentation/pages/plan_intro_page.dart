@@ -82,7 +82,7 @@ class _PlanIntroPageState extends State<PlanIntroPage> {
   @override
   Widget build(BuildContext context) {
     if (!_loaded) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(child: Center(child: PetLoader())),
       );
@@ -177,7 +177,7 @@ class _TestPeriodView extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.science_outlined,
+                      Icon(Icons.science_outlined,
                           color: AppColors.onPrimary),
                       const SizedBox(width: AppSpacing.sm),
                       Text(
@@ -237,7 +237,7 @@ class _TrialCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.celebration_outlined, color: AppColors.onPrimary),
+              Icon(Icons.celebration_outlined, color: AppColors.onPrimary),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(

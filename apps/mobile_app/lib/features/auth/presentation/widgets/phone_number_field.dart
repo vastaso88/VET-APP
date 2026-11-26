@@ -130,7 +130,7 @@ class PhoneNumberField extends StatelessWidget {
                               style: const TextStyle(fontSize: 22)),
                           const SizedBox(width: AppSpacing.xs),
                           Text(dial, style: AppTextStyles.body.copyWith(color: AppColors.text)),
-                          const Icon(Icons.arrow_drop_down_rounded, color: AppColors.mutedText),
+                          Icon(Icons.arrow_drop_down_rounded, color: AppColors.mutedText),
                         ],
                       ),
                     ),

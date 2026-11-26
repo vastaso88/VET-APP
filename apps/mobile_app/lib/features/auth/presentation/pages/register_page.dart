@@ -58,7 +58,7 @@ class _TermsAcceptanceTextState extends State<_TermsAcceptanceText> {
 
   @override
   Widget build(BuildContext context) {
-    const base = TextStyle(
+    final base = TextStyle(
         fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.text);
     final link = base.copyWith(
         color: AppColors.primary, decoration: TextDecoration.underline);

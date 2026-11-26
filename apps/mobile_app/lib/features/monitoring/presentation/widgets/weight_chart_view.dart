@@ -111,7 +111,7 @@ class WeightChartView extends StatelessWidget {
                 drawVerticalLine: false,
                 horizontalInterval: data.yInterval,
                 getDrawingHorizontalLine: (_) =>
-                    const FlLine(color: AppColors.border, strokeWidth: 1),
+                    FlLine(color: AppColors.border, strokeWidth: 1),
               ),
               titlesData: FlTitlesData(
                 topTitles: const AxisTitles(),
@@ -164,7 +164,7 @@ class WeightChartView extends StatelessWidget {
                   for (final _ in indexes)
                     if (identical(bar, pointsBar))
                       TouchedSpotIndicatorData(
-                        const FlLine(color: AppColors.primary, strokeWidth: 1),
+                        FlLine(color: AppColors.primary, strokeWidth: 1),
                         FlDotData(
                           getDotPainter: (_, __, ___, ____) =>
                               FlDotCirclePainter(
@@ -227,7 +227,7 @@ class WeightChartView extends StatelessWidget {
     return LineTooltipItem(
       '${formatMeasuredWeight(measurement.weightKg, system, alwaysKg: data.alwaysKg)}\n$when$level',
       AppTextStyles.caption
-          .copyWith(color: AppColors.onMedia, fontWeight: FontWeight.w700),
+          .copyWith(color: AppColors.onInverse, fontWeight: FontWeight.w700),
     );
   }
 }

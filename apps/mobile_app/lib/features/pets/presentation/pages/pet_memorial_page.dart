@@ -259,7 +259,7 @@ class _PetMemorialPageState extends State<PetMemorialPage> {
     return PetsScaffold(
       title: _pet.name,
       onBack: () => Navigator.of(context).maybePop(),
-      badge: const Icon(
+      badge: Icon(
         Icons.auto_awesome_outlined,
         color: AppColors.mutedText,
       ),
@@ -287,7 +287,7 @@ class _PetMemorialPageState extends State<PetMemorialPage> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.lock_outline_rounded, size: 20, color: AppColors.mutedText),
+                        Icon(Icons.lock_outline_rounded, size: 20, color: AppColors.mutedText),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Text(
@@ -381,7 +381,7 @@ class _PetMemorialPageState extends State<PetMemorialPage> {
                 _ChipNote(pet: _pet),
               ],
               const SizedBox(height: AppSpacing.xxl),
-              const Divider(color: AppColors.border),
+              Divider(color: AppColors.border),
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton(
@@ -389,7 +389,7 @@ class _PetMemorialPageState extends State<PetMemorialPage> {
                   onPressed: _busy ? null : _deleteForever,
                   child: Text(
                     l10n.petsMemoriesRemoveAction,
-                    style: const TextStyle(color: AppColors.danger),
+                    style: TextStyle(color: AppColors.danger),
                   ),
                 ),
               ),
@@ -428,7 +428,7 @@ class _Header extends StatelessWidget {
         TextButton.icon(
           key: const ValueKey('memorial-change-date'),
           onPressed: onChangeDate,
-          icon: const Icon(
+          icon: Icon(
             Icons.edit_calendar_outlined,
             size: 16,
             color: AppColors.mutedText,
@@ -581,7 +581,7 @@ class _ThumbState extends State<_Thumb> {
             builder: (context, snapshot) {
               final bytes = snapshot.data;
               return bytes == null
-                  ? const ColoredBox(color: AppColors.secondarySoft)
+                  ? ColoredBox(color: AppColors.secondarySoft)
                   : Image.memory(bytes, fit: BoxFit.cover);
             },
           ),
@@ -628,7 +628,7 @@ class _LinkRow extends StatelessWidget {
             Icon(icon, size: 20, color: AppColors.secondaryText),
             const SizedBox(width: AppSpacing.md),
             Expanded(child: Text(label, style: AppTextStyles.body)),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+            Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
           ],
         ),
       ),
@@ -656,7 +656,7 @@ class _ChipNote extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
+          Icon(
             Icons.info_outline_rounded,
             size: 18,
             color: AppColors.secondaryText,

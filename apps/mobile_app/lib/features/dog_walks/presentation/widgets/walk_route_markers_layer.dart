@@ -20,9 +20,9 @@ MarkerLayer buildWalkRouteMarkersLayer(WalkRouteMarkers markers, {bool compact =
     return MarkerLayer(
       markers: [
         for (final pause in markers.pausePoints)
-          _dot(pause, AppColors.warning, 11),
-        if (markers.start != null) _dot(markers.start!, AppColors.success, 16),
-        if (markers.finish != null) _dot(markers.finish!, AppColors.primary, 16, icon: Icons.flag_rounded),
+          _dot(pause, AppColors.map.warning, 11),
+        if (markers.start != null) _dot(markers.start!, AppColors.map.success, 16),
+        if (markers.finish != null) _dot(markers.finish!, AppColors.map.primary, 16, icon: Icons.flag_rounded),
       ],
     );
   }
@@ -33,21 +33,21 @@ MarkerLayer buildWalkRouteMarkersLayer(WalkRouteMarkers markers, {bool compact =
           point: latlong.LatLng(markers.start!.latitude, markers.start!.longitude),
           width: 26,
           height: 26,
-          child: const Icon(Icons.flag_circle_rounded, color: AppColors.success, size: 26),
+          child: Icon(Icons.flag_circle_rounded, color: AppColors.map.success, size: 26),
         ),
       for (final pause in markers.pausePoints)
         Marker(
           point: latlong.LatLng(pause.latitude, pause.longitude),
           width: 18,
           height: 18,
-          child: const Icon(Icons.pause_circle_filled_rounded, color: AppColors.warning, size: 18),
+          child: Icon(Icons.pause_circle_filled_rounded, color: AppColors.map.warning, size: 18),
         ),
       if (markers.finish != null)
         Marker(
           point: latlong.LatLng(markers.finish!.latitude, markers.finish!.longitude),
           width: 28,
           height: 28,
-          child: const Icon(Icons.sports_score_rounded, color: AppColors.primary, size: 28),
+          child: Icon(Icons.sports_score_rounded, color: AppColors.map.primary, size: 28),
         ),
     ],
   );

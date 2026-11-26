@@ -58,9 +58,9 @@ class _BadgeEarnedDialog extends StatelessWidget {
                 width: 72,
                 height: 72,
                 alignment: Alignment.center,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                     color: AppColors.secondarySoft, shape: BoxShape.circle),
-                child: const Icon(Icons.emoji_events_rounded,
+                child: Icon(Icons.emoji_events_rounded,
                     size: 36, color: AppColors.warning),
               ),
             ),

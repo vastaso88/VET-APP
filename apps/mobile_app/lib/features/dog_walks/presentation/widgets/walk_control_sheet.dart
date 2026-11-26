@@ -116,7 +116,7 @@ Future<void> _finishWithProgress(BuildContext context, PetProfile pet) async {
       duration: const Duration(minutes: 1),
       content: Row(
         children: [
-          const PetLoader.small(color: AppColors.onMedia),
+          PetLoader.small(color: AppColors.onInverse),
           const SizedBox(width: 12),
           Text(context.l10n.walksSavingSnackbar),
         ],

@@ -58,7 +58,7 @@ class _NotificationsOffBannerState extends State<NotificationsOffBanner> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.notifications_off_outlined, size: 20, color: AppColors.warning),
+                Icon(Icons.notifications_off_outlined, size: 20, color: AppColors.warning),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(

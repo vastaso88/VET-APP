@@ -591,7 +591,7 @@ class _HistoryRow extends StatelessWidget {
           ),
           PopupMenuButton<bool>(
             key: ValueKey('history-menu-${measurement.id}'),
-            icon: const Icon(Icons.more_vert_rounded,
+            icon: Icon(Icons.more_vert_rounded,
                 size: 20, color: AppColors.mutedText),
             onSelected: (edit) => edit ? onEdit() : onDelete(),
             itemBuilder: (context) => [

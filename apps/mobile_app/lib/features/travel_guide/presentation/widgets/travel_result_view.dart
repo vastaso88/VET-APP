@@ -155,7 +155,7 @@ class _BlockView extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(top: 6, right: AppSpacing.sm),
                     child: Icon(Icons.circle, size: 5, color: AppColors.mutedText),
                   ),

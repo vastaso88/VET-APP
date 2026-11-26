@@ -283,14 +283,14 @@ class _PhotoThumbState extends State<PhotoThumb> {
           future: _bytes,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const ColoredBox(
+              return ColoredBox(
                 color: AppColors.surfaceElevated,
                 child: Center(child: PetLoader.small()),
               );
             }
             final bytes = snapshot.data;
             if (bytes == null) {
-              return const ColoredBox(
+              return ColoredBox(
                 color: AppColors.surfaceElevated,
                 child: Icon(Icons.broken_image_outlined, color: AppColors.mutedText),
               );

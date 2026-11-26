@@ -294,7 +294,7 @@ class _ExportDataPageState extends State<ExportDataPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.download_rounded, color: AppColors.secondaryStrong),
+                Icon(Icons.download_rounded, color: AppColors.secondaryStrong),
                 const SizedBox(height: AppSpacing.sm),
                 Text(l10n.accountExportIntro, style: AppTextStyles.bodySmall),
                 const SizedBox(height: AppSpacing.sm),

@@ -185,7 +185,7 @@ class _ConditionRow extends StatelessWidget {
               color: AppColors.secondarySoft,
               borderRadius: BorderRadius.circular(AppRadii.medium),
             ),
-            child: const Icon(
+            child: Icon(
               conditionIcon,
               size: 17,
               color: AppColors.secondaryStrong,
@@ -236,7 +236,7 @@ class _ConditionRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.xs),
-          const Icon(
+          Icon(
             Icons.chevron_right_rounded,
             size: 18,
             color: AppColors.mutedText,

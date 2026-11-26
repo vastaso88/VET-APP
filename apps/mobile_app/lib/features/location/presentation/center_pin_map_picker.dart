@@ -71,10 +71,10 @@ class _CenterPinMapPickerState extends State<CenterPinMapPicker> {
         ),
         // Fixed pin at the center: the map moves under it. The padding lifts
         // the icon so its tip, not its middle, marks the spot.
-        const IgnorePointer(
+        IgnorePointer(
           child: Padding(
             padding: EdgeInsets.only(bottom: 36),
-            child: Icon(Icons.location_on, size: 44, color: AppColors.danger),
+            child: Icon(Icons.location_on, size: 44, color: AppColors.map.danger),
           ),
         ),
       ],

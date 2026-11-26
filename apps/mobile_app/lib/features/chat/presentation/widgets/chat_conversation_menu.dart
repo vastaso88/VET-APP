@@ -31,7 +31,7 @@ class ChatConversationMenuButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton<_Action>(
       tooltip: context.l10n.chatMenuTooltip,
-      icon: const Icon(Icons.more_vert_rounded, color: AppColors.text),
+      icon: Icon(Icons.more_vert_rounded, color: AppColors.text),
       onSelected: (action) => _run(context, action),
       itemBuilder: (_) => [
         PopupMenuItem(
@@ -50,7 +50,7 @@ class ChatConversationMenuButton extends StatelessWidget {
           value: _Action.delete,
           child: Text(
             context.l10n.commonDelete,
-            style: const TextStyle(color: AppColors.danger),
+            style: TextStyle(color: AppColors.danger),
           ),
         ),
       ],

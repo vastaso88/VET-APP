@@ -74,9 +74,9 @@ class HomeAskQuokkaBand extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     if (opening)
-                      const PetLoader.small(color: AppColors.onPrimary)
+                      PetLoader.small(color: AppColors.onPrimary)
                     else
-                      const Icon(Icons.chevron_right_rounded, color: AppColors.onPrimary),
+                      Icon(Icons.chevron_right_rounded, color: AppColors.onPrimary),
                   ],
                 ),
               ),

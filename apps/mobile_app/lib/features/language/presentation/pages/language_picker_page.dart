@@ -77,7 +77,7 @@ class LanguageVariantTile extends StatelessWidget {
           onTap: onTap,
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: AppColors.border)),
             ),
             child: Row(
@@ -91,7 +91,7 @@ class LanguageVariantTile extends StatelessWidget {
                         .copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
                   ),
                 ),
-                if (selected) const Icon(Icons.check_rounded, color: AppColors.primary),
+                if (selected) Icon(Icons.check_rounded, color: AppColors.primary),
               ],
             ),
           ),

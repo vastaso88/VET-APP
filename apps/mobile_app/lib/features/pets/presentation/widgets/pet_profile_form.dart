@@ -602,7 +602,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                     ),
                   ),
                 ),
-                const Icon(Icons.search_rounded, color: AppColors.secondaryStrong),
+                Icon(Icons.search_rounded, color: AppColors.secondaryStrong),
               ],
             ),
           ),
@@ -696,7 +696,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
       child: TypedDateField(
         controller: _birthDateController,
         onPick: _pickBirthDate,
-        pickIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.secondaryStrong),
+        pickIcon: Icon(Icons.calendar_month_rounded, color: AppColors.secondaryStrong),
         decoration: InputDecoration(hintText: appDateInputText(context.l10n.petsFormBirthDateHint)),
         validator: (value) {
           final raw = (value ?? '').trim();
@@ -891,7 +891,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
               child: ElevatedButton.icon(
                 onPressed: _submitting ? null : _submit,
                 icon: _submitting
-                    ? const PetLoader.small(color: AppColors.onPrimary)
+                    ? PetLoader.small(color: AppColors.onPrimary)
                     : const Icon(Icons.save_rounded),
                 label: Text(_submitting ? context.l10n.petsFormSaving : widget.submitLabel),
               ),
@@ -956,10 +956,10 @@ class _PetProfileFormState extends State<PetProfileForm> {
                       : ElevatedButton.styleFrom(
                           backgroundColor: AppColors.surfaceElevated,
                           foregroundColor: AppColors.primary,
-                          side: const BorderSide(color: AppColors.borderStrong),
+                          side: BorderSide(color: AppColors.borderStrong),
                         ),
                   child: _submitting
-                      ? const PetLoader.small(color: AppColors.onPrimary)
+                      ? PetLoader.small(color: AppColors.onPrimary)
                       : Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -1048,7 +1048,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                 color: AppColors.success.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_rounded, size: 48, color: AppColors.success),
+              child: Icon(Icons.check_rounded, size: 48, color: AppColors.success),
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(t.petsWizardDoneTitle, style: AppTextStyles.heading, textAlign: TextAlign.center),
@@ -1502,7 +1502,7 @@ class _FishKindCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (selected) const Icon(Icons.check_circle_rounded, color: AppColors.primary),
+                if (selected) Icon(Icons.check_circle_rounded, color: AppColors.primary),
               ],
             ),
           ),
@@ -1865,7 +1865,7 @@ class _IdentityColorPicker extends StatelessWidget {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: color,
+                color: AppIdentityColors.shown(color),
                 border: Border.all(
                   color: color == value ? AppColors.text : Colors.transparent,
                   width: 2,
@@ -1939,7 +1939,7 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
                             (index + 1 >= matches.length || !isPinnedBreedEntry(matches[index + 1]));
                         final tile = ListTile(
                           tileColor: pinned ? AppColors.secondarySoft.withValues(alpha: 0.35) : null,
-                          leading: pinned ? const Icon(Icons.pets_outlined, color: AppColors.secondaryStrong) : null,
+                          leading: pinned ? Icon(Icons.pets_outlined, color: AppColors.secondaryStrong) : null,
                           title: Text(
                             breed == 'Razza non specificata'
                                 ? context.l10n.petsBreedUnspecified

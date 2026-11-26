@@ -124,7 +124,7 @@ Future<void> showRecordActions(
               ),
               ListTile(
                 leading:
-                    const Icon(Icons.delete_outline, color: AppColors.danger),
+                    Icon(Icons.delete_outline, color: AppColors.danger),
                 title: Text(sheetContext.l10n.commonDelete),
                 onTap: () {
                   Navigator.of(sheetContext).pop();

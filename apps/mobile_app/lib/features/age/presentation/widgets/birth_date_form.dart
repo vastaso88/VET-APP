@@ -71,7 +71,7 @@ class _BirthDateFormState extends State<BirthDateForm> {
             child: TypedDateField(
               controller: _controller,
               onPick: _pick,
-              pickIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.secondaryStrong),
+              pickIcon: Icon(Icons.calendar_month_rounded, color: AppColors.secondaryStrong),
               decoration: InputDecoration(
                 hintText: appDateInputText(l10n.petsFormBirthDateHint),
                 errorText: widget.errorText,

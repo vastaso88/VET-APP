@@ -75,7 +75,7 @@ class _MarketplaceAgeGateState extends State<MarketplaceAgeGate> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     if (_checking) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppColors.background,
         body: Center(child: PetLoader()),
       );
@@ -112,7 +112,7 @@ class _MarketplaceAgeGateState extends State<MarketplaceAgeGate> {
               ),
             );
           case AgeBand.underMinimum:
-            return const Scaffold(
+            return Scaffold(
               backgroundColor: AppColors.background,
               body: Center(child: PetLoader()),
             );

@@ -98,7 +98,7 @@ class _MarketplaceMapPageState extends State<MarketplaceMapPage> {
                     listingPriceLabel(match.listing.priceCents, country: match.listing.country),
                     if (isForeignListing(match.listing)) countryFlag(match.listing.country),
                   ].join(' · '),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+                  trailing: Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
                   onTap: () => Navigator.of(context).pop(match),
                 ),
               ),
@@ -168,8 +168,8 @@ class _MarketplaceMapPageState extends State<MarketplaceMapPage> {
                       point: latlong.LatLng(reference.latitude, reference.longitude),
                       radius: radiusKm * 1000,
                       useRadiusInMeter: true,
-                      color: AppColors.primary.withValues(alpha: 0.06),
-                      borderColor: AppColors.primary.withValues(alpha: 0.5),
+                      color: AppColors.map.primary.withValues(alpha: 0.06),
+                      borderColor: AppColors.map.primary.withValues(alpha: 0.5),
                       borderStrokeWidth: 1.5,
                     ),
                   ],
@@ -183,7 +183,7 @@ class _MarketplaceMapPageState extends State<MarketplaceMapPage> {
                       height: 18,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppColors.info,
+                          color: AppColors.map.info,
                           shape: BoxShape.circle,
                           border: Border.all(color: AppColors.onMedia, width: 3),
                         ),
@@ -249,10 +249,10 @@ class _ClusterMarker extends StatelessWidget {
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.warning,
+            color: AppColors.map.warning,
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.onMedia, width: 2.5),
-            boxShadow: const [BoxShadow(color: AppColors.shadow, blurRadius: 6)],
+            boxShadow: [BoxShadow(color: AppColors.map.shadow, blurRadius: 6)],
           ),
           alignment: Alignment.center,
           child: single != null

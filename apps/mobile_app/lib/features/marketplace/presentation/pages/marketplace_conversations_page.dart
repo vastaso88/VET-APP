@@ -131,7 +131,7 @@ class _MarketplaceConversationsPageState extends State<MarketplaceConversationsP
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         itemCount: conversations.length,
-        separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.border),
+        separatorBuilder: (_, __) => Divider(height: 1, color: AppColors.border),
         itemBuilder: (context, index) {
           final conversation = conversations[index];
           return _ConversationRow(

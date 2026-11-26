@@ -25,7 +25,7 @@ class PlanFeatureList extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.check_rounded, size: 18, color: AppColors.success),
+                Icon(Icons.check_rounded, size: 18, color: AppColors.success),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Column(

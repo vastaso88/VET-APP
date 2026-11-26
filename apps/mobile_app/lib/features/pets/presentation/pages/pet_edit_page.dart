@@ -212,8 +212,8 @@ class _PetLifecycleActions extends StatelessWidget {
           width: double.infinity,
           child: TextButton.icon(
             onPressed: () => _delete(context),
-            icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.danger),
-            label: Text(context.l10n.petsEditDeleteAction, style: const TextStyle(color: AppColors.danger)),
+            icon: Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.danger),
+            label: Text(context.l10n.petsEditDeleteAction, style: TextStyle(color: AppColors.danger)),
           ),
         ),
       ],

@@ -10,7 +10,7 @@ class OutlineIconButton extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onPressed,
-    this.color = AppColors.primary,
+    this.color,
     this.child,
   });
 
@@ -18,8 +18,9 @@ class OutlineIconButton extends StatelessWidget {
   final String tooltip;
   final VoidCallback? onPressed;
 
-  /// Only for what must not look like the others (a deletion).
-  final Color color;
+  /// Only for what must not look like the others (a deletion); the accent
+  /// when null.
+  final Color? color;
 
   /// In place of the plain icon: the icon with a counter on it, a loader.
   final Widget? child;
@@ -28,13 +29,14 @@ class OutlineIconButton extends StatelessWidget {
   static ButtonStyle get look => IconButton.styleFrom(
         foregroundColor: AppColors.primary,
         backgroundColor: AppColors.surfaceElevated,
-        side: const BorderSide(color: AppColors.borderStrong),
+        side: BorderSide(color: AppColors.borderStrong),
         // 40 px visible, 48 px to touch.
         tapTargetSize: MaterialTapTargetSize.padded,
       );
 
   @override
   Widget build(BuildContext context) {
+    final color = this.color ?? AppColors.primary;
     return IconButton.outlined(
       tooltip: tooltip,
       onPressed: onPressed,

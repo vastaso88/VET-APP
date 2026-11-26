@@ -70,7 +70,7 @@ class HomeNewsSection extends StatelessWidget {
                   child: Column(
                     children: [
                       for (var i = 0; i < items.length; i++) ...[
-                        if (i != 0) const Divider(height: 1, color: AppColors.border),
+                        if (i != 0) Divider(height: 1, color: AppColors.border),
                         HomeNewsRow(item: items[i], onTap: () => onOpen(items[i])),
                       ],
                     ],
@@ -81,7 +81,7 @@ class HomeNewsSection extends StatelessWidget {
                   key: const ValueKey('home-news-more'),
                   onPressed: onMore,
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.secondary),
+                    side: BorderSide(color: AppColors.secondary),
                   ),
                   child: Text(context.l10n.homeNewsMore, textAlign: TextAlign.center),
                 ),
@@ -140,7 +140,7 @@ class HomeNewsRow extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: AppSpacing.sm),
-                          const Icon(
+                          Icon(
                             Icons.open_in_new_rounded,
                             size: 18,
                             color: AppColors.primary,

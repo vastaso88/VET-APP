@@ -54,7 +54,7 @@ class PickerField extends StatelessWidget {
     required this.onTap,
     this.icon,
     this.placeholder = false,
-    this.trailing = const Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.mutedText),
+    this.trailing = const _Chevron(),
   });
 
   final String text;
@@ -72,7 +72,7 @@ class PickerField extends StatelessWidget {
     final ShapeBorder border = (onTap == null ? field.disabledBorder : field.enabledBorder) ??
         RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.medium),
-          side: const BorderSide(color: AppColors.borderStrong, width: 1.5),
+          side: BorderSide(color: AppColors.borderStrong, width: 1.5),
         );
     return Semantics(
       button: true,
@@ -114,4 +114,14 @@ class PickerField extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The default end of a [PickerField]: its colour is read when it is built,
+/// so it follows the theme.
+class _Chevron extends StatelessWidget {
+  const _Chevron();
+
+  @override
+  Widget build(BuildContext context) =>
+      Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.mutedText);
 }

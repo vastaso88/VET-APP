@@ -134,7 +134,7 @@ class _MemoryRow extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+              Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
             ],
           ),
     );

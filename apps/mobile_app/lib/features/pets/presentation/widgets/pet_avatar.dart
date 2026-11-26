@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/responsive.dart';
+import '../../../../design_system/tokens/app_colors.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_models.dart';
 import 'species_figure.dart';
@@ -74,7 +75,7 @@ class PetRingAvatar extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: color, width: _ring),
+          border: Border.all(color: AppIdentityColors.shown(color), width: _ring),
         ),
         child: ClipOval(child: SizedBox.square(dimension: inner, child: face)),
       ),

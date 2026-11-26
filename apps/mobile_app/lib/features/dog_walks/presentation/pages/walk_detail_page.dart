@@ -219,7 +219,7 @@ class _WalkDetailMap extends StatelessWidget {
                   points: segment
                       .map((point) => latlong.LatLng(point.coordinates.latitude, point.coordinates.longitude))
                       .toList(),
-                  color: AppColors.primary,
+                  color: AppColors.map.primary,
                   strokeWidth: 4,
                 ),
           ],
@@ -291,17 +291,17 @@ class _WalkPhotoPinMarkerState extends State<WalkPhotoPinMarker> {
                 builder: (context, snapshot) {
                   final bytes = snapshot.data;
                   if (bytes == null) {
-                    return const Icon(Icons.photo_camera_rounded, size: 20, color: AppColors.mutedText);
+                    return Icon(Icons.photo_camera_rounded, size: 20, color: AppColors.mutedText);
                   }
                   return Image.memory(bytes, fit: BoxFit.cover, cacheWidth: 120);
                 },
               ),
             ),
-            const Positioned(
+            Positioned(
               right: 0,
               bottom: 0,
               child: DecoratedBox(
-                decoration: BoxDecoration(color: AppColors.secondaryStrong, shape: BoxShape.circle),
+                decoration: BoxDecoration(color: AppColors.map.secondaryStrong, shape: BoxShape.circle),
                 child: Padding(
                   padding: EdgeInsets.all(3),
                   child: Icon(Icons.photo_camera_rounded, size: 10, color: AppColors.onMedia),

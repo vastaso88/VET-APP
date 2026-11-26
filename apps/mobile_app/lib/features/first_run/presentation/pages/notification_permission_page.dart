@@ -57,7 +57,7 @@ class _NotificationPermissionPageState extends State<NotificationPermissionPage>
                   color: AppColors.info.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(AppRadii.xxl),
                 ),
-                child: const Icon(Icons.notifications_active_outlined, size: 44, color: AppColors.info),
+                child: Icon(Icons.notifications_active_outlined, size: 44, color: AppColors.info),
               ),
               const SizedBox(height: AppSpacing.xl),
               Text(

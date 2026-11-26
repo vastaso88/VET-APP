@@ -172,7 +172,7 @@ class DashboardActionButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.large),
         border: Border.all(color: borderColor),
         boxShadow: filled
-            ? const [
+            ? [
                 BoxShadow(
                   color: AppColors.shadow,
                   blurRadius: 16,

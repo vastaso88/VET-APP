@@ -69,7 +69,7 @@ class ActivityChartView extends StatelessWidget {
                 drawVerticalLine: false,
                 horizontalInterval: interval,
                 getDrawingHorizontalLine: (_) =>
-                    const FlLine(color: AppColors.border, strokeWidth: 1),
+                    FlLine(color: AppColors.border, strokeWidth: 1),
               ),
               titlesData: FlTitlesData(
                 topTitles: const AxisTitles(),
@@ -125,7 +125,7 @@ class ActivityChartView extends StatelessWidget {
                       '${context.l10n.monitoringActivityWeekOf(formatAppDate(week.weekStart, 'd MMM'))}\n'
                       '$value · ${context.l10n.monitoringActivityWalkCount(week.walkCount)}',
                       AppTextStyles.caption.copyWith(
-                          color: AppColors.onMedia, fontWeight: FontWeight.w700),
+                          color: AppColors.onInverse, fontWeight: FontWeight.w700),
                     );
                   },
                 ),

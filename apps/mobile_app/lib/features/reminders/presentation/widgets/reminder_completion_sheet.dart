@@ -265,7 +265,7 @@ class _CompletionSheetState extends State<_CompletionSheet> {
                   child: TypedDateField(
                     controller: _date,
                     onPick: _pickDate,
-                    pickIcon: const Icon(Icons.calendar_today_outlined,
+                    pickIcon: Icon(Icons.calendar_today_outlined,
                         size: 18, color: AppColors.primary),
                     style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
                     decoration: _decoration(hint: l10n.remindersDatePlaceholder, error: _dateError),

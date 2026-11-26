@@ -344,7 +344,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 border: Border.all(color: AppColors.border),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
                     color: AppColors.shadowSoft,
                     blurRadius: 28,
@@ -364,11 +364,11 @@ class _HomeShellPageState extends State<HomeShellPage> {
                     labelType: isExtendedRail
                         ? NavigationRailLabelType.none
                         : NavigationRailLabelType.selected,
-                    selectedLabelTextStyle: const TextStyle(
+                    selectedLabelTextStyle: TextStyle(
                       color: AppColors.onPrimary,
                       fontWeight: FontWeight.w600,
                     ),
-                    unselectedLabelTextStyle: const TextStyle(
+                    unselectedLabelTextStyle: TextStyle(
                       color: AppColors.secondarySoft,
                     ),
                     leading: Padding(
@@ -540,7 +540,7 @@ class _ShellBrand extends StatelessWidget {
             color: AppColors.secondarySoft.withValues(alpha: 0.18),
             borderRadius: BorderRadius.circular(14),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.pets_rounded,
             color: AppColors.onPrimary,
           ),
@@ -553,7 +553,7 @@ class _ShellBrand extends StatelessWidget {
               context.l10n.appTitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.onPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -666,13 +666,13 @@ class _ActiveWalkBannerState extends State<_ActiveWalkBanner> {
                   Expanded(
                     child: Text(
                       label,
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppColors.onPrimary,
                           fontWeight: FontWeight.w600),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Icon(Icons.chevron_right_rounded,
+                  Icon(Icons.chevron_right_rounded,
                       color: AppColors.onPrimary),
                 ],
               ),

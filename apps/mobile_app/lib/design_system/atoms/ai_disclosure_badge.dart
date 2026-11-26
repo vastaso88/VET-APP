@@ -39,7 +39,7 @@ class AiDisclosureBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.auto_awesome_rounded, size: 12, color: AppColors.info),
+          Icon(Icons.auto_awesome_rounded, size: 12, color: AppColors.info),
           const SizedBox(width: AppSpacing.xs),
           Text(
             _label(context.l10n),

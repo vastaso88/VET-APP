@@ -58,7 +58,7 @@ class PetDataSummaryRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.badge_outlined, size: 16, color: AppColors.secondaryStrong),
+          Icon(Icons.badge_outlined, size: 16, color: AppColors.secondaryStrong),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
@@ -74,10 +74,10 @@ class PetDataSummaryRow extends StatelessWidget {
             ),
           ),
           if (missingChip) ...[
-            const Icon(Icons.info_outline_rounded, size: 14, color: AppColors.warning),
+            Icon(Icons.info_outline_rounded, size: 14, color: AppColors.warning),
             const SizedBox(width: AppSpacing.xs),
           ],
-          const Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.mutedText),
+          Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.mutedText),
         ],
       ),
     );
@@ -311,7 +311,7 @@ class _MissingMicrochipRow extends StatelessWidget {
                   ),
                 ),
               ),
-              const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.warning),
+              Icon(Icons.info_outline_rounded, size: 16, color: AppColors.warning),
               const SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Text(

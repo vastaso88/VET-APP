@@ -87,7 +87,7 @@ class _CollapsibleSectionState extends State<CollapsibleSection> {
                   AnimatedRotation(
                     turns: widget.expanded ? 0.5 : 0,
                     duration: _animation,
-                    child: const Icon(
+                    child: Icon(
                       Icons.keyboard_arrow_down_rounded,
                       color: AppColors.mutedText,
                       size: 20,

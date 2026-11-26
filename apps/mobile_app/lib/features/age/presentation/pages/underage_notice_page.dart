@@ -20,7 +20,7 @@ class UnderageNoticePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Icon(Icons.pets_rounded, size: 40, color: AppColors.mutedText),
+          Icon(Icons.pets_rounded, size: 40, color: AppColors.mutedText),
           const SizedBox(height: AppSpacing.md),
           Text(l10n.ageUnderageBody, style: AppTextStyles.body.copyWith(color: AppColors.text)),
           const SizedBox(height: AppSpacing.xl),

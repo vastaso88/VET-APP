@@ -557,14 +557,14 @@ class _HeadingIndicator extends StatelessWidget {
     return Container(
       width: 40,
       height: 40,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         shape: BoxShape.circle,
         boxShadow: [BoxShadow(color: AppColors.scrimLight, blurRadius: 6)],
       ),
       child: Transform.rotate(
         angle: headingDegrees * (math.pi / 180),
-        child: const Icon(Icons.navigation_rounded, color: AppColors.secondaryStrong),
+        child: Icon(Icons.navigation_rounded, color: AppColors.secondaryStrong),
       ),
     );
   }
@@ -669,7 +669,7 @@ class _WalkMap extends StatelessWidget {
                   points: segment
                       .map((point) => latlong.LatLng(point.coordinates.latitude, point.coordinates.longitude))
                       .toList(),
-                  color: AppColors.primary,
+                  color: AppColors.map.primary,
                   strokeWidth: 4,
                 ),
           ],
@@ -699,7 +699,7 @@ class _WalkMap extends StatelessWidget {
               point: center,
               width: 28,
               height: 28,
-              child: const Icon(Icons.pets, color: AppColors.primary),
+              child: Icon(Icons.pets, color: AppColors.map.primary),
             ),
           ],
         ),

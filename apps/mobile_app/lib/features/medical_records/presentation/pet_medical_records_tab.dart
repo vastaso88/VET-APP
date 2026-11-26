@@ -162,7 +162,7 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
                     },
                   ),
               ListTile(
-                leading: const Icon(conditionIcon, color: AppColors.secondaryStrong),
+                leading: Icon(conditionIcon, color: AppColors.secondaryStrong),
                 title: Text(l10n.medCatCondition),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
@@ -204,7 +204,7 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
               const SizedBox(height: AppSpacing.md),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(
+                leading: Icon(
                   Icons.picture_as_pdf_outlined,
                   color: AppColors.secondaryStrong,
                 ),
@@ -219,7 +219,7 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
                 ListTile(
                   key: const ValueKey('send-history-with-documents'),
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(
+                  leading: Icon(
                     Icons.folder_copy_outlined,
                     color: AppColors.secondaryStrong,
                   ),

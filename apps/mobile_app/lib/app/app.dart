@@ -7,6 +7,7 @@ import '../features/language/data/language_store.dart';
 import '../l10n/l10n.dart';
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
+import 'theme/phone_palette.dart';
 import 'config/app_bootstrap_state.dart';
 
 class VetApp extends StatefulWidget {
@@ -54,10 +55,16 @@ class _VetAppState extends State<VetApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    // The app follows the phone's light or dark setting (PhonePalette sets the
+    // colours that widgets read through AppColors).
+    return PhonePalette(builder: (context) => MaterialApp(
       onGenerateTitle: (context) => context.l10n.appTitle,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ThemeMode.system,
+      // The colours read through AppColors switch at once: the theme too.
+      themeAnimationDuration: Duration.zero,
       navigatorKey: AppRouter.navigatorKey,
       scaffoldMessengerKey: AppRouter.scaffoldMessengerKey,
       locale: LanguageStore.instance.locale,
@@ -92,6 +99,6 @@ class _VetAppState extends State<VetApp> {
           child: body,
         );
       },
-    );
+    ));
   }
 }

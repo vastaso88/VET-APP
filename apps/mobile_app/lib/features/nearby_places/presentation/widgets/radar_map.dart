@@ -75,8 +75,8 @@ class RadarMap extends StatelessWidget {
               point: centerPoint,
               radius: radiusKm * 1000,
               useRadiusInMeter: true,
-              color: AppColors.primary.withValues(alpha: 0.06),
-              borderColor: AppColors.primary.withValues(alpha: 0.5),
+              color: AppColors.map.primary.withValues(alpha: 0.06),
+              borderColor: AppColors.map.primary.withValues(alpha: 0.5),
               borderStrokeWidth: 1.5,
             ),
           ],
@@ -90,7 +90,7 @@ class RadarMap extends StatelessWidget {
               height: 20,
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: AppColors.map.primary,
                   shape: BoxShape.circle,
                   border: Border.all(color: AppColors.onMedia, width: 3),
                 ),
@@ -154,7 +154,7 @@ class _ClusteredMarkers extends StatelessWidget {
               child: Container(
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.text,
+                  color: AppColors.map.text,
                   shape: BoxShape.circle,
                   border: Border.all(color: AppColors.onMedia, width: 2),
                 ),
@@ -192,16 +192,16 @@ class _ClusteredMarkers extends StatelessWidget {
                 width: 30,
                 height: 30,
                 decoration: BoxDecoration(
-                  color: item.pending ? AppColors.onMedia : item.category.color,
+                  color: item.pending ? AppColors.onMedia : item.category.mapColor,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: item.pending ? item.category.color : AppColors.onMedia,
+                    color: item.pending ? item.category.mapColor : AppColors.onMedia,
                     width: 2,
                   ),
                 ),
                 child: Icon(
                   item.category.icon,
-                  color: item.pending ? item.category.color : AppColors.onMedia,
+                  color: item.pending ? item.category.mapColor : AppColors.onMedia,
                   size: 16,
                 ),
               ),

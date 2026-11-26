@@ -79,7 +79,7 @@ class _FavoriteChoiceRow extends StatelessWidget {
           horizontal: AppSpacing.md, vertical: AppSpacing.sm),
       child: Row(
             children: [
-              const Icon(Icons.star_rounded,
+              Icon(Icons.star_rounded,
                   color: AppColors.warning, size: 18),
               const SizedBox(width: AppSpacing.sm),
               Expanded(

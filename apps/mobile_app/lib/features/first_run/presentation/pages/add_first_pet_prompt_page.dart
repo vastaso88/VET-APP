@@ -44,7 +44,7 @@ class AddFirstPetPromptPage extends StatelessWidget {
                       color: AppColors.secondaryStrong.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(AppRadii.xxl),
                     ),
-                    child: const Icon(Icons.add_photo_alternate_outlined,
+                    child: Icon(Icons.add_photo_alternate_outlined,
                         size: 44, color: AppColors.secondaryStrong),
                   ),
                   const SizedBox(height: AppSpacing.xl),

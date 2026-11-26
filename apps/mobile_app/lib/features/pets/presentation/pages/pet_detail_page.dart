@@ -449,7 +449,7 @@ class _HabitatSummaryRow extends StatelessWidget {
       onTap: () => _openDetails(context),
       child: Row(
         children: [
-          const Icon(Icons.water_outlined,
+          Icon(Icons.water_outlined,
               size: 16, color: AppColors.primary),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -461,7 +461,7 @@ class _HabitatSummaryRow extends StatelessWidget {
                   color: AppColors.text, fontWeight: FontWeight.w600),
             ),
           ),
-          const Icon(Icons.chevron_right_rounded,
+          Icon(Icons.chevron_right_rounded,
               size: 16, color: AppColors.mutedText),
         ],
       ),
@@ -830,7 +830,7 @@ class _DeleteSwipeBackground extends StatelessWidget {
         color: AppColors.danger.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppRadii.large),
       ),
-      child: const Icon(Icons.delete_outline_rounded, color: AppColors.danger),
+      child: Icon(Icons.delete_outline_rounded, color: AppColors.danger),
     );
   }
 }
@@ -1295,7 +1295,7 @@ class _WalkCard extends StatelessWidget {
                   IconButton(
                     tooltip: context.l10n.commonDelete,
                     onPressed: () => _delete(context),
-                    icon: const Icon(Icons.delete_outline_rounded, color: AppColors.mutedText),
+                    icon: Icon(Icons.delete_outline_rounded, color: AppColors.mutedText),
                   ),
                 ],
               ),
@@ -1397,7 +1397,7 @@ class _CompactRow extends StatelessWidget {
               ),
               child: Text(
                 '$badgeCount',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.onPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -1411,7 +1411,7 @@ class _CompactRow extends StatelessWidget {
           ],
           if (onTap != null && trailingAction == null) ...[
             const SizedBox(width: AppSpacing.xs),
-            const Icon(Icons.chevron_right_rounded,
+            Icon(Icons.chevron_right_rounded,
                 size: 18, color: AppColors.mutedText),
           ],
         ],

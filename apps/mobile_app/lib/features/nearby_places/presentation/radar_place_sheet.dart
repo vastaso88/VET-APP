@@ -720,7 +720,7 @@ class _ReportBanner extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.help_outline, size: 18, color: AppColors.text),
+              Icon(Icons.help_outline, size: 18, color: AppColors.text),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(

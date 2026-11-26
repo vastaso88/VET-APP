@@ -232,7 +232,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(color: AppColors.borderStrong),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
             color: AppColors.shadowSoft,
             blurRadius: 18,
@@ -295,7 +295,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
                   filled: false,
                   isCollapsed: true,
                   contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                  hintStyle: const TextStyle(color: AppColors.mutedText),
+                  hintStyle: TextStyle(color: AppColors.mutedText),
                 ),
               ),
             ),
@@ -304,7 +304,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
             const SizedBox(height: AppSpacing.xs),
             Text(
               context.l10n.chatInputLimitReached(chatMaxMessageLength),
-              style: const TextStyle(color: AppColors.danger, fontSize: 14),
+              style: TextStyle(color: AppColors.danger, fontSize: 14),
             ),
           ],
           const SizedBox(height: AppSpacing.sm),
@@ -573,7 +573,7 @@ class _PendingAttachmentChip extends StatelessWidget {
         Expanded(
           child: Text(
             isUploading ? context.l10n.chatPhotoAnalyzing : context.l10n.chatPhotoReady,
-            style: const TextStyle(color: AppColors.secondaryText, fontSize: 14),
+            style: TextStyle(color: AppColors.secondaryText, fontSize: 14),
           ),
         ),
         IconButton(
@@ -628,7 +628,7 @@ class _ListeningBanner extends StatelessWidget {
                 child: Container(
                   width: 10,
                   height: 10,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.danger,
                     shape: BoxShape.circle,
                   ),
@@ -638,7 +638,7 @@ class _ListeningBanner extends StatelessWidget {
               Expanded(
                 child: Text(
                   context.l10n.chatListeningText,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.text,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -647,7 +647,7 @@ class _ListeningBanner extends StatelessWidget {
               ),
               Text(
                 '$minutes:$seconds',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.danger,
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -680,7 +680,7 @@ class _TranscribingBanner extends StatelessWidget {
           Flexible(
             child: Text(
               context.l10n.chatTranscribingText,
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppColors.text, fontSize: 14, fontWeight: FontWeight.w600),
             ),
           ),
@@ -699,18 +699,18 @@ class _EditingBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.edit_outlined, size: 16, color: AppColors.secondaryStrong),
+        Icon(Icons.edit_outlined, size: 16, color: AppColors.secondaryStrong),
         const SizedBox(width: AppSpacing.xs),
         Expanded(
           child: Text(
             context.l10n.chatEditingLabel,
-            style: const TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: FontWeight.w700),
+            style: TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: FontWeight.w700),
           ),
         ),
         IconButton(
           onPressed: onCancel,
           tooltip: context.l10n.chatCancelEditTooltip,
-          icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.secondaryText),
+          icon: Icon(Icons.close_rounded, size: 18, color: AppColors.secondaryText),
           visualDensity: VisualDensity.compact,
           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
         ),

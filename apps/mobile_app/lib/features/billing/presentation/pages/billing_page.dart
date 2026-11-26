@@ -241,7 +241,7 @@ class _TrialBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.celebration_outlined, color: AppColors.info, size: 20),
+          Icon(Icons.celebration_outlined, color: AppColors.info, size: 20),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
@@ -288,7 +288,7 @@ class _TestPeriodBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.science_outlined, color: AppColors.info, size: 20),
+          Icon(Icons.science_outlined, color: AppColors.info, size: 20),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
@@ -344,7 +344,7 @@ class _DeveloperBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.verified_user_outlined, color: AppColors.success, size: 20),
+          Icon(Icons.verified_user_outlined, color: AppColors.success, size: 20),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
@@ -546,7 +546,7 @@ class _PlanCard extends StatelessWidget {
                     onPressed: null,
                     style: OutlinedButton.styleFrom(
                       disabledForegroundColor: AppColors.mutedText,
-                      side: const BorderSide(color: AppColors.border),
+                      side: BorderSide(color: AppColors.border),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
                     ),
                     child: Text(context.l10n.billingCurrentPlanButton),
@@ -581,7 +581,7 @@ class _PaymentMethodTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(
@@ -594,7 +594,7 @@ class _PaymentMethodTile extends StatelessWidget {
               color: AppColors.info.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(AppRadii.medium),
             ),
-            child: const Icon(Icons.credit_card_outlined, size: 18, color: AppColors.info),
+            child: Icon(Icons.credit_card_outlined, size: 18, color: AppColors.info),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -616,7 +616,7 @@ class _PaymentMethodTile extends StatelessWidget {
             ),
           ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert_rounded, color: AppColors.mutedText),
+            icon: Icon(Icons.more_vert_rounded, color: AppColors.mutedText),
             onSelected: (value) => value == 'default' ? onSetDefault() : onRemove(),
             itemBuilder: (context) => [
               if (!method.isDefault)
@@ -795,7 +795,7 @@ class _Row extends StatelessWidget {
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: AppColors.border)),
           ),
           child: Row(
@@ -817,7 +817,7 @@ class _Row extends StatelessWidget {
                   style: AppTextStyles.body.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+              Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
             ],
           ),
         ),
