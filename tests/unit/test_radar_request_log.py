@@ -76,65 +76,11 @@ def test_a_stopped_host_stays_stopped(tmp_path: Path) -> None:
     assert reason is not None and reason.endswith("HTTP 429")
 
 
-SERVER = "https://overpass.example/api/interpreter"
-
-
-def test_overpass_429_stops_the_server_without_retry(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    importer = _load("import_osm_places")
-    calls: list[str] = []
-
-    def fake_urlopen(req: Any, timeout: float = 0) -> Any:
-        calls.append(req.full_url)
-        raise importer.error.HTTPError(req.full_url, 429, "Too Many Requests", {}, None)  # type: ignore[arg-type]
-
-    monkeypatch.setattr(importer.request, "urlopen", fake_urlopen)
-    fetcher = importer.Fetcher(600, local_dir=tmp_path, servers=(SERVER,))
-    with pytest.raises(importer.HostStoppedError):
-        fetcher.elements("[out:json];node(1);out;")
-    assert calls == [SERVER]
-    rows = [json.loads(line) for line in (tmp_path / "requests.log").read_text().splitlines()]
-    assert [row["esito"] for row in rows] == [429]
-    assert importer.HostTurns(tmp_path).stopped_reason("overpass.example")
-    # The next run refuses the host without sending anything.
-    with pytest.raises(importer.HostStoppedError):
-        importer.Fetcher(600, local_dir=tmp_path, servers=(SERVER,)).elements("[out:json];")
-    assert len(calls) == 1
-
-
-@pytest.mark.parametrize(
-    "server",
-    ["https://overpass-api.de/api/interpreter", "https://z.overpass-api.de/api/interpreter"],
-)
-def test_overpass_api_de_is_refused_before_any_request(
-    server: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    importer = _load("import_osm_places")
-    calls: list[str] = []
-    monkeypatch.setattr(importer.request, "urlopen", lambda req, timeout=0: calls.append(req))
-    with pytest.raises(importer.HostStoppedError, match="robots.txt"):
-        importer.Fetcher(600, local_dir=tmp_path, servers=(server,)).elements("[out:json];")
-    assert calls == []
-    assert not (tmp_path / "requests.log").exists()
-
-
-def test_the_command_line_refuses_overpass_api_de_and_has_no_default_server(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    importer = _load("import_osm_places")
-    monkeypatch.setattr(importer, "CACHE_DIR", tmp_path)
-    monkeypatch.setattr(importer, "LOCAL_DIR", tmp_path)
-    argv = ["import_osm_places.py", "--country", "DE", "--regions", "DE-HB", "--dry-run"]
-    monkeypatch.setattr(sys, "argv", [*argv, "--server", "https://overpass-api.de/api/interpreter"])
-    with pytest.raises(SystemExit):
-        importer.main()
-    assert "robots.txt" in capsys.readouterr().err
-    # No server given: nothing to ask, a plain message, nothing written.
-    monkeypatch.setattr(sys, "argv", argv)
-    assert importer.main() == importer.EXIT_NO_SERVER
-    assert "Nessun server Overpass" in capsys.readouterr().out
-    assert not (tmp_path / "requests.log").exists()
+@pytest.mark.parametrize("host", ["overpass-api.de", "z.overpass-api.de"])
+def test_overpass_api_de_is_stopped_for_good(host: str, tmp_path: Path) -> None:
+    log = _load("request_log")
+    reason = log.HostTurns(tmp_path).stopped_reason(host)
+    assert reason is not None and "robots.txt" in reason
 
 
 def test_the_scripts_refuse_production_without_the_flag(

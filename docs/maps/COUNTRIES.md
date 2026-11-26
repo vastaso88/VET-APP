@@ -36,40 +36,41 @@ L'app mostra l'avviso in `local_events_page.dart` (stringhe `localEventsCoverage
 Ordine dei passi per un paese, es. Germania:
 
 1. Una volta: applicare le nuove parti di `scripts/setup/supabase_schema.sql` (colonna `country` su `radar_places_osm` e `radar_places_open`, tabella `radar_country_coverage`, riga dell'Italia ricavata da `data_sources`). **Prima** dell'import: gli script scrivono `country`.
-2. **OSM sospeso dal 26/11/2026**: nessun server Overpass pubblico è in uso per gli import (Italia compresa; le righe OSM già salvate restano). Lo script non ha più un server predefinito: con `--server <URL>` di una fonte ammessa, `uv run --system-certs --with truststore python scripts/radar/import_osm_places.py --country DE --server <URL> --dry-run` e controllare i conteggi per regione (un'area con 0 elementi viene rifiutata: il codice area potrebbe essere sbagliato; vedi §6).
-3. Lo stesso senza `--dry-run`. Se si ferma per il limite di tempo (codice di uscita 3), rilanciare lo stesso comando: le regioni già scaricate non vengono richieste di nuovo.
-4. `uv run --system-certs --with duckdb==1.5.6 --with truststore python scripts/radar/import_overture_places.py --country DE --release <release> --list-categories` (solo lettura: controlla che nessuna categoria "pet" del paese manchi al mapping), poi `--dry-run`, poi l'import vero.
+2. **OpenStreetMap dall'estratto Geofabrik** (dal 26/11/2026; robots.txt e pagina d'uso di download.geofabrik.de ammettono i programmi): `uv run --system-certs --extra radar-import --with truststore python scripts/radar/import_osm_places.py --country DE --pbf-dir E:/tmp/radar_paesi/pbf --dry-run`. Scarica una volta l'estratto del paese (una richiesta registrata) in una cartella **fuori dal repository**, lo legge con pyosmium in tre passate senza indice delle posizioni (memoria sotto 2 GB per ogni paese) e conta i luoghi con la stessa mappatura delle vecchie risposte Overpass. `--delete-pbf` cancella l'estratto dopo la lettura.
+3. Lo stesso senza `--dry-run` (riusa gli elementi già letti per `--cache-hours`, default 24; `--refresh` rilegge).
+4. `uv run --system-certs --extra radar-import --with truststore python scripts/radar/import_overture_places.py --country DE --release <release> --list-categories` (solo lettura: controlla che nessuna categoria "pet" del paese manchi al mapping), poi `--dry-run`, poi l'import vero.
 5. `GET /local-services/countries` deve dare `complete` per il paese.
 
 Garanzie degli script:
 
-- `--country` obbligatorio per i paesi nuovi (default IT: i comandi di prima funzionano come prima).
-- **Si sostituiscono solo le righe del paese importato** (`country`): importare la Germania non cancella l'Italia. Cancellare "ciò che il lancio non ha visto" avviene solo a import completo.
-- **Riprendibili**: OSM tiene ogni regione in `.local/radar/osm/` (24 h, `--cache-hours` per paesi lunghi come gli USA); Overture tiene il paese in `.local/radar/overture/` (stessa durata). Niente si scrive su Supabase finché tutte le regioni sono presenti.
-- **Limiti di rate**: una richiesta alla volta, almeno `--pause-seconds` (10 s, mai meno) tra due richieste allo stesso server, anche tra un lancio e il successivo, un `User-Agent` che nomina l'app (`QuokkaImport/1.0`, anche per DuckDB), `--max-seconds` per fermarsi in modo pulito. Nessuno scraping di siti: solo il file pubblico Overture su S3 (e Overpass solo da un server ammesso).
+- `--country` obbligatorio per i paesi nuovi (default IT).
+- **Si sostituiscono solo le righe del paese importato** (`country`): importare la Germania non cancella l'Italia.
+- **Paese completo solo con l'estratto letto per intero**: gli elementi si salvano in `.local/radar/osm_pbf/<CC>.json` con `"complete": true` solo a lettura finita, e solo un file così si importa; allora si cancellano le righe che l'import non ha visto e il paese viene dichiarato coperto. I luoghi fuori dai rettangoli del paese (oltremare francese, sconfinamenti) si scartano. Overture tiene il paese in `.local/radar/overture/` (24 h).
+- **Richieste**: una alla volta, almeno 10 s tra due richieste allo stesso host, anche tra un lancio e il successivo, un `User-Agent` che nomina l'app (`QuokkaImport/1.0`, anche per DuckDB). Solo file pubblici: l'estratto Geofabrik e il file Overture su S3.
 - **Registro delle richieste**: ogni richiesta a un host esterno finisce in `.local/radar/requests.log` (ora UTC, nome, indirizzo senza query, esito; per DuckDB una riga per file, metodo ed esito con il numero di richieste). Un 403 o 429 ferma l'host per sempre (`.local/radar/host_fermati.json`, codice di uscita 4): nessuna riprova, nessun altro server "per passare". `--cache-dir` sposta cache e registro (per lanciare da un worktree e tenere tutto nel checkout principale).
-- overpass-api.de non si usa: il suo robots.txt lo vieta ai programmi (elenco permanente in `packages/shared/config/external_hosts.py`, valido per backend e script).
+- overpass-api.de non si usa: il suo robots.txt lo vieta ai programmi (elenco permanente in `packages/shared/config/external_hosts.py`, valido per backend e script). Gli import non usano più nessun server Overpass.
 - **Produzione**: gli script del radar si rifiutano di parlare con il progetto Supabase di produzione senza `--allow-production` (il `.env` locale punta alla produzione). Per il gemello di collaudo si impostano `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` con i suoi valori.
 - DuckDB legge il file Overture con molte richieste parziali in parallelo: la pausa di 10 s non si applica dentro una query (il registro le conta).
-- Import parziale (`--regions ...`): scrive le righe, aggiorna `osm_regions`, ma **non** dichiara il paese coperto.
 
-## 3. Stime e misure prima di importare
+## 3. Misure (26/11/2026)
 
-Calibrate sull'Italia, unico paese misurato del tutto (8.069 luoghi OSM, 15.831 Overture dopo i filtri, ~9 MB per fonte, 20 regioni OSM in 10-15 minuti, Overture in 3 min 11 s). **Overture misurato il 26/11/2026** (release `2026-11-18.0`, `--dry-run`) per Germania, Francia, Spagna, Regno Unito e Australia: luoghi dopo i filtri e minuti di download; i MB restano luoghi × 590 byte (misura italiana), perché un dry run non scrive nel database. **OSM non misurato** per questi paesi (import OSM sospeso, §2): le colonne OSM restano **stime** (±50%), tranne l'Australia. **Prova Geofabrik, Australia (26/11/2026)**: estratto `australia-latest.osm.pbf` (978 MB, scaricato una volta in 74 s) letto con pyosmium (`scripts/radar/osm_pbf.py`, dipendenze opzionali `radar-import`) in 153 s, memoria massima 3,4 GB con l'indice in memoria; stessa mappatura di Overpass: **3.397 luoghi** (977 aree cani, 1.171 veterinari, 670 negozi). Con Overture (9.697) l'unione fa 11.331 luoghi, 1.757 trovati da entrambe le fonti. Per Germania e Francia (4,6-4,8 GB) serve l'indice su disco (`--index sparse_file_array,<file>`). La scrittura su Supabase da questi file non è ancora fatta. Tabella generata da `uv run python scripts/radar/estimate_countries.py` (costanti in `packages/infrastructure/radar_places/country_estimates.py`).
+Tutti i paesi tranne gli Stati Uniti misurati con dry run, senza scrivere: **Overture** release `2026-11-18.0` con le categorie aggiunte il 26/11 (Italia: import di ottobre, prima di quelle categorie); **OSM** dall'estratto Geofabrik del paese. I MB sono luoghi × byte per riga misurati sulle tabelle italiane (~590 byte Overture, ~1,1 KB OSM), perché un dry run non scrive. Il tempo OSM è download più lettura: dipende dalla linea (Germania: 50 minuti di download, Francia 7, per file simili). Tabella generata da `uv run python scripts/radar/estimate_countries.py` (costanti in `packages/infrastructure/radar_places/country_estimates.py`).
 
-| Paese | Regioni OSM | Luoghi Overture | Luoghi OSM | MB Overture | MB OSM | MB totale | Tempo Overture (min) | Tempo OSM (min) | Richieste Overpass (min-max) |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |
-| 🇮🇹 IT (misurato) | 20 | 15.831 | 8.069 | 9 | 9 | 18 | 3-4 | 10-15 | 20-220 |
-| 🇬🇧 GB (Overture misurato) | 4 | 37.586 | 22.000 | 22 | 24 | 46 | 7 | 10-30 | 4-44 |
-| 🇺🇸 US | 51 | 130.000 | 90.000 | 77 | 99 | 176 | 20-45 | 45-150 | 51-561 |
-| 🇦🇺 AU (misurato) | 8 | 9.697 | 3.397 | 6 | 4 | 9 | 1 | 4 | 8-88 |
-| 🇩🇪 DE (Overture misurato) | 16 | 21.335 | 38.000 | 13 | 42 | 54 | 8 | 12-20 | 16-176 |
-| 🇫🇷 FR (Overture misurato) | 13 | 14.755 | 22.000 | 9 | 24 | 33 | 10 | 10-18 | 13-143 |
-| 🇪🇸 ES (Overture misurato) | 19 | 12.045 | 12.000 | 7 | 13 | 20 | 18 | 12-20 | 19-209 |
+| Paese | Regioni OSM | Luoghi Overture | Luoghi OSM | MB Overture | MB OSM | MB totale | Tempo Overture (min) | Tempo OSM (min) | Estratto Geofabrik (MB) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | ---: |
+| 🇮🇹 IT (misurato) | 20 | 15.831 | 8.679 | 9 | 10 | 19 | 3-4 | 5 | 2.256 |
+| 🇬🇧 GB (misurato) | 4 | 37.586 | 8.368 | 22 | 9 | 31 | 7 | 6 | 2.292 |
+| 🇺🇸 US (stima) | 51 | 130.000 | 90.000 | 77 | 99 | 176 | 20-45 | 45-150 | ? |
+| 🇦🇺 AU (misurato) | 8 | 9.697 | 3.395 | 6 | 4 | 9 | 1 | 2 | 978 |
+| 🇩🇪 DE (misurato) | 16 | 21.335 | 13.467 | 13 | 15 | 27 | 8 | 54 | 4.891 |
+| 🇫🇷 FR (misurato) | 13 | 14.755 | 9.691 | 9 | 11 | 19 | 10 | 12 | 5.122 |
+| 🇪🇸 ES (misurato) | 19 | 12.045 | 6.915 | 7 | 8 | 15 | 18 | 3 | 1.506 |
 
-Righe Overture grezze (categorie pet, prima dei filtri, con le categorie aggiunte il 26/11): DE 53.687, FR 35.278, ES 21.853, GB 67.040, AU 15.034. Il tempo Overture dipende soprattutto dalla linea (ES 19 min contro GB 6 min, con meno dati): letture con 4 thread, timeout 120 s, nessuna riprova.
+**Lettura degli estratti** (pyosmium 4.3.2, tre passate, sotto `heavy.sh`): IT 107 s, ES 78 s, GB 124 s, DE 273 s, FR 322 s, AU 64 s; memoria massima ~1,9 GB per tutti (non cresce col file). Per l'Italia 8.679 luoghi contro gli 8.069 dell'import Overpass di ottobre: stessa mappatura, dati più recenti. Per l'Australia la stessa lettura con l'indice delle posizioni in memoria dava gli stessi 3.395 luoghi con 3,4 GB, e con l'indice su disco ci metteva 32 minuti: per questo l'indice è stato tolto.
 
-**Categorie Overture aggiunte il 26/11/2026** (dopo `--list-categories`, release `2026-11-18.0`): `dog_park` → aree cani (GB 1.127, AU 849, DE 287, ES 169, FR 79: con l'import OSM sospeso servono anche quelle di Overture; i doppioni con le aree OSM già salvate si uniscono), `pet_hospice` → veterinari (GB 61), `animal_or_pet_service` (DE 2.418, FR 2.147, ES 1.540, GB 7.880, AU 1.866) e `pet_care_service` (DE 400, GB 383, FR 53, ES 33) → pet sitter, salvo un nome che dichiara un solo altro mestiere (toelettatura, negozio, pensione, addestramento, allevamento, rifugio), che vince; mai promossi a veterinario dal solo nome. **Restano fuori** perché nessun tipo del radar li descrive senza ingannare: cimiteri e crematori per animali, cure olistiche, fisioterapia, trasporto, foto, assicurazioni, caffè con animali; le categorie cavallo (`horse_*`) per la decisione del proprietario del 25/11. `carpet_*`, `hot_dog_restaurant`, `veterans_*` sono falsi positivi della ricerca per nome. Conteggi misurati con un nuovo download (`--refresh`, dry run, 26/11):
+Righe Overture grezze (categorie pet, prima dei filtri, con le categorie aggiunte il 26/11): DE 53.687, FR 35.278, ES 21.853, GB 67.040, AU 15.034. Il tempo Overture dipende soprattutto dalla linea (ES 18 min contro GB 7 min, con meno dati): letture con 4 thread, timeout 120 s, nessuna riprova.
+
+**Categorie Overture aggiunte il 26/11/2026** (dopo `--list-categories`, release `2026-11-18.0`): `dog_park` → aree cani (GB 1.127, AU 849, DE 287, ES 169, FR 79: i doppioni con le aree OSM si uniscono), `pet_hospice` → veterinari (GB 61), `animal_or_pet_service` (DE 2.418, FR 2.147, ES 1.540, GB 7.880, AU 1.866) e `pet_care_service` (DE 400, GB 383, FR 53, ES 33) → pet sitter, salvo un nome che dichiara un solo altro mestiere (toelettatura, negozio, pensione, addestramento, allevamento, rifugio), che vince; mai promossi a veterinario dal solo nome. **Restano fuori** perché nessun tipo del radar li descrive senza ingannare: cimiteri e crematori per animali, cure olistiche, fisioterapia, trasporto, foto, assicurazioni, caffè con animali; le categorie cavallo (`horse_*`) per la decisione del proprietario del 25/11. `carpet_*`, `hot_dog_restaurant`, `veterans_*` sono falsi positivi della ricerca per nome. Conteggi misurati con un nuovo download (`--refresh`, dry run, 26/11):
 
 | Paese | Luoghi prima | Luoghi con le nuove categorie | In più | di cui aree cani |
 | --- | ---: | ---: | ---: | ---: |
@@ -81,21 +82,11 @@ Righe Overture grezze (categorie pet, prima dei filtri, con le categorie aggiunt
 
 Come leggerla:
 
-- **Spazio**: ~590 byte per riga Overture e ~1,1 KB per riga OSM (tabella più indice di posizione, dall'Italia). **Tutti e sette i paesi: ~357 MB su 500 MB del piano free di Supabase** (Italia e i cinque paesi senza gli USA: ~180 MB, di cui ~103 MB di OSM ancora stimato), che contiene già tutto il resto dell'app (pet, chat, foto sono nello storage, ma le tabelle contano). Gli Stati Uniti da soli sono 176 MB. Con tutti i paesi serve probabilmente il piano Pro (25 USD/mese): da decidere prima degli USA.
-- **Tempo**: l'Overture scala con l'area letta (USA: tre rettangoli, il più lento); OSM con il numero di regioni (~36 s a regione nella misura italiana con pausa di 5 s; ora la pausa è 10 s tra due richieste allo stesso server, compresa la pagina di stato) più i ritiri quando Overpass rifiuta una regione intera e la richiede una categoria alla volta (fino a 11 richieste per regione: colonna "max").
-- **Richieste**: solo Overpass conta. Il massimo è teorico; la policy pubblica ammette ben più di 561 richieste al giorno, ma sono su server condivisi: meglio un paese per volta, mai in parallelo con un altro import.
-- **Costo**: dati gratuiti (OSM, Overture); costa solo lo spazio Supabase (sopra) e il tempo del PC. Rinfresco: OSM mensile come per l'Italia; Overture a ogni release (trimestrale).
+- **Spazio**: **tutti e sette i paesi ~297 MB su 500 MB del piano free di Supabase**; Italia e i cinque paesi senza gli USA ~120 MB (misurati), che si aggiungono a tutto il resto dell'app (pet, chat, foto sono nello storage, ma le tabelle contano). Gli Stati Uniti (stima) sono 176 MB da soli: da decidere il piano prima degli USA.
+- **Disco e rete per OSM**: gli estratti dei sei paesi sono ~17 GB da scaricare (uno alla volta, cancellati dopo la lettura); nessun server condiviso interrogato a ogni regione.
+- **Costo**: dati gratuiti (OSM, Overture); costa solo lo spazio Supabase (sopra) e il tempo del PC. Rinfresco: OSM mensile (Italia nel workflow mensile, §2); Overture a ogni release.
 
-**Ordine consigliato** (più semplice e utile prima):
-
-1. 🇩🇪 Germania: OSM molto ricco, poche richieste, ~53 MB.
-2. 🇫🇷 Francia: ~32 MB, regioni leggere.
-3. 🇪🇸 Spagna: ~20 MB.
-4. 🇬🇧 Regno Unito: ~43 MB; l'Inghilterra intera può essere rifiutata da Overpass e va per categoria (previsto, più lento).
-5. 🇦🇺 Australia: ~18 MB; regioni vaste e poco dense, ma leggere.
-6. 🇺🇸 Stati Uniti per ultimi: 176 MB, 51 regioni (usare `--cache-hours 168 --max-seconds 3000` e rilanciare), e solo dopo aver deciso il piano Supabase.
-
-Se il lancio in lingua inglese è prima di quello in tedesco, Regno Unito e Australia passano in testa: l'ordine segue le lingue pronte, non la tecnica.
+**Ordine consigliato**: con i dati misurati l'ordine segue le lingue pronte, non la tecnica: tutti i cinque paesi stanno insieme in ~100 MB. Gli 🇺🇸 Stati Uniti restano per ultimi, dopo aver deciso il piano Supabase.
 
 ## 4. Licenze e attribuzione (verificate il 2026-10-14)
 
@@ -113,16 +104,16 @@ Se il lancio in lingua inglese è prima di quello in tedesco, Regno Unito e Aust
 
 ## 6. Da verificare al primo lancio (non posso farlo da qui: niente rete nei test)
 
-- I codici area `ISO3166-2` delle quattro nazioni britanniche (`GB-ENG`, `GB-SCT`, `GB-WLS`, `GB-NIR`) e dei territori australiani/stati USA nel tag OSM: l'import rifiuta una regione con 0 elementi proprio per scoprire un codice sbagliato; se capita su una regione davvero vuota (Ceuta, Melilla, DC) rilanciare con `--allow-empty`.
-- I nomi delle categorie Overture dei paesi nuovi: `--list-categories` li elenca; aggiungere a `OVERTURE_CATEGORIES` ciò che manca (es. tassonomia britannica/statunitense diversa).
+- Le regioni OSM (`ISO3166-2`) non servono più all'import: si legge l'estratto del paese intero; restano nel registro per la riga di copertura (`osm_regions`).
+- Le categorie Overture dei paesi nuovi sono state controllate il 26/11 con `--list-categories` (§3); per gli USA va rifatto.
 
 ## 7. Difetti noti e decisioni per il proprietario
 
-1. **Spazio Supabase**: ~357 MB di dati radar per i sette paesi su 500 MB del piano free (Overture misurato per cinque paesi il 26/11, OSM ancora stimato). Decidere il piano prima degli USA.
+1. **Spazio Supabase**: ~297 MB di dati radar per i sette paesi su 500 MB del piano free (sei paesi misurati il 26/11, USA stimati; senza gli USA ~120 MB). Decidere il piano prima degli USA.
 2. **Apache-2.0 (Foursquare) in Overture**: serve conservare l'avviso di copyright; oggi mostriamo solo "© Overture Maps Foundation — Places". Da far valutare alla sessione legale; il testo Apache-2.0 va aggiunto in `docs/licenses/`.
-3. **Import "tutto o niente" per paese**: un paese diventa `complete` solo quando tutte le sue regioni sono state scaricate in un lancio; per gli USA (51 stati) la cache va tenuta più a lungo (`--cache-hours`). Non esiste una copertura per singolo stato.
+3. **Import "tutto o niente" per paese**: un paese diventa `complete` solo quando il suo estratto è stato letto per intero. Per gli USA l'estratto Geofabrik è uno per stato: va deciso come unirli prima di importarli.
 4. **Rettangoli ai confini**: vedi §1; si risolve con la rete di sicurezza ma l'avviso di copertura può essere sbagliato di pochi chilometri.
-5. **Sei paesi con un solo import OSM ciascuno**: l'aggiornamento mensile è manuale, come per l'Italia.
+5. **Rinfresco OSM**: il workflow mensile rinfresca solo l'Italia (estratto Geofabrik); gli altri cinque paesi si rinfrescano a mano.
 6. **Nomi mostrati**: i luoghi senza nome in OSM restano col nome generico salvato nel database (nella lingua del paese), non tradotto nella lingua dell'app.
 7. **Tile delle mappe**: la mappa usa i tile pubblici di OSM (avviso di flutter_map nei test): con più paesi e più utenti va rivista la policy dei tile (https://operations.osmfoundation.org/policies/tiles); non toccata qui.
 8. **Domande**: l'ordine di import (§3) va bene o segue le lingue pronte? Piano Supabase Pro sì/no? Il Regno Unito include l'Irlanda del Nord (sì, come `GB-NIR`)? Territori d'oltremare francesi (esclusi) e Porto Rico/altri territori USA (esclusi)?

@@ -17,7 +17,6 @@ from packages.core.domain.geo.countries import RADAR_COUNTRIES  # noqa: E402
 from packages.infrastructure.radar_places.country_estimates import (  # noqa: E402
     FREE_PLAN_DATABASE_MB,
     estimate_for,
-    overpass_requests,
     total_database_mb,
 )
 
@@ -33,25 +32,19 @@ def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
     print(
         "| Paese | Regioni OSM | Luoghi Overture | Luoghi OSM | MB Overture | MB OSM | MB totale "
-        "| Tempo Overture (min) | Tempo OSM (min) | Richieste Overpass |"
+        "| Tempo Overture (min) | Tempo OSM (min) | Estratto Geofabrik (MB) |"
     )
-    print("| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |")
+    print("| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | ---: |")
     for country in RADAR_COUNTRIES:
         estimate = estimate_for(country)
-        low, high = overpass_requests(country)
-        note = (
-            " (misurato)"
-            if estimate.measured
-            else " (Overture misurato)"
-            if estimate.overture_measured
-            else ""
-        )
+        note = " (misurato)" if estimate.measured else " (stima)"
+        extract = f"{estimate.extract_mb:,}" if estimate.extract_mb else "?"
         print(
             f"| {country.flag} {country.code}{note} | {len(country.regions)} "
             f"| {estimate.overture_places:,} | {estimate.osm_places:,} "
             f"| {estimate.overture_mb:.0f} | {estimate.osm_mb:.0f} | {estimate.total_mb:.0f} "
             f"| {_span(estimate.overture_minutes)} "
-            f"| {_span(estimate.osm_minutes)} | {low}-{high} |"
+            f"| {_span(estimate.osm_minutes)} | {extract} |"
         )
     total = total_database_mb()
     print(

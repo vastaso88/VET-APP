@@ -367,6 +367,12 @@ def _read_coordinates(element: dict[str, object]) -> tuple[float | None, float |
 _ASSOCIATION_NAME = re.compile(ASSOCIATION_NAME_PATTERN, re.IGNORECASE)
 
 
+def is_pet_place(tags: dict[str, str]) -> bool:
+    """Whether OSM tags describe a place the radar shows (the extract
+    reader keeps only those, before any geometry is computed)."""
+    return _classify_tags(tags) is not None
+
+
 def _classify_tags(tags: dict[str, str]) -> tuple[str, str] | None:
     amenity = tags.get("amenity", "").strip().lower()
     shop = tags.get("shop", "").strip().lower()

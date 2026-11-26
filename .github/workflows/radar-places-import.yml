@@ -1,8 +1,8 @@
 name: Radar places import
 
-# Refreshes the radar's offline catalog (Overture Maps for Italy) in
-# Supabase. The OpenStreetMap step is paused (see below); the Italian OSM
-# rows already stored stay as they are. Needs two repository secrets, set by the owner in
+# Refreshes the radar's offline catalog for Italy in Supabase: Overture Maps
+# and OpenStreetMap (from the Geofabrik extract, not from public Overpass
+# servers). Needs two repository secrets, set by the owner in
 # Settings -> Secrets and variables -> Actions:
 #   RADAR_SUPABASE_URL                 e.g. https://<project-ref>.supabase.co
 #   RADAR_SUPABASE_SERVICE_ROLE_KEY    the project's secret (service-role) key
@@ -46,14 +46,27 @@ jobs:
       - name: Install dependencies
         run: uv sync
       - name: Import Overture places
-        run: uv run --with duckdb python scripts/radar/import_overture_places.py --allow-production
-      # OpenStreetMap step paused since 2026-11-26: no public Overpass server
-      # is in use for imports (the main one's robots.txt does not allow
-      # programs on /api/). It comes back only with a permitted data source,
-      # passed explicitly with --server. Existing OSM rows are not touched.
-      # - name: Import OpenStreetMap places
-      #   run: uv run python scripts/radar/import_osm_places.py --server <URL> --allow-production
+        run: uv run --extra radar-import python scripts/radar/import_overture_places.py --allow-production
+      # One download of the Italian extract from download.geofabrik.de
+      # (robots.txt and usage page allow programs; ~2.1 GB), read with
+      # pyosmium in three passes without a node index, then deleted. Measured
+      # locally on 2026-11-26: see docs/maps/COUNTRIES.md §3. A standard
+      # runner (4 CPU, 16 GB RAM, ~14 GB free disk) has room for it.
+      - name: Import OpenStreetMap places (Geofabrik extract)
+        run: >-
+          uv run --extra radar-import python scripts/radar/import_osm_places.py
+          --country IT --pbf-dir "$RUNNER_TEMP/pbf" --delete-pbf --allow-production
       - name: Import municipal dog parks
         run: uv run python scripts/radar/import_municipal_dog_parks.py --allow-production
       - name: Apply report retention
         run: uv run python scripts/radar/cleanup_reports.py --allow-production
+      # The request log (time, name, address, outcome; no content) is kept,
+      # as the project rule on external sites asks.
+      - name: Keep the request log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: radar-requests-log
+          path: .local/radar/requests.log
+          if-no-files-found: ignore
+          retention-days: 90

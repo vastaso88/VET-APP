@@ -1,45 +1,32 @@
 """OpenStreetMap pet places of one country from a Geofabrik extract (.osm.pbf).
 
-    uv run --system-certs --extra radar-import python scripts/radar/osm_pbf.py \\
-        --country AU --pbf-dir E:/tmp/radar_paesi/pbf --download
-    uv run --extra radar-import python scripts/radar/osm_pbf.py \\
-        --country AU --pbf-dir E:/tmp/radar_paesi/pbf
+Used by import_osm_places.py. Geofabrik's robots.txt and technical page
+allow programs (checked 2026-11-26); public Overpass servers are not used.
 
-TRIAL (2026-11-26): it only downloads and counts, it writes nothing to
-Supabase. The permitted OSM path while public Overpass servers are not used
-(docs/maps/COUNTRIES.md §2): Geofabrik's robots.txt and technical page
-allow programs (checked 2026-11-26, notes in .local/radar/NOTE.md).
-
-- `--download` fetches the country's `-latest.osm.pbf` once (skipped when
-  the file is already there, `--refresh` to fetch it again): one request,
-  User-Agent `QuokkaImport/1.0`, written to `.local/radar/requests.log`,
-  at least 10 s after the last request to the host, and a 403/429 stops the
-  host for good, like the other importers (request_log.py). The file goes
-  to `--pbf-dir`, which must be outside the repository (it is GBs).
-- Without `--download` it reads the file with pyosmium (the `radar-import`
-  optional dependencies in pyproject.toml, never installed with the API):
-  objects carrying one of the tag keys the Overpass selectors use are
-  turned into Overpass-like elements (nodes with lat/lon, ways and
-  multipolygons with the centre of their bounding box, as `out center`
-  gives) and mapped by the same `map_osm_element` as import_osm_places.py,
-  so the categories are exactly the same. Time and peak memory are printed;
-  the elements are saved to `.local/radar/osm_pbf/<CC>.json`.
+- `download` fetches the country's `-latest.osm.pbf` once: one request,
+  User-Agent `QuokkaImport/1.0`, written to `.local/radar/requests.log`, at
+  least 10 s after the last request to the host, and a 403/429 stops the
+  host for good, like the other importers (request_log.py).
+- `read_elements` reads the file with pyosmium (the `radar-import` optional
+  dependencies in pyproject.toml, never installed with the API): the pet
+  places among the objects carrying one of the tag keys the old Overpass
+  selectors used become Overpass-like elements (nodes with lat/lon; ways
+  and relations with the centre of their bounding box, as Overpass
+  `out center` gave), so the same `map_osm_element` turns them into places.
+  Three sequential passes, no node-location index: memory stays small even
+  for Germany or France.
 """
 
 from __future__ import annotations
 
-import argparse
-import json
-import sys
 import threading
 import time
-from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib import error, request
 
-from common import ROOT_DIR, now_iso, parse_country  # type: ignore[import-not-found]
+from common import ROOT_DIR, now_iso  # type: ignore[import-not-found]
 from request_log import (  # type: ignore[import-not-found]
     LOG_NAME,
     STOP_STATUSES,
@@ -48,8 +35,11 @@ from request_log import (  # type: ignore[import-not-found]
     log_request,
 )
 
+from packages.core.domain.geo.countries import RadarCountry  # noqa: E402
+from packages.core.domain.geo.models import Coordinates  # noqa: E402
 from packages.core.domain.radar_places.models import RadarPlace  # noqa: E402
 from packages.infrastructure.radar_places.overpass_places_source import (  # noqa: E402
+    is_pet_place,
     map_osm_element,
 )
 
@@ -66,10 +56,9 @@ EXTRACTS = {
     "GB": "europe/united-kingdom",
     "AU": "australia-oceania/australia",
 }
-# Every key an Overpass selector of import_osm_places.py starts from; the
-# exact values are checked by map_osm_element, as for Overpass answers.
+# Every tag key a pet place can be recognised by (map_osm_element checks
+# the exact values, as it did for Overpass answers).
 SELECTOR_KEYS = ("amenity", "shop", "office", "craft", "leisure", "club")
-LOCAL_DIR = ROOT_DIR / ".local" / "radar"
 CHUNK_BYTES = 1 << 20
 
 
@@ -81,13 +70,19 @@ def pbf_path(pbf_dir: Path, code: str) -> Path:
     return pbf_dir / f"{EXTRACTS[code].rsplit('/', 1)[1]}-latest.osm.pbf"
 
 
-def download(code: str, pbf_dir: Path, *, refresh: bool) -> Path:
-    """The country's extract, downloaded once (one logged request)."""
+def outside_repository(path: Path) -> bool:
+    resolved = path.resolve()
+    return resolved != ROOT_DIR and ROOT_DIR not in resolved.parents
+
+
+def download(code: str, pbf_dir: Path, *, local_dir: Path) -> Path:
+    """The country's extract, downloaded once (one logged request); an
+    existing file is used as it is."""
     target = pbf_path(pbf_dir, code)
-    if target.exists() and not refresh:
+    if target.exists():
         print(f"{target.name}: già scaricato ({target.stat().st_size / 1e6:.0f} MB)")
         return target
-    turns = HostTurns(LOCAL_DIR)
+    turns = HostTurns(local_dir)
     if reason := turns.stopped_reason(GEOFABRIK_HOST):
         raise HostStoppedError(GEOFABRIK_HOST, reason)
     time.sleep(turns.seconds_to_wait(GEOFABRIK_HOST))
@@ -112,9 +107,10 @@ def download(code: str, pbf_dir: Path, *, refresh: bool) -> Path:
         outcome = f"errore {type(exc).__name__}"
         raise
     finally:
+        partial.unlink(missing_ok=True)
         turns.record(GEOFABRIK_HOST)
         log_request(
-            LOCAL_DIR / LOG_NAME,
+            local_dir / LOG_NAME,
             user_agent=USER_AGENT,
             url=url,
             outcome=f"{outcome} ({size / 1e6:.0f} MB)" if outcome == 200 else outcome,
@@ -123,7 +119,7 @@ def download(code: str, pbf_dir: Path, *, refresh: bool) -> Path:
         if isinstance(outcome, int) and outcome in STOP_STATUSES:
             turns.stop(GEOFABRIK_HOST, f"HTTP {outcome}")
             raise HostStoppedError(GEOFABRIK_HOST, f"HTTP {outcome}")
-    print(f"{target.name}: {size / 1e6:.0f} MB in {time.monotonic() - begun:.0f} s")
+    print(f"{target.name}: {size / 1e6:.0f} MB in {time.monotonic() - begun:.0f} s", flush=True)
     return target
 
 
@@ -167,19 +163,29 @@ def _center(points: list[tuple[float, float]]) -> dict[str, float] | None:
     return {"lat": (min(lats) + max(lats)) / 2, "lon": (min(lons) + max(lons)) / 2}
 
 
-def read_elements(path: Path, *, index: str) -> list[dict[str, Any]]:
-    """Overpass-like elements of every object with a selector key."""
+def read_elements(path: Path) -> tuple[list[dict[str, Any]], int]:
+    """Overpass-like elements of the pet places in the extract, and how many
+    objects with a selector key were looked at. Raises if the file cannot
+    be read to the end: a partial read never counts.
+
+    No node-location index (it needs several GB for a big country): three
+    sequential passes instead. 1) objects with a selector key whose tags
+    describe a pet place: nodes are done, ways and relations keep their
+    member ids; 2) the member ways of those relations; 3) only the nodes
+    those ways and relations need, for the centre of their bounding box."""
     import osmium
 
-    processor = (
-        osmium.FileProcessor(str(path))
-        .with_locations(index)
-        .with_areas(osmium.filter.KeyFilter(*SELECTOR_KEYS))
-        .with_filter(osmium.filter.KeyFilter(*SELECTOR_KEYS))
-    )
+    looked_at = 0
     elements: list[dict[str, Any]] = []
-    for obj in processor:
-        if obj.is_node():
+    ways: dict[int, tuple[dict[str, str], list[int]]] = {}
+    relations: dict[int, tuple[dict[str, str], list[int], list[int]]] = {}
+    tagged = osmium.FileProcessor(str(path)).with_filter(osmium.filter.KeyFilter(*SELECTOR_KEYS))
+    for obj in tagged:
+        looked_at += 1
+        tags = _tags(obj)
+        if not is_pet_place(tags):
+            continue
+        if isinstance(obj, osmium.osm.Node):
             if obj.location.valid():
                 elements.append(
                     {
@@ -187,31 +193,59 @@ def read_elements(path: Path, *, index: str) -> list[dict[str, Any]]:
                         "id": obj.id,
                         "lat": obj.location.lat,
                         "lon": obj.location.lon,
-                        "tags": _tags(obj),
+                        "tags": tags,
                     }
                 )
-        elif obj.is_way():
-            points = [(n.lat, n.lon) for n in obj.nodes if n.location.valid()]
-            if center := _center(points):
-                elements.append({"type": "way", "id": obj.id, "center": center, "tags": _tags(obj)})
-        elif obj.is_area() and not obj.from_way():
-            # Multipolygon relations (closed ways already came as ways).
-            points = [
-                (n.lat, n.lon) for ring in obj.outer_rings() for n in ring if n.location.valid()
-            ]
-            if center := _center(points):
-                elements.append(
-                    {"type": "relation", "id": obj.orig_id(), "center": center, "tags": _tags(obj)}
-                )
-    return elements
+        elif isinstance(obj, osmium.osm.Way):
+            ways[obj.id] = (tags, [node.ref for node in obj.nodes])
+        elif isinstance(obj, osmium.osm.Relation):
+            members = list(obj.members)
+            relations[obj.id] = (
+                tags,
+                [m.ref for m in members if m.type == "w"],
+                [m.ref for m in members if m.type == "n"],
+            )
+
+    member_ways: dict[int, list[int]] = {}
+    wanted_ways = {ref for _, way_refs, _ in relations.values() for ref in way_refs}
+    if wanted_ways:
+        for way in osmium.FileProcessor(str(path), osmium.osm.osm_entity_bits.WAY).with_filter(
+            osmium.filter.IdFilter(wanted_ways)
+        ):
+            if isinstance(way, osmium.osm.Way):
+                member_ways[way.id] = [node.ref for node in way.nodes]
+
+    wanted_nodes = {ref for _, refs in ways.values() for ref in refs}
+    for _, way_refs, node_refs in relations.values():
+        wanted_nodes.update(node_refs)
+        for ref in way_refs:
+            wanted_nodes.update(member_ways.get(ref, ()))
+    locations: dict[int, tuple[float, float]] = {}
+    if wanted_nodes:
+        for node in osmium.FileProcessor(str(path), osmium.osm.osm_entity_bits.NODE).with_filter(
+            osmium.filter.IdFilter(wanted_nodes)
+        ):
+            if isinstance(node, osmium.osm.Node) and node.location.valid():
+                locations[node.id] = (node.location.lat, node.location.lon)
+
+    for way_id, (tags, refs) in ways.items():
+        if center := _center([locations[ref] for ref in refs if ref in locations]):
+            elements.append({"type": "way", "id": way_id, "center": center, "tags": tags})
+    for relation_id, (tags, way_refs, node_refs) in relations.items():
+        refs = [*node_refs, *(ref for way in way_refs for ref in member_ways.get(way, ()))]
+        if center := _center([locations[ref] for ref in refs if ref in locations]):
+            elements.append({"type": "relation", "id": relation_id, "center": center, "tags": tags})
+    return elements, looked_at
 
 
 def map_elements(
-    elements: list[dict[str, Any]], country_code: str
+    elements: list[dict[str, Any]], country: RadarCountry
 ) -> tuple[dict[str, RadarPlace], list[dict[str, Any]]]:
     """Places by OSM id, with the same mapping as Overpass answers, and the
     elements that became a place (the only ones worth keeping on disk: a
-    country has about a million objects with an `amenity` or `shop` key)."""
+    country has about a million objects with an `amenity` or `shop` key).
+    A place outside the country's rectangles is dropped: extracts carry
+    overseas territories (France) or border spill the radar does not cover."""
     fetched_at = datetime.now(UTC)
     places: dict[str, RadarPlace] = {}
     kept: list[dict[str, Any]] = []
@@ -221,72 +255,12 @@ def map_elements(
             owner_id="",
             coverage_key="catalog",
             fetched_at=fetched_at,
-            country_code=country_code,
+            country_code=country.code,
         )
-        if place is not None:
-            places[place.source_external_id] = place
-            kept.append(element)
+        if place is None or not country.contains(
+            Coordinates(latitude=place.latitude, longitude=place.longitude)
+        ):
+            continue
+        places[place.source_external_id] = place
+        kept.append(element)
     return places, kept
-
-
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--country", required=True, help=f"one of {', '.join(EXTRACTS)}")
-    parser.add_argument("--pbf-dir", type=Path, required=True, help="where the .pbf files live")
-    parser.add_argument("--download", action="store_true", help="download the extract and stop")
-    parser.add_argument("--refresh", action="store_true", help="download again even if present")
-    parser.add_argument(
-        "--index",
-        default="flex_mem",
-        help="pyosmium node-location storage (flex_mem; sparse_file_array,<file> for big files)",
-    )
-    parser.add_argument(
-        "--cache-dir",
-        type=Path,
-        help="request log and output folder (default .local/radar)",
-    )
-    args = parser.parse_args()
-
-    country = parse_country(args.country)
-    if country.code not in EXTRACTS:
-        parser.error(f"nessun estratto Geofabrik configurato per {country.code}")
-    if ROOT_DIR in args.pbf_dir.resolve().parents or args.pbf_dir.resolve() == ROOT_DIR:
-        parser.error("--pbf-dir deve stare fuori dal repository")
-    global LOCAL_DIR
-    if args.cache_dir:
-        LOCAL_DIR = args.cache_dir
-    if args.download:
-        try:
-            download(country.code, args.pbf_dir, refresh=args.refresh)
-        except HostStoppedError as exc:
-            print(f"Host fermato: {exc.host} ({exc.reason}). Avvisare l'Orchestratore.")
-            return 4
-        return 0
-
-    path = pbf_path(args.pbf_dir, country.code)
-    if not path.exists():
-        parser.error(f"{path} non c'è: lancia prima con --download")
-    started = time.monotonic()
-    with PeakMemory() as memory:
-        elements = read_elements(path, index=args.index)
-    seconds = time.monotonic() - started
-    places, kept = map_elements(elements, country.code)
-    output = LOCAL_DIR / "osm_pbf" / f"{country.code}.json"
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(
-        json.dumps({"fetched_at": now_iso(), "source": path.name, "elements": kept}),
-        encoding="utf-8",
-    )
-    print(f"{path.name}: {path.stat().st_size / 1e6:.0f} MB letti in {seconds:.0f} s")
-    if memory.peak_bytes:
-        print(f"  memoria massima: {memory.peak_bytes / 1e6:.0f} MB")
-    print(f"  {len(elements)} oggetti con una chiave dei selettori")
-    print(f"  {len(places)} luoghi ({country.code}) dopo la stessa mappatura di Overpass")
-    for place_type, count in Counter(p.place_type for p in places.values()).most_common():
-        print(f"    {place_type}: {count}")
-    print(f"  elementi salvati in {output}")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())

@@ -1,20 +1,19 @@
-"""Back-of-the-envelope size and time of importing each country, worked
-out BEFORE any import runs (docs/maps/COUNTRIES.md has the table).
+"""Size and time of importing each country (docs/maps/COUNTRIES.md has the
+table, printed by scripts/radar/estimate_countries.py).
 
-Italy is the only country actually measured (2026-10-04 / 2026-10-07):
-8,069 OpenStreetMap places and 15,831 Overture places after filtering,
-about 9 MB in the database for each source, 20 OSM regions in 10-15
-minutes, Overture in 3 minutes 11 seconds. The other countries scale that
-by population, area and how well each source covers the country; every
-figure is an estimate, good to about +/-50%, and the first `--dry-run` of
-each country replaces it with a measurement.
+Measured on 2026-11-26 for Italy, Germany, France, Spain, the United
+Kingdom and Australia (dry runs, nothing written):
 
-Overture was measured on 2026-11-26 (release 2026-11-18.0, dry runs, with the
-categories added that day) for
-Germany, France, Spain, the United Kingdom and Australia: places after the
-filters and minutes of download (`overture_measured`). Their MB are still
-places x the Italian row size. OSM is not measured for them: OSM imports
-are paused (docs/maps/COUNTRIES.md §2).
+- Overture: release 2026-11-18.0 with the categories added that day, places
+  after the filters and minutes of download (Italy: the 2026-10 import,
+  before those categories).
+- OpenStreetMap: the country's Geofabrik extract read with pyosmium
+  (scripts/radar/import_osm_places.py), places after the same mapping the
+  Overpass answers had; minutes are download plus reading, so they depend
+  on the line (Germany's download took 50 minutes, France's 7).
+
+MB are places x the bytes per row measured on Italy's tables (a dry run
+does not write). The United States are still an estimate (+/-50%).
 """
 
 from dataclasses import dataclass
@@ -29,12 +28,6 @@ OSM_ROW_BYTES = 1100
 # Supabase free plan database size.
 FREE_PLAN_DATABASE_MB = 500
 
-# One Overpass region: ~36 s on average in the Italian run (download plus
-# the 5 s pause); a refused region is fetched one category at a time, up to
-# this many extra queries.
-SECONDS_PER_OSM_REGION = 36
-MAX_QUERIES_PER_REFUSED_REGION = 10
-
 
 @dataclass(frozen=True)
 class CountryEstimate:
@@ -43,9 +36,9 @@ class CountryEstimate:
     osm_places: int
     overture_minutes: tuple[int, int]
     osm_minutes: tuple[int, int]
+    # Size of the Geofabrik extract downloaded for OSM, in MB (0: unknown).
+    extract_mb: int = 0
     measured: bool = False
-    # Overture places and minutes come from a dry run, OSM is still estimated.
-    overture_measured: bool = False
 
     @property
     def overture_mb(self) -> float:
@@ -63,24 +56,14 @@ class CountryEstimate:
 # Places are the ones left after the importers' filters (confidence >= 0.7,
 # not closed, duplicates merged), not raw rows.
 COUNTRY_ESTIMATES: dict[str, CountryEstimate] = {
-    "IT": CountryEstimate("IT", 15_831, 8_069, (3, 4), (10, 15), measured=True),
-    "DE": CountryEstimate("DE", 21_335, 38_000, (8, 8), (12, 20), overture_measured=True),
-    "FR": CountryEstimate("FR", 14_755, 22_000, (10, 10), (10, 18), overture_measured=True),
-    "ES": CountryEstimate("ES", 12_045, 12_000, (18, 18), (12, 20), overture_measured=True),
-    "GB": CountryEstimate("GB", 37_586, 22_000, (7, 7), (10, 30), overture_measured=True),
-    # AU OSM: Geofabrik extract read with pyosmium (osm_pbf.py), 2026-11-26.
-    "AU": CountryEstimate(
-        "AU", 9_697, 3_397, (1, 1), (4, 4), measured=True, overture_measured=True
-    ),
+    "IT": CountryEstimate("IT", 15_831, 8_679, (3, 4), (5, 5), 2_256, measured=True),
+    "DE": CountryEstimate("DE", 21_335, 13_467, (8, 8), (54, 54), 4_891, measured=True),
+    "FR": CountryEstimate("FR", 14_755, 9_691, (10, 10), (12, 12), 5_122, measured=True),
+    "ES": CountryEstimate("ES", 12_045, 6_915, (18, 18), (3, 3), 1_506, measured=True),
+    "GB": CountryEstimate("GB", 37_586, 8_368, (7, 7), (6, 6), 2_292, measured=True),
+    "AU": CountryEstimate("AU", 9_697, 3_395, (1, 1), (2, 2), 978, measured=True),
     "US": CountryEstimate("US", 130_000, 90_000, (20, 45), (45, 150)),
 }
-
-
-def overpass_requests(country: RadarCountry) -> tuple[int, int]:
-    """Overpass queries: one per region at best, one per category in every
-    region at worst (plus a status check before each, not counted)."""
-    regions = len(country.regions)
-    return regions, regions * (1 + MAX_QUERIES_PER_REFUSED_REGION)
 
 
 def estimate_for(country: RadarCountry) -> CountryEstimate:

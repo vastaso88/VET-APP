@@ -44,7 +44,6 @@ from packages.infrastructure.persistence.in_memory_repositories import (
 )
 from packages.infrastructure.radar_places.country_estimates import (
     COUNTRY_ESTIMATES,
-    overpass_requests,
     total_database_mb,
 )
 from packages.infrastructure.radar_places.overpass_places_source import map_osm_element
@@ -470,18 +469,15 @@ def test_one_country_complete_does_not_cover_another() -> None:
 def test_every_country_has_an_estimate_and_the_total_is_stated() -> None:
     assert set(COUNTRY_ESTIMATES) == {country.code for country in RADAR_COUNTRIES}
     assert COUNTRY_ESTIMATES["IT"].measured
-    # Australia's OSM too, from the Geofabrik trial of 2026-11-26.
-    assert {code for code, item in COUNTRY_ESTIMATES.items() if item.measured} == {"IT", "AU"}
-    # Overture dry runs of 2026-11-26; OSM of the others is still an estimate.
-    measured = {code for code, item in COUNTRY_ESTIMATES.items() if item.overture_measured}
-    assert measured == {"DE", "FR", "ES", "GB", "AU"}
+    # Every country but the United States measured on 2026-11-26 (Overture
+    # dry runs, Geofabrik extracts for OSM).
+    measured = {code for code, item in COUNTRY_ESTIMATES.items() if item.measured}
+    assert measured == {"IT", "DE", "FR", "ES", "GB", "AU"}
+    assert all(COUNTRY_ESTIMATES[code].extract_mb for code in measured)
     # Italy: ~9 MB per source (measured).
     assert COUNTRY_ESTIMATES["IT"].overture_mb == pytest.approx(9, abs=1)
     assert COUNTRY_ESTIMATES["IT"].osm_mb == pytest.approx(9, abs=1)
     assert total_database_mb(["DE"]) == pytest.approx(COUNTRY_ESTIMATES["DE"].total_mb)
-    for country in RADAR_COUNTRIES:
-        low, high = overpass_requests(country)
-        assert low == len(country.regions) < high
 
 
 # --- offline importer, on cached files -------------------------------------------
@@ -494,71 +490,61 @@ def _load_script(name: str) -> Any:
     return importlib.import_module(name)
 
 
-def test_osm_importer_lists_regions_and_dry_runs_from_the_cache(
+def _save_extract_record(
+    folder: Path, code: str, elements: list[dict[str, Any]], *, complete: bool = True
+) -> None:
+    (folder / "osm_pbf").mkdir(parents=True, exist_ok=True)
+    (folder / "osm_pbf" / f"{code}.json").write_text(
+        json.dumps(
+            {
+                "fetched_at": datetime.now(UTC).isoformat(),
+                "complete": complete,
+                "source": "germany-latest.osm.pbf",
+                "elements": elements,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_osm_importer_dry_runs_from_a_whole_extract_already_read(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     importer = _load_script("import_osm_places")
-    monkeypatch.setattr(importer, "CACHE_DIR", tmp_path)
     monkeypatch.setattr(importer, "LOCAL_DIR", tmp_path)
-
-    monkeypatch.setattr(sys, "argv", ["import_osm_places.py", "--country", "DE", "--list-regions"])
-    assert importer.main() == 0
-    listing = capsys.readouterr().out
-    assert "DE-BY" in listing and "16 regioni" in listing
-
-    # Two German regions "already downloaded" from the synthetic sample.
     elements = [
         {key: value for key, value in item.items() if key not in {"country", "expect"}}
         for item in SAMPLE["osm"]
         if item["country"] == "DE"
     ]
-    for code in ("DE-BE", "DE-BY"):
-        (tmp_path / f"{code}.json").write_text(
-            json.dumps({"fetched_at": datetime.now(UTC).isoformat(), "elements": elements}),
-            encoding="utf-8",
-        )
-    monkeypatch.setattr(
-        sys,
-        "argv",
-        ["import_osm_places.py", "--country", "DE", "--regions", "DE-BE", "DE-BY", "--dry-run"],
-    )
+    # The same element twice (two copies in the input) is one place: keyed by OSM id.
+    _save_extract_record(tmp_path, "DE", elements + elements)
+    monkeypatch.setattr(sys, "argv", ["import_osm_places.py", "--country", "DE", "--dry-run"])
     assert importer.main() == 0
     report = capsys.readouterr().out
-    # The same elements in two regions are one place each (keyed by id).
-    assert "2 luoghi in totale da 2 regioni (DE)" in report
+    assert "2 luoghi in totale (DE, estratto completo)" in report
     assert "Dry run" in report
 
 
-def test_osm_importer_refuses_regions_of_another_country_and_empty_answers(
+def test_osm_importer_never_trusts_a_partial_read(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     importer = _load_script("import_osm_places")
-    monkeypatch.setattr(importer, "CACHE_DIR", tmp_path)
     monkeypatch.setattr(importer, "LOCAL_DIR", tmp_path)
-
+    _save_extract_record(tmp_path, "DE", [], complete=False)
+    monkeypatch.setattr(sys, "argv", ["import_osm_places.py", "--country", "DE", "--dry-run"])
+    # Not complete: the extract must be read again, and that needs --pbf-dir.
+    with pytest.raises(SystemExit):
+        importer.main()
+    assert "--pbf-dir" in capsys.readouterr().err
+    # The extracts never go inside the repository.
+    inside = str(ROOT / ".local" / "radar" / "pbf")
     monkeypatch.setattr(
-        sys, "argv", ["import_osm_places.py", "--country", "DE", "--regions", "IT-25"]
+        sys, "argv", ["import_osm_places.py", "--country", "DE", "--pbf-dir", inside, "--dry-run"]
     )
     with pytest.raises(SystemExit):
         importer.main()
-
-    (tmp_path / "DE-HB.json").write_text(
-        json.dumps({"fetched_at": datetime.now(UTC).isoformat(), "elements": []}),
-        encoding="utf-8",
-    )
-    monkeypatch.setattr(
-        sys,
-        "argv",
-        [
-            "import_osm_places.py",
-            *("--country", "DE", "--regions", "DE-HB", "--max-seconds", "1"),
-            *("--server", "https://overpass.example/api/interpreter"),
-        ],
-    )
-    # An empty region from the cache is not trusted (wrong area code?): it is
-    # asked again, and with no time budget the run stops cleanly to resume.
-    assert importer.main() == importer.EXIT_RESUME
-    assert "Nulla è stato scritto" in capsys.readouterr().out
+    assert "fuori dal repository" in capsys.readouterr().err
 
 
 def test_unknown_country_is_refused_with_the_list_of_known_ones() -> None:
