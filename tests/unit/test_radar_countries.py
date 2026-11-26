@@ -470,10 +470,9 @@ def test_one_country_complete_does_not_cover_another() -> None:
 def test_every_country_has_an_estimate_and_the_total_is_stated() -> None:
     assert set(COUNTRY_ESTIMATES) == {country.code for country in RADAR_COUNTRIES}
     assert COUNTRY_ESTIMATES["IT"].measured
-    assert not any(
-        estimate.measured for code, estimate in COUNTRY_ESTIMATES.items() if code != "IT"
-    )
-    # Overture dry runs of 2026-11-26; OSM of those countries is still an estimate.
+    # Australia's OSM too, from the Geofabrik trial of 2026-11-26.
+    assert {code for code, item in COUNTRY_ESTIMATES.items() if item.measured} == {"IT", "AU"}
+    # Overture dry runs of 2026-11-26; OSM of the others is still an estimate.
     measured = {code for code, item in COUNTRY_ESTIMATES.items() if item.overture_measured}
     assert measured == {"DE", "FR", "ES", "GB", "AU"}
     # Italy: ~9 MB per source (measured).

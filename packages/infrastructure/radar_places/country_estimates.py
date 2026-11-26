@@ -9,7 +9,8 @@ by population, area and how well each source covers the country; every
 figure is an estimate, good to about +/-50%, and the first `--dry-run` of
 each country replaces it with a measurement.
 
-Overture was measured on 2026-11-26 (release 2026-11-18.0, dry runs) for
+Overture was measured on 2026-11-26 (release 2026-11-18.0, dry runs, with the
+categories added that day) for
 Germany, France, Spain, the United Kingdom and Australia: places after the
 filters and minutes of download (`overture_measured`). Their MB are still
 places x the Italian row size. OSM is not measured for them: OSM imports
@@ -63,11 +64,14 @@ class CountryEstimate:
 # not closed, duplicates merged), not raw rows.
 COUNTRY_ESTIMATES: dict[str, CountryEstimate] = {
     "IT": CountryEstimate("IT", 15_831, 8_069, (3, 4), (10, 15), measured=True),
-    "DE": CountryEstimate("DE", 19_558, 38_000, (10, 10), (12, 20), overture_measured=True),
-    "FR": CountryEstimate("FR", 13_509, 22_000, (11, 11), (10, 18), overture_measured=True),
-    "ES": CountryEstimate("ES", 11_042, 12_000, (19, 19), (12, 20), overture_measured=True),
-    "GB": CountryEstimate("GB", 31_763, 22_000, (6, 6), (10, 30), overture_measured=True),
-    "AU": CountryEstimate("AU", 8_314, 12_000, (2, 2), (8, 20), overture_measured=True),
+    "DE": CountryEstimate("DE", 21_335, 38_000, (8, 8), (12, 20), overture_measured=True),
+    "FR": CountryEstimate("FR", 14_755, 22_000, (10, 10), (10, 18), overture_measured=True),
+    "ES": CountryEstimate("ES", 12_045, 12_000, (18, 18), (12, 20), overture_measured=True),
+    "GB": CountryEstimate("GB", 37_586, 22_000, (7, 7), (10, 30), overture_measured=True),
+    # AU OSM: Geofabrik extract read with pyosmium (osm_pbf.py), 2026-11-26.
+    "AU": CountryEstimate(
+        "AU", 9_697, 3_397, (1, 1), (4, 4), measured=True, overture_measured=True
+    ),
     "US": CountryEstimate("US", 130_000, 90_000, (20, 45), (45, 150)),
 }
 
