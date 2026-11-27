@@ -35,7 +35,7 @@ aree cani (`docs/compliance/au/08_domande_per_proprietario.md`).
 
 ## 3. Scheda privacy (Play "Data safety" / App Store "Privacy nutrition label")
 
-Aggiornata il 2026-10-28 dalla sessione Cybersicurezza sul codice del ramo Francesco (build 36, nome Quokka).
+Aggiornata il 2026-10-28 dalla sessione Cybersicurezza sul codice del ramo Francesco (build 36, nome Quokka). Righe Indirizzo, Posizione precisa, ID dispositivo, Log di arresto anomalo, esportazione e cancellazione riviste il 2026-11-27 (Normativa) sul codice al commit 5e246ec6.
 Coerente con `docs/security/06_inventario_dati_fornitori.md` e con `docs/compliance/09_informativa_privacy_bozza.md`
 (versione 2026-10-28: cognome, telefono facoltativo, foto profilo). La scheda degli store è una sola per app in tutto il mondo:
 vale il caso più severo.
@@ -46,9 +46,10 @@ Google Play considera **"condivisione"** il trasferimento a una terza parte che 
 condivisione il trasferimento a un **fornitore che tratta i dati solo per conto nostro** su istruzione contrattuale
 (service provider): Supabase (database, autenticazione, file), Vercel (hosting del backend), Anthropic (modello della chat) e Firebase App Distribution (solo tester) rientrano qui, **a condizione** che esista il contratto
 di trattamento (DPA) con ciascuno (vedi inventario fornitori). Vanno comunque nominati nell'informativa.
-Sono invece **condivisione** vera e propria: **OpenStreetMap Foundation** (Nominatim riceve l'indirizzo scritto a mano e
-l'IP del telefono; il server delle mappe riceve l'IP e l'area visualizzata) e, se si attivasse, un servizio di crash
-reporting non coperto da DPA. Non sono condivisione: i trasferimenti richiesti dalla legge, quelli anonimizzati, quelli
+Sono invece **condivisione** vera e propria: **OpenStreetMap Foundation** (Nominatim riceve dal nostro server l'indirizzo scritto a mano o le coordinate da
+risolvere, non l'IP del telefono; il server delle mappe riceve dal telefono l'IP e l'area visualizzata), **Google** per i
+caratteri di testo (l'app li scarica dai suoi server e Google riceve l'IP del telefono: da sistemare includendo i font
+nell'app) e, se si attivasse, un servizio di crash reporting non coperto da DPA. Non sono condivisione: i trasferimenti richiesti dalla legge, quelli anonimizzati, quelli
 decisi dall'utente (condividere un referto con il proprio veterinario dal telefono).
 
 ### 3.2 Risposte al modulo, tipo per tipo
@@ -63,32 +64,32 @@ Finalità (voci del modulo Play). "Funzionalità" = App functionality; "Sicurezz
 | Informazioni personali → **Indirizzo email** | sì | no | no | sì | Account, Funzionalità, Sicurezza | Supabase Auth; usata anche per l'allowlist admin/sviluppatori |
 | Informazioni personali → **ID utente** | sì | no | no | sì | Account, Funzionalità, Sicurezza | UUID Supabase; pseudonimizzato nelle segnalazioni |
 | Informazioni personali → **Numero di telefono** | sì | no | no | **no** (facoltativo) | Account | Metadati profilo; nessuna funzione lo usa oggi; cancellabile dal profilo |
-| Informazioni personali → **Indirizzo** | sì (indirizzo di casa scritto a mano, se scelto) | **sì**: OpenStreetMap Nominatim riceve il testo dell'indirizzo per trovarne le coordinate | no | no | Funzionalità | `address_geocoder.dart` chiama Nominatim **dal telefono**; coordinate e etichetta salvate in `user_locations` |
+| Informazioni personali → **Indirizzo** | sì (indirizzo di casa scritto a mano, se scelto) | **sì**: OpenStreetMap Nominatim riceve dal nostro server il testo dell'indirizzo per trovarne le coordinate | no | no | Funzionalità | Il telefono chiama le rotte `/geocoding` del nostro server (con accesso e limite per utente), che interroga Nominatim; coordinate e etichetta salvate in `user_locations` |
 | Informazioni personali → Altre info | sì (specie, razza, nome, dati clinici degli **animali**) | no | no | no | Funzionalità | Non sono dati sanitari dell'utente: dichiarare qui, non in "Salute e fitness" |
 | Posizione → **Posizione approssimativa** | sì | **sì**: il server delle mappe OSM riceve l'IP e l'area visualizzata | no | no | Funzionalità | Mercatino usa coordinate arrotondate a ~1 km |
-| Posizione → **Posizione precisa** | sì (GPS per passeggiate, servizi vicini, posizione attuale) | no (il backend interroga Overpass con il centro di una cella, non con la posizione dell'utente) | no | no | Funzionalità | Percorsi in `dog_walks`; nessuna posizione in background |
+| Posizione → **Posizione precisa** | sì (GPS per passeggiate, servizi vicini, posizione attuale) | **sì**, in un solo caso: per trovare l'indirizzo o il Comune di un punto scelto sulla mappa (posizione di riferimento, luogo mancante) il nostro server manda le coordinate (5 decimali, circa 1 m) a OpenStreetMap Nominatim | no | no | Funzionalità | Percorsi in `dog_walks`; durante una passeggiata il GPS gira in secondo piano con notifica visibile (servizio in primo piano). Overpass non è più interrogato |
 | Messaggi → **Altri messaggi in-app** | sì (conversazioni con l'assistente) | no (Anthropic = fornitore) | no | no | Funzionalità | Testo anonimizzato prima dell'invio al modello; salvato in `conversations` |
 | Foto e video → **Foto** / **Video** | sì (profilo animale, galleria, allegati chat/cartella, foto profilo, foto annunci) | no (le foto restano nell'account e nessun fornitore le legge); le foto degli annunci sono **pubbliche** per scelta dell'utente | no | no | Funzionalità | Metadati EXIF/posizione rimossi; bucket privati tranne `marketplace-photos` |
 | Audio → **Registrazioni vocali** | **no** (la dettatura la trascrive il sistema del telefono; a noi arriva solo il testo, nessun audio sui nostri server) | — | — | — | — | `RECORD_AUDIO` resta dichiarato. Da verificare nel modulo di Google (e nelle etichette di Apple) se la trascrizione del sistema va dichiarata |
-| File e documenti | sì (referti PDF e immagini della cartella clinica) | no (Anthropic = fornitore, solo con consenso per animale) | no | no | Funzionalità | Bucket privato `chat-attachments`; testo anonimizzato |
+| File e documenti | sì (referti PDF e immagini della cartella clinica) | no (Anthropic = fornitore; il testo dei PDF allegati alla chat parte anche senza il consenso alla cartella clinica, il resto solo con il consenso per animale) | no | no | Funzionalità | Bucket privato `chat-attachments`; testo anonimizzato; le foto non sono lette da nessun fornitore |
 | Salute e fitness | **no** | — | — | — | — | I dati clinici sono degli animali |
 | Informazioni finanziarie | **no** | — | — | — | — | Nessun pagamento reale oggi; quando arriva: Play Billing, nessun dato di carta nell'app |
 | Contatti | no | — | — | — | — | Nessun accesso alla rubrica |
 | Calendario | no | — | — | — | — | Promemoria interni all'app, notifiche locali |
 | Attività nell'app → **Interazioni con l'app** | no (nessun SDK di analisi) | — | — | — | — | Il consenso "analytics" in Impostazioni esiste ma oggi non attiva alcun SDK: rispondere **no** finché resta così |
-| Attività nell'app → **Contenuti generati dagli utenti** | sì (annunci, segnalazioni di luoghi e stelle, proposte di eventi, segnalazioni di risposte) | no (annunci ed eventi approvati sono visibili agli altri utenti dentro l'app: Play non lo conta come condivisione con terzi) | no | no | Funzionalità | Pseudonimi per le segnalazioni radar |
+| Attività nell'app → **Contenuti generati dagli utenti** | sì (annunci, segnalazioni di luoghi e stelle, proposte di eventi) | no (annunci ed eventi approvati sono visibili agli altri utenti dentro l'app: Play non lo conta come condivisione con terzi) | no | no | Funzionalità | Pseudonimi per le segnalazioni radar. L'app non ha un pulsante per segnalare una risposta dell'assistente: «Non mi ha aiutato» agisce solo dentro la conversazione |
 | Cronologia web / navigazione | no | — | — | — | — | — |
-| Info e prestazioni dell'app → **Log di arresto anomalo** (dati diagnostici) | sì, **solo nelle build con `CRASH_REPORTING=true` e dopo il consenso** «Invia rapporti sugli errori» | no (Sentry = fornitore con DPA, organizzazione in regione EU) | no | **no** (facoltativo, opt-in, revocabile in Impostazioni) | Analisi (stabilità dell'app) | `scrubCrashEvent`: tipo eccezione, stack trace, modello/SO/versione; mai testo, utente, IP, URL, briciole. Se la build è senza flag rispondere **no** |
-| ID dispositivo o altri ID | no | — | — | — | — | Nessun ID pubblicitario; Sentry non riceve id utente né di installazione (da confermare sull'evento di prova: `contexts.device`) |
+| Info e prestazioni dell'app → **Log di arresto anomalo** (dati diagnostici) | sì, **solo nelle build con `CRASH_REPORTING=true` e dopo il consenso** «Invia rapporti sugli errori» | no (Sentry = fornitore con DPA, organizzazione in regione EU) | no | **no** (facoltativo, opt-in, revocabile in Impostazioni) | Analisi (stabilità dell'app) | `scrubCrashEvent`: tipo eccezione, stack trace, modello/SO/versione; mai testo, utente, IP, URL, briciole. **Per la build di Google Play rispondere no** se non riceve `CRASH_REPORTING=true` e il DSN (27 novembre 2026: nessuno script di build li passa e nessun DSN è nel repository) |
+| ID dispositivo o altri ID | sì (identificativo casuale dell'installazione, tabella `user_devices`) | no | no | sì | Account, Sicurezza, Funzionalità | Generato dall'app: non è un ID pubblicitario e non viene dal telefono; serve a contare i dispositivi del piano. Sentry, se attivo, non riceve id utente né di installazione (da confermare sull'evento di prova: `contexts.device`) |
 
 ### 3.3 Altre risposte del modulo
 
 | Domanda | Risposta | Base |
 |---|---|---|
 | I dati sono crittografati in transito? | **Sì** | HTTPS verso Supabase, backend Vercel e Nominatim/OSM; HSTS sul backend e sulla web app |
-| Gli utenti possono chiedere la cancellazione dei dati? | **Sì**, nell'app (Impostazioni → Account → Elimina account) | `DELETE /account`; **serve anche l'URL della pagina web** (vedi B1) |
+| Gli utenti possono chiedere la cancellazione dei dati? | **Sì**, nell'app (Impostazioni → Account → Elimina account) e dalla pagina web `https://quokkapet.net/it/cancellazione-account/` (da inserire nel modulo quando è pubblicata) | `DELETE /account`; la pagina web è obbligatoria per Google (vedi B1) |
 | L'app permette di cancellare alcuni dati senza eliminare l'account? | Sì | Animali, conversazioni, promemoria, foto, annunci, posizione, telefono e foto profilo si cancellano singolarmente |
-| Esportazione dei dati | Sì | `GET /account/export` (pulsante in app in arrivo) |
+| Esportazione dei dati | Sì | `GET /account/export` (Impostazioni → Account → Scarica i miei dati: JSON o zip leggibile) |
 | L'app segue la Famiglie policy / è rivolta a minori? | No (18+) | Sezione 2 |
 | Revisione di sicurezza indipendente (MASA) | No | Facoltativa |
 | Raccolta dati obbligatoria per usare l'app | Solo nome, e-mail, ID utente; tutto il resto è facoltativo | Modulo "Required/Optional" |
@@ -100,6 +101,8 @@ Finalità (voci del modulo Play). "Funzionalità" = App functionality; "Sicurezz
 3. Informativa privacy pubblicata a un URL stabile (la scheda la richiede) che nomini tutti i fornitori, OSM/Nominatim compreso.
 4. Se si attiva il crash reporting: aggiornare la riga "Log di arresto anomalo" e l'informativa.
 5. Rileggere questa tabella a ogni funzione che tratta dati nuovi (`docs/security/05_checklist.md`, sezione B).
+6. Font: oggi l'app li scarica da Google a ogni avvio (`google_fonts`): meglio includerli nell'app prima del rilascio; se restano così, l'informativa (riga «Google, caratteri di testo») e questa scheda devono dirlo.
+7. La build che si carica deve essere quella controllata: `CRASH_REPORTING` e DSN assenti, a meno che il proprietario abbia creato l'organizzazione Sentry in UE e firmato il DPA.
 
 ## 4. Dichiarazioni sull'IA
 

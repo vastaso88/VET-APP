@@ -116,7 +116,7 @@ PAGES = [
         "description": "Come eliminare il tuo account Quokka e i tuoi dati, dall'app o scrivendoci.",
         "draft": True,
         "body": f"""<h1>Cancellazione dell'account</h1>
-<p class="lead">Puoi eliminare il tuo account Quokka e i dati collegati in due modi. La cancellazione è definitiva: non possiamo recuperare nulla.</p>
+<p class="lead">Questa pagina spiega come eliminare l'account di <strong>Quokka</strong>, l'app di [TITOLARE], e i dati collegati, con o senza l'app. Se lo fai dall'app, per 30 giorni puoi cambiare idea; poi la cancellazione è definitiva.</p>
 
 <h2 id="dall-app">Dall'app (il modo più rapido)</h2>
 <ol>
@@ -125,17 +125,32 @@ PAGES = [
 <li>Tocca <strong>Elimina account</strong>.</li>
 <li>Leggi l'avviso, scrivi la tua password per conferma, spunta «Ho capito» e tocca <strong>Elimina definitivamente il mio account</strong>.</li>
 </ol>
+<p>L'account si disattiva subito. Se preferisci che la cancellazione sia immediata, nella stessa pagina tocca <strong>Elimina subito, senza possibilità di recupero</strong>.</p>
 <p>Prima di eliminare puoi scaricare una copia dei tuoi dati da <strong>Impostazioni → Account → Scarica i miei dati</strong>.</p>
 
-<h2 id="senza-app">Senza l'app, scrivendoci</h2>
-<p>Se non hai più l'app o non riesci ad accedere, scrivi a <a href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL}</a>.</p>
+<h2 id="ripensamento">Se cambi idea</h2>
+<p>Per 30 giorni dalla richiesta puoi annullare l'eliminazione: apri l'app e accedi con la stessa e-mail. Se non ricordi la password, tocca <strong>Recupera account</strong> nella schermata di accesso e reimpostala con il link che ti mandiamo per e-mail. Poi tocca <strong>Annulla l'eliminazione</strong>. Se invece vuoi chiudere subito, tocca <strong>Elimina subito</strong>.</p>
+
+<h2 id="tempi">Quando cancelliamo i dati</h2>
+<ul>
+<li>Appena chiedi l'eliminazione dall'app l'account si disattiva: non è più visibile e non lo usiamo.</li>
+<li>Dopo 30 giorni cancelliamo l'account e i dati.</li>
+<li>Se abbiamo un indirizzo e-mail confermato a cui scriverti, ti scriviamo quando riceviamo la richiesta, 7 giorni prima, il giorno prima e a cancellazione fatta. Sono messaggi di servizio, senza offerte. Se un guasto nostro ritarda l'avviso finale, la cancellazione può slittare di qualche giorno, al massimo 7, e ti scriviamo la nuova data.</li>
+</ul>
+
+<h2 id="senza-app">Se non hai più l'app</h2>
+<p>Hai due strade.</p>
+<ol>
+<li><strong>Reinstalla l'app.</strong> Scarica di nuovo Quokka, accedi con la stessa e-mail (se non ricordi la password, reimpostala con il link che ti mandiamo per e-mail) e segui i passi qui sopra.</li>
+<li><strong>Scrivici</strong> a <a href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL}</a>, se non riesci ad accedere.
 <ul>
 <li>Scrivi <strong>dall'indirizzo e-mail con cui ti sei registrato</strong>, con oggetto «Cancellazione account Quokka».</li>
 <li>Dicci che vuoi eliminare l'account. Non serve altro.</li>
 <li>Non mandarci la password né documenti sulla tua salute.</li>
 <li>Per essere sicuri che la richiesta sia tua, potremmo chiederti una conferma rispondendo a quello stesso messaggio.</li>
 </ul>
-<p>Cancelliamo l'account appena possibile e ti confermiamo per e-mail. Al massimo entro un mese.</p>
+Cancelliamo l'account e ti confermiamo per e-mail, al massimo entro un mese. Per questa strada la cancellazione è subito definitiva: non c'è il periodo di 30 giorni per cambiare idea.</li>
+</ol>
 
 <h2 id="cosa-si-cancella">Cosa viene cancellato</h2>
 <ul>
@@ -143,19 +158,23 @@ PAGES = [
 <li>Le chat con l'assistente e i loro allegati.</li>
 <li>I promemoria e le passeggiate, compresi i percorsi.</li>
 <li>I referti e i documenti che hai caricato.</li>
-<li>I tuoi consensi e la posizione salvata.</li>
-<li>Gli annunci che hai pubblicato nel Mercatino.</li>
+<li>I tuoi consensi, la posizione salvata e l'elenco dei tuoi dispositivi.</li>
+<li>Gli annunci che hai pubblicato nel Mercatino e i messaggi delle tue conversazioni (con l'eccezione indicata sotto).</li>
 <li>Il profilo: nome, numero di telefono e foto profilo, se li avevi inseriti.</li>
 <li>Le credenziali di accesso: e-mail e password.</li>
 </ul>
 
-<h2 id="cosa-puo-restare">Cosa può restare</h2>
+<h2 id="cosa-puo-restare">Cosa può restare, e per quanto tempo</h2>
 <ul>
-<li>Le segnalazioni e i voti che hai dato sui luoghi della mappa non portano il tuo nome. Il contenuto può restare nella mappa, senza alcun riferimento a te. Il dettaglio è nella sezione «Per quanto tempo conserviamo i dati» dell'<a href="/it/privacy/">informativa sulla privacy</a>.</li>
-<li>I nostri fornitori (database e hosting) tengono copie di sicurezza per un periodo limitato, poi spariscono da sole. <mark>[da verificare: durata delle copie di sicurezza]</mark></li>
+<li><strong>Un registro della cancellazione</strong>: un'impronta non reversibile dell'identificativo dell'account, la data e il motivo, senza nome, e-mail né contenuti. Resta 5 anni, come prova di aver rispettato la tua richiesta.</li>
+<li><strong>Una conversazione del Mercatino che è stata segnalata</strong>, se la segnalazione è aperta o è stata accolta: resta, senza i tuoi dati di account, fino a 6 mesi dopo la decisione, perché serve a difendere un diritto. Le conversazioni non segnalate, o la cui segnalazione è stata respinta, si cancellano subito.</li>
+<li><strong>I registri delle decisioni del team</strong> sul Mercatino, senza testi e senza dati del tuo account: 24 mesi.</li>
+<li>Le segnalazioni e i voti che hai dato sui luoghi della mappa non portano il tuo nome. Il contenuto può restare nella mappa, senza alcun riferimento a te.</li>
+<li>Ciò che la legge ci obbliga a conservare, per esempio i documenti fiscali, se hai fatto acquisti.</li>
+<li>I testi che l'assistente ha già inviato al fornitore di intelligenza artificiale per scriverti le risposte: di norma il fornitore li cancella entro 30 giorni dall'invio; più a lungo solo in casi eccezionali, descritti nell'informativa.</li>
+<li>Eventuali copie di sicurezza si cancellano entro 30 giorni dalla cancellazione definitiva.</li>
 </ul>
-
-<p>Altre domande: <a href="/it/supporto/">pagina di assistenza</a>.</p>""",
+<p>Il dettaglio è nell'<a href="/it/privacy/">informativa sulla privacy</a>, sezione «Per quanto tempo conserviamo i dati».</p>""",
     },
     {
         "slug": "avviso-ia",
@@ -178,7 +197,7 @@ PAGES = [
 </ul>
 
 <h2 id="puo-sbagliare">Può sbagliare</h2>
-<p>Le risposte possono essere incomplete o sbagliate. Usale come informazione generale e controlla ogni cosa importante con il tuo veterinario. Se una risposta ti sembra sbagliata, usa il pulsante per segnalarla: ci aiuta a correggere il problema.</p>
+<p>Le risposte possono essere incomplete o sbagliate. Usale come informazione generale e controlla ogni cosa importante con il tuo veterinario. Se una risposta non ti convince, tocca «Non mi ha aiutato»: l'assistente riprova con più attenzione. Per segnalarci un errore scrivici da Impostazioni → Contattaci.</p>
 
 <h2 id="emergenze">Se il tuo animale sta male</h2>
 <div class="callout">
@@ -186,7 +205,7 @@ PAGES = [
 </div>
 
 <h2 id="dati">Che fine fanno le tue domande</h2>
-<p>Per rispondere, il testo delle tue domande viene inviato a un fornitore esterno di intelligenza artificiale. Prima, il sistema toglie in automatico alcuni dati personali riconoscibili, come e-mail e telefono. Non può riconoscerli tutti: evita di scrivere dati personali tuoi o di altri.</p>
+<p>Per rispondere, il testo delle tue domande viene inviato a un fornitore esterno di intelligenza artificiale. Prima, il sistema toglie in automatico alcuni dati personali riconoscibili, come e-mail e telefono. Non può riconoscerli tutti: evita di scrivere dati personali tuoi o di altri. Se alleghi un documento PDF a un messaggio, anche il suo testo, ripulito allo stesso modo, viene inviato al fornitore per essere letto; le foto non vengono lette da nessun fornitore.</p>
 <p>La chat legge la cartella clinica di un tuo animale solo se lo consenti, animale per animale, e puoi revocare il consenso quando vuoi. Il dettaglio è nell'<a href="/it/privacy/">informativa sulla privacy</a>, nella sezione «Come usiamo l'intelligenza artificiale».</p>""",
     },
 ]
