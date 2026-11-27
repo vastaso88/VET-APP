@@ -1,6 +1,6 @@
 # Mettere online quokkapet.net: i passi per il proprietario
 
-Il sito sta su **Firebase Hosting** (Google), piano gratuito: nessun costo, ammesso anche per un'attività commerciale. Vercel resta per il server dell'app: il suo piano gratuito (Hobby) vale solo per uso non commerciale, quindi non va bene per il sito di una società. Il dominio resta su **Aruba**, posta compresa.
+Il sito sta su **Firebase Hosting** (Google), piano gratuito (Spark: dominio personalizzato e certificato inclusi, 10 GB di spazio, 360 MB al giorno di traffico). A differenza del piano gratuito di Vercel (Hobby), che i documenti di Vercel riservano all'uso personale non commerciale, nelle condizioni di Firebase non risulta un divieto analogo: da ricontrollare nei termini di Firebase prima del lancio. Vercel resta per il server dell'app. Il dominio resta su **Aruba**, posta compresa.
 
 Cosa si pubblica oggi: solo le pagine pronte, cioè la **home** di Quokka con «presto su Google Play», i contatti e, in fondo, la riga con i dati della società. Informativa privacy, termini, assistenza e cancellazione dell'account si aggiungono da sole quando la Normativa chiude i loro punti aperti (il generatore le pubblica appena sono pronte, mai prima).
 

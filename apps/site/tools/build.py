@@ -459,6 +459,10 @@ def main(argv: list[str] | None = None, environ: Mapping[str, str] | None = None
                 )
             return 1
         DRAFT = False
+        # A release folder holds exactly this build: a page left by an earlier build
+        # (a draft, or a page now held back) must never be uploaded with it.
+        if OUT_DIR is not None and OUT_DIR.resolve() != SITE_DIR.resolve() and OUT_DIR.exists():
+            shutil.rmtree(OUT_DIR)
     for lang in LANGS:
         build_lang(lang, published.get(lang))
     build_root()

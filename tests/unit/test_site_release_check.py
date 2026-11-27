@@ -544,3 +544,19 @@ def test_real_home_is_ready_except_for_owner_data(
     ready, held = build.ready_slugs(lang)
     assert "" in ready, held.get("")
     assert "<!--PLAY-->" in lang.PAGES[0]["body"] and "<!--CARDS-->" in lang.PAGES[0]["body"]
+
+
+def test_release_output_starts_empty_so_old_pages_are_never_uploaded(
+    build: ModuleType, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(build, "LANGS", ["it"])
+    monkeypatch.setattr(build, "_load_lang", lambda _code: _partial_lang([]))
+    (tmp_path / "site" / "assets").mkdir(parents=True)
+    out = tmp_path / "dist"
+    (out / "it" / "privacy").mkdir(parents=True)
+    (out / "it" / "privacy" / "index.html").write_text("bozza vecchia", encoding="utf-8")
+
+    assert build.main(["--release", "--partial", "--out", str(out)], {}) == 0
+
+    assert not (out / "it" / "privacy").exists()
+    assert (out / "it" / "index.html").is_file()
