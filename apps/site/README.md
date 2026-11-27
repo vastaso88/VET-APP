@@ -32,7 +32,18 @@ python -m http.server 8765
 
 Apri http://localhost:8765/it/ (i link sono assoluti: servi la cartella `apps/site` come radice).
 
-## Pubblicare su Vercel
+## Pubblicare su Firebase Hosting (scelta attuale, dal 2026-11-27)
+
+Vercel Hobby è solo per uso non commerciale, quindi il sito della società sta su Firebase Hosting (piano gratuito, progetto Firebase esistente, sito di Hosting `quokkapet`, configurazione in `firebase.json` con gli stessi header di `vercel.json`). Il build si fa sul computer, i dati del titolare stanno in un file fuori dal repository:
+
+```bash
+python apps/site/tools/build.py --release --partial --env-file .local/site/owner.env --out apps/site/dist
+cd apps/site && npx firebase-tools deploy --only hosting --project vetapp-test2
+```
+
+`--partial` pubblica **solo le pagine pronte**: nessun segnaposto aperto e nessun link verso una pagina trattenuta (che sparisce anche da menu e schede della home). Home e piè di pagina devono essere pronti, altrimenti il build si ferma come prima. Le pagine trattenute sono elencate nell'output. Il pulsante di download compare quando `PLAY_STORE_URL` in `pages_it.py` non è vuoto. Dominio e verifica per Google Play: `PASSI_PROPRIETARIO.md`.
+
+## Pubblicare su Vercel (alternativa, se un giorno si passa al piano Pro)
 
 Il sito di produzione **non** è l'HTML committato (quello è sempre la bozza): lo costruisce Vercel a ogni deploy con `python3 tools/build.py --vercel --out dist` (è in `vercel.json`). In produzione è un build di pubblicazione: riempie i dati del titolare dalle variabili d'ambiente e **fallisce** se resta un solo segnaposto, così l'ultima versione buona resta online. Sugli altri rami fa una bozza con `noindex`.
 

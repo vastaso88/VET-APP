@@ -21,15 +21,29 @@ UI = {
         "<strong>BOZZA.</strong> Questo testo non è ancora definitivo e non è stato rivisto da un "
         "legale. I dati tra parentesi quadre, evidenziati, sono ancora da compilare."
     ),
+    # Company facts the law wants on the site of an S.r.l. (art. 2250 c.c.; VAT number on
+    # the home page, art. 35 DPR 633/1972). Values come from QUOKKA_SITE_*, never from here.
     "footer_owner": (
-        "Titolare: [TITOLARE], con sede legale in [SEDE], codice fiscale e partita IVA [CF_PIVA]. "
-        "Registro delle imprese: [REA_REGISTRO_IMPRESE_SE_SOCIETA]. "
+        "Quokka è un servizio di [TITOLARE], sede legale [SEDE], codice fiscale e partita IVA "
+        "[CF_PIVA]. Registro delle imprese: [REA_REGISTRO_IMPRESE_SE_SOCIETA]. "
         "Capitale sociale versato: [CAPITALE_SOCIALE_VERSATO]. "
         "[SOCIO_UNICO_O_VUOTO] [LIQUIDAZIONE_O_VUOTO]"
     ),
     "footer_note": "Questo sito non usa cookie né strumenti di analisi.",
     "footer_draft": "Sito in costruzione.",
+    # Home: shown while PLAY_STORE_URL is empty, then replaced by the button.
+    "play_soon": (
+        '<div class="callout"><p><strong>Quokka arriverà presto su Google Play.</strong> '
+        "Quando sarà disponibile, qui troverai il link per scaricarla.</p></div>"
+    ),
+    "play_button": (
+        '<p><a class="button" href="{url}" rel="noopener">Scarica Quokka da Google Play</a></p>'
+    ),
 }
+
+# The app's page on Google Play. Empty until Google approves the listing; when it is set,
+# the home shows the download button instead of the "coming soon" line.
+PLAY_STORE_URL = ""
 
 _URLS = {"[URL_INFORMATIVA]": "/it/privacy/", "[URL_TERMINI]": "/it/termini/"}
 
@@ -51,17 +65,16 @@ PAGES = [
         "body": """<h1>Quokka</h1>
 <p class="lead">Quokka ti aiuta a capire il tuo animale: perché fa quello che fa, come gestirlo ogni giorno, quali sono i tuoi doveri e quando serve il veterinario. Risposte in parole semplici, pensate per ogni specie.</p>
 <p>Nell'app trovi un assistente basato su intelligenza artificiale, le schede dei tuoi animali con referti e vaccini, i promemoria, le passeggiate e i servizi vicino a te. Quokka non è un veterinario e non sostituisce un educatore o un comportamentalista.</p>
-<p>Il sito è in costruzione e l'app non è ancora disponibile negli store. Qui trovi le informazioni che servono a chi la usa o la userà.</p>
-<ul class="cards">
-<li><a href="/it/supporto/"><strong>Assistenza</strong><span>Come contattarci e le domande più frequenti.</span></a></li>
-<li><a href="/it/privacy/"><strong>Informativa sulla privacy</strong><span>Quali dati trattiamo, perché e quali sono i tuoi diritti.</span></a></li>
-<li><a href="/it/termini/"><strong>Termini di servizio</strong><span>Le regole per usare Quokka.</span></a></li>
-<li><a href="/it/cancellazione-account/"><strong>Cancellazione dell'account</strong><span>Come eliminare l'account e i tuoi dati, con o senza l'app.</span></a></li>
-<li><a href="/it/avviso-ia/"><strong>Avviso sull'intelligenza artificiale</strong><span>L'assistente non è un veterinario.</span></a></li>
-</ul>""",
+<!--PLAY-->
+<!--CARDS-->
+<h2 id="contatti">Contatti</h2>
+<p>Per qualsiasi domanda scrivi a <a href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL}</a>.</p>""".replace(
+            "{CONTACT_EMAIL}", CONTACT_EMAIL
+        ),
     },
     {
         "slug": "supporto",
+        "card": "Come contattarci e le domande più frequenti.",
         "nav": "Assistenza",
         "title": "Assistenza",
         "description": "Come contattare l'assistenza di Quokka e le domande più frequenti.",
@@ -77,6 +90,7 @@ PAGES = [
     },
     {
         "slug": "privacy",
+        "card": "Quali dati trattiamo, perché e quali sono i tuoi diritti.",
         "nav": "Privacy",
         "title": "Informativa sulla privacy",
         "description": "Quali dati personali tratta Quokka, perché, con chi li condivide e quali sono i tuoi diritti.",
@@ -86,6 +100,7 @@ PAGES = [
     },
     {
         "slug": "termini",
+        "card": "Le regole per usare Quokka.",
         "nav": "Termini",
         "title": "Termini di servizio",
         "description": "Le regole per usare Quokka.",
@@ -95,6 +110,7 @@ PAGES = [
     },
     {
         "slug": "cancellazione-account",
+        "card": "Come eliminare l'account e i tuoi dati, con o senza l'app.",
         "nav": "Cancella account",
         "title": "Cancellazione dell'account",
         "description": "Come eliminare il tuo account Quokka e i tuoi dati, dall'app o scrivendoci.",
@@ -143,6 +159,7 @@ PAGES = [
     },
     {
         "slug": "avviso-ia",
+        "card": "L'assistente non è un veterinario.",
         "nav": "Avviso IA",
         "title": "Avviso sull'intelligenza artificiale",
         "description": "L'assistente di Quokka è un'intelligenza artificiale: non fa diagnosi e non sostituisce il veterinario.",
@@ -178,5 +195,5 @@ NOT_FOUND = {
     "title": "Pagina non trovata",
     "body": """<h1>Pagina non trovata</h1>
 <p class="lead">La pagina che cerchi non esiste o è stata spostata.</p>
-<p><a href="/it/">Torna alla home</a> oppure vai all'<a href="/it/supporto/">assistenza</a>.</p>""",
+<p><a href="/it/">Torna alla home</a>.</p>""",
 }

@@ -3,6 +3,9 @@
     python apps/site/tools/build.py             # draft build: banner, noindex, robots blocks all
     python apps/site/tools/build.py --release   # publication build: stops if a marker is left
     python apps/site/tools/build.py --vercel --out dist   # what Vercel runs (see vercel.json)
+    python apps/site/tools/build.py --release --partial --env-file FILE --out apps/site/dist
+        # what goes on Firebase Hosting: only the pages that are ready, the others stay out;
+        # FILE holds the QUOKKA_SITE_* values and lives outside the repository
 
 The legal pages are laid out from the texts the legal workstream keeps in
 docs/compliance/<lang>/, so they are never retyped here.
@@ -88,6 +91,16 @@ def values_from_environ(environ: Mapping[str, str]) -> tuple[dict[str, str], lis
     return values, errors
 
 
+def read_env_file(path: Path) -> dict[str, str]:
+    """QUOKKA_SITE_* lines of a KEY=VALUE file; blank lines, comments and other keys are skipped."""
+    found: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8-sig").splitlines():
+        key, sep, value = line.strip().partition("=")
+        if sep and key.strip().startswith(ENV_PREFIX):
+            found[key.strip()] = value.strip().strip('"').strip("'")
+    return found
+
+
 def _fill(text: str, *, escape: bool) -> str:
     """Replace every [NAME] that has an environment value.
 
@@ -102,15 +115,24 @@ def _fill(text: str, *, escape: bool) -> str:
 
 
 def _page_shell(
-    lang_mod: ModuleType, *, title: str, description: str, body: str, path: str, nav: bool = True
+    lang_mod: ModuleType,
+    *,
+    title: str,
+    description: str,
+    body: str,
+    path: str,
+    published: set[str],
+    nav: bool = True,
 ) -> str:
     T = lang_mod.UI
     links = "".join(
         f'<li><a href="/{lang_mod.LANG}/{p["slug"]}{"/" if p["slug"] else ""}"'
         f"{' aria-current="page"' if path == p['slug'] else ''}>{html.escape(p['nav'])}</a></li>"
         for p in lang_mod.PAGES
-        if p.get("nav")
+        if p.get("nav") and p["slug"] in published
     )
+    if links.count("<li>") < 2:
+        nav = False  # a menu with only "Home" in it says nothing
     robots = '<meta name="robots" content="noindex, nofollow">\n' if DRAFT else ""
     owner = _fill(T["footer_owner"], escape=True).strip()
     if DRAFT:
@@ -173,22 +195,70 @@ def _open_markers(label: str, text: str, first_line: int = 1) -> list[str]:
     return found
 
 
-def release_problems(lang_mod: ModuleType) -> list[str]:
-    """Everything that must be settled before the site goes public (empty = ready)."""
+def page_problems(lang_mod: ModuleType, page: dict[str, Any]) -> list[str]:
+    """What must be settled before this one page can go public (empty = ready)."""
     problems: list[str] = []
-    for page in lang_mod.PAGES:
-        if "md" in page:
-            text, first_line = _legal_source(page)
-            problems += _open_markers(page["md"], text, first_line)
-        label = f"pages_{lang_mod.LANG}.py [{page['slug'] or 'home'}]"
-        for key in ("title", "description", "intro", "body"):
-            problems += _open_markers(f"{label} {key}", _fill(page.get(key, ""), escape=True))
+    if "md" in page:
+        text, first_line = _legal_source(page)
+        problems += _open_markers(page["md"], text, first_line)
+    label = f"pages_{lang_mod.LANG}.py [{page['slug'] or 'home'}]"
+    for key in ("title", "description", "intro", "body", "card"):
+        problems += _open_markers(f"{label} {key}", _fill(page.get(key, ""), escape=True))
+    return problems
+
+
+def ui_problems(lang_mod: ModuleType) -> list[str]:
+    """Open markers in the words every page shares (header, footer): they block every page."""
+    problems: list[str] = []
     for key, value in lang_mod.UI.items():
         if key not in _DRAFT_ONLY_UI:
             problems += _open_markers(
                 f"pages_{lang_mod.LANG}.py UI[{key}]", _fill(value, escape=True)
             )
     return problems
+
+
+def release_problems(lang_mod: ModuleType) -> list[str]:
+    """Everything that must be settled before the whole site goes public (empty = ready)."""
+    problems = [line for page in lang_mod.PAGES for line in page_problems(lang_mod, page)]
+    return problems + ui_problems(lang_mod)
+
+
+def _internal_links(lang_mod: ModuleType, page: dict[str, Any]) -> set[str]:
+    """Slugs of the other pages this page links to (/it/privacy/ -> "privacy")."""
+    text = page.get("body", "") + page.get("intro", "")
+    if "md" in page:
+        text += _legal_source(page)[0]
+    return set(re.findall(rf"/{lang_mod.LANG}/([a-z0-9-]+)/", text))
+
+
+def ready_slugs(lang_mod: ModuleType) -> tuple[set[str], dict[str, list[str]]]:
+    """Pages that can go public on their own, and why each other page is held back.
+
+    A page is ready when it has no open marker and every page it links to is ready too,
+    so a published page never leads to a draft or to a missing page.
+    """
+    held: dict[str, list[str]] = {}
+    for page in lang_mod.PAGES:
+        problems = page_problems(lang_mod, page)
+        if problems:
+            held[page["slug"]] = problems
+    known = {page["slug"] for page in lang_mod.PAGES}
+    changed = True
+    while changed:
+        changed = False
+        for page in lang_mod.PAGES:
+            if page["slug"] in held:
+                continue
+            missing = sorted(
+                s for s in _internal_links(lang_mod, page) if s in held or s not in known
+            )
+            if missing:
+                held[page["slug"]] = [
+                    f"links to a page that is not published: {', '.join(missing)}"
+                ]
+                changed = True
+    return known - set(held), held
 
 
 def _open_names(problems: list[str]) -> list[str]:
@@ -222,13 +292,39 @@ def _legal_body(lang_mod: ModuleType, page: dict[str, Any]) -> str:
     )
 
 
-def build_lang(lang: str) -> None:
+def _cards(lang_mod: ModuleType, published: set[str]) -> str:
+    """The home's links to the other published pages (pages with a "card" text)."""
+    items = "".join(
+        f'<li><a href="/{lang_mod.LANG}/{p["slug"]}/"><strong>{html.escape(p["title"])}</strong>'
+        f"<span>{html.escape(p['card'])}</span></a></li>"
+        for p in lang_mod.PAGES
+        if p["slug"] and p["slug"] in published and p.get("card")
+    )
+    return f'<ul class="cards">{items}</ul>' if items else ""
+
+
+def _play_block(lang_mod: ModuleType) -> str:
+    """Download button once the store link exists, otherwise a "coming soon" line."""
+    url = getattr(lang_mod, "PLAY_STORE_URL", "")
+    if url:
+        return str(lang_mod.UI.get("play_button", "")).replace("{url}", html.escape(url))
+    return str(lang_mod.UI.get("play_soon", ""))
+
+
+def build_lang(lang: str, published: set[str] | None = None) -> None:
+    """Write the pages of one language; with `published`, only those slugs exist."""
     lang_mod = _load_lang(lang)
+    if published is None:
+        published = {page["slug"] for page in lang_mod.PAGES}
     for page in lang_mod.PAGES:
+        if page["slug"] not in published:
+            continue
         if "md" in page:
             body = _legal_body(lang_mod, page)
         else:
             body = _fill(page["body"], escape=True)
+        body = body.replace("<!--CARDS-->", _cards(lang_mod, published))
+        body = body.replace("<!--PLAY-->", _play_block(lang_mod))
         if DRAFT and page.get("draft") and "md" not in page:
             body = body.replace(
                 "</h1>", f'</h1>\n<p class="draft" role="note">{lang_mod.UI["draft_banner"]}</p>', 1
@@ -242,6 +338,7 @@ def build_lang(lang: str) -> None:
                 description=page["description"],
                 body=body,
                 path=page["slug"],
+                published=published,
             ),
             encoding="utf-8",
         )
@@ -253,6 +350,7 @@ def build_lang(lang: str) -> None:
             description=not_found["title"],
             body=not_found["body"],
             path="",
+            published=published,
         ),
         encoding="utf-8",
     )
@@ -308,11 +406,27 @@ def main(argv: list[str] | None = None, environ: Mapping[str, str] | None = None
         "a draft build for previews",
     )
     parser.add_argument(
+        "--partial",
+        action="store_true",
+        help="with --release: publish only the pages that are ready on their own (no open "
+        "marker, no link to a held-back page); the home and the shared footer must be ready",
+    )
+    parser.add_argument(
+        "--env-file",
+        type=Path,
+        help="read QUOKKA_SITE_* values from this KEY=VALUE file (keep it outside the repository)",
+    )
+    parser.add_argument(
         "--out", type=Path, help="write the site here instead of next to the sources"
     )
     args = parser.parse_args(argv)
     release = args.release or (args.vercel and environ.get("VERCEL_ENV") == "production")
+    if args.partial and not release:
+        parser.error("--partial only makes sense with --release")
+    if args.env_file:
+        environ = {**environ, **read_env_file(args.env_file)}
     OUT_DIR = args.out
+    published: dict[str, set[str]] = {}
     if release:
         values, errors = values_from_environ(environ)
         if errors:
@@ -321,7 +435,18 @@ def main(argv: list[str] | None = None, environ: Mapping[str, str] | None = None
             return 1
         _VALUES.clear()
         _VALUES.update(values)
-        problems = [line for lang in LANGS for line in release_problems(_load_lang(lang))]
+        if args.partial:
+            problems = []
+            for lang in LANGS:
+                lang_mod = _load_lang(lang)
+                ready, held = ready_slugs(lang_mod)
+                problems += ui_problems(lang_mod) + held.get("", [])
+                published[lang] = ready
+                for slug, reasons in held.items():
+                    if slug:
+                        print(f"{lang}/{slug}: held back ({len(reasons)} open point(s))")
+        else:
+            problems = [line for lang in LANGS for line in release_problems(_load_lang(lang))]
         if problems:
             print(f"Release blocked: {len(problems)} open marker(s).", file=sys.stderr)
             print("\n".join(problems), file=sys.stderr)
@@ -335,7 +460,7 @@ def main(argv: list[str] | None = None, environ: Mapping[str, str] | None = None
             return 1
         DRAFT = False
     for lang in LANGS:
-        build_lang(lang)
+        build_lang(lang, published.get(lang))
     build_root()
     print(f"built {', '.join(LANGS)} (draft={DRAFT}) in {_out()}")
     return 0

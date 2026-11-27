@@ -416,3 +416,131 @@ def test_real_footer_has_the_company_register_data_and_each_name_is_documented(
     example = (_BUILD_PATH.parents[1] / ".env.example").read_text(encoding="utf-8")
     for name in names:
         assert f"QUOKKA_SITE_{name}=" in example, name
+
+
+# --- partial publication: only the pages that are ready go out -------------------------
+
+_HOME = {
+    "slug": "",
+    "nav": "Home",
+    "title": "Quokka",
+    "description": "d",
+    "body": "<h1>Quokka</h1>\n<!--PLAY-->\n<!--CARDS-->",
+}
+_PLAY_UI = {
+    **_UI,
+    "play_soon": "<p>Presto su Google Play</p>",
+    "play_button": '<a href="{url}">Scarica</a>',
+}
+
+
+def _partial_lang(pages: list[dict[str, Any]], **extra: Any) -> SimpleNamespace:
+    lang = _lang([_HOME, *pages], _PLAY_UI)
+    for key, value in extra.items():
+        setattr(lang, key, value)
+    return lang
+
+
+def _hand_page(slug: str, body: str = "<h1>P</h1>") -> dict[str, Any]:
+    return {
+        "slug": slug,
+        "nav": slug,
+        "title": slug.title(),
+        "description": "d",
+        "body": body,
+        "card": f"card {slug}",
+    }
+
+
+def test_partial_release_publishes_ready_pages_and_holds_back_the_others(
+    build: ModuleType, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    privacy = _legal(tmp_path, "Titolare [TITOLARE] [in attesa del codice].")
+    privacy["card"] = "card privacy"
+    help_page = _hand_page("supporto")
+    monkeypatch.setattr(build, "LANGS", ["it"])
+    monkeypatch.setattr(build, "_load_lang", lambda _code: _partial_lang([privacy, help_page]))
+    (tmp_path / "site" / "assets").mkdir(parents=True)
+    out = tmp_path / "dist"
+
+    assert build.main(["--release", "--partial", "--out", str(out)], {}) == 0
+
+    assert not (out / "it" / "privacy").exists()
+    home = (out / "it" / "index.html").read_text(encoding="utf-8")
+    assert "noindex" not in home
+    assert '/it/supporto/"' in home and "card supporto" in home
+    assert "/it/privacy/" not in home  # neither in the menu nor among the cards
+    assert "Presto su Google Play" in home
+
+
+def test_partial_release_holds_back_a_clean_page_that_links_to_a_held_one(
+    build: ModuleType, tmp_path: Path
+) -> None:
+    privacy = _legal(tmp_path, "[da verificare: tutto]")
+    notice = _hand_page("avviso-ia", '<h1>A</h1><a href="/it/privacy/">informativa</a>')
+    ready, held = build.ready_slugs(_partial_lang([privacy, notice]))
+    assert ready == {""}
+    assert "privacy" in held["avviso-ia"][0]
+
+
+def test_partial_release_still_needs_the_home_and_the_footer(
+    build: ModuleType,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    lang = _partial_lang([])
+    lang.UI = {**_PLAY_UI, "footer_owner": "Quokka è un servizio di [TITOLARE]."}
+    monkeypatch.setattr(build, "LANGS", ["it"])
+    monkeypatch.setattr(build, "_load_lang", lambda _code: lang)
+    out = tmp_path / "dist"
+
+    assert build.main(["--release", "--partial", "--out", str(out)], {}) == 1
+    assert "Open names: TITOLARE" in capsys.readouterr().err
+    assert not out.exists()
+
+
+def test_partial_needs_release(build: ModuleType) -> None:
+    with pytest.raises(SystemExit):
+        build.main(["--partial"], {})
+
+
+def test_store_link_turns_the_notice_into_the_download_button(
+    build: ModuleType, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    url = "https://play.google.com/store/apps/details?id=net.example.app&hl=it"
+    monkeypatch.setattr(build, "LANGS", ["it"])
+    monkeypatch.setattr(build, "_load_lang", lambda _code: _partial_lang([], PLAY_STORE_URL=url))
+    (tmp_path / "site" / "assets").mkdir(parents=True)
+    out = tmp_path / "dist"
+
+    assert build.main(["--release", "--partial", "--out", str(out)], {}) == 0
+
+    home = (out / "it" / "index.html").read_text(encoding="utf-8")
+    assert 'href="https://play.google.com/store/apps/details?id=net.example.app&amp;hl=it"' in home
+    assert "Presto su Google Play" not in home
+
+
+def test_env_file_fills_owner_data_and_ignores_other_lines(
+    build: ModuleType, tmp_path: Path
+) -> None:
+    env = tmp_path / "owner.env"
+    env.write_text(
+        '# commento\nQUOKKA_SITE_TITOLARE="Esempio S.r.l."\nALTRO=x\n\n'
+        "QUOKKA_SITE_SEDE = Via Esempio 1\n",
+        encoding="utf-8",
+    )
+    assert build.read_env_file(env) == {
+        "QUOKKA_SITE_TITOLARE": "Esempio S.r.l.",
+        "QUOKKA_SITE_SEDE": "Via Esempio 1",
+    }
+
+
+def test_real_home_is_ready_except_for_owner_data(
+    build: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(build, "REPO_DIR", _BUILD_PATH.parents[3])
+    lang = build._load_lang("it")
+    ready, held = build.ready_slugs(lang)
+    assert "" in ready, held.get("")
+    assert "<!--PLAY-->" in lang.PAGES[0]["body"] and "<!--CARDS-->" in lang.PAGES[0]["body"]
